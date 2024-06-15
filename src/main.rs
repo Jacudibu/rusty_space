@@ -1,9 +1,10 @@
 use bevy::asset::AssetServer;
 use bevy::core::Name;
-use bevy::math::EulerRot;
+use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
+use bevy::math::{EulerRot, Vec3};
 use bevy::prelude::{
     default, App, Camera2dBundle, Commands, Component, Entity, ImagePlugin, IntoSystemConfigs,
-    PluginGroup, Quat, Query, Res, Startup, Time, Transform, Update,
+    PluginGroup, Quat, Query, Res, Startup, Time, Transform, Update, Visibility,
 };
 use bevy::render::camera::ScalingMode;
 use bevy::sprite::SpriteBundle;
@@ -12,6 +13,8 @@ use bevy::DefaultPlugins;
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
+        .add_plugins(FrameTimeDiagnosticsPlugin)
+        .add_plugins(LogDiagnosticsPlugin::default())
         .add_systems(Startup, on_startup)
         .add_systems(
             Update,
@@ -66,8 +69,9 @@ pub fn run_ship_ai(
     mut ships: Query<(Entity, &AI, &mut Engine)>,
     all_transforms: Query<&Transform>,
 ) {
-    for (entity, ai, mut engine) in ships.iter_mut() {
-        match ai {
+    ships
+        .par_iter_mut()
+        .for_each(|(entity, ai, mut engine)| match ai {
             AI::MoveTo(target) => {
                 if let Ok(target_transform) = all_transforms.get(*target) {
                     let entity_transform = all_transforms.get(entity).unwrap();
@@ -103,17 +107,16 @@ pub fn run_ship_ai(
                     todo!()
                 }
             }
-        }
-    }
+        });
 }
 
 pub fn process_ship_movement(time: Res<Time>, mut ships: Query<(&mut Transform, &Engine)>) {
-    for (mut transform, engine) in ships.iter_mut() {
+    ships.par_iter_mut().for_each(|(mut transform, engine)| {
         transform.rotate_z(engine.rotational_thrust * time.delta_seconds());
 
         let dir = transform.up();
         transform.translation += dir * engine.forward_thrust * time.delta_seconds();
-    }
+    });
 }
 
 #[derive(Component)]
