@@ -10,12 +10,15 @@ use bevy::render::camera::ScalingMode;
 use bevy::sprite::SpriteBundle;
 use bevy::DefaultPlugins;
 
+mod camera;
+
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
         .add_plugins(FrameTimeDiagnosticsPlugin)
         .add_plugins(LogDiagnosticsPlugin::default())
         .add_systems(Startup, on_startup)
+        .add_systems(Update, (camera::move_camera, camera::zoom_camera))
         .add_systems(
             Update,
             (run_ship_ai, process_ship_movement.after(run_ship_ai)),
@@ -26,7 +29,7 @@ fn main() {
 pub fn on_startup(mut commands: Commands, asset_server: Res<AssetServer>) {
     let mut camera_bundle = Camera2dBundle::default();
     camera_bundle.projection.scaling_mode = ScalingMode::WindowSize(1.0);
-    commands.spawn((Name::new("Camera"), camera_bundle));
+    commands.spawn((Name::new("Camera"), camera::MainCamera, camera_bundle));
 
     let station_a = commands
         .spawn((
