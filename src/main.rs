@@ -65,7 +65,7 @@ pub fn on_startup(mut commands: Commands, asset_server: Res<AssetServer>) {
         },
     ));
 
-    let ship_count = 10;
+    let ship_count = 1000000;
     for i in 0..ship_count {
         commands.spawn((
             Name::new("Ship"),

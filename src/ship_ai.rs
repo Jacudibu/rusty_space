@@ -1,6 +1,7 @@
 use crate::components::{Engine, ShipBehavior, ShipTask, Storage, TaskQueue, TradeHub, Velocity};
 use bevy::math::EulerRot;
 use bevy::prelude::{Commands, Entity, Event, Query, Res, Time, Transform, Without};
+use std::sync::{Arc, Mutex};
 
 #[derive(Event, Copy, Clone)]
 pub struct TaskFinishedEvent {
@@ -9,17 +10,18 @@ pub struct TaskFinishedEvent {
 
 pub fn run_ship_ai(
     time: Res<Time>,
-    mut ships: Query<(
-        Entity,
-        &mut TaskQueue,
-        &ShipBehavior,
-        &Engine,
-        &mut Velocity,
-    )>,
+    mut ships: Query<(Entity, &mut TaskQueue, &Engine, &mut Velocity)>,
     all_transforms: Query<&Transform>,
 ) {
-    ships.par_iter_mut().for_each(
-        |(entity, mut task_queue, ship_behavior, engine, mut velocity)| {
+    let ships_with_task_completions = Arc::new(Mutex::new(Vec::<Entity>::new()));
+
+    ships
+        .par_iter_mut()
+        .for_each(|(entity, task_queue, engine, mut velocity)| {
+            if task_queue.queue.is_empty() {
+                return;
+            }
+
             let task_completed = match task_queue.queue.first().unwrap() {
                 ShipTask::MoveTo(target) => {
                     if let Ok(target_transform) = all_transforms.get(*target) {
@@ -56,12 +58,7 @@ pub fn run_ship_ai(
                             velocity.decelerate(engine, time.delta_seconds());
                         }
 
-                        if distance < 5.0 {
-                            // TODO: event
-                            true
-                        } else {
-                            false
-                        }
+                        distance < 5.0
                     } else {
                         todo!()
                     }
@@ -73,11 +70,14 @@ pub fn run_ship_ai(
             };
 
             if task_completed {
-                // An event would feel "cleaner", but we cannot send data out of a par_iter_mut
-                task_queue.queue.remove(0);
+                ships_with_task_completions.lock().unwrap().push(entity);
             }
-        },
-    );
+        });
+
+    for x in ships_with_task_completions.lock().unwrap().iter() {
+        // TODO: Turn this into an event?
+        ships.get_mut(*x).unwrap().1.queue.remove(0);
+    }
 }
 
 pub fn handle_idle_ships(
