@@ -9,8 +9,10 @@ use bevy::prelude::{
 use bevy::render::camera::ScalingMode;
 use bevy::sprite::SpriteBundle;
 use bevy::DefaultPlugins;
+use components::*;
 
 mod camera;
+mod components;
 
 fn main() {
     App::new()
@@ -44,27 +46,30 @@ pub fn on_startup(mut commands: Commands, asset_server: Res<AssetServer>) {
         .id();
 
     let ship_count = 100000;
+    let mut next_target = station_a;
     for i in 0..ship_count {
-        commands.spawn((
-            Name::new("Ship"),
-            AI::MoveTo(station_a),
-            Engine { ..default() },
-            Velocity {
-                forward: (i % 100) as f32,
-                angular: 0.0,
-            },
-            Storage::new(100.0),
-            SpriteBundle {
-                texture: asset_server.load("ship.png"),
-                transform: Transform {
-                    rotation: Quat::from_rotation_z(
-                        (std::f32::consts::PI * 2.0 / ship_count as f32) * i as f32,
-                    ),
+        next_target = commands
+            .spawn((
+                Name::new("Ship"),
+                AI::MoveTo(next_target),
+                Engine { ..default() },
+                Velocity {
+                    forward: (i % 100) as f32,
+                    angular: 0.0,
+                },
+                Storage::new(100.0),
+                SpriteBundle {
+                    texture: asset_server.load("ship.png"),
+                    transform: Transform {
+                        rotation: Quat::from_rotation_z(
+                            (std::f32::consts::PI * 2.0 / ship_count as f32) * i as f32,
+                        ),
+                        ..default()
+                    },
                     ..default()
                 },
-                ..default()
-            },
-        ));
+            ))
+            .id();
     }
 }
 
@@ -126,78 +131,4 @@ pub fn process_ship_movement(time: Res<Time>, mut ships: Query<(&mut Transform, 
 #[derive(Component)]
 pub enum AI {
     MoveTo(Entity),
-}
-
-/// Fake Physics!
-#[derive(Component, Default)]
-pub struct Velocity {
-    pub forward: f32,
-    pub angular: f32,
-}
-
-impl Velocity {
-    pub fn accelerate(&mut self, engine: &Engine, delta_seconds: f32) {
-        self.forward += engine.acceleration * delta_seconds;
-        if self.forward > engine.max_speed {
-            self.forward = engine.max_speed;
-        }
-    }
-
-    pub fn decelerate(&mut self, engine: &Engine, delta_seconds: f32) {
-        self.forward -= engine.deceleration * delta_seconds;
-        if self.forward < 0.0 {
-            self.forward = 0.0;
-        }
-    }
-
-    pub fn turn_right(&mut self, engine: &Engine, delta_seconds: f32) {
-        self.angular -= engine.angular_acceleration * delta_seconds;
-        if self.angular < -engine.max_angular_speed {
-            self.angular = -engine.max_angular_speed;
-        }
-    }
-
-    pub fn turn_left(&mut self, engine: &Engine, delta_seconds: f32) {
-        self.angular += engine.angular_acceleration * delta_seconds;
-        if self.angular > engine.max_angular_speed {
-            self.angular = engine.max_angular_speed;
-        }
-    }
-}
-
-#[derive(Component)]
-pub struct Engine {
-    pub max_speed: f32,
-    pub acceleration: f32,
-    pub deceleration: f32,
-
-    pub max_angular_speed: f32,
-    pub angular_acceleration: f32,
-}
-
-impl Default for Engine {
-    fn default() -> Self {
-        Self {
-            max_speed: 100.0,
-            acceleration: 10.0,
-            deceleration: 10.0,
-            max_angular_speed: 1.0,
-            angular_acceleration: 1.0,
-        }
-    }
-}
-
-#[derive(Component)]
-pub struct Storage {
-    pub capacity: f32,
-    pub used: f32,
-}
-
-impl Storage {
-    pub fn new(capacity: f32) -> Self {
-        Self {
-            capacity,
-            used: 0.0,
-        }
-    }
 }
