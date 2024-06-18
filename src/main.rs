@@ -3,7 +3,7 @@ use bevy::core::Name;
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::prelude::{
     default, App, Camera2dBundle, Commands, ImagePlugin, IntoSystemConfigs, PluginGroup, Quat, Res,
-    Startup, Transform, Update,
+    Startup, Transform, Update, Window, WindowPlugin,
 };
 use bevy::render::camera::ScalingMode;
 use bevy::sprite::SpriteBundle;
@@ -15,9 +15,31 @@ mod components;
 mod physics;
 mod ship_ai;
 
+const SHIP_COUNT: i32 = 1;
+
+fn get_window_title() -> String {
+    let config = if cfg!(debug_assertions) {
+        "DEBUG"
+    } else {
+        "RELEASE"
+    };
+
+    format!("{SHIP_COUNT} ships [{config}] ")
+}
+
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
+        .add_plugins(
+            DefaultPlugins
+                .set(WindowPlugin {
+                    primary_window: Some(Window {
+                        title: get_window_title(),
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                })
+                .set(ImagePlugin::default_nearest()),
+        )
         .add_plugins(FrameTimeDiagnosticsPlugin)
         .add_plugins(LogDiagnosticsPlugin::default())
         .add_event::<ship_ai::TaskFinishedEvent>()
@@ -68,8 +90,7 @@ pub fn on_startup(mut commands: Commands, asset_server: Res<AssetServer>) {
         },
     ));
 
-    let ship_count = 1000000;
-    for i in 0..ship_count {
+    for i in 0..SHIP_COUNT {
         commands.spawn((
             Name::new("Ship"),
             ShipBehavior::AutoTrade(AutoTradeData {}),
@@ -83,7 +104,7 @@ pub fn on_startup(mut commands: Commands, asset_server: Res<AssetServer>) {
                 texture: asset_server.load("ship.png"),
                 transform: Transform {
                     rotation: Quat::from_rotation_z(
-                        (std::f32::consts::PI * 2.0 / ship_count as f32) * i as f32,
+                        (std::f32::consts::PI * 2.0 / SHIP_COUNT as f32) * i as f32,
                     ),
                     ..default()
                 },
