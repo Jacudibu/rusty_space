@@ -16,7 +16,7 @@ mod components;
 mod physics;
 mod ship_ai;
 
-const SHIP_COUNT: i32 = 1;
+const SHIP_COUNT: i32 = 1000000;
 
 fn get_window_title() -> String {
     let config = if cfg!(debug_assertions) {
@@ -73,7 +73,7 @@ pub fn on_startup(mut commands: Commands, asset_server: Res<AssetServer>) {
             transform: Transform::from_xyz(-200.0, -200.0, STATION_LAYER),
             ..default()
         },
-        Storage::new(100.0),
+        Storage::new(100000000),
         TradeHub {
             buying: true,
             selling: false,
@@ -87,7 +87,10 @@ pub fn on_startup(mut commands: Commands, asset_server: Res<AssetServer>) {
             transform: Transform::from_xyz(200.0, 200.0, STATION_LAYER),
             ..default()
         },
-        Storage::new(100.0),
+        Storage {
+            capacity: 100000000,
+            used: 100000000,
+        },
         TradeHub {
             buying: false,
             selling: true,
@@ -103,7 +106,7 @@ pub fn on_startup(mut commands: Commands, asset_server: Res<AssetServer>) {
                 forward: (i % 100) as f32,
                 angular: 0.0,
             },
-            Storage::new(100.0),
+            Storage::new(100),
             SpriteBundle {
                 texture: asset_server.load("ship.png"),
                 transform: Transform {

@@ -1,7 +1,9 @@
-use crate::components::{Engine, ShipBehavior, ShipTask, Storage, TaskQueue, TradeHub, Velocity};
+use crate::components::{
+    Engine, ExchangeWareData, ShipBehavior, ShipTask, Storage, TaskQueue, TradeHub, Velocity,
+};
 use bevy::math::EulerRot;
 use bevy::prelude::{
-    Commands, Entity, Event, EventReader, EventWriter, Query, Res, Time, Transform, Without,
+    error, Commands, Entity, Event, EventReader, EventWriter, Query, Res, Time, Transform, Without,
 };
 use std::collections::VecDeque;
 use std::sync::{Arc, Mutex};
@@ -79,6 +81,7 @@ pub fn run_ship_tasks(
                         todo!()
                     }
                 }
+                ShipTask::ExchangeWares(_, _) => true,
                 ShipTask::DoNothing => {
                     // TODO: These still need to react to their surroundings somehow, maybe?
                     false
@@ -106,15 +109,40 @@ pub fn run_ship_tasks(
     }
 }
 
+// TODO: Just as with ship tasks, contemplate using unique events for every relevant task completion
 pub fn complete_tasks(
     mut event_reader: EventReader<TaskFinishedEvent>,
     mut query: Query<&mut TaskQueue>,
     mut commands: Commands,
+    mut all_storages: Query<&mut Storage>,
 ) {
     for event in event_reader.read() {
         if let Ok(mut task_queue) = query.get_mut(event.entity) {
-            let _task = task_queue.queue.pop_front();
-            // todo: task.on_finished
+            match task_queue.queue.pop_front().unwrap() {
+                ShipTask::DoNothing => {}
+                ShipTask::MoveTo(_) => {}
+                ShipTask::ExchangeWares(other, data) => {
+                    match all_storages.get_many_mut([event.entity, other]) {
+                        Ok([mut this, mut other]) => match data {
+                            ExchangeWareData::Buy(amount) => {
+                                this.used += amount;
+                                other.used -= amount;
+                            }
+                            ExchangeWareData::Sell(amount) => {
+                                this.used -= amount;
+                                other.used += amount;
+                            }
+                        },
+                        Err(e) => {
+                            error!(
+                                "Failed to execute ware exchange between {} and {other}: {:?}",
+                                event.entity, e
+                            );
+                            continue;
+                        }
+                    }
+                }
+            }
 
             if task_queue.queue.is_empty() {
                 commands.entity(event.entity).remove::<TaskQueue>();
@@ -125,12 +153,12 @@ pub fn complete_tasks(
 
 pub fn handle_idle_ships(
     mut commands: Commands,
-    ships: Query<(Entity, &ShipBehavior), Without<TaskQueue>>,
+    ships: Query<(Entity, &ShipBehavior, &Storage), Without<TaskQueue>>,
     trade_hubs: Query<(Entity, &TradeHub, &Storage)>,
 ) {
     ships
         .iter()
-        .for_each(|(entity, ship_behavior)| match ship_behavior {
+        .for_each(|(entity, ship_behavior, storage)| match ship_behavior {
             ShipBehavior::HoldPosition => {
                 commands.entity(entity).insert(TaskQueue {
                     queue: VecDeque::from(vec![ShipTask::DoNothing]),
@@ -138,16 +166,21 @@ pub fn handle_idle_ships(
             }
             ShipBehavior::AutoTrade(data) => {
                 // TODO: dynamically match sell & buy offers
+                let best_offer_amount = 1000;
                 let (seller_entity, _, _) =
                     trade_hubs.iter().find(|(_, hub, _)| hub.selling).unwrap();
                 let (buyer_entity, _, _) =
                     trade_hubs.iter().find(|(_, hub, _)| hub.buying).unwrap();
 
+                let amount = (storage.capacity - storage.used).min(best_offer_amount);
+
                 // TODO: Actually buy and sell stuff. Also consider reserving goods so we don't get ten ships doing the same thing.
                 commands.entity(entity).insert(TaskQueue {
                     queue: VecDeque::from(vec![
                         ShipTask::MoveTo(seller_entity),
+                        ShipTask::ExchangeWares(seller_entity, ExchangeWareData::Buy(amount)),
                         ShipTask::MoveTo(buyer_entity),
+                        ShipTask::ExchangeWares(seller_entity, ExchangeWareData::Sell(amount)),
                     ]),
                 });
             }
