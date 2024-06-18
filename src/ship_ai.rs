@@ -63,10 +63,15 @@ pub fn run_ship_tasks(
 
                         if angle_difference.abs() > std::f32::consts::FRAC_PI_3 {
                             velocity.decelerate(engine, time.delta_seconds());
-                        } else if distance > 10.0 {
-                            velocity.accelerate(engine, time.delta_seconds());
                         } else {
-                            velocity.decelerate(engine, time.delta_seconds());
+                            let distance_to_stop =
+                                (velocity.forward * velocity.forward) / (2.0 * engine.deceleration);
+
+                            if distance > distance_to_stop {
+                                velocity.accelerate(engine, time.delta_seconds());
+                            } else {
+                                velocity.decelerate(engine, time.delta_seconds());
+                            }
                         }
 
                         distance < 5.0

@@ -1,6 +1,7 @@
 use bevy::asset::AssetServer;
 use bevy::core::Name;
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
+use bevy::math::Vec3;
 use bevy::prelude::{
     default, App, Camera2dBundle, Commands, ImagePlugin, IntoSystemConfigs, PluginGroup, Quat, Res,
     Startup, Transform, Update, Window, WindowPlugin,
@@ -26,6 +27,9 @@ fn get_window_title() -> String {
 
     format!("{SHIP_COUNT} ships [{config}] ")
 }
+
+const SHIP_LAYER: f32 = 10.0;
+const STATION_LAYER: f32 = 5.0;
 
 fn main() {
     App::new()
@@ -66,7 +70,7 @@ pub fn on_startup(mut commands: Commands, asset_server: Res<AssetServer>) {
         Name::new("Station A"),
         SpriteBundle {
             texture: asset_server.load("station.png"),
-            transform: Transform::from_xyz(-200.0, -200.0, 0.0),
+            transform: Transform::from_xyz(-200.0, -200.0, STATION_LAYER),
             ..default()
         },
         Storage::new(100.0),
@@ -80,7 +84,7 @@ pub fn on_startup(mut commands: Commands, asset_server: Res<AssetServer>) {
         Name::new("Station B"),
         SpriteBundle {
             texture: asset_server.load("station.png"),
-            transform: Transform::from_xyz(200.0, 200.0, 0.0),
+            transform: Transform::from_xyz(200.0, 200.0, STATION_LAYER),
             ..default()
         },
         Storage::new(100.0),
@@ -106,6 +110,7 @@ pub fn on_startup(mut commands: Commands, asset_server: Res<AssetServer>) {
                     rotation: Quat::from_rotation_z(
                         (std::f32::consts::PI * 2.0 / SHIP_COUNT as f32) * i as f32,
                     ),
+                    translation: Vec3::new(0.0, 0.0, SHIP_LAYER),
                     ..default()
                 },
                 ..default()

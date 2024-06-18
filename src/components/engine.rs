@@ -15,7 +15,7 @@ impl Default for Engine {
         Self {
             max_speed: 100.0,
             acceleration: 10.0,
-            deceleration: 10.0,
+            deceleration: 30.0,
             max_angular_speed: 1.0,
             angular_acceleration: 1.0,
         }
