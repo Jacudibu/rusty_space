@@ -2,8 +2,8 @@ use bevy::asset::AssetServer;
 use bevy::core::Name;
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::prelude::{
-    default, App, Camera2dBundle, Commands, ImagePlugin, IntoSystemConfigs, PluginGroup, Quat,
-    Query, Res, Startup, Time, Transform, Update,
+    default, App, Camera2dBundle, Commands, ImagePlugin, IntoSystemConfigs, PluginGroup, Quat, Res,
+    Startup, Transform, Update,
 };
 use bevy::render::camera::ScalingMode;
 use bevy::sprite::SpriteBundle;
@@ -12,6 +12,7 @@ use components::*;
 
 mod camera;
 mod components;
+mod physics;
 mod ship_ai;
 
 fn main() {
@@ -26,7 +27,7 @@ fn main() {
             Update,
             (
                 ship_ai::run_ship_tasks,
-                process_ship_movement.after(ship_ai::run_ship_tasks),
+                physics::move_things.after(ship_ai::run_ship_tasks),
                 ship_ai::complete_tasks.after(ship_ai::run_ship_tasks),
                 ship_ai::handle_idle_ships,
             ),
@@ -90,13 +91,4 @@ pub fn on_startup(mut commands: Commands, asset_server: Res<AssetServer>) {
             },
         ));
     }
-}
-
-pub fn process_ship_movement(time: Res<Time>, mut ships: Query<(&mut Transform, &Velocity)>) {
-    ships.par_iter_mut().for_each(|(mut transform, velocity)| {
-        transform.rotate_z(velocity.angular * time.delta_seconds());
-
-        let forward = transform.up();
-        transform.translation += forward * velocity.forward * time.delta_seconds();
-    });
 }

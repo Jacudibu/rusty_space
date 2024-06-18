@@ -20,7 +20,7 @@ pub struct TaskFinishedEvent {
 */
 pub fn run_ship_tasks(
     time: Res<Time>,
-    mut ships: Query<(Entity, &mut TaskQueue, &Engine, &mut Velocity)>,
+    mut ships: Query<(Entity, &TaskQueue, &Engine, &mut Velocity)>,
     mut event_writer: EventWriter<TaskFinishedEvent>,
     all_transforms: Query<&Transform>,
 ) {

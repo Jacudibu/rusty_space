@@ -30,8 +30,10 @@ pub fn move_camera(
     }
     if keys.pressed(KeyCode::KeyT) {
         // Guaranteed to move everything off-screen
-        dir.x += 10000000.0;
-        dir.y += 10000000.0;
+        camera.get_single_mut().unwrap().translation = Vec3::splat(10000000.0);
+    }
+    if keys.pressed(KeyCode::KeyR) {
+        camera.get_single_mut().unwrap().translation = Vec3::ZERO;
     }
 
     if dir.length() < 0.01 {
