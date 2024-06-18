@@ -19,13 +19,15 @@ fn main() {
         .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
         .add_plugins(FrameTimeDiagnosticsPlugin)
         .add_plugins(LogDiagnosticsPlugin::default())
+        .add_event::<ship_ai::TaskFinishedEvent>()
         .add_systems(Startup, on_startup)
         .add_systems(Update, (camera::move_camera, camera::zoom_camera))
         .add_systems(
             Update,
             (
-                ship_ai::run_ship_ai,
-                process_ship_movement.after(ship_ai::run_ship_ai),
+                ship_ai::run_ship_tasks,
+                process_ship_movement.after(ship_ai::run_ship_tasks),
+                ship_ai::complete_tasks.after(ship_ai::run_ship_tasks),
                 ship_ai::handle_idle_ships,
             ),
         )

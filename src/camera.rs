@@ -28,6 +28,11 @@ pub fn move_camera(
     if keys.pressed(KeyCode::KeyD) {
         dir.x += 1.0;
     }
+    if keys.pressed(KeyCode::KeyT) {
+        // Guaranteed to move everything off-screen
+        dir.x += 10000000.0;
+        dir.y += 10000000.0;
+    }
 
     if dir.length() < 0.01 {
         return;

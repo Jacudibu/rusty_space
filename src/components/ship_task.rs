@@ -1,4 +1,5 @@
 use bevy::prelude::{Component, Entity};
+use std::collections::VecDeque;
 
 /// A single Task which can be scheduled for individual ships.
 pub enum ShipTask {
@@ -9,5 +10,5 @@ pub enum ShipTask {
 /// A queue of [ShipTasks].
 #[derive(Component)]
 pub struct TaskQueue {
-    pub queue: Vec<ShipTask>,
+    pub queue: VecDeque<ShipTask>,
 }
