@@ -1,12 +1,14 @@
 use crate::data::GameData;
+use crate::entity_selection::MouseInteractionGizmos;
 use crate::mouse_cursor::MouseCursor;
 use bevy::asset::AssetServer;
 use bevy::core::Name;
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::math::Vec3;
 use bevy::prelude::{
-    default, App, Camera2dBundle, Commands, Handle, Image, ImagePlugin, IntoSystemConfigs,
-    PluginGroup, PreUpdate, Quat, Res, Resource, Startup, Transform, Update, Window, WindowPlugin,
+    default, App, AppGizmoBuilder, Camera2dBundle, Commands, Handle, Image, ImagePlugin,
+    IntoSystemConfigs, PluginGroup, PreUpdate, Quat, Res, Resource, Startup, Transform, Update,
+    Window, WindowPlugin,
 };
 use bevy::render::camera::ScalingMode;
 use bevy::sprite::SpriteBundle;
@@ -55,6 +57,7 @@ fn main() {
         .add_plugins(LogDiagnosticsPlugin::default())
         .insert_resource(GameData::mock_data())
         .insert_resource(MouseCursor::default())
+        .init_gizmo_group::<MouseInteractionGizmos>()
         .add_event::<ship_ai::TaskFinishedEvent>()
         .add_event::<entity_selection::SelectionChangedEvent>()
         .add_systems(Startup, on_startup)
@@ -65,6 +68,8 @@ fn main() {
                 camera::move_camera,
                 camera::zoom_camera,
                 entity_selection::select_entities,
+                entity_selection::update_mouse_interaction,
+                entity_selection::draw_mouse_interactions,
                 entity_selection::on_selection_changed.after(entity_selection::select_entities),
                 ship_ai::handle_idle_ships,
                 ship_ai::run_ship_tasks,

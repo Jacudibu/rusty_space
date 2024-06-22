@@ -4,10 +4,13 @@ use crate::SpriteHandles;
 use bevy::asset::Handle;
 use bevy::input::mouse::MouseButtonInput;
 use bevy::input::ButtonState;
+use bevy::math::Rot2;
 use bevy::prelude::{
-    Camera, Commands, Entity, Event, EventReader, EventWriter, GlobalTransform, Image, MouseButton,
-    Query, Res, ResMut, Resource, Transform, Window, With,
+    Camera, Commands, Entity, Event, EventReader, EventWriter, GizmoConfigGroup, Gizmos,
+    GlobalTransform, Image, MouseButton, Query, Reflect, Res, ResMut, Resource, Time, Transform,
+    Vec2, Window, With,
 };
+use std::time::Duration;
 
 #[derive(Event)]
 pub struct SelectionChangedEvent {
@@ -36,33 +39,87 @@ pub fn update_cursor_position(
     }
 }
 
-pub fn select_entities(
-    selectables: Query<(Entity, &Transform), With<SelectableEntity>>,
-    mouse_cursor: Res<MouseCursor>,
-    mut mouse_button_events: EventReader<MouseButtonInput>,
-    mut event_writer: EventWriter<SelectionChangedEvent>,
+#[derive(Resource)]
+pub struct MouseInteraction {
+    pub origin: Vec2,
+    pub current: Vec2,
+    pub start: Duration,
+}
+
+impl MouseInteraction {
+    pub fn new(position: Vec2, start: Duration) -> Self {
+        Self {
+            origin: position,
+            current: position,
+            start,
+        }
+    }
+
+    pub fn distance(&self) -> f32 {
+        self.origin.distance(self.current)
+    }
+
+    pub fn counts_as_click(&self, current_time: Duration) -> bool {
+        // The average mouse click lasts about 85 milliseconds
+        self.distance() < 0.1 && (current_time - self.start).as_millis() > 100
+    }
+}
+
+#[derive(Default, Reflect, GizmoConfigGroup)]
+pub struct MouseInteractionGizmos;
+
+const RADIUS: f32 = 8.0;
+pub fn draw_mouse_interactions(
+    mut gizmos: Gizmos<MouseInteractionGizmos>,
+    mouse_interaction: Option<Res<MouseInteraction>>,
+    time: Res<Time>,
 ) {
-    const RADIUS: f32 = 8.0;
+    let Some(mouse_interaction) = mouse_interaction else {
+        return;
+    };
 
-    for event in mouse_button_events.read() {
-        if event.button != MouseButton::Left {
-            continue;
-        }
+    if mouse_interaction.counts_as_click(time.elapsed()) {
+        return;
+    }
 
-        // TODO: Multi Selection and stuff
-        if event.state != ButtonState::Pressed {
-            continue;
-        }
+    let size = mouse_interaction.origin - mouse_interaction.current;
+    let origin = mouse_interaction.origin - size * 0.5;
 
-        let Some(cursor_world_pos) = mouse_cursor.world_space else {
-            continue;
-        };
+    gizmos.rect_2d(
+        origin,
+        Rot2::default(),
+        size,
+        bevy::color::palettes::css::YELLOW_GREEN,
+    );
+}
 
-        let entities: Vec<Entity> = selectables
+pub fn update_mouse_interaction(
+    mut mouse_interaction: Option<ResMut<MouseInteraction>>,
+    mouse_cursor: Option<Res<MouseCursor>>,
+    mut event_writer: EventWriter<SelectionChangedEvent>,
+    selectables: Query<(Entity, &Transform), With<SelectableEntity>>,
+    time: Res<Time>,
+) {
+    let Some(mut mouse_interaction) = mouse_interaction else {
+        return;
+    };
+
+    let Some(mouse_cursor) = mouse_cursor else {
+        return;
+    };
+
+    if let Some(world_space) = mouse_cursor.world_space {
+        mouse_interaction.current = world_space;
+    }
+
+    let entities = if mouse_interaction.counts_as_click(time.elapsed()) {
+        // TODO: consider doing this in select_entities on pressed, and just doing nothing here.
+        // Overlap Point
+        selectables
             .iter()
             .filter_map(|(entity, transform)| {
-                let x = cursor_world_pos.x - transform.translation.x;
-                let y = cursor_world_pos.y - transform.translation.y;
+                let x = mouse_interaction.current.x - transform.translation.x;
+                let y = mouse_interaction.current.y - transform.translation.y;
 
                 if x * x + y * y <= RADIUS * RADIUS {
                     Some(entity)
@@ -70,11 +127,61 @@ pub fn select_entities(
                     None
                 }
             })
-            .collect();
+            .collect()
+    } else {
+        // Overlap Rectangle
+        let left = mouse_interaction.origin.x.min(mouse_interaction.current.x);
+        let right = mouse_interaction.origin.x.max(mouse_interaction.current.x);
+        let bottom = mouse_interaction.origin.y.min(mouse_interaction.current.y);
+        let top = mouse_interaction.origin.y.max(mouse_interaction.current.y);
 
-        event_writer.send(SelectionChangedEvent {
-            new_selection: entities,
-        });
+        selectables
+            .iter()
+            .filter_map(|(entity, transform)| {
+                let closest_x = transform.translation.x.max(left).min(right);
+                let closest_y = transform.translation.y.max(bottom).min(top);
+
+                let distance = (transform.translation.x - closest_x).powi(2)
+                    + (transform.translation.y - closest_y).powi(2);
+
+                if distance <= RADIUS * RADIUS {
+                    Some(entity)
+                } else {
+                    None
+                }
+            })
+            .collect()
+    };
+
+    event_writer.send(SelectionChangedEvent {
+        new_selection: entities,
+    });
+}
+
+pub fn select_entities(
+    mut commands: Commands,
+    time: Res<Time>,
+    mouse_cursor: Res<MouseCursor>,
+    mut mouse_button_events: EventReader<MouseButtonInput>,
+) {
+    for event in mouse_button_events.read() {
+        if event.button != MouseButton::Left {
+            continue;
+        }
+
+        let Some(cursor_world_pos) = mouse_cursor.world_space else {
+            continue;
+        };
+
+        match event.state {
+            ButtonState::Pressed => {
+                commands.insert_resource(MouseInteraction::new(cursor_world_pos, time.elapsed()));
+                // TODO: Clear previous selection
+            }
+            ButtonState::Released => {
+                commands.remove_resource::<MouseInteraction>();
+            }
+        }
     }
 }
 
