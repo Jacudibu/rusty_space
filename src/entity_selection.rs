@@ -44,6 +44,7 @@ pub struct MouseInteraction {
     pub origin: Vec2,
     pub current: Vec2,
     pub start: Duration,
+    total_travel: f32,
 }
 
 impl MouseInteraction {
@@ -52,16 +53,24 @@ impl MouseInteraction {
             origin: position,
             current: position,
             start,
+            total_travel: 0.0,
         }
     }
 
-    pub fn distance(&self) -> f32 {
-        self.origin.distance(self.current)
+    pub fn update(&mut self, new_pos: Vec2) {
+        self.total_travel += self.current.distance(new_pos);
+        self.current = new_pos;
     }
 
     pub fn counts_as_click(&self, current_time: Duration) -> bool {
         // The average mouse click lasts about 85 milliseconds
-        self.distance() < 0.1 && (current_time - self.start).as_millis() > 100
+        (current_time - self.start).as_millis() < 100
+    }
+
+    pub fn counts_as_drag(&self, current_time: Duration) -> bool {
+        // TODO: Should make this depend on zoom level
+        // Using logical positions might also be an option, but that would exclude camera movement through
+        !self.counts_as_click(current_time) && self.total_travel > 1.0
     }
 }
 
@@ -78,7 +87,7 @@ pub fn draw_mouse_interactions(
         return;
     };
 
-    if mouse_interaction.counts_as_click(time.elapsed()) {
+    if !mouse_interaction.counts_as_drag(time.elapsed()) {
         return;
     }
 
@@ -94,7 +103,7 @@ pub fn draw_mouse_interactions(
 }
 
 pub fn update_mouse_interaction(
-    mut mouse_interaction: Option<ResMut<MouseInteraction>>,
+    mouse_interaction: Option<ResMut<MouseInteraction>>,
     mouse_cursor: Option<Res<MouseCursor>>,
     mut event_writer: EventWriter<SelectionChangedEvent>,
     selectables: Query<(Entity, &Transform), With<SelectableEntity>>,
@@ -109,26 +118,10 @@ pub fn update_mouse_interaction(
     };
 
     if let Some(world_space) = mouse_cursor.world_space {
-        mouse_interaction.current = world_space;
+        mouse_interaction.update(world_space);
     }
 
-    let entities = if mouse_interaction.counts_as_click(time.elapsed()) {
-        // TODO: consider doing this in select_entities on pressed, and just doing nothing here.
-        // Overlap Point
-        selectables
-            .iter()
-            .filter_map(|(entity, transform)| {
-                let x = mouse_interaction.current.x - transform.translation.x;
-                let y = mouse_interaction.current.y - transform.translation.y;
-
-                if x * x + y * y <= RADIUS * RADIUS {
-                    Some(entity)
-                } else {
-                    None
-                }
-            })
-            .collect()
-    } else {
+    let entities = if mouse_interaction.counts_as_drag(time.elapsed()) {
         // Overlap Rectangle
         let left = mouse_interaction.origin.x.min(mouse_interaction.current.x);
         let right = mouse_interaction.origin.x.max(mouse_interaction.current.x);
@@ -151,6 +144,8 @@ pub fn update_mouse_interaction(
                 }
             })
             .collect()
+    } else {
+        return;
     };
 
     event_writer.send(SelectionChangedEvent {
@@ -158,11 +153,13 @@ pub fn update_mouse_interaction(
     });
 }
 
-pub fn select_entities(
+pub fn process_mouse_clicks(
     mut commands: Commands,
     time: Res<Time>,
     mouse_cursor: Res<MouseCursor>,
     mut mouse_button_events: EventReader<MouseButtonInput>,
+    mut event_writer: EventWriter<SelectionChangedEvent>,
+    selectables: Query<(Entity, &Transform), With<SelectableEntity>>,
 ) {
     for event in mouse_button_events.read() {
         if event.button != MouseButton::Left {
@@ -176,7 +173,24 @@ pub fn select_entities(
         match event.state {
             ButtonState::Pressed => {
                 commands.insert_resource(MouseInteraction::new(cursor_world_pos, time.elapsed()));
-                // TODO: Clear previous selection
+
+                let entities = selectables
+                    .iter()
+                    .filter_map(|(entity, transform)| {
+                        let x = cursor_world_pos.x - transform.translation.x;
+                        let y = cursor_world_pos.y - transform.translation.y;
+
+                        if x * x + y * y <= RADIUS * RADIUS {
+                            Some(entity)
+                        } else {
+                            None
+                        }
+                    })
+                    .collect();
+
+                event_writer.send(SelectionChangedEvent {
+                    new_selection: entities,
+                });
             }
             ButtonState::Released => {
                 commands.remove_resource::<MouseInteraction>();

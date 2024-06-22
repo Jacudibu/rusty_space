@@ -67,10 +67,11 @@ fn main() {
             (
                 camera::move_camera,
                 camera::zoom_camera,
-                entity_selection::select_entities,
+                entity_selection::process_mouse_clicks,
                 entity_selection::update_mouse_interaction,
                 entity_selection::draw_mouse_interactions,
-                entity_selection::on_selection_changed.after(entity_selection::select_entities),
+                entity_selection::on_selection_changed
+                    .after(entity_selection::process_mouse_clicks),
                 ship_ai::handle_idle_ships,
                 ship_ai::run_ship_tasks,
                 ship_ai::complete_tasks.after(ship_ai::run_ship_tasks),
