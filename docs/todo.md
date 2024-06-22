@@ -6,7 +6,7 @@ Too lazy to manage a whole kanban board and issues for these things yet. Roughly
 - ~~Sell & Buy offers should be different components so we can iterate over them at the same time~~
 - ~~Ship AI decides which items to pick up and sell~~
 - Stations reserve goods & storage space for incoming trades... phantom inventories!
-- Dynamic Pricing
+- ~~Dynamic Pricing~~
 
 # Multiple Stations
 
@@ -14,12 +14,16 @@ Too lazy to manage a whole kanban board and issues for these things yet. Roughly
 - ~~Stations can buy and sell only specific items~~
 - ~~Ship AI searches for the best deal~~
 - Ship AI can buy from one seller and plan ahead to sell to multiple buyers at once, within given range
+  We iterate through all offers anyway, might just as well keep an array of the best offers and check if any of them are
+  on route to the final candidate if there's still some storage capacity left.
 
 # Simple Debug UI
 
 We'll have to implement some kind of fake physics for this. Circular colliders should be enough for pretty much
 everything, and I'm scared of testing this with a million entities as long as we don't separate them into sectors. :^)
 
+- ~~Process mouse clicks~~
+- Highlight selected objects
 - Click on station, see storage.
 - Click on ship, see storage and task information. Maybe with an option to cancel the current task to cause some chaos.
 

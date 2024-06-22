@@ -1,11 +1,12 @@
 use crate::data::GameData;
+use crate::mouse_cursor::MouseCursor;
 use bevy::asset::AssetServer;
 use bevy::core::Name;
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::math::Vec3;
 use bevy::prelude::{
-    default, App, Camera2dBundle, Commands, ImagePlugin, IntoSystemConfigs, PluginGroup, Quat, Res,
-    Startup, Transform, Update, Window, WindowPlugin,
+    default, App, Camera2dBundle, Commands, ImagePlugin, IntoSystemConfigs, PluginGroup, PreUpdate,
+    Quat, Res, Startup, Transform, Update, Window, WindowPlugin,
 };
 use bevy::render::camera::ScalingMode;
 use bevy::sprite::SpriteBundle;
@@ -16,11 +17,12 @@ use data::DEBUG_ITEM_ID;
 mod camera;
 mod components;
 mod data;
+mod mouse_cursor;
 mod physics;
 mod ship_ai;
 mod utils;
 
-const SHIP_COUNT: i32 = 1;
+const SHIP_COUNT: i32 = 10000000;
 
 fn get_window_title() -> String {
     let config = if cfg!(debug_assertions) {
@@ -50,10 +52,19 @@ fn main() {
         )
         .add_plugins(FrameTimeDiagnosticsPlugin)
         .add_plugins(LogDiagnosticsPlugin::default())
-        .insert_resource(data::GameData::mock_data())
+        .insert_resource(GameData::mock_data())
+        .insert_resource(MouseCursor::default())
         .add_event::<ship_ai::TaskFinishedEvent>()
         .add_systems(Startup, on_startup)
-        .add_systems(Update, (camera::move_camera, camera::zoom_camera))
+        .add_systems(PreUpdate, mouse_cursor::update_cursor_position)
+        .add_systems(
+            Update,
+            (
+                camera::move_camera,
+                camera::zoom_camera,
+                mouse_cursor::select_entities,
+            ),
+        )
         .add_systems(
             Update,
             (
