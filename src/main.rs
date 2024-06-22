@@ -1,3 +1,4 @@
+use crate::data::GameData;
 use bevy::asset::AssetServer;
 use bevy::core::Name;
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
@@ -65,7 +66,11 @@ fn main() {
         .run();
 }
 
-pub fn on_startup(mut commands: Commands, asset_server: Res<AssetServer>) {
+pub fn on_startup(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    game_data: Res<GameData>,
+) {
     let mut camera_bundle = Camera2dBundle::default();
     camera_bundle.projection.scaling_mode = ScalingMode::WindowSize(1.0);
     commands.spawn((Name::new("Camera"), camera::MainCamera, camera_bundle));
@@ -78,7 +83,7 @@ pub fn on_startup(mut commands: Commands, asset_server: Res<AssetServer>) {
             ..default()
         },
         Storage::new(u32::MAX / 10),
-        BuyOrders::mock_buying_item(DEBUG_ITEM_ID),
+        BuyOrders::mock_buying_item(&game_data.items[&DEBUG_ITEM_ID]),
     ));
 
     let mut filled_storage = Storage::new(u32::MAX / 10);
@@ -92,7 +97,7 @@ pub fn on_startup(mut commands: Commands, asset_server: Res<AssetServer>) {
             ..default()
         },
         filled_storage,
-        SellOrders::mock_selling_item(DEBUG_ITEM_ID),
+        SellOrders::mock_selling_item(&game_data.items[&DEBUG_ITEM_ID]),
     ));
 
     for i in 0..SHIP_COUNT {
