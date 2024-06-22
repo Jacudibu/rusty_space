@@ -21,6 +21,14 @@ impl Storage {
         self.inventory.iter().fold(0, |acc, (_, value)| acc + value)
     }
 
+    pub fn get_item_amount(&self, item_id: &ItemId) -> u32 {
+        if let Some(amount) = self.inventory.get(item_id) {
+            *amount
+        } else {
+            0
+        }
+    }
+
     pub fn add_item(&mut self, item_id: ItemId, amount: u32) {
         if self.inventory.contains_key(&item_id) {
             *self.inventory.get_mut(&item_id).unwrap() += amount;

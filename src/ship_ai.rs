@@ -1,10 +1,12 @@
 use crate::components::{
-    Engine, ExchangeWareData, ShipBehavior, ShipTask, Storage, TaskQueue, TradeHub, Velocity,
+    BuyOrders, Engine, ExchangeWareData, SellOrders, ShipBehavior, ShipTask, Storage, TaskQueue,
+    Velocity,
 };
-use crate::ids::DEBUG_ITEM_ID;
+use crate::ids::{ItemId, DEBUG_ITEM_ID};
 use bevy::math::EulerRot;
 use bevy::prelude::{
-    error, Commands, Entity, Event, EventReader, EventWriter, Query, Res, Time, Transform, Without,
+    error, warn, Commands, Entity, Event, EventReader, EventWriter, Query, Res, Time, Transform,
+    Without,
 };
 use std::collections::VecDeque;
 use std::sync::{Arc, Mutex};
@@ -116,6 +118,8 @@ pub fn complete_tasks(
     mut query: Query<&mut TaskQueue>,
     mut commands: Commands,
     mut all_storages: Query<&mut Storage>,
+    mut all_buy_orders: Query<&mut BuyOrders>,
+    mut all_sell_orders: Query<&mut SellOrders>,
 ) {
     let item_id = DEBUG_ITEM_ID;
     for event in event_reader.read() {
@@ -125,16 +129,30 @@ pub fn complete_tasks(
                 ShipTask::MoveTo(_) => {}
                 ShipTask::ExchangeWares(other, data) => {
                     match all_storages.get_many_mut([event.entity, other]) {
-                        Ok([mut this, mut other]) => match data {
-                            ExchangeWareData::Buy(amount) => {
-                                this.add_item(item_id, amount);
-                                other.remove_item(item_id, amount);
+                        Ok([mut this_storage, mut other_storage]) => {
+                            match data {
+                                ExchangeWareData::Buy(amount) => {
+                                    this_storage.add_item(item_id, amount);
+                                    other_storage.remove_item(item_id, amount);
+                                }
+                                ExchangeWareData::Sell(amount) => {
+                                    this_storage.remove_item(item_id, amount);
+                                    other_storage.add_item(item_id, amount);
+                                }
                             }
-                            ExchangeWareData::Sell(amount) => {
-                                this.remove_item(item_id, amount);
-                                other.add_item(item_id, amount);
+                            if let Ok(mut buy_orders) = all_buy_orders.get_mut(other) {
+                                buy_orders.update(&other_storage);
                             }
-                        },
+                            if let Ok(mut buy_orders) = all_buy_orders.get_mut(event.entity) {
+                                buy_orders.update(&this_storage);
+                            }
+                            if let Ok(mut sell_orders) = all_sell_orders.get_mut(other) {
+                                sell_orders.update(&other_storage);
+                            }
+                            if let Ok(mut sell_orders) = all_sell_orders.get_mut(event.entity) {
+                                sell_orders.update(&this_storage);
+                            }
+                        }
                         Err(e) => {
                             error!(
                                 "Failed to execute ware exchange between {} and {other}: {:?}",
@@ -156,7 +174,8 @@ pub fn complete_tasks(
 pub fn handle_idle_ships(
     mut commands: Commands,
     ships: Query<(Entity, &ShipBehavior, &Storage), Without<TaskQueue>>,
-    trade_hubs: Query<(Entity, &TradeHub, &Storage)>,
+    buy_orders: Query<(Entity, &BuyOrders)>,
+    sell_orders: Query<(Entity, &SellOrders)>,
 ) {
     ships
         .iter()
@@ -167,24 +186,80 @@ pub fn handle_idle_ships(
                 });
             }
             ShipBehavior::AutoTrade(data) => {
-                // TODO: dynamically match sell & buy offers
-                let best_offer_amount = 1000;
-                let (seller_entity, _, _) =
-                    trade_hubs.iter().find(|(_, hub, _)| hub.selling).unwrap();
-                let (buyer_entity, _, _) =
-                    trade_hubs.iter().find(|(_, hub, _)| hub.buying).unwrap();
-
-                let amount = (storage.capacity - storage.used()).min(best_offer_amount);
-
-                // TODO: Actually buy and sell stuff. Also consider reserving goods so we don't get ten ships doing the same thing.
-                commands.entity(entity).insert(TaskQueue {
-                    queue: VecDeque::from(vec![
-                        ShipTask::MoveTo(seller_entity),
-                        ShipTask::ExchangeWares(seller_entity, ExchangeWareData::Buy(amount)),
-                        ShipTask::MoveTo(buyer_entity),
-                        ShipTask::ExchangeWares(seller_entity, ExchangeWareData::Sell(amount)),
-                    ]),
-                });
+                let plan = TradePlan::create_from(storage.capacity, &buy_orders, &sell_orders);
+                if let Some(plan) = plan {
+                    commands.entity(entity).insert(TaskQueue {
+                        queue: VecDeque::from(vec![
+                            ShipTask::MoveTo(plan.seller),
+                            ShipTask::ExchangeWares(
+                                plan.seller,
+                                ExchangeWareData::Buy(plan.amount),
+                            ),
+                            ShipTask::MoveTo(plan.buyer),
+                            ShipTask::ExchangeWares(
+                                plan.seller,
+                                ExchangeWareData::Sell(plan.amount),
+                            ),
+                        ]),
+                    });
+                } else {
+                    warn!("Was unable to find a trade plan for {:?}", entity);
+                }
             }
         });
+}
+
+struct TradePlan {
+    item_id: ItemId,
+    amount: u32,
+    profit: u32,
+    seller: Entity,
+    buyer: Entity,
+}
+
+impl TradePlan {
+    pub fn create_from(
+        storage_capacity: u32,
+        buy_orders: &Query<(Entity, &BuyOrders)>,
+        sell_orders: &Query<(Entity, &SellOrders)>,
+    ) -> Option<Self> {
+        let mut best_offer: Option<TradePlan> = None;
+
+        for (buyer, buy_orders) in buy_orders.iter() {
+            for (seller, sell_orders) in sell_orders.iter() {
+                if buyer == seller {
+                    continue;
+                }
+
+                for (item_id, buy_order) in &buy_orders.orders {
+                    if let Some(sell_order) = sell_orders.orders.get(item_id) {
+                        if sell_order.price >= buy_order.price {
+                            continue;
+                        }
+
+                        let amount = storage_capacity.min(buy_order.amount.min(sell_order.amount));
+                        let profit = (buy_order.price - sell_order.price) * amount;
+
+                        let is_this_a_better_offer = if let Some(existing_offer) = &best_offer {
+                            profit > existing_offer.profit
+                        } else {
+                            true
+                        };
+
+                        if is_this_a_better_offer {
+                            best_offer = Some(TradePlan {
+                                item_id: *item_id,
+                                amount,
+                                profit,
+                                seller,
+                                buyer,
+                            });
+                        }
+                    }
+                }
+            }
+        }
+
+        best_offer
+    }
 }

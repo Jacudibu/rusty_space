@@ -75,15 +75,12 @@ pub fn on_startup(mut commands: Commands, asset_server: Res<AssetServer>) {
             transform: Transform::from_xyz(-200.0, -200.0, STATION_LAYER),
             ..default()
         },
-        Storage::new(100000000),
-        TradeHub {
-            buying: true,
-            selling: false,
-        },
+        Storage::new(u32::MAX / 10),
+        BuyOrders::mock_buying_item(DEBUG_ITEM_ID),
     ));
 
-    let mut filled_storage = Storage::new(u32::MAX);
-    filled_storage.add_item(DEBUG_ITEM_ID, u32::MAX);
+    let mut filled_storage = Storage::new(u32::MAX / 10);
+    filled_storage.add_item(DEBUG_ITEM_ID, u32::MAX / 10);
 
     commands.spawn((
         Name::new("Station B"),
@@ -93,10 +90,7 @@ pub fn on_startup(mut commands: Commands, asset_server: Res<AssetServer>) {
             ..default()
         },
         filled_storage,
-        TradeHub {
-            buying: false,
-            selling: true,
-        },
+        SellOrders::mock_selling_item(DEBUG_ITEM_ID),
     ));
 
     for i in 0..SHIP_COUNT {

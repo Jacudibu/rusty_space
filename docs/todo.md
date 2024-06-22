@@ -11,6 +11,7 @@ Too lazy to manage a whole kanban board and issues for these things yet. Roughly
 
 - Stations can buy and sell only specific items
 - Ship AI searches for the best deal
+- Ship AI can buy from one seller and plan ahead to sell to multiple buyers at once
 
 # Simple Debug UI
 
@@ -37,3 +38,9 @@ everything, and I'm scared of testing this with a million entities as long as we
 Just synchronizing task creation and sector transitions should be enough to allow multiplayer to work on a cooperative
 level. If we ever add combat, the required physics could be simulated just on the host's machine, which then sends
 damage events over the network.
+
+# Factions
+
+Different factions may claim sectors and may or may not like each other.
+Since storage space will always be reserved for each individual delivery, missed and delayed deliveries could
+dynamically decrease faction standing.
