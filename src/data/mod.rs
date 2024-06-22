@@ -1,6 +1,6 @@
 mod item;
 
-use crate::data::item::PriceRange;
+use crate::utils::PriceRange;
 use bevy::prelude::Resource;
 use bevy::utils::HashMap;
 pub use item::{ItemDefinition, ItemId, DEBUG_ITEM_ID};

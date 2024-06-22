@@ -1,5 +1,6 @@
 use crate::components::Storage;
 use crate::data::ItemId;
+use crate::utils::PriceRange;
 use bevy::prelude::Component;
 use bevy::utils::HashMap;
 
@@ -87,6 +88,20 @@ impl SellOrderData {
             self.amount = 0;
         } else {
             self.amount = stored_amount - self.keep_at_least;
+        }
+    }
+}
+
+pub enum OrderPrice {
+    Fixed(u32),
+    Dynamic(PriceRange),
+}
+
+impl OrderPrice {
+    pub fn get(&self, storage: u32, capacity: u32) -> u32 {
+        match self {
+            OrderPrice::Fixed(value) => *value,
+            OrderPrice::Dynamic(range) => range.calculate(storage as f32 / capacity as f32),
         }
     }
 }

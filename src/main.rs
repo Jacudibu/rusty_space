@@ -15,9 +15,9 @@ use data::DEBUG_ITEM_ID;
 mod camera;
 mod components;
 mod data;
-mod ids;
 mod physics;
 mod ship_ai;
+mod utils;
 
 const SHIP_COUNT: i32 = 1;
 
