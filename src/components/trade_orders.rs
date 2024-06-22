@@ -1,5 +1,5 @@
 use crate::components::Storage;
-use crate::ids::ItemId;
+use crate::data::ItemId;
 use bevy::prelude::Component;
 use bevy::utils::HashMap;
 

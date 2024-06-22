@@ -2,7 +2,7 @@ use crate::components::{
     BuyOrders, Engine, ExchangeWareData, SellOrders, ShipBehavior, ShipTask, Storage, TaskQueue,
     Velocity,
 };
-use crate::ids::{ItemId, DEBUG_ITEM_ID};
+use crate::data::{ItemId, DEBUG_ITEM_ID};
 use bevy::math::EulerRot;
 use bevy::prelude::{
     error, warn, Commands, Entity, Event, EventReader, EventWriter, Query, Res, Time, Transform,

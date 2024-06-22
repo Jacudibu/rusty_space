@@ -1,4 +1,4 @@
-use crate::ids::ItemId;
+use crate::data::ItemId;
 use bevy::log::error;
 use bevy::prelude::Component;
 use bevy::utils::HashMap;

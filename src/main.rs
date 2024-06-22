@@ -1,4 +1,3 @@
-use crate::ids::DEBUG_ITEM_ID;
 use bevy::asset::AssetServer;
 use bevy::core::Name;
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
@@ -11,9 +10,11 @@ use bevy::render::camera::ScalingMode;
 use bevy::sprite::SpriteBundle;
 use bevy::DefaultPlugins;
 use components::*;
+use data::DEBUG_ITEM_ID;
 
 mod camera;
 mod components;
+mod data;
 mod ids;
 mod physics;
 mod ship_ai;
@@ -48,6 +49,7 @@ fn main() {
         )
         .add_plugins(FrameTimeDiagnosticsPlugin)
         .add_plugins(LogDiagnosticsPlugin::default())
+        .insert_resource(data::GameData::mock_data())
         .add_event::<ship_ai::TaskFinishedEvent>()
         .add_systems(Startup, on_startup)
         .add_systems(Update, (camera::move_camera, camera::zoom_camera))
