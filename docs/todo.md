@@ -3,6 +3,7 @@ Too lazy to manage a whole kanban board and issues for these things yet. Roughly
 # Improved Trading
 
 - Add (more) Items
+- Sell & Buy offers should be different components so we can iterate over them at the same time
 - Ship AI decides which items to pick up and sell
 - Stations reserve goods & storage space for incoming trades
 
@@ -30,3 +31,9 @@ everything, and I'm scared of testing this with a million entities as long as we
 - Draw lines between gates
 - Draw borders around sectors
 - UI should display the name of the sector that's currently being hovered over
+
+# Multiplayer
+
+Just synchronizing task creation and sector transitions should be enough to allow multiplayer to work on a cooperative
+level. If we ever add combat, the required physics could be simulated just on the host's machine, which then sends
+damage events over the network.

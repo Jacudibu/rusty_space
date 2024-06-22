@@ -1,3 +1,4 @@
+use crate::ids::DEBUG_ITEM_ID;
 use bevy::asset::AssetServer;
 use bevy::core::Name;
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
@@ -13,10 +14,11 @@ use components::*;
 
 mod camera;
 mod components;
+mod ids;
 mod physics;
 mod ship_ai;
 
-const SHIP_COUNT: i32 = 1000000;
+const SHIP_COUNT: i32 = 1;
 
 fn get_window_title() -> String {
     let config = if cfg!(debug_assertions) {
@@ -80,6 +82,9 @@ pub fn on_startup(mut commands: Commands, asset_server: Res<AssetServer>) {
         },
     ));
 
+    let mut filled_storage = Storage::new(u32::MAX);
+    filled_storage.add_item(DEBUG_ITEM_ID, u32::MAX);
+
     commands.spawn((
         Name::new("Station B"),
         SpriteBundle {
@@ -87,10 +92,7 @@ pub fn on_startup(mut commands: Commands, asset_server: Res<AssetServer>) {
             transform: Transform::from_xyz(200.0, 200.0, STATION_LAYER),
             ..default()
         },
-        Storage {
-            capacity: 100000000,
-            used: 100000000,
-        },
+        filled_storage,
         TradeHub {
             buying: false,
             selling: true,

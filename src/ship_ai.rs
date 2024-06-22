@@ -1,6 +1,7 @@
 use crate::components::{
     Engine, ExchangeWareData, ShipBehavior, ShipTask, Storage, TaskQueue, TradeHub, Velocity,
 };
+use crate::ids::DEBUG_ITEM_ID;
 use bevy::math::EulerRot;
 use bevy::prelude::{
     error, Commands, Entity, Event, EventReader, EventWriter, Query, Res, Time, Transform, Without,
@@ -116,6 +117,7 @@ pub fn complete_tasks(
     mut commands: Commands,
     mut all_storages: Query<&mut Storage>,
 ) {
+    let item_id = DEBUG_ITEM_ID;
     for event in event_reader.read() {
         if let Ok(mut task_queue) = query.get_mut(event.entity) {
             match task_queue.queue.pop_front().unwrap() {
@@ -125,12 +127,12 @@ pub fn complete_tasks(
                     match all_storages.get_many_mut([event.entity, other]) {
                         Ok([mut this, mut other]) => match data {
                             ExchangeWareData::Buy(amount) => {
-                                this.used += amount;
-                                other.used -= amount;
+                                this.add_item(item_id, amount);
+                                other.remove_item(item_id, amount);
                             }
                             ExchangeWareData::Sell(amount) => {
-                                this.used -= amount;
-                                other.used += amount;
+                                this.remove_item(item_id, amount);
+                                other.add_item(item_id, amount);
                             }
                         },
                         Err(e) => {
@@ -172,7 +174,7 @@ pub fn handle_idle_ships(
                 let (buyer_entity, _, _) =
                     trade_hubs.iter().find(|(_, hub, _)| hub.buying).unwrap();
 
-                let amount = (storage.capacity - storage.used).min(best_offer_amount);
+                let amount = (storage.capacity - storage.used()).min(best_offer_amount);
 
                 // TODO: Actually buy and sell stuff. Also consider reserving goods so we don't get ten ships doing the same thing.
                 commands.entity(entity).insert(TaskQueue {
