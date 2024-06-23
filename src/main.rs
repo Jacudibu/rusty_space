@@ -6,9 +6,9 @@ use bevy::core::Name;
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::math::Vec3;
 use bevy::prelude::{
-    default, App, AppGizmoBuilder, Camera2dBundle, Commands, Handle, Image, ImagePlugin,
-    IntoSystemConfigs, PluginGroup, PreUpdate, Quat, Res, Resource, Startup, Transform, Update,
-    Window, WindowPlugin,
+    default, App, AppExtStates, AppGizmoBuilder, Camera2dBundle, Commands, Handle, Image,
+    ImagePlugin, IntoSystemConfigs, PluginGroup, PreUpdate, Quat, Res, Resource, Startup,
+    Transform, Update, Window, WindowPlugin,
 };
 use bevy::render::camera::ScalingMode;
 use bevy::sprite::SpriteBundle;
@@ -59,9 +59,16 @@ fn main() {
     .insert_resource(GameData::mock_data())
     .insert_resource(MouseCursor::default())
     .init_gizmo_group::<MouseInteractionGizmos>()
+    .init_state::<gui::MouseCursorOverUiState>()
     .add_event::<ship_ai::TaskFinishedEvent>()
     .add_systems(Startup, (on_startup, gui::initialize.after(on_startup)))
-    .add_systems(PreUpdate, entity_selection::update_cursor_position)
+    .add_systems(
+        PreUpdate,
+        (
+            entity_selection::update_cursor_position,
+            gui::detect_mouse_cursor_over_ui,
+        ),
+    )
     .add_systems(
         Update,
         (

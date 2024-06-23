@@ -1,4 +1,5 @@
 use crate::components::SelectableEntity;
+use crate::gui::MouseCursorOverUiState;
 use crate::mouse_cursor::MouseCursor;
 use crate::{physics, SpriteHandles};
 use bevy::asset::Handle;
@@ -8,7 +9,7 @@ use bevy::math::Rot2;
 use bevy::prelude::{
     Added, Camera, Commands, Component, Entity, EventReader, GizmoConfigGroup, Gizmos,
     GlobalTransform, Image, MouseButton, Query, Reflect, RemovedComponents, Res, ResMut, Resource,
-    Time, Transform, Vec2, Window, With, Without,
+    State, Time, Transform, Vec2, Window, With, Without,
 };
 use std::time::Duration;
 
@@ -161,6 +162,7 @@ pub fn process_mouse_clicks(
     mut mouse_button_events: EventReader<MouseButtonInput>,
     selectables: Query<(Entity, &Transform), With<SelectableEntity>>,
     selected_entities: Query<Entity, With<Selected>>,
+    mouse_cursor_over_ui_state: Res<State<MouseCursorOverUiState>>,
 ) {
     for event in mouse_button_events.read() {
         if event.button != MouseButton::Left {
@@ -173,6 +175,10 @@ pub fn process_mouse_clicks(
 
         match event.state {
             ButtonState::Pressed => {
+                if mouse_cursor_over_ui_state.get() == &MouseCursorOverUiState::OverUI {
+                    return;
+                }
+
                 commands.insert_resource(MouseInteraction::new(cursor_world_pos, time.elapsed()));
                 let cursor_world_pos = cursor_world_pos.extend(0.0);
 

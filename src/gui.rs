@@ -1,7 +1,7 @@
 use crate::components::SelectableEntity;
 use crate::entity_selection::Selected;
 use crate::SpriteHandles;
-use bevy::prelude::{Commands, Query, Res, Resource, With};
+use bevy::prelude::{Commands, NextState, Query, Res, ResMut, Resource, State, States, With};
 use bevy_egui::egui::load::SizedTexture;
 use bevy_egui::egui::Align2;
 use bevy_egui::{egui, EguiContexts};
@@ -69,4 +69,25 @@ pub fn list_selection(
                 }
             });
         });
+}
+
+#[derive(Debug, Clone, Copy, Default, Eq, PartialEq, Hash, States)]
+pub enum MouseCursorOverUiState {
+    #[default]
+    NotOverUI,
+    OverUI,
+}
+
+pub fn detect_mouse_cursor_over_ui(
+    mut egui: EguiContexts,
+    current_mouse_state: Res<State<MouseCursorOverUiState>>,
+    mut next_state: ResMut<NextState<MouseCursorOverUiState>>,
+) {
+    if egui.ctx_mut().is_pointer_over_area() {
+        if current_mouse_state.get() != &MouseCursorOverUiState::OverUI {
+            next_state.set(MouseCursorOverUiState::OverUI);
+        }
+    } else if current_mouse_state.get() != &MouseCursorOverUiState::NotOverUI {
+        next_state.set(MouseCursorOverUiState::NotOverUI);
+    }
 }
