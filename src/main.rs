@@ -41,44 +41,47 @@ const SHIP_LAYER: f32 = 10.0;
 const STATION_LAYER: f32 = 5.0;
 
 fn main() {
-    App::new()
-        .add_plugins(
-            DefaultPlugins
-                .set(WindowPlugin {
-                    primary_window: Some(Window {
-                        title: get_window_title(),
-                        ..Default::default()
-                    }),
+    let mut app = App::new();
+    app.add_plugins(
+        DefaultPlugins
+            .set(WindowPlugin {
+                primary_window: Some(Window {
+                    title: get_window_title(),
                     ..Default::default()
-                })
-                .set(ImagePlugin::default_nearest()),
-        )
-        .add_plugins(FrameTimeDiagnosticsPlugin)
-        .add_plugins(LogDiagnosticsPlugin::default())
-        .insert_resource(GameData::mock_data())
-        .insert_resource(MouseCursor::default())
-        .init_gizmo_group::<MouseInteractionGizmos>()
-        .add_event::<ship_ai::TaskFinishedEvent>()
-        .add_event::<entity_selection::SelectionChangedEvent>()
-        .add_systems(Startup, on_startup)
-        .add_systems(PreUpdate, entity_selection::update_cursor_position)
-        .add_systems(
-            Update,
-            (
-                camera::move_camera,
-                camera::zoom_camera,
-                entity_selection::process_mouse_clicks,
-                entity_selection::update_mouse_interaction,
-                entity_selection::draw_mouse_interactions,
-                entity_selection::on_selection_changed
-                    .after(entity_selection::process_mouse_clicks),
-                ship_ai::handle_idle_ships,
-                ship_ai::run_ship_tasks,
-                ship_ai::complete_tasks.after(ship_ai::run_ship_tasks),
-                physics::move_things.after(ship_ai::run_ship_tasks),
-            ),
-        )
-        .run();
+                }),
+                ..Default::default()
+            })
+            .set(ImagePlugin::default_nearest()),
+    )
+    .insert_resource(GameData::mock_data())
+    .insert_resource(MouseCursor::default())
+    .init_gizmo_group::<MouseInteractionGizmos>()
+    .add_event::<ship_ai::TaskFinishedEvent>()
+    .add_event::<entity_selection::SelectionChangedEvent>()
+    .add_systems(Startup, on_startup)
+    .add_systems(PreUpdate, entity_selection::update_cursor_position)
+    .add_systems(
+        Update,
+        (
+            camera::move_camera,
+            camera::zoom_camera,
+            entity_selection::process_mouse_clicks,
+            entity_selection::update_mouse_interaction,
+            entity_selection::draw_mouse_interactions,
+            entity_selection::on_selection_changed.after(entity_selection::process_mouse_clicks),
+            ship_ai::handle_idle_ships,
+            ship_ai::run_ship_tasks,
+            ship_ai::complete_tasks.after(ship_ai::run_ship_tasks),
+            physics::move_things.after(ship_ai::run_ship_tasks),
+        ),
+    );
+
+    if SHIP_COUNT > 10000 {
+        app.add_plugins(FrameTimeDiagnosticsPlugin)
+            .add_plugins(LogDiagnosticsPlugin::default());
+    }
+
+    app.run();
 }
 
 #[derive(Resource)]
