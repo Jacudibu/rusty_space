@@ -1,6 +1,6 @@
 use crate::components::SelectableEntity;
 use crate::mouse_cursor::MouseCursor;
-use crate::SpriteHandles;
+use crate::{physics, SpriteHandles};
 use bevy::asset::Handle;
 use bevy::input::mouse::MouseButtonInput;
 use bevy::input::ButtonState;
@@ -122,7 +122,6 @@ pub fn update_mouse_interaction(
     }
 
     let entities = if mouse_interaction.counts_as_drag(time.elapsed()) {
-        // Overlap Rectangle
         let left = mouse_interaction.origin.x.min(mouse_interaction.current.x);
         let right = mouse_interaction.origin.x.max(mouse_interaction.current.x);
         let bottom = mouse_interaction.origin.y.min(mouse_interaction.current.y);
@@ -131,13 +130,14 @@ pub fn update_mouse_interaction(
         selectables
             .iter()
             .filter_map(|(entity, transform)| {
-                let closest_x = transform.translation.x.max(left).min(right);
-                let closest_y = transform.translation.y.max(bottom).min(top);
-
-                let distance = (transform.translation.x - closest_x).powi(2)
-                    + (transform.translation.y - closest_y).powi(2);
-
-                if distance <= RADIUS * RADIUS {
+                if physics::overlap_rectangle_with_circle_axis_aligned(
+                    left,
+                    right,
+                    bottom,
+                    top,
+                    transform.translation,
+                    RADIUS * RADIUS,
+                ) {
                     Some(entity)
                 } else {
                     None
@@ -173,14 +173,17 @@ pub fn process_mouse_clicks(
         match event.state {
             ButtonState::Pressed => {
                 commands.insert_resource(MouseInteraction::new(cursor_world_pos, time.elapsed()));
+                let cursor_world_pos = cursor_world_pos.extend(0.0);
 
                 let entities = selectables
                     .iter()
                     .filter_map(|(entity, transform)| {
-                        let x = cursor_world_pos.x - transform.translation.x;
-                        let y = cursor_world_pos.y - transform.translation.y;
-
-                        if x * x + y * y <= RADIUS * RADIUS {
+                        if physics::overlap_circle_with_circle(
+                            cursor_world_pos,
+                            RADIUS,
+                            transform.translation,
+                            RADIUS,
+                        ) {
                             Some(entity)
                         } else {
                             None
