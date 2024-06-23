@@ -13,6 +13,7 @@ use bevy::prelude::{
 use bevy::render::camera::ScalingMode;
 use bevy::sprite::SpriteBundle;
 use bevy::DefaultPlugins;
+use bevy_egui::EguiPlugin;
 use components::*;
 use data::DEBUG_ITEM_ID;
 
@@ -20,6 +21,7 @@ mod camera;
 mod components;
 mod data;
 mod entity_selection;
+mod gui;
 mod mouse_cursor;
 mod physics;
 mod ship_ai;
@@ -53,15 +55,17 @@ fn main() {
             })
             .set(ImagePlugin::default_nearest()),
     )
+    .add_plugins(EguiPlugin)
     .insert_resource(GameData::mock_data())
     .insert_resource(MouseCursor::default())
     .init_gizmo_group::<MouseInteractionGizmos>()
     .add_event::<ship_ai::TaskFinishedEvent>()
-    .add_systems(Startup, on_startup)
+    .add_systems(Startup, (on_startup, gui::initialize.after(on_startup)))
     .add_systems(PreUpdate, entity_selection::update_cursor_position)
     .add_systems(
         Update,
         (
+            gui::list_selection,
             camera::move_camera,
             camera::zoom_camera,
             entity_selection::process_mouse_clicks,
