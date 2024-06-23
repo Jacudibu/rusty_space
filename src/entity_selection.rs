@@ -6,21 +6,14 @@ use bevy::input::mouse::MouseButtonInput;
 use bevy::input::ButtonState;
 use bevy::math::Rot2;
 use bevy::prelude::{
-    Camera, Commands, Entity, Event, EventReader, EventWriter, GizmoConfigGroup, Gizmos,
-    GlobalTransform, Image, MouseButton, Query, Reflect, Res, ResMut, Resource, Time, Transform,
-    Vec2, Window, With,
+    Added, Camera, Commands, Component, Entity, Event, EventReader, GizmoConfigGroup, Gizmos,
+    GlobalTransform, Image, MouseButton, Query, Reflect, RemovedComponents, Res, ResMut, Resource,
+    Time, Transform, Vec2, Window, With, Without,
 };
 use std::time::Duration;
 
-#[derive(Event)]
-pub struct SelectionChangedEvent {
-    pub new_selection: Vec<Entity>,
-}
-
-#[derive(Resource)]
-pub struct SelectedEntities {
-    pub entities: Vec<Entity>,
-}
+#[derive(Component)]
+pub struct Selected {}
 
 pub fn update_cursor_position(
     windows: Query<&Window>,
@@ -103,10 +96,11 @@ pub fn draw_mouse_interactions(
 }
 
 pub fn update_mouse_interaction(
+    mut commands: Commands,
     mouse_interaction: Option<ResMut<MouseInteraction>>,
     mouse_cursor: Option<Res<MouseCursor>>,
-    mut event_writer: EventWriter<SelectionChangedEvent>,
-    selectables: Query<(Entity, &Transform), With<SelectableEntity>>,
+    unselected_entities: Query<(Entity, &Transform), (With<SelectableEntity>, Without<Selected>)>,
+    selected_entities: Query<(Entity, &Transform), (With<SelectableEntity>, With<Selected>)>,
     time: Res<Time>,
 ) {
     let Some(mut mouse_interaction) = mouse_interaction else {
@@ -121,36 +115,44 @@ pub fn update_mouse_interaction(
         mouse_interaction.update(world_space);
     }
 
-    let entities = if mouse_interaction.counts_as_drag(time.elapsed()) {
+    if mouse_interaction.counts_as_drag(time.elapsed()) {
         let left = mouse_interaction.origin.x.min(mouse_interaction.current.x);
         let right = mouse_interaction.origin.x.max(mouse_interaction.current.x);
         let bottom = mouse_interaction.origin.y.min(mouse_interaction.current.y);
         let top = mouse_interaction.origin.y.max(mouse_interaction.current.y);
 
-        selectables
+        unselected_entities
             .iter()
-            .filter_map(|(entity, transform)| {
-                if physics::overlap_rectangle_with_circle_axis_aligned(
+            .filter(|(_, transform)| {
+                physics::overlap_rectangle_with_circle_axis_aligned(
                     left,
                     right,
                     bottom,
                     top,
                     transform.translation,
                     RADIUS * RADIUS,
-                ) {
-                    Some(entity)
-                } else {
-                    None
-                }
+                )
             })
-            .collect()
-    } else {
-        return;
-    };
+            .for_each(|(entity, _)| {
+                commands.entity(entity).insert(Selected {});
+            });
 
-    event_writer.send(SelectionChangedEvent {
-        new_selection: entities,
-    });
+        selected_entities
+            .iter()
+            .filter(|(_, transform)| {
+                !physics::overlap_rectangle_with_circle_axis_aligned(
+                    left,
+                    right,
+                    bottom,
+                    top,
+                    transform.translation,
+                    RADIUS * RADIUS,
+                )
+            })
+            .for_each(|(entity, _)| {
+                commands.entity(entity).remove::<Selected>();
+            });
+    }
 }
 
 pub fn process_mouse_clicks(
@@ -158,8 +160,8 @@ pub fn process_mouse_clicks(
     time: Res<Time>,
     mouse_cursor: Res<MouseCursor>,
     mut mouse_button_events: EventReader<MouseButtonInput>,
-    mut event_writer: EventWriter<SelectionChangedEvent>,
     selectables: Query<(Entity, &Transform), With<SelectableEntity>>,
+    selected_entities: Query<Entity, With<Selected>>,
 ) {
     for event in mouse_button_events.read() {
         if event.button != MouseButton::Left {
@@ -175,25 +177,23 @@ pub fn process_mouse_clicks(
                 commands.insert_resource(MouseInteraction::new(cursor_world_pos, time.elapsed()));
                 let cursor_world_pos = cursor_world_pos.extend(0.0);
 
-                let entities = selectables
+                for entity in selected_entities.iter() {
+                    commands.entity(entity).remove::<Selected>();
+                }
+
+                selectables
                     .iter()
-                    .filter_map(|(entity, transform)| {
-                        if physics::overlap_circle_with_circle(
+                    .filter(|(_, transform)| {
+                        physics::overlap_circle_with_circle(
                             cursor_world_pos,
                             RADIUS,
                             transform.translation,
                             RADIUS,
-                        ) {
-                            Some(entity)
-                        } else {
-                            None
-                        }
+                        )
                     })
-                    .collect();
-
-                event_writer.send(SelectionChangedEvent {
-                    new_selection: entities,
-                });
+                    .for_each(|(entity, _)| {
+                        commands.entity(entity).insert(Selected {});
+                    });
             }
             ButtonState::Released => {
                 commands.remove_resource::<MouseInteraction>();
@@ -203,46 +203,26 @@ pub fn process_mouse_clicks(
 }
 
 pub fn on_selection_changed(
-    mut commands: Commands,
     mut selectables: Query<(&SelectableEntity, &mut Handle<Image>)>,
-    old_selection: Option<Res<SelectedEntities>>,
-    mut event: EventReader<SelectionChangedEvent>,
+    new_selections: Query<Entity, Added<Selected>>,
+    mut removed_selections: RemovedComponents<Selected>,
     sprite_handles: Res<SpriteHandles>,
 ) {
-    let Some(event) = event.read().last() else {
-        return;
-    };
-
-    if old_selection.is_none() && event.new_selection.is_empty() {
-        return;
-    }
-
-    if let Some(old_selection) = old_selection {
-        for entity in &old_selection.entities {
-            if let Ok((selectable, mut handle)) = selectables.get_mut(*entity) {
-                *handle = match selectable {
-                    SelectableEntity::Station => sprite_handles.station.clone(),
-                    SelectableEntity::Ship => sprite_handles.ship.clone(),
-                }
+    for entity in removed_selections.read() {
+        if let Ok((selectable, mut handle)) = selectables.get_mut(entity) {
+            *handle = match selectable {
+                SelectableEntity::Station => sprite_handles.station.clone(),
+                SelectableEntity::Ship => sprite_handles.ship.clone(),
             }
         }
     }
 
-    if event.new_selection.is_empty() {
-        commands.remove_resource::<SelectedEntities>();
-        return;
-    }
-
-    for entity in &event.new_selection {
-        if let Ok((selectable, mut handle)) = selectables.get_mut(*entity) {
+    for entity in new_selections.iter() {
+        if let Ok((selectable, mut handle)) = selectables.get_mut(entity) {
             *handle = match selectable {
                 SelectableEntity::Station => sprite_handles.station_selected.clone(),
                 SelectableEntity::Ship => sprite_handles.ship_selected.clone(),
             }
         }
     }
-
-    commands.insert_resource(SelectedEntities {
-        entities: event.new_selection.clone(),
-    })
 }

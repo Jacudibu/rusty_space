@@ -25,7 +25,7 @@ mod physics;
 mod ship_ai;
 mod utils;
 
-const SHIP_COUNT: i32 = 10;
+const SHIP_COUNT: i32 = 1000000;
 
 fn get_window_title() -> String {
     let config = if cfg!(debug_assertions) {
@@ -57,7 +57,6 @@ fn main() {
     .insert_resource(MouseCursor::default())
     .init_gizmo_group::<MouseInteractionGizmos>()
     .add_event::<ship_ai::TaskFinishedEvent>()
-    .add_event::<entity_selection::SelectionChangedEvent>()
     .add_systems(Startup, on_startup)
     .add_systems(PreUpdate, entity_selection::update_cursor_position)
     .add_systems(

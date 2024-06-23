@@ -1,7 +1,7 @@
 use bevy::input::ButtonInput;
 use bevy::math::Vec3;
 use bevy::prelude::{
-    Component, KeyCode, OrthographicProjection, Query, Res, Time, Transform, With,
+    Component, KeyCode, OrthographicProjection, Query, Res, Time, Transform, Vec2, With,
 };
 
 #[derive(Component)]
@@ -30,7 +30,7 @@ pub fn move_camera(
     }
     if keys.pressed(KeyCode::KeyT) {
         // Guaranteed to move everything off-screen
-        camera.get_single_mut().unwrap().translation = Vec3::splat(10000000.0);
+        camera.get_single_mut().unwrap().translation = Vec2::splat(10000000.0).extend(0.0);
     }
     if keys.pressed(KeyCode::KeyR) {
         camera.get_single_mut().unwrap().translation = Vec3::ZERO;
