@@ -25,7 +25,7 @@ mod physics;
 mod ship_ai;
 mod utils;
 
-const SHIP_COUNT: i32 = 1000000;
+const SHIP_COUNT: i32 = 10;
 
 fn get_window_title() -> String {
     let config = if cfg!(debug_assertions) {
@@ -67,7 +67,9 @@ fn main() {
             entity_selection::process_mouse_clicks,
             entity_selection::update_mouse_interaction,
             entity_selection::draw_mouse_interactions,
-            entity_selection::on_selection_changed.after(entity_selection::process_mouse_clicks),
+            entity_selection::on_selection_changed
+                .after(entity_selection::process_mouse_clicks)
+                .after(entity_selection::update_mouse_interaction),
             ship_ai::handle_idle_ships,
             ship_ai::run_ship_tasks,
             ship_ai::complete_tasks.after(ship_ai::run_ship_tasks),

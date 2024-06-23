@@ -6,7 +6,7 @@ use bevy::input::mouse::MouseButtonInput;
 use bevy::input::ButtonState;
 use bevy::math::Rot2;
 use bevy::prelude::{
-    Added, Camera, Commands, Component, Entity, Event, EventReader, GizmoConfigGroup, Gizmos,
+    Added, Camera, Commands, Component, Entity, EventReader, GizmoConfigGroup, Gizmos,
     GlobalTransform, Image, MouseButton, Query, Reflect, RemovedComponents, Res, ResMut, Resource,
     Time, Transform, Vec2, Window, With, Without,
 };
@@ -60,10 +60,10 @@ impl MouseInteraction {
         (current_time - self.start).as_millis() < 100
     }
 
-    pub fn counts_as_drag(&self, current_time: Duration) -> bool {
+    pub fn counts_as_drag(&self) -> bool {
         // TODO: Should make this depend on zoom level
-        // Using logical positions might also be an option, but that would exclude camera movement through
-        !self.counts_as_click(current_time) && self.total_travel > 1.0
+        // Using logical positions might also be an option, but that would exclude camera movement through wasd
+        self.total_travel > 1.0
     }
 }
 
@@ -74,13 +74,12 @@ const RADIUS: f32 = 8.0;
 pub fn draw_mouse_interactions(
     mut gizmos: Gizmos<MouseInteractionGizmos>,
     mouse_interaction: Option<Res<MouseInteraction>>,
-    time: Res<Time>,
 ) {
     let Some(mouse_interaction) = mouse_interaction else {
         return;
     };
 
-    if !mouse_interaction.counts_as_drag(time.elapsed()) {
+    if !mouse_interaction.counts_as_drag() {
         return;
     }
 
@@ -95,13 +94,13 @@ pub fn draw_mouse_interactions(
     );
 }
 
+#[allow(clippy::type_complexity)]
 pub fn update_mouse_interaction(
     mut commands: Commands,
     mouse_interaction: Option<ResMut<MouseInteraction>>,
     mouse_cursor: Option<Res<MouseCursor>>,
     unselected_entities: Query<(Entity, &Transform), (With<SelectableEntity>, Without<Selected>)>,
     selected_entities: Query<(Entity, &Transform), (With<SelectableEntity>, With<Selected>)>,
-    time: Res<Time>,
 ) {
     let Some(mut mouse_interaction) = mouse_interaction else {
         return;
@@ -115,7 +114,7 @@ pub fn update_mouse_interaction(
         mouse_interaction.update(world_space);
     }
 
-    if mouse_interaction.counts_as_drag(time.elapsed()) {
+    if mouse_interaction.counts_as_drag() {
         let left = mouse_interaction.origin.x.min(mouse_interaction.current.x);
         let right = mouse_interaction.origin.x.max(mouse_interaction.current.x);
         let bottom = mouse_interaction.origin.y.min(mouse_interaction.current.y);
