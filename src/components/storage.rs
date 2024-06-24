@@ -17,6 +17,10 @@ impl Storage {
         }
     }
 
+    pub fn inventory(&self) -> &HashMap<ItemId, u32> {
+        &self.inventory
+    }
+
     pub fn used(&self) -> u32 {
         self.inventory.iter().fold(0, |acc, (_, value)| acc + value)
     }

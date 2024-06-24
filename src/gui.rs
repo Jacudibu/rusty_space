@@ -2,6 +2,7 @@ use crate::components::ShipTask::MoveTo;
 use crate::components::{
     ExchangeWareData, SelectableEntity, ShipTask, Storage, TaskQueue, Velocity,
 };
+use crate::data::GameData;
 use crate::entity_selection::Selected;
 use crate::SpriteHandles;
 use bevy::prelude::{
@@ -9,8 +10,8 @@ use bevy::prelude::{
     With,
 };
 use bevy_egui::egui::load::SizedTexture;
-use bevy_egui::egui::Align2;
-use bevy_egui::{egui, EguiContexts};
+use bevy_egui::egui::{Align2, Ui};
+use bevy_egui::{egui, EguiContexts, EguiSettings};
 
 #[derive(Default)]
 struct SelectableCount {
@@ -122,6 +123,7 @@ pub fn list_selection_icons_and_counts(
 
 #[allow(clippy::type_complexity)]
 pub fn list_selection_details(
+    game_data: Res<GameData>,
     mut context: EguiContexts,
     images: Res<UiIcons>,
     selected: Query<
@@ -144,6 +146,48 @@ pub fn list_selection_details(
         return;
     }
 
+    if counts.total() == 1 {
+        egui::Window::new("Selection Details")
+            .anchor(Align2::LEFT_CENTER, egui::Vec2::ZERO)
+            .title_bar(false)
+            .collapsible(false)
+            .resizable(false)
+            .show(context.ctx_mut(), |ui| {
+                let (_, selectable, name, storage, velocity, task_queue) = selected.single();
+                draw_ship_summary_row(&images, ui, selectable, name, storage, velocity, task_queue);
+
+                ui.heading("Inventory");
+                let inventory = storage.inventory();
+                if inventory.is_empty() {
+                    ui.label("Empty");
+                } else {
+                    for (item_id, amount) in storage.inventory() {
+                        let item = game_data.items.get(item_id).unwrap();
+                        ui.label(format!("{} x {amount}", item.name));
+                    }
+                }
+
+                if let Some(task_queue) = task_queue {
+                    ui.heading("Tasks");
+                    for task in &task_queue.queue {
+                        ui.horizontal(|ui| {
+                            ui.image(images.get_task(task));
+                            ui.label(match task {
+                                ShipTask::DoNothing => "Idle".into(),
+                                MoveTo(entity) => format!("Move to {entity}"),
+                                ShipTask::ExchangeWares(_, data) => match data {
+                                    ExchangeWareData::Buy(data) => format!("Buy {data}"),
+                                    ExchangeWareData::Sell(data) => format!("Sell {data}"),
+                                },
+                            });
+                        });
+                    }
+                }
+            });
+
+        return;
+    }
+
     egui::Window::new("Selection Details")
         .anchor(Align2::LEFT_CENTER, egui::Vec2::ZERO)
         .title_bar(false)
@@ -151,33 +195,45 @@ pub fn list_selection_details(
         .resizable(false)
         .show(context.ctx_mut(), |ui| {
             for (_, selectable, name, storage, velocity, task_queue) in selected.iter() {
-                ui.horizontal(|ui| {
-                    ui.image(images.get_selectable(selectable));
-                    ui.label(format!("{}", name));
-                    ui.label(format!("{:.0}%", storage.ratio() * 100.0));
-
-                    if let Some(velocity) = velocity {
-                        ui.label(format!("{:.0}u/s", velocity.forward));
-                    }
-
-                    if let Some(task_queue) = task_queue {
-                        if let Some(task) = task_queue.queue.front() {
-                            match task {
-                                MoveTo(_) => {
-                                    ui.image(images.get_task(task));
-                                    if let Some(next_task) = task_queue.queue.get(1) {
-                                        ui.image(images.get_task(next_task));
-                                    }
-                                }
-                                _ => {
-                                    ui.image(images.get_task(task));
-                                }
-                            }
-                        }
-                    }
-                });
+                draw_ship_summary_row(&images, ui, selectable, name, storage, velocity, task_queue);
             }
         });
+}
+
+fn draw_ship_summary_row(
+    images: &UiIcons,
+    ui: &mut Ui,
+    selectable: &SelectableEntity,
+    name: &Name,
+    storage: &Storage,
+    velocity: Option<&Velocity>,
+    task_queue: Option<&TaskQueue>,
+) {
+    ui.horizontal(|ui| {
+        ui.image(images.get_selectable(selectable));
+        ui.label(format!("{}", name));
+        ui.label(format!("{:.0}%", storage.ratio() * 100.0));
+
+        if let Some(velocity) = velocity {
+            ui.label(format!("{:.0}u/s", velocity.forward));
+        }
+
+        if let Some(task_queue) = task_queue {
+            if let Some(task) = task_queue.queue.front() {
+                match task {
+                    MoveTo(_) => {
+                        ui.image(images.get_task(task));
+                        if let Some(next_task) = task_queue.queue.get(1) {
+                            ui.image(images.get_task(next_task));
+                        }
+                    }
+                    _ => {
+                        ui.image(images.get_task(task));
+                    }
+                }
+            }
+        }
+    });
 }
 
 #[derive(Debug, Clone, Copy, Default, Eq, PartialEq, Hash, States)]
