@@ -21,9 +21,9 @@ Too lazy to manage a whole kanban board and issues for these things yet. Roughly
 
 - ~~Process mouse clicks~~
 - ~~Highlight selected objects~~
-- Click on station, see storage.
-- Click on ship, see storage and task information. Maybe with an option to cancel the current task to cause some chaos.
-- List how many units of each individual type have been selected
+- ~~Click on station, see storage.~~
+- ~~Click on ship, see storage and task information.~~
+- ~~List how many units of each individual type have been selected~~
 
 # Production
 
