@@ -4,3 +4,4 @@ mod transaction;
 
 pub use price_range::*;
 pub use trade_intent::*;
+pub use transaction::*;

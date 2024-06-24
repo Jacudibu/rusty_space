@@ -56,8 +56,8 @@ impl UiIcons {
             ShipTask::DoNothing => self.idle,
             ShipTask::MoveTo(_) => self.move_to,
             ShipTask::ExchangeWares(_, data) => match data {
-                ExchangeWareData::Buy(_) => self.buy,
-                ExchangeWareData::Sell(_) => self.sell,
+                ExchangeWareData::Buy(_, _) => self.buy,
+                ExchangeWareData::Sell(_, _) => self.sell,
             },
         }
     }
@@ -181,8 +181,18 @@ pub fn list_selection_details(
                                 ShipTask::DoNothing => "Idle".into(),
                                 ShipTask::MoveTo(entity) => format!("Move to {entity}"),
                                 ShipTask::ExchangeWares(_, data) => match data {
-                                    ExchangeWareData::Buy(data) => format!("Buy {data}"),
-                                    ExchangeWareData::Sell(data) => format!("Sell {data}"),
+                                    ExchangeWareData::Buy(item_id, amount) => {
+                                        format!(
+                                            "Buy {amount}x{}",
+                                            game_data.items.get(item_id).unwrap().name
+                                        )
+                                    }
+                                    ExchangeWareData::Sell(item_id, amount) => {
+                                        format!(
+                                            "Sell {amount}x{}",
+                                            game_data.items.get(item_id).unwrap().name
+                                        )
+                                    }
                                 },
                             });
                         });

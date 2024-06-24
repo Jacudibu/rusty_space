@@ -8,14 +8,14 @@ use bevy::math::Vec3;
 use bevy::prelude::{
     default, App, AppExtStates, AppGizmoBuilder, Camera2dBundle, Commands, Handle, Image,
     ImagePlugin, IntoSystemConfigs, PluginGroup, PreUpdate, Quat, Res, Resource, Startup,
-    Transform, Update, Window, WindowPlugin,
+    Transform, Update, Vec2, Window, WindowPlugin,
 };
 use bevy::render::camera::ScalingMode;
 use bevy::sprite::SpriteBundle;
 use bevy::DefaultPlugins;
 use bevy_egui::EguiPlugin;
 use components::*;
-use data::DEBUG_ITEM_ID;
+use data::*;
 
 mod camera;
 mod components;
@@ -105,6 +105,28 @@ pub struct SpriteHandles {
     ship_selected: Handle<Image>,
 }
 
+fn spawn_station(
+    mut commands: &mut Commands,
+    sprites: &SpriteHandles,
+    name: &str,
+    pos: Vec2,
+    buys: &ItemDefinition,
+    sells: &ItemDefinition,
+) {
+    commands.spawn((
+        Name::new(name.to_string()),
+        SelectableEntity::Station,
+        SpriteBundle {
+            texture: sprites.station.clone(),
+            transform: Transform::from_xyz(pos.x, pos.y, STATION_LAYER),
+            ..default()
+        },
+        Inventory::new_with_content(5000, vec![(sells.id, 5000)]),
+        BuyOrders::mock_buying_item(buys),
+        SellOrders::mock_selling_item(sells),
+    ));
+}
+
 pub fn on_startup(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
@@ -121,29 +143,38 @@ pub fn on_startup(
     camera_bundle.projection.scaling_mode = ScalingMode::WindowSize(1.0);
     commands.spawn((Name::new("Camera"), camera::MainCamera, camera_bundle));
 
-    commands.spawn((
-        Name::new("Station A"),
-        SelectableEntity::Station,
-        SpriteBundle {
-            texture: sprites.station.clone(),
-            transform: Transform::from_xyz(-200.0, -200.0, STATION_LAYER),
-            ..default()
-        },
-        Inventory::new(2000),
-        BuyOrders::mock_buying_item(&game_data.items[&DEBUG_ITEM_ID]),
-    ));
-
-    commands.spawn((
-        Name::new("Station B"),
-        SelectableEntity::Station,
-        SpriteBundle {
-            texture: sprites.station.clone(),
-            transform: Transform::from_xyz(200.0, 200.0, STATION_LAYER),
-            ..default()
-        },
-        Inventory::new_with_content(2000, vec![(DEBUG_ITEM_ID, 1517)]),
-        SellOrders::mock_selling_item(&game_data.items[&DEBUG_ITEM_ID]),
-    ));
+    spawn_station(
+        &mut commands,
+        &sprites,
+        "Station A",
+        Vec2::new(-200.0, -200.0),
+        &game_data.items[&DEBUG_ITEM_ID_A],
+        &game_data.items[&DEBUG_ITEM_ID_B],
+    );
+    spawn_station(
+        &mut commands,
+        &sprites,
+        "Station B",
+        Vec2::new(200.0, -200.0),
+        &game_data.items[&DEBUG_ITEM_ID_B],
+        &game_data.items[&DEBUG_ITEM_ID_C],
+    );
+    spawn_station(
+        &mut commands,
+        &sprites,
+        "Station C",
+        Vec2::new(200.0, 200.0),
+        &game_data.items[&DEBUG_ITEM_ID_C],
+        &game_data.items[&DEBUG_ITEM_ID_A],
+    );
+    spawn_station(
+        &mut commands,
+        &sprites,
+        "Station D",
+        Vec2::new(-200.0, 200.0),
+        &game_data.items[&DEBUG_ITEM_ID_C],
+        &game_data.items[&DEBUG_ITEM_ID_B],
+    );
 
     for i in 0..SHIP_COUNT {
         commands.spawn((

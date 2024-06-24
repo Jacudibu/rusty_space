@@ -2,7 +2,7 @@ Too lazy to manage a whole kanban board and issues for these things yet. Roughly
 
 # Improved Trading
 
-- Add more Items
+- ~~Add more Items~~
 - ~~Sell & Buy offers should be different components so we can iterate over them at the same time~~
 - ~~Ship AI decides which items to pick up and sell~~
 - ~~Stations reserve goods & storage space for incoming trades... phantom inventories!~~
@@ -10,7 +10,7 @@ Too lazy to manage a whole kanban board and issues for these things yet. Roughly
 
 # Multiple Stations
 
-- Add more Stations
+- ~~Add more Stations~~
 - ~~Stations can buy and sell only specific items~~
 - ~~Ship AI searches for the best deal~~
 - Ship AI can buy from one seller and plan ahead to sell to multiple buyers at once, within given range

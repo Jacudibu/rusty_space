@@ -2,7 +2,7 @@ use crate::components::{
     BuyOrders, Engine, ExchangeWareData, Inventory, SellOrders, ShipBehavior, ShipTask, TaskQueue,
     Velocity,
 };
-use crate::data::{ItemId, DEBUG_ITEM_ID};
+use crate::data::ItemId;
 use crate::utils::TradeIntent;
 use bevy::math::EulerRot;
 use bevy::prelude::{
@@ -120,7 +120,6 @@ pub fn complete_tasks(
     mut commands: Commands,
     mut all_storages: Query<&mut Inventory>,
 ) {
-    let item_id = DEBUG_ITEM_ID;
     for event in event_reader.read() {
         if let Ok(mut task_queue) = query.get_mut(event.entity) {
             match task_queue.queue.pop_front().unwrap() {
@@ -129,11 +128,11 @@ pub fn complete_tasks(
                 ShipTask::ExchangeWares(other, data) => {
                     match all_storages.get_many_mut([event.entity, other]) {
                         Ok([mut this_inv, mut other_inv]) => match data {
-                            ExchangeWareData::Buy(amount) => {
+                            ExchangeWareData::Buy(item_id, amount) => {
                                 this_inv.complete_order(item_id, TradeIntent::Buy, amount);
                                 other_inv.complete_order(item_id, TradeIntent::Sell, amount);
                             }
-                            ExchangeWareData::Sell(amount) => {
+                            ExchangeWareData::Sell(item_id, amount) => {
                                 this_inv.complete_order(item_id, TradeIntent::Sell, amount);
                                 other_inv.complete_order(item_id, TradeIntent::Buy, amount);
                             }
@@ -210,12 +209,12 @@ pub fn handle_idle_ships(
                             ShipTask::MoveTo(plan.seller),
                             ShipTask::ExchangeWares(
                                 plan.seller,
-                                ExchangeWareData::Buy(plan.amount),
+                                ExchangeWareData::Buy(plan.item_id, plan.amount),
                             ),
                             ShipTask::MoveTo(plan.buyer),
                             ShipTask::ExchangeWares(
                                 plan.buyer,
-                                ExchangeWareData::Sell(plan.amount),
+                                ExchangeWareData::Sell(plan.item_id, plan.amount),
                             ),
                         ]),
                     });

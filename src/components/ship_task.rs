@@ -1,3 +1,4 @@
+use crate::data::ItemId;
 use bevy::prelude::{Component, Entity};
 use std::collections::VecDeque;
 
@@ -18,6 +19,6 @@ pub struct TaskQueue {
 }
 
 pub enum ExchangeWareData {
-    Buy(u32),
-    Sell(u32),
+    Buy(ItemId, u32),
+    Sell(ItemId, u32),
 }

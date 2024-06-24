@@ -6,10 +6,10 @@ pub type TransactionId = u32;
 static NEXT_TRANSACTION_ID: AtomicU32 = AtomicU32::new(0);
 
 pub struct Transaction {
-    id: TransactionId,
-    buyer: Entity,
-    seller: Entity,
-    amount: u32,
+    pub id: TransactionId,
+    pub buyer: Entity,
+    pub seller: Entity,
+    pub amount: u32,
 }
 
 impl Transaction {
