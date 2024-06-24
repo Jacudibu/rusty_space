@@ -7,6 +7,8 @@ Too lazy to manage a whole kanban board and issues for these things yet. Roughly
 - ~~Ship AI decides which items to pick up and sell~~
 - ~~Stations reserve goods & storage space for incoming trades... phantom inventories!~~
 - ~~Dynamic Pricing~~
+- Individual inventory capacities for each item
+- Individual m³-storage consumption for each item
 
 # Multiple Stations
 

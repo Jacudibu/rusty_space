@@ -2,6 +2,7 @@ use crate::components::inventory::InventoryElement;
 use crate::components::Inventory;
 use crate::data::{ItemDefinition, ItemId};
 use crate::utils::PriceRange;
+use crate::MOCK_INVENTORY_SIZE;
 use bevy::prelude::Component;
 use bevy::utils::HashMap;
 
@@ -15,16 +16,19 @@ impl BuyOrders {
         let mut orders = HashMap::new();
 
         let mut order = BuyOrderData {
-            amount: u32::MAX,
-            buy_up_to: u32::MAX,
+            amount: MOCK_INVENTORY_SIZE,
+            buy_up_to: MOCK_INVENTORY_SIZE,
             price: 1,
             price_setting: PriceSetting::Dynamic(item.price),
         };
-        order.update(Some(&InventoryElement {
-            currently_available: 0,
-            total: 0,
-            ..Default::default()
-        }));
+        order.update(
+            MOCK_INVENTORY_SIZE,
+            Some(&InventoryElement {
+                currently_available: 0,
+                total: 0,
+                ..Default::default()
+            }),
+        );
         orders.insert(item.id, order);
 
         Self { orders }
@@ -32,7 +36,7 @@ impl BuyOrders {
 
     pub fn update(&mut self, inventory: &Inventory) {
         for (item_id, order) in &mut self.orders {
-            order.update(inventory.get(item_id));
+            order.update(inventory.capacity, inventory.get(item_id));
         }
     }
 }
@@ -47,14 +51,11 @@ pub struct BuyOrderData {
 
 impl BuyOrderData {
     /// Updates the order amount and cached price
-    fn update(&mut self, inventory_element: Option<&InventoryElement>) {
-        let (stored_amount, total) = if let Some(inventory_element) = inventory_element {
-            (
-                inventory_element.currently_available + inventory_element.planned_buying,
-                inventory_element.total,
-            )
+    fn update(&mut self, capacity: u32, inventory_element: Option<&InventoryElement>) {
+        let stored_amount = if let Some(inventory_element) = inventory_element {
+            inventory_element.currently_available + inventory_element.planned_buying
         } else {
-            (0, 0)
+            0
         };
 
         if stored_amount > self.buy_up_to {
@@ -62,7 +63,7 @@ impl BuyOrderData {
             self.price = 0;
         } else {
             self.amount = self.buy_up_to - stored_amount;
-            self.price = self.price_setting.calculate_price(total, self.buy_up_to);
+            self.price = self.price_setting.calculate_price(stored_amount, capacity);
         }
     }
 }
@@ -76,16 +77,19 @@ impl SellOrders {
     pub fn mock_selling_item(item: &ItemDefinition) -> Self {
         let mut orders = HashMap::new();
         let mut order = SellOrderData {
-            amount: u32::MAX,
+            amount: MOCK_INVENTORY_SIZE,
             keep_at_least: 0,
-            price: u32::MAX,
+            price: 100,
             price_setting: PriceSetting::Dynamic(item.price),
         };
-        order.update(Some(&InventoryElement {
-            currently_available: u32::MAX,
-            total: u32::MAX,
-            ..Default::default()
-        }));
+        order.update(
+            MOCK_INVENTORY_SIZE,
+            Some(&InventoryElement {
+                currently_available: MOCK_INVENTORY_SIZE,
+                total: MOCK_INVENTORY_SIZE,
+                ..Default::default()
+            }),
+        );
         orders.insert(item.id, order);
 
         Self { orders }
@@ -93,7 +97,7 @@ impl SellOrders {
 
     pub fn update(&mut self, inventory: &Inventory) {
         for (item_id, order) in &mut self.orders {
-            order.update(inventory.get(item_id));
+            order.update(inventory.capacity, inventory.get(item_id));
         }
     }
 }
@@ -107,24 +111,19 @@ pub struct SellOrderData {
 }
 
 impl SellOrderData {
-    fn update(&mut self, inventory_element: Option<&InventoryElement>) {
-        let (stored_amount, total) = if let Some(inventory_element) = inventory_element {
-            (
-                inventory_element.currently_available - inventory_element.planned_selling,
-                inventory_element.total,
-            )
+    fn update(&mut self, capacity: u32, inventory_element: Option<&InventoryElement>) {
+        let stored_amount = if let Some(inventory_element) = inventory_element {
+            inventory_element.currently_available - inventory_element.planned_selling
         } else {
-            (0, 0)
+            0
         };
 
         if stored_amount < self.keep_at_least {
             self.amount = 0;
-            self.price = u32::MAX;
+            self.price = self.price_setting.calculate_price(0, capacity) + 1;
         } else {
             self.amount = stored_amount - self.keep_at_least;
-            self.price = self
-                .price_setting
-                .calculate_price(total, self.keep_at_least);
+            self.price = self.price_setting.calculate_price(stored_amount, capacity);
         }
     }
 }

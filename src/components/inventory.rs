@@ -34,6 +34,7 @@ impl Inventory {
                 item_id,
                 InventoryElement {
                     currently_available: amount,
+                    total: amount,
                     ..Default::default()
                 },
             );

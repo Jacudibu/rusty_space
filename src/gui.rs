@@ -1,5 +1,6 @@
 use crate::components::{
-    ExchangeWareData, Inventory, SelectableEntity, ShipTask, TaskQueue, Velocity,
+    BuyOrders, ExchangeWareData, Inventory, SelectableEntity, SellOrders, ShipTask, TaskQueue,
+    Velocity,
 };
 use crate::data::GameData;
 use crate::entity_selection::Selected;
@@ -133,6 +134,8 @@ pub fn list_selection_details(
             &Inventory,
             Option<&Velocity>,
             Option<&TaskQueue>,
+            Option<&BuyOrders>,
+            Option<&SellOrders>,
         ),
         With<Selected>,
     >,
@@ -152,7 +155,8 @@ pub fn list_selection_details(
             .collapsible(false)
             .resizable(false)
             .show(context.ctx_mut(), |ui| {
-                let (_, selectable, name, storage, velocity, task_queue) = selected.single();
+                let (_, selectable, name, storage, velocity, task_queue, buy_orders, sell_orders) =
+                    selected.single();
                 draw_ship_summary_row(&images, ui, selectable, name, storage, velocity, task_queue);
 
                 ui.heading("Inventory");
@@ -168,6 +172,29 @@ pub fn list_selection_details(
                             amount.currently_available,
                             amount.planned_buying,
                             amount.planned_selling
+                        ));
+                    }
+                }
+
+                if let Some(buy_orders) = buy_orders {
+                    ui.heading("Buy Orders");
+                    for (item_id, data) in &buy_orders.orders {
+                        ui.label(format!(
+                            "Buying {}x{} for {}C",
+                            data.amount,
+                            game_data.items.get(item_id).unwrap().name,
+                            data.price
+                        ));
+                    }
+                }
+                if let Some(sell_orders) = sell_orders {
+                    ui.heading("Sell Orders");
+                    for (item_id, data) in &sell_orders.orders {
+                        ui.label(format!(
+                            "Selling {}x{} for {}C",
+                            data.amount,
+                            game_data.items.get(item_id).unwrap().name,
+                            data.price
                         ));
                     }
                 }
@@ -209,7 +236,7 @@ pub fn list_selection_details(
         .collapsible(false)
         .resizable(false)
         .show(context.ctx_mut(), |ui| {
-            for (_, selectable, name, storage, velocity, task_queue) in selected.iter() {
+            for (_, selectable, name, storage, velocity, task_queue, _, _) in selected.iter() {
                 draw_ship_summary_row(&images, ui, selectable, name, storage, velocity, task_queue);
             }
         });

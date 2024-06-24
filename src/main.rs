@@ -28,6 +28,7 @@ mod ship_ai;
 mod utils;
 
 const SHIP_COUNT: i32 = 10;
+pub const MOCK_INVENTORY_SIZE: u32 = 5000;
 
 fn get_window_title() -> String {
     let config = if cfg!(debug_assertions) {
@@ -121,7 +122,7 @@ fn spawn_station(
             transform: Transform::from_xyz(pos.x, pos.y, STATION_LAYER),
             ..default()
         },
-        Inventory::new_with_content(5000, vec![(sells.id, 5000)]),
+        Inventory::new_with_content(MOCK_INVENTORY_SIZE, vec![(sells.id, MOCK_INVENTORY_SIZE)]),
         BuyOrders::mock_buying_item(buys),
         SellOrders::mock_selling_item(sells),
     ));
