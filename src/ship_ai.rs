@@ -185,7 +185,7 @@ pub fn handle_idle_ships(
                     queue: VecDeque::from(vec![ShipTask::DoNothing]),
                 });
             }
-            ShipBehavior::AutoTrade(data) => {
+            ShipBehavior::AutoTrade(_data) => {
                 let plan = TradePlan::create_from(storage.capacity, &buy_orders, &sell_orders);
                 if let Some(plan) = plan {
                     commands.entity(entity).insert(TaskQueue {
@@ -197,7 +197,7 @@ pub fn handle_idle_ships(
                             ),
                             ShipTask::MoveTo(plan.buyer),
                             ShipTask::ExchangeWares(
-                                plan.seller,
+                                plan.buyer,
                                 ExchangeWareData::Sell(plan.amount),
                             ),
                         ]),

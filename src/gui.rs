@@ -1,4 +1,3 @@
-use crate::components::ShipTask::MoveTo;
 use crate::components::{
     ExchangeWareData, SelectableEntity, ShipTask, Storage, TaskQueue, Velocity,
 };
@@ -11,7 +10,7 @@ use bevy::prelude::{
 };
 use bevy_egui::egui::load::SizedTexture;
 use bevy_egui::egui::{Align2, Ui};
-use bevy_egui::{egui, EguiContexts, EguiSettings};
+use bevy_egui::{egui, EguiContexts};
 
 #[derive(Default)]
 struct SelectableCount {
@@ -174,7 +173,7 @@ pub fn list_selection_details(
                             ui.image(images.get_task(task));
                             ui.label(match task {
                                 ShipTask::DoNothing => "Idle".into(),
-                                MoveTo(entity) => format!("Move to {entity}"),
+                                ShipTask::MoveTo(entity) => format!("Move to {entity}"),
                                 ShipTask::ExchangeWares(_, data) => match data {
                                     ExchangeWareData::Buy(data) => format!("Buy {data}"),
                                     ExchangeWareData::Sell(data) => format!("Sell {data}"),
@@ -212,16 +211,11 @@ fn draw_ship_summary_row(
     ui.horizontal(|ui| {
         ui.image(images.get_selectable(selectable));
         ui.label(format!("{}", name));
-        ui.label(format!("{:.0}%", storage.ratio() * 100.0));
-
-        if let Some(velocity) = velocity {
-            ui.label(format!("{:.0}u/s", velocity.forward));
-        }
 
         if let Some(task_queue) = task_queue {
             if let Some(task) = task_queue.queue.front() {
                 match task {
-                    MoveTo(_) => {
+                    ShipTask::MoveTo(_) => {
                         ui.image(images.get_task(task));
                         if let Some(next_task) = task_queue.queue.get(1) {
                             ui.image(images.get_task(next_task));
@@ -232,6 +226,12 @@ fn draw_ship_summary_row(
                     }
                 }
             }
+        }
+
+        ui.label(format!("{:.0}%", storage.ratio() * 100.0));
+
+        if let Some(velocity) = velocity {
+            ui.label(format!("{:.0}u/s", velocity.forward));
         }
     });
 }
