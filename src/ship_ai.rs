@@ -87,6 +87,7 @@ pub fn run_ship_tasks(
                 ShipTask::ExchangeWares(_, _) => true,
                 ShipTask::DoNothing => {
                     // TODO: These still need to react to their surroundings somehow, maybe?
+                    velocity.decelerate(engine, time.delta_seconds());
                     false
                 }
             };
