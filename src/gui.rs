@@ -1,5 +1,5 @@
 use crate::components::{
-    ExchangeWareData, SelectableEntity, ShipTask, Storage, TaskQueue, Velocity,
+    ExchangeWareData, Inventory, SelectableEntity, ShipTask, TaskQueue, Velocity,
 };
 use crate::data::GameData;
 use crate::entity_selection::Selected;
@@ -130,7 +130,7 @@ pub fn list_selection_details(
             Entity,
             &SelectableEntity,
             &Name,
-            &Storage,
+            &Inventory,
             Option<&Velocity>,
             Option<&TaskQueue>,
         ),
@@ -210,7 +210,7 @@ fn draw_ship_summary_row(
     ui: &mut Ui,
     selectable: &SelectableEntity,
     name: &Name,
-    storage: &Storage,
+    inventory: &Inventory,
     velocity: Option<&Velocity>,
     task_queue: Option<&TaskQueue>,
 ) {
@@ -234,7 +234,7 @@ fn draw_ship_summary_row(
             }
         }
 
-        ui.label(format!("{:.0}%", storage.ratio() * 100.0));
+        ui.label(format!("{:.0}%", inventory.ratio() * 100.0));
 
         if let Some(velocity) = velocity {
             ui.label(format!("{:.0}u/s", velocity.forward));

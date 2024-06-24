@@ -1,13 +1,12 @@
 use crate::components::{
-    BuyOrders, Engine, ExchangeWareData, SellOrders, ShipBehavior, ShipTask, Storage, TaskQueue,
+    BuyOrders, Engine, ExchangeWareData, Inventory, SellOrders, ShipBehavior, ShipTask, TaskQueue,
     Velocity,
 };
 use crate::data::{ItemId, DEBUG_ITEM_ID};
 use crate::utils::TradeIntent;
 use bevy::math::EulerRot;
 use bevy::prelude::{
-    error, warn, Commands, Entity, Event, EventReader, EventWriter, Query, Res, Time, Transform,
-    Without,
+    error, Commands, Entity, Event, EventReader, EventWriter, Query, Res, Time, Transform, Without,
 };
 use std::collections::VecDeque;
 use std::sync::{Arc, Mutex};
@@ -118,7 +117,7 @@ pub fn complete_tasks(
     mut event_reader: EventReader<TaskFinishedEvent>,
     mut query: Query<&mut TaskQueue>,
     mut commands: Commands,
-    mut all_storages: Query<&mut Storage>,
+    mut all_storages: Query<&mut Inventory>,
 ) {
     let item_id = DEBUG_ITEM_ID;
     for event in event_reader.read() {
@@ -161,7 +160,7 @@ pub fn handle_idle_ships(
     ships: Query<(Entity, &ShipBehavior), Without<TaskQueue>>,
     mut buy_orders: Query<(Entity, &mut BuyOrders)>,
     mut sell_orders: Query<(Entity, &mut SellOrders)>,
-    mut inventories: Query<&mut Storage>,
+    mut inventories: Query<&mut Inventory>,
 ) {
     ships
         .iter()
@@ -220,7 +219,9 @@ pub fn handle_idle_ships(
                         ]),
                     });
                 } else {
-                    // TODO: Enter short idle phase
+                    commands.entity(entity).insert(TaskQueue {
+                        queue: VecDeque::from(vec![ShipTask::DoNothing]),
+                    });
                 }
             }
         });
@@ -228,7 +229,7 @@ pub fn handle_idle_ships(
 
 fn update_buy_and_sell_orders_for_entity(
     entity: Entity,
-    inventory: &Storage,
+    inventory: &Inventory,
     buy_orders: &mut Query<(Entity, &mut BuyOrders)>,
     sell_orders: &mut Query<(Entity, &mut SellOrders)>,
 ) {

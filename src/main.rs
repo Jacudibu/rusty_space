@@ -129,7 +129,7 @@ pub fn on_startup(
             transform: Transform::from_xyz(-200.0, -200.0, STATION_LAYER),
             ..default()
         },
-        Storage::new(2000),
+        Inventory::new(2000),
         BuyOrders::mock_buying_item(&game_data.items[&DEBUG_ITEM_ID]),
     ));
 
@@ -141,7 +141,7 @@ pub fn on_startup(
             transform: Transform::from_xyz(200.0, 200.0, STATION_LAYER),
             ..default()
         },
-        Storage::new_with_content(2000, vec![(DEBUG_ITEM_ID, 1517)]),
+        Inventory::new_with_content(2000, vec![(DEBUG_ITEM_ID, 1517)]),
         SellOrders::mock_selling_item(&game_data.items[&DEBUG_ITEM_ID]),
     ));
 
@@ -155,7 +155,7 @@ pub fn on_startup(
                 forward: (i % 100) as f32,
                 angular: 0.0,
             },
-            Storage::new(100),
+            Inventory::new(100),
             SpriteBundle {
                 texture: sprites.ship.clone(),
                 transform: Transform {

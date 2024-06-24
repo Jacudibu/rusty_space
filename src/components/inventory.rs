@@ -6,7 +6,7 @@ use bevy::utils::HashMap;
 use std::sync::atomic::AtomicU32;
 
 #[derive(Component)]
-pub struct Storage {
+pub struct Inventory {
     pub capacity: u32,
     inventory: HashMap<ItemId, InventoryElement>,
 }
@@ -28,7 +28,7 @@ pub struct Order {
     amount: u32,
 }
 
-impl Storage {
+impl Inventory {
     pub fn new(capacity: u32) -> Self {
         Self {
             capacity,

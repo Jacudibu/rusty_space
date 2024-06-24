@@ -1,5 +1,5 @@
-use crate::components::storage::InventoryElement;
-use crate::components::Storage;
+use crate::components::inventory::InventoryElement;
+use crate::components::Inventory;
 use crate::data::{ItemDefinition, ItemId};
 use crate::utils::PriceRange;
 use bevy::prelude::Component;
@@ -30,9 +30,9 @@ impl BuyOrders {
         Self { orders }
     }
 
-    pub fn update(&mut self, storage: &Storage) {
+    pub fn update(&mut self, inventory: &Inventory) {
         for (item_id, order) in &mut self.orders {
-            order.update(storage.get(item_id));
+            order.update(inventory.get(item_id));
         }
     }
 }
@@ -91,9 +91,9 @@ impl SellOrders {
         Self { orders }
     }
 
-    pub fn update(&mut self, storage: &Storage) {
+    pub fn update(&mut self, inventory: &Inventory) {
         for (item_id, order) in &mut self.orders {
-            order.update(storage.get(item_id));
+            order.update(inventory.get(item_id));
         }
     }
 }
