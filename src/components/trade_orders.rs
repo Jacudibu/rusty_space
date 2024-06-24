@@ -1,3 +1,4 @@
+use crate::components::storage::InventoryElement;
 use crate::components::Storage;
 use crate::data::{ItemDefinition, ItemId};
 use crate::utils::PriceRange;
@@ -19,7 +20,11 @@ impl BuyOrders {
             price: 1,
             price_setting: PriceSetting::Dynamic(item.price),
         };
-        order.update(0);
+        order.update(Some(&InventoryElement {
+            currently_available: 0,
+            total: 0,
+            ..Default::default()
+        }));
         orders.insert(item.id, order);
 
         Self { orders }
@@ -27,7 +32,7 @@ impl BuyOrders {
 
     pub fn update(&mut self, storage: &Storage) {
         for (item_id, order) in &mut self.orders {
-            order.update(storage.get_item_amount(item_id));
+            order.update(storage.get(item_id));
         }
     }
 }
@@ -42,15 +47,22 @@ pub struct BuyOrderData {
 
 impl BuyOrderData {
     /// Updates the order amount and cached price
-    fn update(&mut self, stored_amount: u32) {
+    fn update(&mut self, inventory_element: Option<&InventoryElement>) {
+        let (stored_amount, total) = if let Some(inventory_element) = inventory_element {
+            (
+                inventory_element.currently_available + inventory_element.planned_buying,
+                inventory_element.total,
+            )
+        } else {
+            (0, 0)
+        };
+
         if stored_amount > self.buy_up_to {
             self.amount = 0;
             self.price = 0;
         } else {
             self.amount = self.buy_up_to - stored_amount;
-            self.price = self
-                .price_setting
-                .calculate_price(stored_amount, self.buy_up_to);
+            self.price = self.price_setting.calculate_price(total, self.buy_up_to);
         }
     }
 }
@@ -69,7 +81,11 @@ impl SellOrders {
             price: u32::MAX,
             price_setting: PriceSetting::Dynamic(item.price),
         };
-        order.update(u32::MAX);
+        order.update(Some(&InventoryElement {
+            currently_available: u32::MAX,
+            total: u32::MAX,
+            ..Default::default()
+        }));
         orders.insert(item.id, order);
 
         Self { orders }
@@ -77,7 +93,7 @@ impl SellOrders {
 
     pub fn update(&mut self, storage: &Storage) {
         for (item_id, order) in &mut self.orders {
-            order.update(storage.get_item_amount(item_id));
+            order.update(storage.get(item_id));
         }
     }
 }
@@ -91,7 +107,16 @@ pub struct SellOrderData {
 }
 
 impl SellOrderData {
-    fn update(&mut self, stored_amount: u32) {
+    fn update(&mut self, inventory_element: Option<&InventoryElement>) {
+        let (stored_amount, total) = if let Some(inventory_element) = inventory_element {
+            (
+                inventory_element.currently_available - inventory_element.planned_selling,
+                inventory_element.total,
+            )
+        } else {
+            (0, 0)
+        };
+
         if stored_amount < self.keep_at_least {
             self.amount = 0;
             self.price = u32::MAX;
@@ -99,7 +124,7 @@ impl SellOrderData {
             self.amount = stored_amount - self.keep_at_least;
             self.price = self
                 .price_setting
-                .calculate_price(stored_amount, self.keep_at_least);
+                .calculate_price(total, self.keep_at_least);
         }
     }
 }

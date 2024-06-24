@@ -129,12 +129,9 @@ pub fn on_startup(
             transform: Transform::from_xyz(-200.0, -200.0, STATION_LAYER),
             ..default()
         },
-        Storage::new(u32::MAX / 10),
+        Storage::new(2000),
         BuyOrders::mock_buying_item(&game_data.items[&DEBUG_ITEM_ID]),
     ));
-
-    let mut filled_storage = Storage::new(u32::MAX / 10);
-    filled_storage.add_item(DEBUG_ITEM_ID, u32::MAX / 10);
 
     commands.spawn((
         Name::new("Station B"),
@@ -144,7 +141,7 @@ pub fn on_startup(
             transform: Transform::from_xyz(200.0, 200.0, STATION_LAYER),
             ..default()
         },
-        filled_storage,
+        Storage::new_with_content(2000, vec![(DEBUG_ITEM_ID, 1517)]),
         SellOrders::mock_selling_item(&game_data.items[&DEBUG_ITEM_ID]),
     ));
 

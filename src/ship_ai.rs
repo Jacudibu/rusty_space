@@ -3,6 +3,7 @@ use crate::components::{
     Velocity,
 };
 use crate::data::{ItemId, DEBUG_ITEM_ID};
+use crate::utils::TradeIntent;
 use bevy::math::EulerRot;
 use bevy::prelude::{
     error, warn, Commands, Entity, Event, EventReader, EventWriter, Query, Res, Time, Transform,
@@ -118,8 +119,6 @@ pub fn complete_tasks(
     mut query: Query<&mut TaskQueue>,
     mut commands: Commands,
     mut all_storages: Query<&mut Storage>,
-    mut all_buy_orders: Query<&mut BuyOrders>,
-    mut all_sell_orders: Query<&mut SellOrders>,
 ) {
     let item_id = DEBUG_ITEM_ID;
     for event in event_reader.read() {
@@ -129,30 +128,16 @@ pub fn complete_tasks(
                 ShipTask::MoveTo(_) => {}
                 ShipTask::ExchangeWares(other, data) => {
                     match all_storages.get_many_mut([event.entity, other]) {
-                        Ok([mut this_storage, mut other_storage]) => {
-                            match data {
-                                ExchangeWareData::Buy(amount) => {
-                                    this_storage.add_item(item_id, amount);
-                                    other_storage.remove_item(item_id, amount);
-                                }
-                                ExchangeWareData::Sell(amount) => {
-                                    this_storage.remove_item(item_id, amount);
-                                    other_storage.add_item(item_id, amount);
-                                }
+                        Ok([mut this_inv, mut other_inv]) => match data {
+                            ExchangeWareData::Buy(amount) => {
+                                this_inv.complete_order(item_id, TradeIntent::Buy, amount);
+                                other_inv.complete_order(item_id, TradeIntent::Sell, amount);
                             }
-                            if let Ok(mut buy_orders) = all_buy_orders.get_mut(other) {
-                                buy_orders.update(&other_storage);
+                            ExchangeWareData::Sell(amount) => {
+                                this_inv.complete_order(item_id, TradeIntent::Sell, amount);
+                                other_inv.complete_order(item_id, TradeIntent::Buy, amount);
                             }
-                            if let Ok(mut buy_orders) = all_buy_orders.get_mut(event.entity) {
-                                buy_orders.update(&this_storage);
-                            }
-                            if let Ok(mut sell_orders) = all_sell_orders.get_mut(other) {
-                                sell_orders.update(&other_storage);
-                            }
-                            if let Ok(mut sell_orders) = all_sell_orders.get_mut(event.entity) {
-                                sell_orders.update(&this_storage);
-                            }
-                        }
+                        },
                         Err(e) => {
                             error!(
                                 "Failed to execute ware exchange between {} and {other}: {:?}",
@@ -173,21 +158,53 @@ pub fn complete_tasks(
 
 pub fn handle_idle_ships(
     mut commands: Commands,
-    ships: Query<(Entity, &ShipBehavior, &Storage), Without<TaskQueue>>,
-    buy_orders: Query<(Entity, &BuyOrders)>,
-    sell_orders: Query<(Entity, &SellOrders)>,
+    ships: Query<(Entity, &ShipBehavior), Without<TaskQueue>>,
+    mut buy_orders: Query<(Entity, &mut BuyOrders)>,
+    mut sell_orders: Query<(Entity, &mut SellOrders)>,
+    mut inventories: Query<&mut Storage>,
 ) {
     ships
         .iter()
-        .for_each(|(entity, ship_behavior, storage)| match ship_behavior {
+        .for_each(|(entity, ship_behavior)| match ship_behavior {
             ShipBehavior::HoldPosition => {
                 commands.entity(entity).insert(TaskQueue {
                     queue: VecDeque::from(vec![ShipTask::DoNothing]),
                 });
             }
             ShipBehavior::AutoTrade(_data) => {
-                let plan = TradePlan::create_from(storage.capacity, &buy_orders, &sell_orders);
+                let inventory = inventories.get(entity).unwrap();
+                let plan = TradePlan::create_from(inventory.capacity, &buy_orders, &sell_orders);
                 if let Some(plan) = plan {
+                    let [mut this_inventory, mut seller_inventory, mut buyer_inventory] =
+                        inventories
+                            .get_many_mut([entity, plan.seller, plan.buyer])
+                            .unwrap();
+
+                    this_inventory.create_order(plan.item_id, TradeIntent::Buy, plan.amount);
+                    seller_inventory.create_order(plan.item_id, TradeIntent::Sell, plan.amount);
+
+                    this_inventory.create_order(plan.item_id, TradeIntent::Sell, plan.amount);
+                    buyer_inventory.create_order(plan.item_id, TradeIntent::Buy, plan.amount);
+
+                    update_buy_and_sell_orders_for_entity(
+                        entity,
+                        &this_inventory,
+                        &mut buy_orders,
+                        &mut sell_orders,
+                    );
+                    update_buy_and_sell_orders_for_entity(
+                        plan.buyer,
+                        &buyer_inventory,
+                        &mut buy_orders,
+                        &mut sell_orders,
+                    );
+                    update_buy_and_sell_orders_for_entity(
+                        plan.seller,
+                        &seller_inventory,
+                        &mut buy_orders,
+                        &mut sell_orders,
+                    );
+
                     commands.entity(entity).insert(TaskQueue {
                         queue: VecDeque::from(vec![
                             ShipTask::MoveTo(plan.seller),
@@ -203,10 +220,24 @@ pub fn handle_idle_ships(
                         ]),
                     });
                 } else {
-                    warn!("Was unable to find a trade plan for {:?}", entity);
+                    // TODO: Enter short idle phase
                 }
             }
         });
+}
+
+fn update_buy_and_sell_orders_for_entity(
+    entity: Entity,
+    inventory: &Storage,
+    buy_orders: &mut Query<(Entity, &mut BuyOrders)>,
+    sell_orders: &mut Query<(Entity, &mut SellOrders)>,
+) {
+    if let Ok(mut buy_orders) = buy_orders.get_mut(entity) {
+        buy_orders.1.update(inventory);
+    }
+    if let Ok(mut sell_orders) = sell_orders.get_mut(entity) {
+        sell_orders.1.update(inventory);
+    }
 }
 
 struct TradePlan {
@@ -220,8 +251,8 @@ struct TradePlan {
 impl TradePlan {
     pub fn create_from(
         storage_capacity: u32,
-        buy_orders: &Query<(Entity, &BuyOrders)>,
-        sell_orders: &Query<(Entity, &SellOrders)>,
+        buy_orders: &Query<(Entity, &mut BuyOrders)>,
+        sell_orders: &Query<(Entity, &mut SellOrders)>,
     ) -> Option<Self> {
         let mut best_offer: Option<TradePlan> = None;
 
@@ -238,6 +269,11 @@ impl TradePlan {
                         }
 
                         let amount = storage_capacity.min(buy_order.amount.min(sell_order.amount));
+                        if amount == 0 {
+                            // TODO: Add custom definable minimum amount
+                            continue;
+                        }
+
                         let profit = (buy_order.price - sell_order.price) * amount;
 
                         let is_this_a_better_offer = if let Some(existing_offer) = &best_offer {

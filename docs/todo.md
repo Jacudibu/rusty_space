@@ -5,7 +5,7 @@ Too lazy to manage a whole kanban board and issues for these things yet. Roughly
 - Add more Items
 - ~~Sell & Buy offers should be different components so we can iterate over them at the same time~~
 - ~~Ship AI decides which items to pick up and sell~~
-- Stations reserve goods & storage space for incoming trades... phantom inventories!
+- ~~Stations reserve goods & storage space for incoming trades... phantom inventories!~~
 - ~~Dynamic Pricing~~
 
 # Multiple Stations
