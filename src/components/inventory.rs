@@ -1,9 +1,8 @@
 use crate::data::ItemId;
 use crate::utils::TradeIntent;
 use bevy::log::error;
-use bevy::prelude::{Component, Entity};
+use bevy::prelude::Component;
 use bevy::utils::HashMap;
-use std::sync::atomic::AtomicU32;
 
 #[derive(Component)]
 pub struct Inventory {
@@ -17,15 +16,6 @@ pub struct InventoryElement {
     pub planned_buying: u32,
     pub planned_selling: u32,
     pub total: u32,
-}
-
-pub type OrderId = u32;
-static NEXT_ORDER_ID: AtomicU32 = AtomicU32::new(0);
-
-pub struct Order {
-    id: OrderId,
-    other: Entity,
-    amount: u32,
 }
 
 impl Inventory {
