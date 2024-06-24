@@ -1,8 +1,12 @@
-use crate::components::{SelectableEntity, ShipTask, Storage, TaskQueue, Velocity};
+use crate::components::ShipTask::MoveTo;
+use crate::components::{
+    ExchangeWareData, SelectableEntity, ShipTask, Storage, TaskQueue, Velocity,
+};
 use crate::entity_selection::Selected;
 use crate::SpriteHandles;
 use bevy::prelude::{
-    Commands, Entity, Name, NextState, Query, Res, ResMut, Resource, State, States, With,
+    AssetServer, Commands, Entity, Name, NextState, Query, Res, ResMut, Resource, State, States,
+    With,
 };
 use bevy_egui::egui::load::SizedTexture;
 use bevy_egui::egui::Align2;
@@ -29,32 +33,64 @@ impl SelectableCount {
 }
 
 #[derive(Resource)]
-pub struct UiImages {
+pub struct UiIcons {
     pub ship: SizedTexture,
     pub station: SizedTexture,
+
+    pub idle: SizedTexture,
+    pub move_to: SizedTexture,
+    pub buy: SizedTexture,
+    pub sell: SizedTexture,
 }
 
-impl UiImages {
-    pub fn get(&self, selectable: &SelectableEntity) -> SizedTexture {
+impl UiIcons {
+    pub fn get_selectable(&self, selectable: &SelectableEntity) -> SizedTexture {
         match selectable {
             SelectableEntity::Station => self.station,
             SelectableEntity::Ship => self.ship,
         }
     }
+
+    pub fn get_task(&self, task: &ShipTask) -> SizedTexture {
+        match task {
+            ShipTask::DoNothing => self.idle,
+            ShipTask::MoveTo(_) => self.move_to,
+            ShipTask::ExchangeWares(_, data) => match data {
+                ExchangeWareData::Buy(_) => self.buy,
+                ExchangeWareData::Sell(_) => self.sell,
+            },
+        }
+    }
 }
 
-pub fn initialize(mut commands: Commands, mut contexts: EguiContexts, sprites: Res<SpriteHandles>) {
-    let images = UiImages {
-        ship: SizedTexture::new(contexts.add_image(sprites.ship.clone()), [16.0, 16.0]),
-        station: SizedTexture::new(contexts.add_image(sprites.station.clone()), [16.0, 16.0]),
+pub fn initialize(
+    mut commands: Commands,
+    mut contexts: EguiContexts,
+    sprites: Res<SpriteHandles>,
+    asset_server: Res<AssetServer>,
+) {
+    let idle = asset_server.load("ui_icons/idle.png");
+    let move_to = asset_server.load("ui_icons/move_to.png");
+    let buy = asset_server.load("ui_icons/buy.png");
+    let sell = asset_server.load("ui_icons/sell.png");
+
+    const ICON_SIZE: [f32; 2] = [16.0, 16.0];
+
+    let icons = UiIcons {
+        ship: SizedTexture::new(contexts.add_image(sprites.ship.clone()), ICON_SIZE),
+        station: SizedTexture::new(contexts.add_image(sprites.station.clone()), ICON_SIZE),
+        idle: SizedTexture::new(contexts.add_image(idle), ICON_SIZE),
+        move_to: SizedTexture::new(contexts.add_image(move_to), ICON_SIZE),
+        buy: SizedTexture::new(contexts.add_image(buy), ICON_SIZE),
+        sell: SizedTexture::new(contexts.add_image(sell), ICON_SIZE),
     };
 
-    commands.insert_resource(images);
+    commands.insert_resource(icons);
 }
 
 pub fn list_selection_icons_and_counts(
     mut context: EguiContexts,
-    images: Res<UiImages>,
+    images: Res<UiIcons>,
     selected: Query<&SelectableEntity, With<Selected>>,
 ) {
     let counts = selected
@@ -87,7 +123,7 @@ pub fn list_selection_icons_and_counts(
 #[allow(clippy::type_complexity)]
 pub fn list_selection_details(
     mut context: EguiContexts,
-    images: Res<UiImages>,
+    images: Res<UiIcons>,
     selected: Query<
         (
             Entity,
@@ -116,7 +152,7 @@ pub fn list_selection_details(
         .show(context.ctx_mut(), |ui| {
             for (_, selectable, name, storage, velocity, task_queue) in selected.iter() {
                 ui.horizontal(|ui| {
-                    ui.image(images.get(selectable));
+                    ui.image(images.get_selectable(selectable));
                     ui.label(format!("{}", name));
                     ui.label(format!("{:.0}%", storage.ratio() * 100.0));
 
@@ -126,11 +162,17 @@ pub fn list_selection_details(
 
                     if let Some(task_queue) = task_queue {
                         if let Some(task) = task_queue.queue.front() {
-                            ui.label(match task {
-                                ShipTask::DoNothing => "Idle",
-                                ShipTask::MoveTo(_) => "Move",
-                                ShipTask::ExchangeWares(_, _) => "Trade",
-                            });
+                            match task {
+                                MoveTo(_) => {
+                                    ui.image(images.get_task(task));
+                                    if let Some(next_task) = task_queue.queue.get(1) {
+                                        ui.image(images.get_task(next_task));
+                                    }
+                                }
+                                _ => {
+                                    ui.image(images.get_task(task));
+                                }
+                            }
                         }
                     }
                 });
