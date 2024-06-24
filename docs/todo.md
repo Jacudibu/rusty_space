@@ -29,7 +29,15 @@ Too lazy to manage a whole kanban board and issues for these things yet. Roughly
 
 # Production
 
-- Stations will process one or more ingredients to a new item.
+- Add recipes to items
+- Stations will process one or more ingredients to a new item, depending on their installed modules.
+- Enable optional Variable yield depending on (placeholder) Sector Settings
+- Shipyard Module will produce new ships
+
+# Less Debug Values
+
+- Add parsing for data files, remove hardcoded Items
+- Change items and recipes to stuff that makes sense
 
 # Sectors
 
