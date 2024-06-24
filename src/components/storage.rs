@@ -21,6 +21,10 @@ impl Storage {
         self.inventory.iter().fold(0, |acc, (_, value)| acc + value)
     }
 
+    pub fn ratio(&self) -> f32 {
+        self.used() as f32 / self.capacity as f32
+    }
+
     pub fn get_item_amount(&self, item_id: &ItemId) -> u32 {
         if let Some(amount) = self.inventory.get(item_id) {
             *amount

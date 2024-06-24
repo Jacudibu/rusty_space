@@ -72,7 +72,8 @@ fn main() {
     .add_systems(
         Update,
         (
-            gui::list_selection,
+            gui::list_selection_icons_and_counts,
+            gui::list_selection_details,
             camera::move_camera,
             camera::zoom_camera,
             entity_selection::process_mouse_clicks,
@@ -149,7 +150,7 @@ pub fn on_startup(
 
     for i in 0..SHIP_COUNT {
         commands.spawn((
-            Name::new("Ship"),
+            Name::new(format!("Ship {i}")),
             SelectableEntity::Ship,
             ShipBehavior::AutoTrade(AutoTradeData {}),
             Engine { ..default() },
