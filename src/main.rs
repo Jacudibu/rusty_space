@@ -37,7 +37,7 @@ fn get_window_title() -> String {
         "RELEASE"
     };
 
-    format!("{SHIP_COUNT} ships [{config}] ")
+    format!("{SHIP_COUNT} ships [{config}]")
 }
 
 const SHIP_LAYER: f32 = 10.0;
@@ -107,7 +107,7 @@ pub struct SpriteHandles {
 }
 
 fn spawn_station(
-    mut commands: &mut Commands,
+    commands: &mut Commands,
     sprites: &SpriteHandles,
     name: &str,
     pos: Vec2,
@@ -192,7 +192,7 @@ pub fn on_startup(
                 texture: sprites.ship.clone(),
                 transform: Transform {
                     rotation: Quat::from_rotation_z(
-                        (std::f32::consts::PI * 2.0 / SHIP_COUNT as f32) * i as f32,
+                        ((std::f32::consts::PI * 2.0) / SHIP_COUNT as f32) * i as f32,
                     ),
                     translation: Vec3::new(0.0, 0.0, SHIP_LAYER),
                     ..default()

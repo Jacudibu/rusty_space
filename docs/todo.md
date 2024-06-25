@@ -30,7 +30,7 @@ Too lazy to manage a whole kanban board and issues for these things yet. Roughly
 # Production
 
 - Add recipes to items
-- Stations will process one or more ingredients to a new item, depending on their installed modules.
+- Stations will process one or more ingredients to one or two new items, depending on their installed modules.
 - Enable optional Variable yield depending on (placeholder) Sector Settings
 - Shipyard Module will produce new ships
 
@@ -39,9 +39,46 @@ Too lazy to manage a whole kanban board and issues for these things yet. Roughly
 - Add parsing for data files, remove hardcoded Items
 - Change items and recipes to stuff that makes sense
 
+# Task System Overhaul
+
+Main tasks are handed out by the AI, and are then dynamically filled with the subtasks required to fulfill them.
+Not sure how deeply the pathfinding results should be cached here. Depends on performance.
+
+```
+Buy 50 X
+  |- Move to System
+  |- Move to System
+  |- Move to Station
+  |- Dock
+  |- Exchange Wares
+```
+
+```
+Sell 50 X
+  |- Undock
+  |- Move to Station
+  |- Dock
+  |- Exchange Wares
+```
+
+# Station Building
+
+- New stations can be created in a running game
+- Construction Materials go into separate inventory
+- Builder ships build stations with their drones or something
+- Station module costs increases with station size
+
+Modules:
+
+- Production (one module per item... or per recipe?)
+- Storage (At this point capacity won't be hardcoded anymore, yay!)
+- Docking (At this point we will need to implement a docking queue. Will look funny.)
+- Ship Building
+- Defense (later on)
+
 # Sectors
 
-Sectors keep track of the entities inside them, allowing for localized physics and .
+Sectors keep track of the entities inside them, allowing for localized physics and unit selection.
 
 - Separate the map into hexagonal sectors which are connected through gates
 - Ships can only travel between sectors by using gates
@@ -51,9 +88,18 @@ Sectors keep track of the entities inside them, allowing for localized physics a
 
 # Multiplayer
 
-Just synchronizing task creation and sector transitions should be enough to allow multiplayer to work on a cooperative
-level. If we ever add combat, the required physics could be simulated just on the host's machine, which then sends
-damage events over the network.
+Implement multiplayer with selectable "Sync Intensity" values. (It's just a state, ez)
+These will limit which systems run exclusively on the host, which will then send network events to the connected
+clients.
+
+Level 1: Synchronize Task creation (Bare minimum, limiting the big AI decision-making to the host.)
+Level 2: Synchronize Sector transitions (Should improve positional sync, but might not even be necessary)
+Level 3: Synchronize Combat events (Hit detection / damage. This will be necessary for competitive play)
+Level 4: Synchronize Ships (The true performance nightmare we want to avoid at all costs)
+
+# Player Control
+
+Allow giving individual tasks to ships. There should be a way to add them to the top and the end of the queue.
 
 # Factions
 
@@ -61,15 +107,16 @@ Different factions may claim sectors and may or may not like each other.
 Since storage space will always be reserved for each individual delivery, missed and delayed deliveries could
 dynamically decrease faction standing.
 
+- Tint each object to represent its faction color
+- Respect faction relations in Task creation (don't enter hostile sectors, don't trade with hostile stations...)
+- Players are factions
+
 # Advanced Unit Selection
 
 Two ways of achieving this:
 a) Switch to `bevy_mod_picking` and turn existing code into a simple circle overlapping backend.
 b) Units aren't completely selected until the mouse button is actually released. Add some kind of Hover Step.
-
-Also consider integrating the selection state more into the ECS by adding & removing components to selected entities,
-instead of keeping track of the state in a resource.
-Could add detailed SelectionState Change detection for free with `Added<T>` and `RemovedComponents<T>`.
+Transitioning from `Hovered` to `Selected` might be a bit ugly for change detection.
 
 - Shift+Clicking should not clear previous selection, selects additional entities
 - CTRL+Clicking does not clear previous selection, deselects entities
