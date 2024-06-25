@@ -1,7 +1,8 @@
 use crate::data::ItemId;
+use crate::data::ItemRecipe;
 use crate::utils::TradeIntent;
 use bevy::log::error;
-use bevy::prelude::Component;
+use bevy::prelude::{warn, Component};
 use bevy::utils::HashMap;
 
 #[derive(Component)]
@@ -15,6 +16,7 @@ pub struct InventoryElement {
     pub currently_available: u32,
     pub planned_buying: u32,
     pub planned_selling: u32,
+    pub planned_producing: u32,
     pub total: u32,
 }
 
@@ -78,9 +80,8 @@ impl Inventory {
                 TradeIntent::Buy => {
                     let item = InventoryElement {
                         total: amount,
-                        currently_available: 0,
                         planned_buying: amount,
-                        planned_selling: 0,
+                        ..Default::default()
                     };
                     self.inventory.insert(item_id, item);
                 }
@@ -105,6 +106,79 @@ impl Inventory {
             TradeIntent::Sell => {
                 inventory.currently_available -= amount;
                 inventory.planned_selling -= amount;
+            }
+        }
+    }
+
+    /// Tests if there are enough items in stock to start a production run, and if there's enough
+    /// storage space available to store its yields.
+    pub fn has_enough_items_to_start_production(&self, item_recipe: &ItemRecipe) -> bool {
+        for input in &item_recipe.input {
+            let Some(inventory) = self.inventory.get(&input.item_id) else {
+                return false;
+            };
+
+            if inventory.currently_available - inventory.planned_selling < input.amount {
+                return false;
+            }
+        }
+
+        for output in &item_recipe.output {
+            if let Some(inventory) = self.inventory.get(&output.item_id) {
+                if output.amount + inventory.currently_available + inventory.planned_buying
+                    > self.capacity
+                {
+                    return false;
+                }
+            } else if output.amount + self.used() > self.capacity {
+                return false;
+            }
+        }
+
+        true
+    }
+
+    /// Removes the items required for a production run, and reserves inventory for the yields.
+    pub fn remove_items_to_start_production(&mut self, item_recipe: &ItemRecipe) {
+        for input in &item_recipe.input {
+            let Some(inventory) = self.inventory.get_mut(&input.item_id) else {
+                error!("Inventory Entry did not exist on order completion!");
+                return;
+            };
+
+            inventory.currently_available -= input.amount;
+            inventory.total -= input.amount;
+        }
+
+        for output in &item_recipe.output {
+            if let Some(inventory) = self.inventory.get_mut(&output.item_id) {
+                inventory.planned_producing += output.amount;
+                inventory.total -= output.amount;
+            } else {
+                warn!("Inventory Entry did not exist on order completion!");
+                let item = InventoryElement {
+                    total: output.amount,
+                    planned_producing: output.amount,
+                    ..Default::default()
+                };
+                self.inventory.insert(output.item_id, item);
+            }
+        }
+    }
+
+    pub fn finish_production(&mut self, item_recipe: &ItemRecipe) {
+        for output in &item_recipe.output {
+            if let Some(inventory) = self.inventory.get_mut(&output.item_id) {
+                inventory.currently_available += output.amount;
+                inventory.planned_producing -= output.amount;
+            } else {
+                warn!("Inventory Entry did not exist on production completion!");
+                let item = InventoryElement {
+                    total: output.amount,
+                    currently_available: output.amount,
+                    ..Default::default()
+                };
+                self.inventory.insert(output.item_id, item);
             }
         }
     }

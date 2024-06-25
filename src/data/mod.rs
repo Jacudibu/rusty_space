@@ -1,13 +1,16 @@
 mod item;
+mod item_recipe;
 
 use crate::utils::PriceRange;
 use bevy::prelude::Resource;
 use bevy::utils::HashMap;
-pub use item::{ItemDefinition, ItemId, DEBUG_ITEM_ID_A, DEBUG_ITEM_ID_B, DEBUG_ITEM_ID_C};
+pub use item::*;
+pub use item_recipe::*;
 
 #[derive(Resource)]
 pub struct GameData {
     pub items: HashMap<ItemId, ItemDefinition>,
+    pub item_recipes: HashMap<RecipeId, ItemRecipe>,
 }
 
 impl GameData {
@@ -41,6 +44,11 @@ impl GameData {
             },
         );
 
-        Self { items }
+        let item_recipes = HashMap::new();
+
+        Self {
+            items,
+            item_recipes,
+        }
     }
 }

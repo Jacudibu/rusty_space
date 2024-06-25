@@ -10,5 +10,5 @@ pub struct ItemDefinition {
     pub id: ItemId,
     pub icon: String,
     pub name: String,
-    pub price: PriceRange,
+    pub price: PriceRange, // TODO: consider autocomputing this depending on ingredient price ranges?
 }

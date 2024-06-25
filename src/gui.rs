@@ -167,11 +167,12 @@ pub fn list_selection_details(
                     for (item_id, amount) in storage.inventory() {
                         let item = game_data.items.get(item_id).unwrap();
                         ui.label(format!(
-                            "{} x {} (+{}, -{})",
+                            "{} x {} (+{}, -{}, +!+{})",
                             item.name,
                             amount.currently_available,
                             amount.planned_buying,
-                            amount.planned_selling
+                            amount.planned_selling,
+                            amount.planned_producing
                         ));
                     }
                 }
