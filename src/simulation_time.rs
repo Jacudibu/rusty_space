@@ -1,57 +1,37 @@
-use bevy::prelude::{Res, ResMut, Resource, Time};
+use bevy::prelude::{Res, ResMut, Resource, Time, Virtual};
 use std::time::Duration;
 
+/// Used to schedule things that will happen at a specific time.
+pub type SimulationSeconds = u32;
+
+/// Keeps track of the simulation in seconds. Used to process anything that's supposed to happen at a specific time.
 #[derive(Resource)]
 pub struct SimulationTime {
     /// The total Duration since the simulation has started.
     total: Duration,
-    /// How much time has passed since the last update.
-    delta: Duration,
-    /// How much time has passed since the last update as f32.
-    delta_seconds: f32,
-    /// Multiplier for delta time updates.
-    scale: f32,
 }
 
 impl Default for SimulationTime {
     fn default() -> Self {
         SimulationTime {
-            delta: Duration::ZERO,
             total: Duration::ZERO,
-            delta_seconds: 0.0,
-            scale: 1.0,
         }
     }
 }
 
 impl SimulationTime {
+    #[inline]
     fn advance(&mut self, delta: Duration) {
-        self.delta = delta.mul_f32(self.scale);
-        self.delta_seconds = self.delta.as_secs_f32();
-        self.total += self.delta;
+        self.total += delta;
     }
 
     #[inline]
-    pub fn delta_seconds(&self) -> f32 {
-        self.delta_seconds
-    }
-
-    #[inline]
-    pub fn total_seconds(&self) -> u32 {
-        self.total.as_secs() as u32 // using the full u64 would be overkill
-    }
-
-    #[inline]
-    pub fn scale(&self) -> f32 {
-        self.scale
-    }
-
-    #[inline]
-    pub fn elapsed_seconds_f32(&self) -> f32 {
-        self.total.as_secs_f32()
+    pub fn seconds(&self) -> SimulationSeconds {
+        self.total.as_secs() as SimulationSeconds // using the full u64 would be overkill
     }
 }
 
-pub fn update(mut simulation_time: ResMut<SimulationTime>, real_time: Res<Time>) {
-    simulation_time.advance(real_time.delta());
+/// Should always run **after** [bevy::time::TimeSystem]
+pub fn update(mut simulation_time: ResMut<SimulationTime>, bevy_time: Res<Time<Virtual>>) {
+    simulation_time.advance(bevy_time.delta());
 }

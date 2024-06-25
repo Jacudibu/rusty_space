@@ -66,7 +66,7 @@ fn main() {
     .init_state::<gui::MouseCursorOverUiState>()
     .add_event::<ship_ai::TaskFinishedEvent>()
     .add_systems(Startup, (on_startup, gui::initialize.after(on_startup)))
-    .add_systems(First, simulation_time::update)
+    .add_systems(First, simulation_time::update.after(bevy::time::TimeSystem))
     .add_systems(
         PreUpdate,
         (
