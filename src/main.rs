@@ -1,12 +1,13 @@
 use crate::data::GameData;
 use crate::entity_selection::MouseInteractionGizmos;
 use crate::mouse_cursor::MouseCursor;
+use crate::simulation_time::SimulationTime;
 use bevy::asset::AssetServer;
 use bevy::core::Name;
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::math::Vec3;
 use bevy::prelude::{
-    default, App, AppExtStates, AppGizmoBuilder, Camera2dBundle, Commands, Handle, Image,
+    default, App, AppExtStates, AppGizmoBuilder, Camera2dBundle, Commands, First, Handle, Image,
     ImagePlugin, IntoSystemConfigs, PluginGroup, PreUpdate, Quat, Res, Resource, Startup,
     Transform, Update, Vec2, Window, WindowPlugin,
 };
@@ -25,6 +26,7 @@ mod gui;
 mod mouse_cursor;
 mod physics;
 mod ship_ai;
+mod simulation_time;
 mod utils;
 
 const SHIP_COUNT: i32 = 10;
@@ -59,10 +61,12 @@ fn main() {
     .add_plugins(EguiPlugin)
     .insert_resource(GameData::mock_data())
     .insert_resource(MouseCursor::default())
+    .insert_resource(SimulationTime::default())
     .init_gizmo_group::<MouseInteractionGizmos>()
     .init_state::<gui::MouseCursorOverUiState>()
     .add_event::<ship_ai::TaskFinishedEvent>()
     .add_systems(Startup, (on_startup, gui::initialize.after(on_startup)))
+    .add_systems(First, simulation_time::update)
     .add_systems(
         PreUpdate,
         (
