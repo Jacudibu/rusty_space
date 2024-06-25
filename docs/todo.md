@@ -86,6 +86,17 @@ Sectors keep track of the entities inside them, allowing for localized physics a
 - Draw borders around sectors
 - UI should display the name of the sector that's currently being hovered over
 
+# Sector Resources
+
+Sectors have different resource distributions, requiring either trade or expansion to fix local scarcity and rising
+demands.
+
+- Asteroids could randomly spawn at the sector edges and drift through them, until either getting harvested or leaving
+  the sector again. Density and yields depend on sector values. Wouldn't bother with station collisions, though extra
+  protective measurements could be a nice excuse to make stations more expensive in these sectors.
+- Gas Clouds... no clue. Maybe having ships or stations suck up the atmosphere of a Gas Giant? But that would make
+  limiting hourly yields fairly hard or unlogical.
+
 # Multiplayer
 
 Implement multiplayer with selectable "Sync Intensity" values. (It's just a state, ez)
@@ -116,7 +127,8 @@ dynamically decrease faction standing.
 Two ways of achieving this:
 a) Switch to `bevy_mod_picking` and turn existing code into a simple circle overlapping backend.
 b) Units aren't completely selected until the mouse button is actually released. Add some kind of Hover Step.
-Transitioning from `Hovered` to `Selected` might be a bit ugly for change detection.
+Transitioning from `Hovered` to `Selected` might be a bit ugly for change detection as long as it's only managed via
+components.
 
 - Shift+Clicking should not clear previous selection, selects additional entities
 - CTRL+Clicking does not clear previous selection, deselects entities
