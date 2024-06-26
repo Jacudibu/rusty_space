@@ -3,7 +3,7 @@ use crate::components::{
     Velocity,
 };
 use crate::data::ItemId;
-use crate::production_manager::TestIfEntityCanStartProductionEvent;
+use crate::production::InventoryUpdateForProductionEvent;
 use crate::utils::TradeIntent;
 use bevy::math::EulerRot;
 use bevy::prelude::{
@@ -120,7 +120,7 @@ pub fn complete_tasks(
     mut query: Query<&mut TaskQueue>,
     mut commands: Commands,
     mut all_storages: Query<&mut Inventory>,
-    mut event_writer: EventWriter<TestIfEntityCanStartProductionEvent>,
+    mut event_writer: EventWriter<InventoryUpdateForProductionEvent>,
 ) {
     for event in event_reader.read() {
         let this = event.entity;
@@ -141,8 +141,8 @@ pub fn complete_tasks(
                                     other_inv.complete_order(item_id, TradeIntent::Buy, amount);
                                 }
                             }
-                            event_writer.send(TestIfEntityCanStartProductionEvent::new(this));
-                            event_writer.send(TestIfEntityCanStartProductionEvent::new(other));
+                            event_writer.send(InventoryUpdateForProductionEvent::new(this));
+                            event_writer.send(InventoryUpdateForProductionEvent::new(other));
                         }
                         Err(e) => {
                             error!(

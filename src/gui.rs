@@ -4,7 +4,7 @@ use crate::components::{
 };
 use crate::data::GameData;
 use crate::entity_selection::Selected;
-use crate::simulation_time::{SimulationSeconds, SimulationTime};
+use crate::simulation_time::SimulationTime;
 use crate::SpriteHandles;
 use bevy::prelude::{
     AssetServer, Commands, Entity, Name, NextState, Query, Res, ResMut, Resource, State, States,
@@ -13,7 +13,6 @@ use bevy::prelude::{
 use bevy_egui::egui::load::SizedTexture;
 use bevy_egui::egui::{Align2, Ui};
 use bevy_egui::{egui, EguiContexts};
-use std::fmt::format;
 
 #[derive(Default)]
 struct SelectableCount {
@@ -180,7 +179,7 @@ pub fn list_selection_details(
                     for (item_id, amount) in storage.inventory() {
                         let item = game_data.items.get(item_id).unwrap();
                         ui.label(format!(
-                            "{} x {} (+{}, -{}, +!+{})",
+                            "{} x {} (+{}, -{}, +{}(Prod))",
                             item.name,
                             amount.currently_available,
                             amount.planned_buying,

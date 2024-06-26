@@ -1,7 +1,7 @@
 use crate::data::GameData;
 use crate::entity_selection::MouseInteractionGizmos;
 use crate::mouse_cursor::MouseCursor;
-use crate::production_manager::GlobalProductionState;
+use crate::production::ProductionPlugin;
 use crate::simulation_time::SimulationTime;
 use bevy::asset::AssetServer;
 use bevy::core::Name;
@@ -26,7 +26,7 @@ mod entity_selection;
 mod gui;
 mod mouse_cursor;
 mod physics;
-mod production_manager;
+mod production;
 mod ship_ai;
 mod simulation_time;
 mod utils;
@@ -61,15 +61,13 @@ fn main() {
             .set(ImagePlugin::default_nearest()),
     )
     .add_plugins(EguiPlugin)
+    .add_plugins(ProductionPlugin)
     .insert_resource(GameData::mock_data())
     .insert_resource(MouseCursor::default())
     .insert_resource(SimulationTime::default())
-    .insert_resource(GlobalProductionState::default())
     .init_gizmo_group::<MouseInteractionGizmos>()
     .init_state::<gui::MouseCursorOverUiState>()
     .add_event::<ship_ai::TaskFinishedEvent>()
-    .add_event::<production_manager::ProductionStartedEvent>()
-    .add_event::<production_manager::TestIfEntityCanStartProductionEvent>()
     .add_systems(Startup, (on_startup, gui::initialize.after(on_startup)))
     .add_systems(First, simulation_time::update.after(bevy::time::TimeSystem))
     .add_systems(
@@ -92,9 +90,6 @@ fn main() {
             entity_selection::on_selection_changed
                 .after(entity_selection::process_mouse_clicks)
                 .after(entity_selection::update_mouse_interaction),
-            production_manager::update,
-            production_manager::on_production_started,
-            production_manager::check_if_production_can_start_on_inventory_updates,
             ship_ai::handle_idle_ships,
             ship_ai::run_ship_tasks,
             ship_ai::complete_tasks.after(ship_ai::run_ship_tasks),
