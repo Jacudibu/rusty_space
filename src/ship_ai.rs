@@ -3,6 +3,7 @@ use crate::components::{
     Velocity,
 };
 use crate::data::ItemId;
+use crate::production_manager::TestIfEntityCanStartProductionEvent;
 use crate::utils::TradeIntent;
 use bevy::math::EulerRot;
 use bevy::prelude::{
@@ -119,28 +120,34 @@ pub fn complete_tasks(
     mut query: Query<&mut TaskQueue>,
     mut commands: Commands,
     mut all_storages: Query<&mut Inventory>,
+    mut event_writer: EventWriter<TestIfEntityCanStartProductionEvent>,
 ) {
     for event in event_reader.read() {
-        if let Ok(mut task_queue) = query.get_mut(event.entity) {
+        let this = event.entity;
+        if let Ok(mut task_queue) = query.get_mut(this) {
             match task_queue.queue.pop_front().unwrap() {
                 ShipTask::DoNothing => {}
                 ShipTask::MoveTo(_) => {}
                 ShipTask::ExchangeWares(other, data) => {
-                    match all_storages.get_many_mut([event.entity, other]) {
-                        Ok([mut this_inv, mut other_inv]) => match data {
-                            ExchangeWareData::Buy(item_id, amount) => {
-                                this_inv.complete_order(item_id, TradeIntent::Buy, amount);
-                                other_inv.complete_order(item_id, TradeIntent::Sell, amount);
+                    match all_storages.get_many_mut([this, other]) {
+                        Ok([mut this_inv, mut other_inv]) => {
+                            match data {
+                                ExchangeWareData::Buy(item_id, amount) => {
+                                    this_inv.complete_order(item_id, TradeIntent::Buy, amount);
+                                    other_inv.complete_order(item_id, TradeIntent::Sell, amount);
+                                }
+                                ExchangeWareData::Sell(item_id, amount) => {
+                                    this_inv.complete_order(item_id, TradeIntent::Sell, amount);
+                                    other_inv.complete_order(item_id, TradeIntent::Buy, amount);
+                                }
                             }
-                            ExchangeWareData::Sell(item_id, amount) => {
-                                this_inv.complete_order(item_id, TradeIntent::Sell, amount);
-                                other_inv.complete_order(item_id, TradeIntent::Buy, amount);
-                            }
-                        },
+                            event_writer.send(TestIfEntityCanStartProductionEvent::new(this));
+                            event_writer.send(TestIfEntityCanStartProductionEvent::new(other));
+                        }
                         Err(e) => {
                             error!(
-                                "Failed to execute ware exchange between {} and {other}: {:?}",
-                                event.entity, e
+                                "Failed to execute ware exchange between {this} and {other}: {:?}",
+                                e
                             );
                             continue;
                         }

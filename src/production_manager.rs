@@ -1,7 +1,9 @@
 use crate::components::{BuyOrders, Inventory, ProductionModule, SellOrders};
-use crate::data::{GameData, RecipeId};
+use crate::data::{GameData, ItemRecipe, RecipeId};
 use crate::simulation_time::{SimulationSeconds, SimulationTime};
-use bevy::prelude::{error, Entity, Event, EventReader, EventWriter, Query, Res, ResMut, Resource};
+use bevy::prelude::{
+    error, Entity, Event, EventReader, EventWriter, Mut, Query, Res, ResMut, Resource,
+};
 use std::cmp::Ordering;
 use std::collections::BinaryHeap;
 
@@ -9,9 +11,17 @@ use std::collections::BinaryHeap;
 ///
 /// By using a binary heap to store references and timers to all ongoing production,
 /// testing for finished production runs is O(1), and starting a new run is O(1)~ + O(log n).
-#[derive(Resource, Default)]
+#[derive(Resource)]
 pub struct GlobalProductionState {
     elements: BinaryHeap<SingleProductionState>,
+}
+
+impl Default for GlobalProductionState {
+    fn default() -> Self {
+        Self {
+            elements: BinaryHeap::with_capacity(200),
+        }
+    }
 }
 
 impl GlobalProductionState {
@@ -96,31 +106,116 @@ pub fn update(
 
             inventory.finish_production(recipe);
             if inventory.has_enough_items_to_start_production(recipe) {
-                inventory.remove_items_to_start_production(recipe);
-
-                let finish_timestamp = current + recipe.duration;
-                production.current_run_finished_at = Some(finish_timestamp);
-
-                production_start_event_writer.send(ProductionStartedEvent {
-                    entity: next.entity,
-                    recipe_id: next.recipe,
-                    finishes_at: finish_timestamp,
-                });
+                start_production(
+                    &mut production_start_event_writer,
+                    current,
+                    next.entity,
+                    &mut production,
+                    &mut inventory,
+                    recipe,
+                );
             } else {
                 production.current_run_finished_at = None;
             }
 
-            if let Some(mut buy_orders) = buy_orders {
-                buy_orders.update(&inventory);
-            }
-            if let Some(mut sell_orders) = sell_orders {
-                sell_orders.update(&inventory);
-            }
+            update_orders(&inventory, buy_orders, sell_orders);
         } else {
             error!(
                 "Was unable to trigger production finish for entity {}!",
                 next.entity
             );
         }
+    }
+}
+
+/// This event should be sent whenever an entity's inventory is being updated outside the production manager
+///
+/// More performant than querying with Changed<Inventory> since bevy won't need to iterate
+/// through all entities matching the query every frame, plus it won't trigger itself recursively
+/// ...the only risk is that we may forget to send it on inventory changes. What could go wrong?
+#[derive(Event)]
+pub struct TestIfEntityCanStartProductionEvent {
+    entity: Entity,
+}
+
+impl TestIfEntityCanStartProductionEvent {
+    pub fn new(entity: Entity) -> Self {
+        Self { entity }
+    }
+}
+
+pub fn check_if_production_can_start_on_inventory_updates(
+    simulation_time: Res<SimulationTime>,
+    game_data: Res<GameData>,
+    mut event_reader: EventReader<TestIfEntityCanStartProductionEvent>,
+    mut production_start_event_writer: EventWriter<ProductionStartedEvent>,
+    mut query: Query<(
+        &mut ProductionModule,
+        &mut Inventory,
+        Option<&mut BuyOrders>,
+        Option<&mut SellOrders>,
+    )>,
+) {
+    let current = simulation_time.seconds();
+    for event in event_reader.read() {
+        let Ok((mut production, mut inventory, buy_orders, sell_orders)) =
+            query.get_mut(event.entity)
+        else {
+            continue;
+        };
+
+        if production.current_run_finished_at.is_some() || production.recipe.is_none() {
+            continue;
+        }
+
+        let recipe = game_data
+            .item_recipes
+            .get(&production.recipe.unwrap())
+            .unwrap();
+        if inventory.has_enough_items_to_start_production(recipe) {
+            start_production(
+                &mut production_start_event_writer,
+                current,
+                event.entity,
+                &mut production,
+                &mut inventory,
+                recipe,
+            );
+
+            update_orders(&inventory, buy_orders, sell_orders);
+        }
+    }
+}
+
+fn start_production(
+    production_start_event_writer: &mut EventWriter<ProductionStartedEvent>,
+    current: SimulationSeconds,
+    entity: Entity,
+    production: &mut Mut<ProductionModule>,
+    inventory: &mut Mut<Inventory>,
+    recipe: &ItemRecipe,
+) {
+    inventory.remove_items_to_start_production(recipe);
+
+    let finish_timestamp = current + recipe.duration;
+    production.current_run_finished_at = Some(finish_timestamp);
+
+    production_start_event_writer.send(ProductionStartedEvent {
+        entity,
+        recipe_id: recipe.id,
+        finishes_at: finish_timestamp,
+    });
+}
+
+fn update_orders(
+    inventory: &Inventory,
+    buy_orders: Option<Mut<BuyOrders>>,
+    sell_orders: Option<Mut<SellOrders>>,
+) {
+    if let Some(mut buy_orders) = buy_orders {
+        buy_orders.update(inventory);
+    }
+    if let Some(mut sell_orders) = sell_orders {
+        sell_orders.update(inventory);
     }
 }
