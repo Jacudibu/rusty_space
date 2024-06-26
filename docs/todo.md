@@ -29,8 +29,9 @@ Too lazy to manage a whole kanban board and issues for these things yet. Roughly
 
 # Production
 
-- Add recipes to items
-- Stations will process one or more ingredients to one or two new items, depending on their installed modules.
+- ~~Add item recipes~~
+- ~~Stations will process one or more ingredients to one or more new items~~
+- Stations can have multiple production modules, with individual productions
 - Enable optional Variable yield depending on (placeholder) Sector Settings
 - Shipyard Module will produce new ships
 
