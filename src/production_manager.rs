@@ -164,14 +164,11 @@ pub fn check_if_production_can_start_on_inventory_updates(
             continue;
         };
 
-        if production.current_run_finished_at.is_some() || production.recipe.is_none() {
+        if production.current_run_finished_at.is_some() {
             continue;
         }
 
-        let recipe = game_data
-            .item_recipes
-            .get(&production.recipe.unwrap())
-            .unwrap();
+        let recipe = game_data.item_recipes.get(&production.recipe).unwrap();
         if inventory.has_enough_items_to_start_production(recipe) {
             start_production(
                 &mut production_start_event_writer,

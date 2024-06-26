@@ -139,7 +139,7 @@ fn spawn_station(
         BuyOrders::mock_buying_item(buys),
         SellOrders::mock_selling_item(sells),
         ProductionModule {
-            recipe: Some(produces),
+            recipe: produces,
             current_run_finished_at: None,
         },
     ));

@@ -1,9 +1,10 @@
 use crate::components::{
-    BuyOrders, ExchangeWareData, Inventory, SelectableEntity, SellOrders, ShipTask, TaskQueue,
-    Velocity,
+    BuyOrders, ExchangeWareData, Inventory, ProductionModule, SelectableEntity, SellOrders,
+    ShipTask, TaskQueue, Velocity,
 };
 use crate::data::GameData;
 use crate::entity_selection::Selected;
+use crate::simulation_time::{SimulationSeconds, SimulationTime};
 use crate::SpriteHandles;
 use bevy::prelude::{
     AssetServer, Commands, Entity, Name, NextState, Query, Res, ResMut, Resource, State, States,
@@ -12,6 +13,7 @@ use bevy::prelude::{
 use bevy_egui::egui::load::SizedTexture;
 use bevy_egui::egui::{Align2, Ui};
 use bevy_egui::{egui, EguiContexts};
+use std::fmt::format;
 
 #[derive(Default)]
 struct SelectableCount {
@@ -125,6 +127,7 @@ pub fn list_selection_icons_and_counts(
 pub fn list_selection_details(
     game_data: Res<GameData>,
     mut context: EguiContexts,
+    simulation_time: Res<SimulationTime>,
     images: Res<UiIcons>,
     selected: Query<
         (
@@ -136,6 +139,7 @@ pub fn list_selection_details(
             Option<&TaskQueue>,
             Option<&BuyOrders>,
             Option<&SellOrders>,
+            Option<&ProductionModule>,
         ),
         With<Selected>,
     >,
@@ -155,8 +159,17 @@ pub fn list_selection_details(
             .collapsible(false)
             .resizable(false)
             .show(context.ctx_mut(), |ui| {
-                let (_, selectable, name, storage, velocity, task_queue, buy_orders, sell_orders) =
-                    selected.single();
+                let (
+                    _,
+                    selectable,
+                    name,
+                    storage,
+                    velocity,
+                    task_queue,
+                    buy_orders,
+                    sell_orders,
+                    production_module,
+                ) = selected.single();
                 draw_ship_summary_row(&images, ui, selectable, name, storage, velocity, task_queue);
 
                 ui.heading("Inventory");
@@ -174,6 +187,20 @@ pub fn list_selection_details(
                             amount.planned_selling,
                             amount.planned_producing
                         ));
+                    }
+                }
+
+                if let Some(production) = production_module {
+                    ui.heading("Production");
+                    let recipe = game_data.item_recipes.get(&production.recipe).unwrap();
+                    ui.label(format!("Active Recipe: {}", recipe.name));
+                    if let Some(finished_at) = production.current_run_finished_at {
+                        ui.label(format!(
+                            "Done in {}",
+                            finished_at - simulation_time.seconds()
+                        ));
+                    } else {
+                        ui.label("(Inactive)");
                     }
                 }
 
@@ -237,7 +264,7 @@ pub fn list_selection_details(
         .collapsible(false)
         .resizable(false)
         .show(context.ctx_mut(), |ui| {
-            for (_, selectable, name, storage, velocity, task_queue, _, _) in selected.iter() {
+            for (_, selectable, name, storage, velocity, task_queue, _, _, _) in selected.iter() {
                 draw_ship_summary_row(&images, ui, selectable, name, storage, velocity, task_queue);
             }
         });
