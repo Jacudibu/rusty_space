@@ -1,5 +1,5 @@
 use crate::components::{BuyOrders, Inventory, ProductionModule, SellOrders};
-use crate::data::{GameData, ItemRecipe, RecipeId};
+use crate::data::{GameData, ItemRecipe};
 use crate::simulation_time::{SimulationSeconds, SimulationTime};
 use bevy::prelude::{
     error, Entity, Event, EventReader, EventWriter, Mut, Query, Res, ResMut, Resource,
@@ -34,7 +34,6 @@ impl GlobalProductionState {
 #[derive(Eq, PartialEq)]
 pub struct SingleProductionState {
     pub entity: Entity,
-    pub recipe: RecipeId,
     pub finished_at: SimulationSeconds,
 }
 
@@ -42,7 +41,6 @@ impl From<&ProductionStartedEvent> for SingleProductionState {
     fn from(value: &ProductionStartedEvent) -> Self {
         SingleProductionState {
             entity: value.entity,
-            recipe: value.recipe_id,
             finished_at: value.finishes_at,
         }
     }
@@ -65,7 +63,6 @@ impl PartialOrd for SingleProductionState {
 #[derive(Event)]
 pub struct ProductionStartedEvent {
     entity: Entity,
-    recipe_id: RecipeId,
     finishes_at: SimulationSeconds,
 }
 
@@ -102,7 +99,7 @@ pub fn update(
         if let Ok((mut production, mut inventory, buy_orders, sell_orders)) =
             query.get_mut(next.entity)
         {
-            let recipe = game_data.item_recipes.get(&next.recipe).unwrap();
+            let recipe = game_data.item_recipes.get(&production.recipe).unwrap();
 
             inventory.finish_production(recipe);
             if inventory.has_enough_items_to_start_production(recipe) {
@@ -199,7 +196,6 @@ fn start_production(
 
     production_start_event_writer.send(ProductionStartedEvent {
         entity,
-        recipe_id: recipe.id,
         finishes_at: finish_timestamp,
     });
 }
