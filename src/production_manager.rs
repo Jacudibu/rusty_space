@@ -92,7 +92,7 @@ pub fn update(
 ) {
     let current = simulation_time.seconds();
     while let Some(next) = global_production_state.elements.peek() {
-        if current > next.finished_at {
+        if current < next.finished_at {
             break;
         }
 

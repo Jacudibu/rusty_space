@@ -3,6 +3,10 @@ use crate::simulation_time::SimulationSeconds;
 
 pub type RecipeId = u32;
 
+pub const RECIPE_A_ID: RecipeId = 1;
+pub const RECIPE_B_ID: RecipeId = 2;
+pub const RECIPE_C_ID: RecipeId = 3;
+
 pub struct ItemRecipe {
     /// Unique ID to differentiate between recipes
     pub id: RecipeId,

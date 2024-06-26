@@ -44,7 +44,55 @@ impl GameData {
             },
         );
 
-        let item_recipes = HashMap::new();
+        let mut item_recipes = HashMap::new();
+        item_recipes.insert(
+            RECIPE_A_ID,
+            ItemRecipe {
+                id: RECIPE_A_ID,
+                name: "5C -> 10A".into(),
+                duration: 10,
+                input: vec![ItemRecipeElement {
+                    item_id: DEBUG_ITEM_ID_C,
+                    amount: 5,
+                }],
+                output: vec![ItemRecipeElement {
+                    item_id: DEBUG_ITEM_ID_A,
+                    amount: 10,
+                }],
+            },
+        );
+        item_recipes.insert(
+            RECIPE_B_ID,
+            ItemRecipe {
+                id: RECIPE_B_ID,
+                name: "5A -> 10B".into(),
+                duration: 20,
+                input: vec![ItemRecipeElement {
+                    item_id: DEBUG_ITEM_ID_A,
+                    amount: 5,
+                }],
+                output: vec![ItemRecipeElement {
+                    item_id: DEBUG_ITEM_ID_B,
+                    amount: 13,
+                }],
+            },
+        );
+        item_recipes.insert(
+            RECIPE_C_ID,
+            ItemRecipe {
+                id: RECIPE_C_ID,
+                name: "5B -> 10C".into(),
+                duration: 30,
+                input: vec![ItemRecipeElement {
+                    item_id: DEBUG_ITEM_ID_B,
+                    amount: 5,
+                }],
+                output: vec![ItemRecipeElement {
+                    item_id: DEBUG_ITEM_ID_C,
+                    amount: 10,
+                }],
+            },
+        );
 
         Self {
             items,

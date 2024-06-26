@@ -94,7 +94,7 @@ impl Inventory {
 
     pub fn complete_order(&mut self, item_id: ItemId, intent: TradeIntent, amount: u32) {
         let Some(inventory) = self.inventory.get_mut(&item_id) else {
-            error!("Inventory Entry did not exist on order completion!");
+            error!("Inventory Entry did not exist on order completion! (A)");
             return;
         };
 
@@ -142,7 +142,7 @@ impl Inventory {
     pub fn remove_items_to_start_production(&mut self, item_recipe: &ItemRecipe) {
         for input in &item_recipe.input {
             let Some(inventory) = self.inventory.get_mut(&input.item_id) else {
-                error!("Inventory Entry did not exist on order completion!");
+                warn!("Ingredient inventory entry did not exist when starting production!");
                 return;
             };
 
@@ -153,9 +153,9 @@ impl Inventory {
         for output in &item_recipe.output {
             if let Some(inventory) = self.inventory.get_mut(&output.item_id) {
                 inventory.planned_producing += output.amount;
-                inventory.total -= output.amount;
+                inventory.total += output.amount;
             } else {
-                warn!("Inventory Entry did not exist on order completion!");
+                warn!("Product inventory entry did not exist when starting production!");
                 let item = InventoryElement {
                     total: output.amount,
                     planned_producing: output.amount,
@@ -172,7 +172,7 @@ impl Inventory {
                 inventory.currently_available += output.amount;
                 inventory.planned_producing -= output.amount;
             } else {
-                warn!("Inventory Entry did not exist on production completion!");
+                warn!("Product inventory entry did not exist on production completion!");
                 let item = InventoryElement {
                     total: output.amount,
                     currently_available: output.amount,

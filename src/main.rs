@@ -125,6 +125,7 @@ fn spawn_station(
     pos: Vec2,
     buys: &ItemDefinition,
     sells: &ItemDefinition,
+    produces: RecipeId,
 ) {
     commands.spawn((
         Name::new(name.to_string()),
@@ -137,6 +138,10 @@ fn spawn_station(
         Inventory::new_with_content(MOCK_INVENTORY_SIZE, vec![(sells.id, MOCK_INVENTORY_SIZE)]),
         BuyOrders::mock_buying_item(buys),
         SellOrders::mock_selling_item(sells),
+        ProductionModule {
+            recipe: Some(produces),
+            current_run_finished_at: None,
+        },
     ));
 }
 
@@ -163,6 +168,7 @@ pub fn on_startup(
         Vec2::new(-200.0, -200.0),
         &game_data.items[&DEBUG_ITEM_ID_A],
         &game_data.items[&DEBUG_ITEM_ID_B],
+        RECIPE_B_ID,
     );
     spawn_station(
         &mut commands,
@@ -171,22 +177,16 @@ pub fn on_startup(
         Vec2::new(200.0, -200.0),
         &game_data.items[&DEBUG_ITEM_ID_B],
         &game_data.items[&DEBUG_ITEM_ID_C],
+        RECIPE_C_ID,
     );
     spawn_station(
         &mut commands,
         &sprites,
         "Station C",
-        Vec2::new(200.0, 200.0),
+        Vec2::new(0.0, 200.0),
         &game_data.items[&DEBUG_ITEM_ID_C],
         &game_data.items[&DEBUG_ITEM_ID_A],
-    );
-    spawn_station(
-        &mut commands,
-        &sprites,
-        "Station D",
-        Vec2::new(-200.0, 200.0),
-        &game_data.items[&DEBUG_ITEM_ID_C],
-        &game_data.items[&DEBUG_ITEM_ID_B],
+        RECIPE_A_ID,
     );
 
     for i in 0..SHIP_COUNT {
