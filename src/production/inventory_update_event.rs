@@ -1,5 +1,5 @@
 use crate::components::{BuyOrders, Inventory, SellOrders};
-use crate::data::GameData;
+use crate::game_data::GameData;
 use crate::production::production_started_event::ProductionStartedEvent;
 use crate::production::{production_runner, ProductionComponent};
 use crate::simulation_time::SimulationTime;

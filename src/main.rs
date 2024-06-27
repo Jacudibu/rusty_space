@@ -1,7 +1,8 @@
-use crate::data::GameData;
 use crate::entity_selection::MouseInteractionGizmos;
+use crate::game_data::GameData;
 use crate::mouse_cursor::MouseCursor;
 use crate::production::ProductionPlugin;
+use crate::session_data::SessionData;
 use crate::simulation_time::SimulationTime;
 use bevy::asset::AssetServer;
 use bevy::core::Name;
@@ -18,13 +19,14 @@ use bevy_egui::EguiPlugin;
 mod camera;
 mod components;
 mod constants;
-mod data;
 mod entity_selection;
+mod game_data;
 mod gui;
 mod mock_helpers;
 mod mouse_cursor;
 mod physics;
 mod production;
+mod session_data;
 mod ship_ai;
 mod simulation_time;
 mod utils;
@@ -45,6 +47,7 @@ fn main() {
     .add_plugins(EguiPlugin)
     .add_plugins(ProductionPlugin)
     .insert_resource(GameData::mock_data())
+    .insert_resource(SessionData::mock_data())
     .insert_resource(MouseCursor::default())
     .insert_resource(SimulationTime::default())
     .init_gizmo_group::<MouseInteractionGizmos>()

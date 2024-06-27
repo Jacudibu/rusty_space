@@ -1,5 +1,5 @@
 use crate::components::{BuyOrders, Inventory, SellOrders};
-use crate::data::{GameData, ItemRecipe, ProductionModuleId};
+use crate::game_data::{GameData, ItemRecipe, ProductionModuleId};
 use crate::production::production_started_event::ProductionStartedEvent;
 use crate::production::state::GlobalProductionState;
 use crate::production::{ProductionComponent, ProductionModule};

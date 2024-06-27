@@ -1,4 +1,4 @@
-use crate::data::ProductionModuleId;
+use crate::game_data::ProductionModuleId;
 use crate::production::production_started_event::ProductionStartedEvent;
 use crate::simulation_time::SimulationSeconds;
 use bevy::prelude::{Entity, Resource};

@@ -2,7 +2,7 @@ use crate::components::{
     BuyOrders, Engine, ExchangeWareData, Inventory, SellOrders, ShipBehavior, ShipTask, TaskQueue,
     Velocity,
 };
-use crate::data::ItemId;
+use crate::game_data::ItemId;
 use crate::production::InventoryUpdateForProductionEvent;
 use crate::utils::TradeIntent;
 use bevy::math::EulerRot;

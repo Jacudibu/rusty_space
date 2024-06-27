@@ -135,3 +135,8 @@ components.
 - Shift+Clicking should not clear previous selection, selects additional entities
 - CTRL+Clicking does not clear previous selection, deselects entities
 
+# Upgrades & Research
+
+Certain properties of Stations and ships should be upgradeable in small % intervals by investing a big amount of
+resources.
+E.g. Engine Speed or turning angle, or station storage.

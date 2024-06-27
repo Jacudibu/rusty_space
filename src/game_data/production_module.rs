@@ -1,4 +1,4 @@
-use crate::data::RecipeId;
+use crate::game_data::RecipeId;
 
 pub type ProductionModuleId = u32;
 

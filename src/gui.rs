@@ -2,8 +2,8 @@ use crate::components::{
     BuyOrders, ExchangeWareData, Inventory, SelectableEntity, SellOrders, ShipTask, TaskQueue,
     Velocity,
 };
-use crate::data::GameData;
 use crate::entity_selection::Selected;
+use crate::game_data::GameData;
 use crate::production::ProductionComponent;
 use crate::simulation_time::SimulationTime;
 use crate::SpriteHandles;

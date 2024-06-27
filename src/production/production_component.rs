@@ -1,4 +1,4 @@
-use crate::data::{ProductionModuleId, RecipeId};
+use crate::game_data::{ProductionModuleId, RecipeId};
 use bevy::prelude::Component;
 use bevy::utils::HashMap;
 

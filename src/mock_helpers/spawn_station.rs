@@ -1,5 +1,5 @@
 use crate::components::{BuyOrders, Inventory, SelectableEntity, SellOrders};
-use crate::data::{
+use crate::game_data::{
     GameData, ItemDefinition, ProductionModuleId, RecipeId, DEBUG_ITEM_ID_A, DEBUG_ITEM_ID_B,
     DEBUG_ITEM_ID_C, PRODUCTION_MODULE_A_ID, PRODUCTION_MODULE_B_ID, PRODUCTION_MODULE_C_ID,
     RECIPE_A_ID, RECIPE_B_ID, RECIPE_C_ID,

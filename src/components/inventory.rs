@@ -1,5 +1,5 @@
-use crate::data::ItemId;
-use crate::data::ItemRecipe;
+use crate::game_data::ItemId;
+use crate::game_data::ItemRecipe;
 use crate::utils::TradeIntent;
 use bevy::log::error;
 use bevy::prelude::{warn, Component};

@@ -1,4 +1,4 @@
-use crate::data::ProductionModuleId;
+use crate::game_data::ProductionModuleId;
 use crate::production::state::{GlobalProductionState, SingleProductionState};
 use crate::simulation_time::SimulationSeconds;
 use bevy::prelude::{Entity, Event, EventReader, ResMut};

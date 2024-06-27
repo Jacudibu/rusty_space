@@ -1,4 +1,4 @@
-use crate::data::ItemId;
+use crate::game_data::ItemId;
 use bevy::prelude::{Component, Entity};
 use std::collections::VecDeque;
 

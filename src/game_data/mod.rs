@@ -1,18 +1,21 @@
 mod item;
 mod item_recipe;
 mod production_module;
+mod shipyard_module;
 
 use crate::utils::PriceRange;
 use bevy::prelude::Resource;
 use bevy::utils::HashMap;
 
-pub use {item::*, item_recipe::*, production_module::*};
+pub use {item::*, item_recipe::*, production_module::*, shipyard_module::*};
 
+/// Constant Data which is parsed from files at game start and doesn't change without a restart.
 #[derive(Resource)]
 pub struct GameData {
     pub items: HashMap<ItemId, ItemDefinition>,
     pub item_recipes: HashMap<RecipeId, ItemRecipe>,
     pub production_modules: HashMap<ProductionModuleId, ProductionModuleDefinition>,
+    pub shipyard_modules: HashMap<ShipyardModuleId, ShipyardModuleDefinition>,
 }
 
 impl GameData {
@@ -123,10 +126,19 @@ impl GameData {
             ),
         ]);
 
+        let shipyard_modules = HashMap::from([(
+            SHIPYARD_MODULE_ID,
+            ShipyardModuleDefinition {
+                id: SHIPYARD_MODULE_ID,
+                name: "Debug Shipyard".to_string(),
+            },
+        )]);
+
         Self {
             items,
             item_recipes,
             production_modules,
+            shipyard_modules,
         }
     }
 }

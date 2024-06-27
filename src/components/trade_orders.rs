@@ -1,7 +1,7 @@
 use crate::components::inventory::InventoryElement;
 use crate::components::Inventory;
 use crate::constants;
-use crate::data::{ItemDefinition, ItemId};
+use crate::game_data::{ItemDefinition, ItemId};
 use crate::utils::PriceRange;
 use bevy::prelude::Component;
 use bevy::utils::HashMap;
