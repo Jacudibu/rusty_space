@@ -33,7 +33,7 @@ Too lazy to manage a whole kanban board and issues for these things yet. Roughly
 - ~~Stations will process one or more ingredients to one or more new items~~
 - ~~Stations can have multiple production modules, with individual productions~~
 - Enable optional Variable yield depending on (placeholder) Sector Settings
-- Shipyard Module will produce new ships
+- ~~Shipyard Module will produce new ships~~
 
 # Less Debug Values
 
