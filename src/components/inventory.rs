@@ -1,5 +1,5 @@
-use crate::game_data::ItemId;
 use crate::game_data::ItemRecipe;
+use crate::game_data::{ItemId, ItemRecipeElement};
 use crate::utils::TradeIntent;
 use bevy::log::error;
 use bevy::prelude::{warn, Component};
@@ -110,34 +110,20 @@ impl Inventory {
         }
     }
 
-    /// Tests if there are enough items in stock to start a production run, and if there's enough
-    /// storage space available to store its yields.
-    pub fn has_enough_items_to_start_production(
+    /// Tests if there are enough items in stock to start a production run
+    pub fn has_enough_items_in_inventory(
         &self,
-        item_recipe: &ItemRecipe,
+        input: &Vec<ItemRecipeElement>,
         multiplier: u32,
     ) -> bool {
-        for input in &item_recipe.input {
-            let Some(inventory) = self.inventory.get(&input.item_id) else {
+        for element in input {
+            let Some(inventory) = self.inventory.get(&element.item_id) else {
                 return false;
             };
 
-            if inventory.currently_available - inventory.planned_selling < input.amount * multiplier
+            if inventory.currently_available - inventory.planned_selling
+                < element.amount * multiplier
             {
-                return false;
-            }
-        }
-
-        for output in &item_recipe.output {
-            if let Some(inventory) = self.inventory.get(&output.item_id) {
-                if output.amount * multiplier
-                    + inventory.currently_available
-                    + inventory.planned_buying
-                    > self.capacity
-                {
-                    return false;
-                }
-            } else if output.amount + self.used() > self.capacity {
                 return false;
             }
         }
@@ -145,18 +131,50 @@ impl Inventory {
         true
     }
 
-    /// Removes the items required for a production run, and reserves inventory for the yields.
-    pub fn remove_items_to_start_production(&mut self, item_recipe: &ItemRecipe, multiplier: u32) {
-        for input in &item_recipe.input {
-            let Some(inventory) = self.inventory.get_mut(&input.item_id) else {
-                warn!("Ingredient inventory entry did not exist when starting production!");
+    /// Tests if there's enough storage space available to store all production yields.
+    pub fn has_enough_storage_for_items(
+        &self,
+        output: &Vec<ItemRecipeElement>,
+        multiplier: u32,
+    ) -> bool {
+        let mut total_used_storage = self.used();
+
+        for element in output {
+            total_used_storage += element.amount * multiplier;
+            if let Some(inventory) = self.inventory.get(&element.item_id) {
+                if element.amount * multiplier
+                    + inventory.currently_available
+                    + inventory.planned_buying
+                    > self.capacity
+                {
+                    return false;
+                }
+            } else if total_used_storage > self.capacity {
+                return false;
+            }
+        }
+
+        true
+    }
+
+    pub fn remove_items(&mut self, items: &Vec<ItemRecipeElement>, multiplier: u32) {
+        for item in items {
+            let Some(inventory) = self.inventory.get_mut(&item.item_id) else {
+                warn!("Ingredient inventory entry did not exist when requesting removal!");
                 return;
             };
 
-            inventory.currently_available -= input.amount * multiplier;
-            inventory.total -= input.amount * multiplier;
+            inventory.currently_available -= item.amount * multiplier;
+            inventory.total -= item.amount * multiplier;
         }
+    }
 
+    /// Removes the items required for a production run, and reserves inventory for the yields.
+    pub fn reserve_storage_space_for_production_yield(
+        &mut self,
+        item_recipe: &ItemRecipe,
+        multiplier: u32,
+    ) {
         for output in &item_recipe.output {
             if let Some(inventory) = self.inventory.get_mut(&output.item_id) {
                 inventory.planned_producing += output.amount * multiplier;

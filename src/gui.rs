@@ -4,7 +4,8 @@ use crate::components::{
 };
 use crate::entity_selection::Selected;
 use crate::game_data::GameData;
-use crate::production::ProductionComponent;
+use crate::production::{ProductionComponent, ShipyardComponent};
+use crate::session_data::SessionData;
 use crate::simulation_time::SimulationTime;
 use crate::SpriteHandles;
 use bevy::prelude::{
@@ -126,6 +127,7 @@ pub fn list_selection_icons_and_counts(
 #[allow(clippy::type_complexity)]
 pub fn list_selection_details(
     game_data: Res<GameData>,
+    session_data: Res<SessionData>,
     mut context: EguiContexts,
     simulation_time: Res<SimulationTime>,
     images: Res<UiIcons>,
@@ -140,6 +142,7 @@ pub fn list_selection_details(
             Option<&BuyOrders>,
             Option<&SellOrders>,
             Option<&ProductionComponent>,
+            Option<&ShipyardComponent>,
         ),
         With<Selected>,
     >,
@@ -169,6 +172,7 @@ pub fn list_selection_details(
                     buy_orders,
                     sell_orders,
                     production_module,
+                    shipyard,
                 ) = selected.single();
                 draw_ship_summary_row(&images, ui, selectable, name, storage, velocity, task_queue);
 
@@ -231,6 +235,30 @@ pub fn list_selection_details(
                     }
                 }
 
+                if let Some(shipyard) = shipyard {
+                    ui.heading("Ship Construction");
+                    for (id, module) in &shipyard.modules {
+                        let definition = game_data.shipyard_modules.get(id).unwrap();
+                        ui.label(format!("{}x {}", module.amount, definition.name));
+
+                        for order in &module.active {
+                            let definition = session_data
+                                .ship_configurations
+                                .get(&order.ship_config)
+                                .unwrap();
+
+                            ui.label(format!(
+                                "  - {} | {}",
+                                definition.name,
+                                order.finished_at - simulation_time.seconds()
+                            ));
+                        }
+                    }
+                    if !shipyard.queue.is_empty() {
+                        ui.label(format!("Queue: {} Ships", shipyard.queue.len()));
+                    }
+                }
+
                 if let Some(task_queue) = task_queue {
                     ui.heading("Tasks");
                     for task in &task_queue.queue {
@@ -268,7 +296,8 @@ pub fn list_selection_details(
         .collapsible(false)
         .resizable(false)
         .show(context.ctx_mut(), |ui| {
-            for (_, selectable, name, storage, velocity, task_queue, _, _, _) in selected.iter() {
+            for (_, selectable, name, storage, velocity, task_queue, _, _, _, _) in selected.iter()
+            {
                 draw_ship_summary_row(&images, ui, selectable, name, storage, velocity, task_queue);
             }
         });

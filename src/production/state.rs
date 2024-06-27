@@ -1,4 +1,4 @@
-use crate::game_data::ProductionModuleId;
+use crate::production::production_kind::ProductionKind;
 use crate::production::production_started_event::ProductionStartedEvent;
 use crate::simulation_time::SimulationSeconds;
 use bevy::prelude::{Entity, Resource};
@@ -37,7 +37,7 @@ impl GlobalProductionState {
 #[derive(Eq, PartialEq)]
 pub struct SingleProductionState {
     pub entity: Entity,
-    pub module_id: ProductionModuleId,
+    pub kind: ProductionKind,
     pub finished_at: SimulationSeconds,
 }
 
@@ -45,7 +45,7 @@ impl From<&ProductionStartedEvent> for SingleProductionState {
     fn from(value: &ProductionStartedEvent) -> Self {
         SingleProductionState {
             entity: value.entity,
-            module_id: value.module_id,
+            kind: value.kind,
             finished_at: value.finishes_at,
         }
     }
