@@ -39,6 +39,7 @@ Too lazy to manage a whole kanban board and issues for these things yet. Roughly
 
 - Add parsing for data files, remove hardcoded Items
 - Change items and recipes to stuff that makes sense
+- Spawn one station for every production module & recipe
 
 # Task System Overhaul
 

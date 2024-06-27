@@ -1,8 +1,8 @@
 use crate::components::inventory::InventoryElement;
 use crate::components::Inventory;
+use crate::constants;
 use crate::data::{ItemDefinition, ItemId};
 use crate::utils::PriceRange;
-use crate::MOCK_INVENTORY_SIZE;
 use bevy::prelude::Component;
 use bevy::utils::HashMap;
 
@@ -16,13 +16,13 @@ impl BuyOrders {
         let mut orders = HashMap::new();
 
         let mut order = BuyOrderData {
-            amount: MOCK_INVENTORY_SIZE,
-            buy_up_to: MOCK_INVENTORY_SIZE,
+            amount: constants::MOCK_INVENTORY_SIZE,
+            buy_up_to: constants::MOCK_INVENTORY_SIZE,
             price: 1,
             price_setting: PriceSetting::Dynamic(item.price),
         };
         order.update(
-            MOCK_INVENTORY_SIZE,
+            constants::MOCK_INVENTORY_SIZE,
             Some(&InventoryElement {
                 currently_available: 0,
                 total: 0,
@@ -77,16 +77,16 @@ impl SellOrders {
     pub fn mock_selling_item(item: &ItemDefinition) -> Self {
         let mut orders = HashMap::new();
         let mut order = SellOrderData {
-            amount: MOCK_INVENTORY_SIZE,
+            amount: constants::MOCK_INVENTORY_SIZE,
             keep_at_least: 0,
             price: 100,
             price_setting: PriceSetting::Dynamic(item.price),
         };
         order.update(
-            MOCK_INVENTORY_SIZE,
+            constants::MOCK_INVENTORY_SIZE,
             Some(&InventoryElement {
-                currently_available: MOCK_INVENTORY_SIZE,
-                total: MOCK_INVENTORY_SIZE,
+                currently_available: constants::MOCK_INVENTORY_SIZE,
+                total: constants::MOCK_INVENTORY_SIZE,
                 ..Default::default()
             }),
         );
