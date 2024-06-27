@@ -1,7 +1,8 @@
-use crate::components::{BuyOrders, Inventory, ProductionModule, SellOrders};
-use crate::data::{GameData, ItemRecipe};
+use crate::components::{BuyOrders, Inventory, SellOrders};
+use crate::data::{GameData, ItemRecipe, ProductionModuleId};
 use crate::production::production_started_event::ProductionStartedEvent;
 use crate::production::state::GlobalProductionState;
+use crate::production::{ProductionComponent, ProductionModule};
 use crate::simulation_time::{SimulationSeconds, SimulationTime};
 use crate::utils;
 use bevy::log::error;
@@ -13,7 +14,7 @@ pub fn check_if_production_is_finished_and_start_new_one(
     game_data: Res<GameData>,
     mut production_start_event_writer: EventWriter<ProductionStartedEvent>,
     mut query: Query<(
-        &mut ProductionModule,
+        &mut ProductionComponent,
         &mut Inventory,
         Option<&mut BuyOrders>,
         Option<&mut SellOrders>,
@@ -31,20 +32,29 @@ pub fn check_if_production_is_finished_and_start_new_one(
         if let Ok((mut production, mut inventory, buy_orders, sell_orders)) =
             query.get_mut(next.entity)
         {
-            let recipe = game_data.item_recipes.get(&production.recipe).unwrap();
+            let Some(module) = production.modules.get_mut(&next.module_id) else {
+                error!(
+                    "Was unable to trigger production finish for entity {} and module id {}! Guess it was destroyed?",
+                    next.entity, next.module_id
+                );
+                continue;
+            };
 
-            inventory.finish_production(recipe);
-            if inventory.has_enough_items_to_start_production(recipe) {
+            let recipe = game_data.item_recipes.get(&module.recipe).unwrap();
+
+            inventory.finish_production(recipe, module.amount);
+            if inventory.has_enough_items_to_start_production(recipe, module.amount) {
                 start_production(
                     &mut production_start_event_writer,
                     current,
                     next.entity,
-                    &mut production,
+                    next.module_id,
+                    module,
                     &mut inventory,
                     recipe,
                 );
             } else {
-                production.current_run_finished_at = None;
+                module.current_run_finished_at = None;
             }
 
             utils::update_orders(&inventory, buy_orders, sell_orders);
@@ -61,14 +71,19 @@ pub(crate) fn start_production(
     production_start_event_writer: &mut EventWriter<ProductionStartedEvent>,
     current: SimulationSeconds,
     entity: Entity,
-    production: &mut Mut<ProductionModule>,
+    production_module_id: ProductionModuleId,
+    production_module: &mut ProductionModule,
     inventory: &mut Mut<Inventory>,
     recipe: &ItemRecipe,
 ) {
-    inventory.remove_items_to_start_production(recipe);
+    inventory.remove_items_to_start_production(recipe, production_module.amount);
 
     let finish_timestamp = current + recipe.duration;
-    production.current_run_finished_at = Some(finish_timestamp);
+    production_module.current_run_finished_at = Some(finish_timestamp);
 
-    production_start_event_writer.send(ProductionStartedEvent::new(entity, finish_timestamp));
+    production_start_event_writer.send(ProductionStartedEvent::new(
+        entity,
+        production_module_id,
+        finish_timestamp,
+    ));
 }

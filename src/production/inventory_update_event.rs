@@ -1,7 +1,7 @@
-use crate::components::{BuyOrders, Inventory, ProductionModule, SellOrders};
+use crate::components::{BuyOrders, Inventory, SellOrders};
 use crate::data::GameData;
-use crate::production::production_runner;
 use crate::production::production_started_event::ProductionStartedEvent;
+use crate::production::{production_runner, ProductionComponent};
 use crate::simulation_time::SimulationTime;
 use crate::utils;
 use bevy::prelude::{Entity, Event, EventReader, EventWriter, Query, Res};
@@ -28,7 +28,7 @@ pub fn handle_inventory_updates(
     mut event_reader: EventReader<InventoryUpdateForProductionEvent>,
     mut production_start_event_writer: EventWriter<ProductionStartedEvent>,
     mut query: Query<(
-        &mut ProductionModule,
+        &mut ProductionComponent,
         &mut Inventory,
         Option<&mut BuyOrders>,
         Option<&mut SellOrders>,
@@ -42,22 +42,25 @@ pub fn handle_inventory_updates(
             continue;
         };
 
-        if production.current_run_finished_at.is_some() {
-            continue;
+        for (id, module) in production.modules.iter_mut() {
+            if module.current_run_finished_at.is_some() {
+                continue;
+            }
+
+            let recipe = game_data.item_recipes.get(&module.recipe).unwrap();
+            if inventory.has_enough_items_to_start_production(recipe, module.amount) {
+                production_runner::start_production(
+                    &mut production_start_event_writer,
+                    current,
+                    event.entity,
+                    *id,
+                    module,
+                    &mut inventory,
+                    recipe,
+                );
+            }
         }
 
-        let recipe = game_data.item_recipes.get(&production.recipe).unwrap();
-        if inventory.has_enough_items_to_start_production(recipe) {
-            production_runner::start_production(
-                &mut production_start_event_writer,
-                current,
-                event.entity,
-                &mut production,
-                &mut inventory,
-                recipe,
-            );
-
-            utils::update_orders(&inventory, buy_orders, sell_orders);
-        }
+        utils::update_orders(&inventory, buy_orders, sell_orders);
     }
 }

@@ -1,7 +1,7 @@
 use crate::data::GameData;
 use crate::entity_selection::MouseInteractionGizmos;
 use crate::mouse_cursor::MouseCursor;
-use crate::production::ProductionPlugin;
+use crate::production::{ProductionComponent, ProductionModule, ProductionPlugin};
 use crate::simulation_time::SimulationTime;
 use bevy::asset::AssetServer;
 use bevy::core::Name;
@@ -14,6 +14,7 @@ use bevy::prelude::{
 };
 use bevy::render::camera::ScalingMode;
 use bevy::sprite::SpriteBundle;
+use bevy::utils::HashMap;
 use bevy::DefaultPlugins;
 use bevy_egui::EguiPlugin;
 use components::*;
@@ -113,6 +114,37 @@ pub struct SpriteHandles {
     ship_selected: Handle<Image>,
 }
 
+struct MockStationProductionArgs {
+    modules: Vec<MockStationProductionArgElement>,
+}
+
+impl MockStationProductionArgs {
+    pub fn new(modules: Vec<MockStationProductionArgElement>) -> Self {
+        Self { modules }
+    }
+
+    pub fn parse(self) -> ProductionComponent {
+        ProductionComponent {
+            modules: HashMap::from_iter(self.modules.iter().map(|x| {
+                (
+                    x.module_id,
+                    ProductionModule {
+                        recipe: x.recipe,
+                        amount: x.amount,
+                        current_run_finished_at: None,
+                    },
+                )
+            })),
+        }
+    }
+}
+
+struct MockStationProductionArgElement {
+    module_id: ProductionModuleId,
+    recipe: RecipeId,
+    amount: u32,
+}
+
 fn spawn_station(
     commands: &mut Commands,
     sprites: &SpriteHandles,
@@ -120,24 +152,26 @@ fn spawn_station(
     pos: Vec2,
     buys: &ItemDefinition,
     sells: &ItemDefinition,
-    produces: RecipeId,
+    production: Option<MockStationProductionArgs>,
 ) {
-    commands.spawn((
-        Name::new(name.to_string()),
-        SelectableEntity::Station,
-        SpriteBundle {
-            texture: sprites.station.clone(),
-            transform: Transform::from_xyz(pos.x, pos.y, STATION_LAYER),
-            ..default()
-        },
-        Inventory::new_with_content(MOCK_INVENTORY_SIZE, vec![(sells.id, MOCK_INVENTORY_SIZE)]),
-        BuyOrders::mock_buying_item(buys),
-        SellOrders::mock_selling_item(sells),
-        ProductionModule {
-            recipe: produces,
-            current_run_finished_at: None,
-        },
-    ));
+    let station = commands
+        .spawn((
+            Name::new(name.to_string()),
+            SelectableEntity::Station,
+            SpriteBundle {
+                texture: sprites.station.clone(),
+                transform: Transform::from_xyz(pos.x, pos.y, STATION_LAYER),
+                ..default()
+            },
+            Inventory::new_with_content(MOCK_INVENTORY_SIZE, vec![(sells.id, MOCK_INVENTORY_SIZE)]),
+            BuyOrders::mock_buying_item(buys),
+            SellOrders::mock_selling_item(sells),
+        ))
+        .id();
+
+    if let Some(production) = production {
+        commands.entity(station).insert(production.parse());
+    }
 }
 
 pub fn on_startup(
@@ -163,7 +197,13 @@ pub fn on_startup(
         Vec2::new(-200.0, -200.0),
         &game_data.items[&DEBUG_ITEM_ID_A],
         &game_data.items[&DEBUG_ITEM_ID_B],
-        RECIPE_B_ID,
+        Some(MockStationProductionArgs::new(vec![
+            MockStationProductionArgElement {
+                amount: 5,
+                module_id: PRODUCTION_MODULE_B_ID,
+                recipe: RECIPE_B_ID,
+            },
+        ])),
     );
     spawn_station(
         &mut commands,
@@ -172,7 +212,13 @@ pub fn on_startup(
         Vec2::new(200.0, -200.0),
         &game_data.items[&DEBUG_ITEM_ID_B],
         &game_data.items[&DEBUG_ITEM_ID_C],
-        RECIPE_C_ID,
+        Some(MockStationProductionArgs::new(vec![
+            MockStationProductionArgElement {
+                amount: 3,
+                module_id: PRODUCTION_MODULE_C_ID,
+                recipe: RECIPE_C_ID,
+            },
+        ])),
     );
     spawn_station(
         &mut commands,
@@ -181,7 +227,13 @@ pub fn on_startup(
         Vec2::new(0.0, 200.0),
         &game_data.items[&DEBUG_ITEM_ID_C],
         &game_data.items[&DEBUG_ITEM_ID_A],
-        RECIPE_A_ID,
+        Some(MockStationProductionArgs::new(vec![
+            MockStationProductionArgElement {
+                amount: 1,
+                module_id: PRODUCTION_MODULE_A_ID,
+                recipe: RECIPE_A_ID,
+            },
+        ])),
     );
 
     for i in 0..SHIP_COUNT {

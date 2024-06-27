@@ -112,20 +112,27 @@ impl Inventory {
 
     /// Tests if there are enough items in stock to start a production run, and if there's enough
     /// storage space available to store its yields.
-    pub fn has_enough_items_to_start_production(&self, item_recipe: &ItemRecipe) -> bool {
+    pub fn has_enough_items_to_start_production(
+        &self,
+        item_recipe: &ItemRecipe,
+        multiplier: u32,
+    ) -> bool {
         for input in &item_recipe.input {
             let Some(inventory) = self.inventory.get(&input.item_id) else {
                 return false;
             };
 
-            if inventory.currently_available - inventory.planned_selling < input.amount {
+            if inventory.currently_available - inventory.planned_selling < input.amount * multiplier
+            {
                 return false;
             }
         }
 
         for output in &item_recipe.output {
             if let Some(inventory) = self.inventory.get(&output.item_id) {
-                if output.amount + inventory.currently_available + inventory.planned_buying
+                if output.amount * multiplier
+                    + inventory.currently_available
+                    + inventory.planned_buying
                     > self.capacity
                 {
                     return false;
@@ -139,26 +146,26 @@ impl Inventory {
     }
 
     /// Removes the items required for a production run, and reserves inventory for the yields.
-    pub fn remove_items_to_start_production(&mut self, item_recipe: &ItemRecipe) {
+    pub fn remove_items_to_start_production(&mut self, item_recipe: &ItemRecipe, multiplier: u32) {
         for input in &item_recipe.input {
             let Some(inventory) = self.inventory.get_mut(&input.item_id) else {
                 warn!("Ingredient inventory entry did not exist when starting production!");
                 return;
             };
 
-            inventory.currently_available -= input.amount;
-            inventory.total -= input.amount;
+            inventory.currently_available -= input.amount * multiplier;
+            inventory.total -= input.amount * multiplier;
         }
 
         for output in &item_recipe.output {
             if let Some(inventory) = self.inventory.get_mut(&output.item_id) {
-                inventory.planned_producing += output.amount;
-                inventory.total += output.amount;
+                inventory.planned_producing += output.amount * multiplier;
+                inventory.total += output.amount * multiplier;
             } else {
                 warn!("Product inventory entry did not exist when starting production!");
                 let item = InventoryElement {
                     total: output.amount,
-                    planned_producing: output.amount,
+                    planned_producing: output.amount * multiplier,
                     ..Default::default()
                 };
                 self.inventory.insert(output.item_id, item);
@@ -166,16 +173,16 @@ impl Inventory {
         }
     }
 
-    pub fn finish_production(&mut self, item_recipe: &ItemRecipe) {
+    pub fn finish_production(&mut self, item_recipe: &ItemRecipe, multiplier: u32) {
         for output in &item_recipe.output {
             if let Some(inventory) = self.inventory.get_mut(&output.item_id) {
-                inventory.currently_available += output.amount;
-                inventory.planned_producing -= output.amount;
+                inventory.currently_available += output.amount * multiplier;
+                inventory.planned_producing -= output.amount * multiplier;
             } else {
                 warn!("Product inventory entry did not exist on production completion!");
                 let item = InventoryElement {
-                    total: output.amount,
-                    currently_available: output.amount,
+                    total: output.amount * multiplier,
+                    currently_available: output.amount * multiplier,
                     ..Default::default()
                 };
                 self.inventory.insert(output.item_id, item);

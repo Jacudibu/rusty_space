@@ -1,16 +1,18 @@
 mod item;
 mod item_recipe;
+mod production_module;
 
 use crate::utils::PriceRange;
 use bevy::prelude::Resource;
 use bevy::utils::HashMap;
-pub use item::*;
-pub use item_recipe::*;
+
+pub use {item::*, item_recipe::*, production_module::*};
 
 #[derive(Resource)]
 pub struct GameData {
     pub items: HashMap<ItemId, ItemDefinition>,
     pub item_recipes: HashMap<RecipeId, ItemRecipe>,
+    pub production_modules: HashMap<ProductionModuleId, ProductionModuleDefinition>,
 }
 
 impl GameData {
@@ -65,7 +67,7 @@ impl GameData {
             RECIPE_B_ID,
             ItemRecipe {
                 id: RECIPE_B_ID,
-                name: "5A -> 10B".into(),
+                name: "5A -> 13B".into(),
                 duration: 20,
                 input: vec![ItemRecipeElement {
                     item_id: DEBUG_ITEM_ID_A,
@@ -81,7 +83,7 @@ impl GameData {
             RECIPE_C_ID,
             ItemRecipe {
                 id: RECIPE_C_ID,
-                name: "5B -> 10C".into(),
+                name: "5B -> 17C".into(),
                 duration: 30,
                 input: vec![ItemRecipeElement {
                     item_id: DEBUG_ITEM_ID_B,
@@ -89,14 +91,42 @@ impl GameData {
                 }],
                 output: vec![ItemRecipeElement {
                     item_id: DEBUG_ITEM_ID_C,
-                    amount: 10,
+                    amount: 17,
                 }],
             },
         );
 
+        let production_modules = HashMap::from([
+            (
+                PRODUCTION_MODULE_A_ID,
+                ProductionModuleDefinition {
+                    id: PRODUCTION_MODULE_A_ID,
+                    name: "Production Module A".to_string(),
+                    available_recipes: vec![RECIPE_A_ID],
+                },
+            ),
+            (
+                PRODUCTION_MODULE_B_ID,
+                ProductionModuleDefinition {
+                    id: PRODUCTION_MODULE_B_ID,
+                    name: "Production Module B".to_string(),
+                    available_recipes: vec![RECIPE_B_ID],
+                },
+            ),
+            (
+                PRODUCTION_MODULE_C_ID,
+                ProductionModuleDefinition {
+                    id: PRODUCTION_MODULE_C_ID,
+                    name: "Production Module C".to_string(),
+                    available_recipes: vec![RECIPE_C_ID],
+                },
+            ),
+        ]);
+
         Self {
             items,
             item_recipes,
+            production_modules,
         }
     }
 }

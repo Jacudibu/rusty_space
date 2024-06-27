@@ -1,9 +1,10 @@
 use crate::components::{
-    BuyOrders, ExchangeWareData, Inventory, ProductionModule, SelectableEntity, SellOrders,
-    ShipTask, TaskQueue, Velocity,
+    BuyOrders, ExchangeWareData, Inventory, SelectableEntity, SellOrders, ShipTask, TaskQueue,
+    Velocity,
 };
 use crate::data::GameData;
 use crate::entity_selection::Selected;
+use crate::production::ProductionComponent;
 use crate::simulation_time::SimulationTime;
 use crate::SpriteHandles;
 use bevy::prelude::{
@@ -138,7 +139,7 @@ pub fn list_selection_details(
             Option<&TaskQueue>,
             Option<&BuyOrders>,
             Option<&SellOrders>,
-            Option<&ProductionModule>,
+            Option<&ProductionComponent>,
         ),
         With<Selected>,
     >,
@@ -191,15 +192,19 @@ pub fn list_selection_details(
 
                 if let Some(production) = production_module {
                     ui.heading("Production");
-                    let recipe = game_data.item_recipes.get(&production.recipe).unwrap();
-                    ui.label(format!("Active Recipe: {}", recipe.name));
-                    if let Some(finished_at) = production.current_run_finished_at {
-                        ui.label(format!(
-                            "Done in {}",
-                            finished_at - simulation_time.seconds()
-                        ));
-                    } else {
-                        ui.label("(Inactive)");
+                    for (id, module) in &production.modules {
+                        let definition = game_data.production_modules.get(id).unwrap();
+                        ui.label(format!("  {}x {}", module.amount, definition.name));
+                        let recipe = game_data.item_recipes.get(&module.recipe).unwrap();
+                        ui.label(format!("    Active Recipe: {}", recipe.name));
+                        if let Some(finished_at) = module.current_run_finished_at {
+                            ui.label(format!(
+                                "      Done in {}",
+                                finished_at - simulation_time.seconds()
+                            ));
+                        } else {
+                            ui.label("    (Inactive)");
+                        }
                     }
                 }
 

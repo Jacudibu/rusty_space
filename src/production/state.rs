@@ -1,3 +1,4 @@
+use crate::data::ProductionModuleId;
 use crate::production::production_started_event::ProductionStartedEvent;
 use crate::simulation_time::SimulationSeconds;
 use bevy::prelude::{Entity, Resource};
@@ -33,10 +34,10 @@ impl GlobalProductionState {
     }
 }
 
-// TODO: we need to keep track of the thing that's produced, otherwise Eq might be wrong as soon as we produce more than one item
 #[derive(Eq, PartialEq)]
 pub struct SingleProductionState {
     pub entity: Entity,
+    pub module_id: ProductionModuleId,
     pub finished_at: SimulationSeconds,
 }
 
@@ -44,6 +45,7 @@ impl From<&ProductionStartedEvent> for SingleProductionState {
     fn from(value: &ProductionStartedEvent) -> Self {
         SingleProductionState {
             entity: value.entity,
+            module_id: value.module_id,
             finished_at: value.finishes_at,
         }
     }
