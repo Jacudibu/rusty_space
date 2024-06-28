@@ -1,5 +1,4 @@
-use crate::components::SelectableEntity;
-use crate::entity_selection::gizmos::RADIUS;
+use crate::components::{SelectableEntity, RADIUS_CURSOR};
 use crate::entity_selection::mouse_interaction::{LastMouseInteraction, MouseInteraction};
 use crate::entity_selection::{MouseCursor, Selected, DOUBLE_CLICK_TIME};
 use crate::gui::MouseCursorOverUiState;
@@ -43,15 +42,15 @@ pub fn process_mouse_clicks(
                 let cursor_world_pos = cursor_world_pos.extend(0.0);
 
                 for entity in selected_entities.iter() {
-                    commands.entity(entity).remove::<Selected>();
+                    deselect_entity(&mut commands, entity);
                 }
 
-                let first_found_entity = selectables.iter().find(|(_, transform, _)| {
+                let first_found_entity = selectables.iter().find(|(_, transform, selectable)| {
                     physics::overlap_circle_with_circle(
                         cursor_world_pos,
-                        RADIUS,
+                        RADIUS_CURSOR,
                         transform.translation,
-                        RADIUS,
+                        selectable.radius(),
                     )
                 });
 
@@ -113,7 +112,7 @@ fn process_double_click(
                 bottom,
                 top,
                 transform.translation,
-                RADIUS,
+                selectable.radius(),
             )
         })
         .for_each(|(entity, _, _)| {
@@ -133,17 +132,13 @@ fn is_double_click(
     }
 }
 
-fn select_entity(commands: &mut Commands, entity: Entity) {
-    commands.entity(entity).insert(Selected {});
-}
-
 #[allow(clippy::type_complexity)]
 pub fn update_active_mouse_interaction(
     mut commands: Commands,
     mouse_interaction: Option<ResMut<MouseInteraction>>,
     mouse_cursor: Option<Res<MouseCursor>>,
-    unselected_entities: Query<(Entity, &Transform), (With<SelectableEntity>, Without<Selected>)>,
-    selected_entities: Query<(Entity, &Transform), (With<SelectableEntity>, With<Selected>)>,
+    unselected_entities: Query<(Entity, &Transform, &SelectableEntity), Without<Selected>>,
+    selected_entities: Query<(Entity, &Transform, &SelectableEntity), With<Selected>>,
 ) {
     let Some(mut mouse_interaction) = mouse_interaction else {
         return;
@@ -165,34 +160,42 @@ pub fn update_active_mouse_interaction(
 
         unselected_entities
             .iter()
-            .filter(|(_, transform)| {
+            .filter(|(_, transform, selectable)| {
                 physics::overlap_rectangle_with_circle_axis_aligned(
                     left,
                     right,
                     bottom,
                     top,
                     transform.translation,
-                    RADIUS * RADIUS,
+                    selectable.radius(),
                 )
             })
-            .for_each(|(entity, _)| {
+            .for_each(|(entity, _, _)| {
                 select_entity(&mut commands, entity);
             });
 
         selected_entities
             .iter()
-            .filter(|(_, transform)| {
+            .filter(|(_, transform, selectable)| {
                 !physics::overlap_rectangle_with_circle_axis_aligned(
                     left,
                     right,
                     bottom,
                     top,
                     transform.translation,
-                    RADIUS * RADIUS,
+                    selectable.radius(),
                 )
             })
-            .for_each(|(entity, _)| {
-                commands.entity(entity).remove::<Selected>();
+            .for_each(|(entity, _, _)| {
+                deselect_entity(&mut commands, entity);
             });
     }
+}
+
+fn select_entity(commands: &mut Commands, entity: Entity) {
+    commands.entity(entity).insert(Selected {});
+}
+
+fn deselect_entity(commands: &mut Commands, entity: Entity) {
+    commands.entity(entity).remove::<Selected>();
 }

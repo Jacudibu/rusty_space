@@ -7,6 +7,6 @@ mod trade;
 mod velocity;
 
 pub use {
-    engine::Engine, inventory::Inventory, selectable_entity::SelectableEntity, ship_behavior::*,
-    ship_task::*, trade::*, velocity::Velocity,
+    engine::Engine, inventory::Inventory, selectable_entity::*, ship_behavior::*, ship_task::*,
+    trade::*, velocity::Velocity,
 };

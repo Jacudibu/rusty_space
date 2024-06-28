@@ -16,14 +16,15 @@ pub fn overlap_rectangle_with_circle_axis_aligned(
     bottom: f32,
     top: f32,
     circle_center: Vec3,
-    circle_diameter: f32,
+    circle_radius: f32,
 ) -> bool {
     let closest_x = circle_center.x.max(left).min(right);
     let closest_y = circle_center.y.max(bottom).min(top);
 
-    let distance = (circle_center.x - closest_x).powi(2) + (circle_center.y - closest_y).powi(2);
+    let distance_x_squared = (circle_center.x - closest_x).powi(2);
+    let distance_y_squared = (circle_center.y - closest_y).powi(2);
 
-    distance <= circle_diameter
+    distance_x_squared + distance_y_squared <= circle_radius * circle_radius
 }
 
 pub fn overlap_circle_with_circle(
@@ -34,6 +35,6 @@ pub fn overlap_circle_with_circle(
 ) -> bool {
     let x = circle_a_center.x - circle_b_center.x;
     let y = circle_a_center.y - circle_b_center.y;
-
-    x * x + y * y <= circle_a_radius * circle_b_radius
+    let distance_squared = x * x + y * y;
+    distance_squared <= (circle_a_radius + circle_b_radius).powi(2)
 }

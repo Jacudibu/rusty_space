@@ -126,9 +126,7 @@ dynamically decrease faction standing.
 
 # Advanced Unit Selection
 
-Two ways of achieving this:
-a) Switch to `bevy_mod_picking` and turn existing code into a simple circle overlapping backend.
-b) Units aren't completely selected until the mouse button is actually released. Add some kind of Hover Step.
+Units aren't completely selected until the mouse button is actually released. Add some kind of Hover Step.
 Transitioning from `Hovered` to `Selected` might be a bit ugly for change detection as long as it's only managed via
 components.
 
