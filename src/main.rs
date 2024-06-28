@@ -1,6 +1,5 @@
-use crate::entity_selection::MouseInteractionGizmos;
+use crate::entity_selection::EntitySelectionPlugin;
 use crate::game_data::GameData;
-use crate::mouse_cursor::MouseCursor;
 use crate::production::ProductionPlugin;
 use crate::session_data::SessionData;
 use crate::simulation_time::SimulationTime;
@@ -8,8 +7,8 @@ use bevy::asset::AssetServer;
 use bevy::core::Name;
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::prelude::{
-    App, AppExtStates, AppGizmoBuilder, Camera2dBundle, Commands, First, Handle, Image,
-    ImagePlugin, IntoSystemConfigs, PluginGroup, PreUpdate, Res, Resource, Startup, Update, Window,
+    App, AppExtStates, Camera2dBundle, Commands, First, Handle, Image, ImagePlugin,
+    IntoSystemConfigs, PluginGroup, PreUpdate, Res, Resource, Startup, Update, Window,
     WindowPlugin,
 };
 use bevy::render::camera::ScalingMode;
@@ -23,7 +22,6 @@ mod entity_selection;
 mod game_data;
 mod gui;
 mod mock_helpers;
-mod mouse_cursor;
 mod physics;
 mod production;
 mod session_data;
@@ -46,11 +44,10 @@ fn main() {
     )
     .add_plugins(EguiPlugin)
     .add_plugins(ProductionPlugin)
+    .add_plugins(EntitySelectionPlugin)
     .insert_resource(GameData::mock_data())
     .insert_resource(SessionData::mock_data())
-    .insert_resource(MouseCursor::default())
     .insert_resource(SimulationTime::default())
-    .init_gizmo_group::<MouseInteractionGizmos>()
     .init_state::<gui::MouseCursorOverUiState>()
     .add_event::<ship_ai::TaskFinishedEvent>()
     .add_systems(
@@ -66,13 +63,7 @@ fn main() {
         ),
     )
     .add_systems(First, simulation_time::update.after(bevy::time::TimeSystem))
-    .add_systems(
-        PreUpdate,
-        (
-            entity_selection::update_cursor_position,
-            gui::detect_mouse_cursor_over_ui,
-        ),
-    )
+    .add_systems(PreUpdate, gui::detect_mouse_cursor_over_ui)
     .add_systems(
         Update,
         (
@@ -80,12 +71,6 @@ fn main() {
             gui::list_selection_details,
             camera::move_camera,
             camera::zoom_camera,
-            entity_selection::process_mouse_clicks,
-            entity_selection::update_mouse_interaction,
-            entity_selection::draw_mouse_interactions,
-            entity_selection::on_selection_changed
-                .after(entity_selection::process_mouse_clicks)
-                .after(entity_selection::update_mouse_interaction),
             ship_ai::handle_idle_ships,
             ship_ai::run_ship_tasks,
             ship_ai::complete_tasks.after(ship_ai::run_ship_tasks),
