@@ -10,6 +10,7 @@ use crate::{mock_helpers, utils, SpriteHandles};
 use bevy::log::error;
 use bevy::prelude::{Commands, EventWriter, Or, Query, Res, ResMut, Transform, With};
 
+#[allow(clippy::too_many_arguments, clippy::type_complexity)]
 pub fn check_if_production_is_finished_and_start_new_one(
     mut commands: Commands,
     sprites: Res<SpriteHandles>,

@@ -26,6 +26,7 @@ impl InventoryUpdateForProductionEvent {
     }
 }
 
+#[allow(clippy::too_many_arguments, clippy::type_complexity)]
 pub fn handle_inventory_updates(
     simulation_time: Res<SimulationTime>,
     game_data: Res<GameData>,

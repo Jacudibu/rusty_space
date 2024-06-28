@@ -7,6 +7,8 @@ use bevy::utils::HashMap;
 pub trait TradeOrder<TOrderData: OrderData>: Default + Component {
     fn orders(&self) -> &HashMap<ItemId, TOrderData>;
     fn orders_mut(&mut self) -> &mut HashMap<ItemId, TOrderData>;
+
+    /// Updates the prices for all orders given the current inventory situation.
     fn update(&mut self, inventory: &Inventory) {
         for (item_id, order) in self.orders_mut() {
             order.update(inventory.capacity, inventory.get(item_id));
