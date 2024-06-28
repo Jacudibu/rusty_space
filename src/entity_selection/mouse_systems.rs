@@ -7,10 +7,9 @@ use crate::physics;
 use bevy::input::mouse::MouseButtonInput;
 use bevy::input::ButtonState;
 use bevy::prelude::{
-    Commands, Entity, EventReader, MouseButton, Query, Real, Res, ResMut, State, Time, Transform,
-    With, Without,
+    Camera, Commands, Entity, EventReader, GlobalTransform, MouseButton, Query, Real, Res, ResMut,
+    State, Time, Transform, Vec2, With, Without,
 };
-use bevy::render::primitives::Frustum;
 
 #[allow(clippy::too_many_arguments)]
 pub fn process_mouse_clicks(
@@ -21,7 +20,7 @@ pub fn process_mouse_clicks(
     last_mouse_interaction: Option<Res<LastMouseInteraction>>,
     mut mouse_button_events: EventReader<MouseButtonInput>,
     selectables: Query<(Entity, &Transform, &SelectableEntity)>,
-    camera: Query<&Frustum>,
+    camera: Query<(&Camera, &GlobalTransform)>,
     selected_entities: Query<Entity, With<Selected>>,
     mouse_cursor_over_ui_state: Res<State<MouseCursorOverUiState>>,
 ) {
@@ -58,6 +57,18 @@ pub fn process_mouse_clicks(
 
                 if let Some((entity, _, entity_selectable)) = first_found_entity {
                     if is_double_click(&time, &last_mouse_interaction) {
+                        let (camera, camera_transform) = camera.single();
+                        let rect = camera.logical_viewport_rect().unwrap();
+                        let offset = Vec2::new(
+                            camera_transform.translation().x - rect.max.x * 0.5,
+                            camera_transform.translation().y - rect.max.y * 0.5,
+                        );
+
+                        let left = rect.min.x + offset.x;
+                        let right = rect.max.x + offset.x;
+                        let bottom = rect.min.y + offset.y;
+                        let top = rect.max.y + offset.y;
+
                         selectables
                             .iter()
                             .filter(|(_, transform, selectable)| {
@@ -65,14 +76,13 @@ pub fn process_mouse_clicks(
                                     return false;
                                 }
 
-                                // There's probably a fancier way of doing this
-                                // It also doesn't work with sectors, need to swap to GlobalTransform here
-                                camera.single().intersects_sphere(
-                                    &bevy::render::primitives::Sphere {
-                                        radius: RADIUS,
-                                        center: transform.translation.into(),
-                                    },
-                                    false,
+                                physics::overlap_rectangle_with_circle_axis_aligned(
+                                    left,
+                                    right,
+                                    bottom,
+                                    top,
+                                    transform.translation,
+                                    RADIUS,
                                 )
                             })
                             .for_each(|(entity, _, _)| {
