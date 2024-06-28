@@ -6,7 +6,6 @@ use crate::gui::MouseCursorOverUiState;
 use crate::physics;
 use bevy::input::mouse::MouseButtonInput;
 use bevy::input::ButtonState;
-use bevy::log::info;
 use bevy::prelude::{
     Commands, Entity, EventReader, MouseButton, Query, Real, Res, ResMut, State, Time, Transform,
     With, Without,
@@ -67,6 +66,7 @@ pub fn process_mouse_clicks(
                                 }
 
                                 // There's probably a fancier way of doing this
+                                // It also doesn't work with sectors, need to swap to GlobalTransform here
                                 camera.single().intersects_sphere(
                                     &bevy::render::primitives::Sphere {
                                         radius: RADIUS,

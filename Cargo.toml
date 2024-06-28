@@ -4,6 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-bevy = { version = "0.14.0-rc.3", features = ["trace"] }
+bevy = { version = "0.14.0-rc.4", features = ["trace"] }
 bevy_egui = { git = "https://github.com/Friz64/bevy_egui.git", branch = "bevy-0.14" }
 
