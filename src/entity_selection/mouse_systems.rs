@@ -11,6 +11,7 @@ use bevy::prelude::{
     Commands, Entity, EventReader, MouseButton, Query, Real, Res, ResMut, State, Time, Transform,
     With, Without,
 };
+use bevy::render::primitives::Frustum;
 
 #[allow(clippy::too_many_arguments)]
 pub fn process_mouse_clicks(
@@ -20,7 +21,8 @@ pub fn process_mouse_clicks(
     existing_mouse_interaction: Option<Res<MouseInteraction>>,
     last_mouse_interaction: Option<Res<LastMouseInteraction>>,
     mut mouse_button_events: EventReader<MouseButtonInput>,
-    selectables: Query<(Entity, &Transform), With<SelectableEntity>>,
+    selectables: Query<(Entity, &Transform, &SelectableEntity)>,
+    camera: Query<&Frustum>,
     selected_entities: Query<Entity, With<Selected>>,
     mouse_cursor_over_ui_state: Res<State<MouseCursorOverUiState>>,
 ) {
@@ -46,23 +48,40 @@ pub fn process_mouse_clicks(
                     commands.entity(entity).remove::<Selected>();
                 }
 
-                if is_double_click(&time, &last_mouse_interaction) {
-                    info!("Double Click!");
-                }
+                let first_found_entity = selectables.iter().find(|(_, transform, _)| {
+                    physics::overlap_circle_with_circle(
+                        cursor_world_pos,
+                        RADIUS,
+                        transform.translation,
+                        RADIUS,
+                    )
+                });
 
-                selectables
-                    .iter()
-                    .filter(|(_, transform)| {
-                        physics::overlap_circle_with_circle(
-                            cursor_world_pos,
-                            RADIUS,
-                            transform.translation,
-                            RADIUS,
-                        )
-                    })
-                    .for_each(|(entity, _)| {
+                if let Some((entity, _, entity_selectable)) = first_found_entity {
+                    if is_double_click(&time, &last_mouse_interaction) {
+                        selectables
+                            .iter()
+                            .filter(|(_, transform, selectable)| {
+                                if entity_selectable != *selectable {
+                                    return false;
+                                }
+
+                                // There's probably a fancier way of doing this
+                                camera.single().intersects_sphere(
+                                    &bevy::render::primitives::Sphere {
+                                        radius: RADIUS,
+                                        center: transform.translation.into(),
+                                    },
+                                    false,
+                                )
+                            })
+                            .for_each(|(entity, _, _)| {
+                                commands.entity(entity).insert(Selected {});
+                            });
+                    } else {
                         commands.entity(entity).insert(Selected {});
-                    });
+                    }
+                }
             }
             ButtonState::Released => {
                 if let Some(existing_mouse_interaction) = &existing_mouse_interaction {

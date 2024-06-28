@@ -1,7 +1,7 @@
 use bevy::prelude::Component;
 
 /// Marker component for anything interactable.
-#[derive(Component)]
+#[derive(Component, Eq, PartialEq)]
 pub enum SelectableEntity {
     Station,
     Ship,

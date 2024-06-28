@@ -1,6 +1,6 @@
 use crate::entity_selection::gizmos::{draw_mouse_interactions, MouseInteractionGizmos};
 use crate::entity_selection::mouse_cursor::update_mouse_cursor_position;
-use crate::entity_selection::mouse_handler::*;
+use crate::entity_selection::mouse_systems::*;
 use crate::entity_selection::selection_change_listener::on_selection_changed;
 use crate::entity_selection::MouseCursor;
 use bevy::prelude::{App, AppGizmoBuilder, IntoSystemConfigs, Plugin, PreUpdate, Update};
