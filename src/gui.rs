@@ -1,6 +1,6 @@
 use crate::components::{
     BuyOrders, ExchangeWareData, Inventory, SelectableEntity, SellOrders, ShipTask, TaskQueue,
-    Velocity,
+    TradeOrder, Velocity,
 };
 use crate::entity_selection::Selected;
 use crate::game_data::GameData;
@@ -214,7 +214,7 @@ pub fn list_selection_details(
 
                 if let Some(buy_orders) = buy_orders {
                     ui.heading("Buy Orders");
-                    for (item_id, data) in &buy_orders.orders {
+                    for (item_id, data) in buy_orders.orders() {
                         ui.label(format!(
                             "Buying {}x{} for {}C",
                             data.amount,
@@ -225,7 +225,7 @@ pub fn list_selection_details(
                 }
                 if let Some(sell_orders) = sell_orders {
                     ui.heading("Sell Orders");
-                    for (item_id, data) in &sell_orders.orders {
+                    for (item_id, data) in sell_orders.orders() {
                         ui.label(format!(
                             "Selling {}x{} for {}C",
                             data.amount,

@@ -1,15 +1,14 @@
 use crate::components::{BuyOrders, Inventory, SellOrders};
-use crate::game_data::{GameData, ItemRecipe};
+use crate::game_data::GameData;
 use crate::production::production_kind::ProductionKind;
-use crate::production::production_started_event::ProductionStartedEvent;
 use crate::production::shipyard_component::ShipyardComponent;
 use crate::production::state::GlobalProductionState;
-use crate::production::{InventoryUpdateForProductionEvent, ProductionComponent, ProductionModule};
+use crate::production::{InventoryUpdateForProductionEvent, ProductionComponent};
 use crate::session_data::SessionData;
-use crate::simulation_time::{SimulationSeconds, SimulationTime};
+use crate::simulation_time::SimulationTime;
 use crate::{mock_helpers, utils, SpriteHandles};
 use bevy::log::error;
-use bevy::prelude::{Commands, Entity, EventWriter, Mut, Or, Query, Res, ResMut, Transform, With};
+use bevy::prelude::{Commands, EventWriter, Or, Query, Res, ResMut, Transform, With};
 
 pub fn check_if_production_is_finished_and_start_new_one(
     mut commands: Commands,

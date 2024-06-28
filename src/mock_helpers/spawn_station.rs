@@ -83,14 +83,10 @@ pub fn spawn_station(
         .id();
 
     if !buys.is_empty() {
-        commands
-            .entity(station)
-            .insert(BuyOrders::mock_buying_items(buys));
+        commands.entity(station).insert(BuyOrders::mock(buys));
     }
     if !sells.is_empty() {
-        commands
-            .entity(station)
-            .insert(SellOrders::mock_selling_items(sells));
+        commands.entity(station).insert(SellOrders::mock(sells));
     }
 
     if let Some(production) = production {

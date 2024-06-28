@@ -1,6 +1,6 @@
 use crate::components::{
     BuyOrders, Engine, ExchangeWareData, Inventory, SellOrders, ShipBehavior, ShipTask, TaskQueue,
-    Velocity,
+    TradeOrder, Velocity,
 };
 use crate::game_data::ItemId;
 use crate::production::InventoryUpdateForProductionEvent;
@@ -270,8 +270,8 @@ impl TradePlan {
                     continue;
                 }
 
-                for (item_id, buy_order) in &buy_orders.orders {
-                    if let Some(sell_order) = sell_orders.orders.get(item_id) {
+                for (item_id, buy_order) in buy_orders.orders() {
+                    if let Some(sell_order) = sell_orders.orders().get(item_id) {
                         if sell_order.price >= buy_order.price {
                             continue;
                         }

@@ -1,4 +1,6 @@
-use crate::components::{BuyOrders, Inventory, SellOrders};
+use crate::components::Inventory;
+use crate::components::SellOrders;
+use crate::components::{BuyOrders, TradeOrder};
 use bevy::prelude::Mut;
 
 pub fn update_orders(
