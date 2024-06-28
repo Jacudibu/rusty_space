@@ -1,3 +1,4 @@
+use crate::entity_selection::CLICK_TIME;
 use bevy::math::Vec2;
 use bevy::prelude::Resource;
 use std::time::Duration;
@@ -26,8 +27,7 @@ impl MouseInteraction {
     }
 
     pub fn counts_as_click(&self, current_time: Duration) -> bool {
-        // The average mouse click lasts about 85 milliseconds
-        (current_time - self.start).as_millis() < 100
+        (current_time - self.start).as_millis() < CLICK_TIME
     }
 
     pub fn counts_as_drag(&self) -> bool {
@@ -39,13 +39,15 @@ impl MouseInteraction {
 
 #[derive(Resource)]
 pub struct LastMouseInteraction {
-    counts_as_click: bool,
+    pub counts_as_click: bool,
+    pub click_end: Duration,
 }
 
 impl LastMouseInteraction {
     pub fn from(value: &MouseInteraction, click_end: Duration) -> Self {
         Self {
             counts_as_click: value.counts_as_click(click_end),
+            click_end,
         }
     }
 }

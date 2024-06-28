@@ -1,11 +1,12 @@
 use crate::components::SelectableEntity;
 use crate::entity_selection::gizmos::RADIUS;
 use crate::entity_selection::mouse_interaction::{LastMouseInteraction, MouseInteraction};
-use crate::entity_selection::{MouseCursor, Selected};
+use crate::entity_selection::{MouseCursor, Selected, DOUBLE_CLICK_TIME};
 use crate::gui::MouseCursorOverUiState;
 use crate::physics;
 use bevy::input::mouse::MouseButtonInput;
 use bevy::input::ButtonState;
+use bevy::log::info;
 use bevy::prelude::{
     Commands, Entity, EventReader, MouseButton, Query, Real, Res, ResMut, State, Time, Transform,
     With, Without,
@@ -17,6 +18,7 @@ pub fn process_mouse_clicks(
     time: Res<Time<Real>>,
     mouse_cursor: Res<MouseCursor>,
     existing_mouse_interaction: Option<Res<MouseInteraction>>,
+    last_mouse_interaction: Option<Res<LastMouseInteraction>>,
     mut mouse_button_events: EventReader<MouseButtonInput>,
     selectables: Query<(Entity, &Transform), With<SelectableEntity>>,
     selected_entities: Query<Entity, With<Selected>>,
@@ -44,6 +46,10 @@ pub fn process_mouse_clicks(
                     commands.entity(entity).remove::<Selected>();
                 }
 
+                if is_double_click(&time, &last_mouse_interaction) {
+                    info!("Double Click!");
+                }
+
                 selectables
                     .iter()
                     .filter(|(_, transform)| {
@@ -69,6 +75,18 @@ pub fn process_mouse_clicks(
                 commands.remove_resource::<MouseInteraction>();
             }
         }
+    }
+}
+
+fn is_double_click(
+    time: &Res<Time<Real>>,
+    last_mouse_interaction: &Option<Res<LastMouseInteraction>>,
+) -> bool {
+    if let Some(last_mouse_interaction) = &last_mouse_interaction {
+        last_mouse_interaction.counts_as_click
+            && (time.elapsed() - last_mouse_interaction.click_end).as_millis() < DOUBLE_CLICK_TIME
+    } else {
+        false
     }
 }
 
