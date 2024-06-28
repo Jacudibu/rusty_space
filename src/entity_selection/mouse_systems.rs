@@ -57,39 +57,14 @@ pub fn process_mouse_clicks(
 
                 if let Some((entity, _, entity_selectable)) = first_found_entity {
                     if is_double_click(&time, &last_mouse_interaction) {
-                        let (camera, camera_transform) = camera.single();
-                        let rect = camera.logical_viewport_rect().unwrap();
-                        let offset = Vec2::new(
-                            camera_transform.translation().x - rect.max.x * 0.5,
-                            camera_transform.translation().y - rect.max.y * 0.5,
+                        process_double_click(
+                            &mut commands,
+                            &selectables,
+                            &camera,
+                            entity_selectable,
                         );
-
-                        let left = rect.min.x + offset.x;
-                        let right = rect.max.x + offset.x;
-                        let bottom = rect.min.y + offset.y;
-                        let top = rect.max.y + offset.y;
-
-                        selectables
-                            .iter()
-                            .filter(|(_, transform, selectable)| {
-                                if entity_selectable != *selectable {
-                                    return false;
-                                }
-
-                                physics::overlap_rectangle_with_circle_axis_aligned(
-                                    left,
-                                    right,
-                                    bottom,
-                                    top,
-                                    transform.translation,
-                                    RADIUS,
-                                )
-                            })
-                            .for_each(|(entity, _, _)| {
-                                commands.entity(entity).insert(Selected {});
-                            });
                     } else {
-                        commands.entity(entity).insert(Selected {});
+                        select_entity(&mut commands, entity);
                     }
                 }
             }
@@ -107,6 +82,45 @@ pub fn process_mouse_clicks(
     }
 }
 
+fn process_double_click(
+    commands: &mut Commands,
+    selectables: &Query<(Entity, &Transform, &SelectableEntity)>,
+    camera: &Query<(&Camera, &GlobalTransform)>,
+    entity_selectable: &SelectableEntity,
+) {
+    let (camera, camera_transform) = camera.single();
+    let rect = camera.logical_viewport_rect().unwrap();
+    let offset = Vec2::new(
+        camera_transform.translation().x - rect.max.x * 0.5,
+        camera_transform.translation().y - rect.max.y * 0.5,
+    );
+
+    let left = rect.min.x + offset.x;
+    let right = rect.max.x + offset.x;
+    let bottom = rect.min.y + offset.y;
+    let top = rect.max.y + offset.y;
+
+    selectables
+        .iter()
+        .filter(|(_, transform, selectable)| {
+            if entity_selectable != *selectable {
+                return false;
+            }
+
+            physics::overlap_rectangle_with_circle_axis_aligned(
+                left,
+                right,
+                bottom,
+                top,
+                transform.translation,
+                RADIUS,
+            )
+        })
+        .for_each(|(entity, _, _)| {
+            select_entity(commands, entity);
+        });
+}
+
 fn is_double_click(
     time: &Res<Time<Real>>,
     last_mouse_interaction: &Option<Res<LastMouseInteraction>>,
@@ -117,6 +131,10 @@ fn is_double_click(
     } else {
         false
     }
+}
+
+fn select_entity(commands: &mut Commands, entity: Entity) {
+    commands.entity(entity).insert(Selected {});
 }
 
 #[allow(clippy::type_complexity)]
@@ -158,7 +176,7 @@ pub fn update_active_mouse_interaction(
                 )
             })
             .for_each(|(entity, _)| {
-                commands.entity(entity).insert(Selected {});
+                select_entity(&mut commands, entity);
             });
 
         selected_entities
