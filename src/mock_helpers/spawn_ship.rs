@@ -18,7 +18,7 @@ pub fn spawn_ship(
         Name::new(name),
         SelectableEntity::Ship,
         ShipBehavior::AutoTrade(AutoTradeData {}),
-        Idle,
+        Idle::default(),
         Engine::default(),
         Velocity::default(),
         Inventory::new(100),

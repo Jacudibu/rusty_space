@@ -40,6 +40,6 @@ pub fn remove_task_and_add_new_one<T: Component>(
     if let Some(next_task) = queue.front() {
         next_task.create_and_insert_component(&mut entity_commands);
     } else {
-        entity_commands.insert(Idle {});
+        entity_commands.insert(Idle::default());
     }
 }

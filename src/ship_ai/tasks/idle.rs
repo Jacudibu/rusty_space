@@ -1,27 +1,37 @@
 use crate::components::{BuyOrders, Inventory, SellOrders, ShipBehavior, TradeOrder};
 use crate::ship_ai::task_inside_queue::TaskInsideQueue;
 use crate::ship_ai::task_queue::TaskQueue;
+use crate::simulation_time::{SimulationSeconds, SimulationTime};
 use crate::trade_plan::TradePlan;
 use crate::utils::ExchangeWareData;
 use crate::utils::TradeIntent;
-use bevy::prelude::{Commands, Component, Entity, Query};
+use bevy::prelude::{Commands, Component, Entity, Query, Res};
 use std::collections::VecDeque;
 
-#[derive(Component)]
-pub struct Idle;
+// TODO: Check if idle needs to be generic on ShipBehavior to guarantee system parallelism
+#[derive(Component, Default)]
+pub struct Idle {
+    /// Maybe using SimulationNanos would be better here, to spread out updates across more frames.
+    /// In most cases, these are expensive enough to matter.
+    next_update: SimulationSeconds,
+}
 
 // TODO: This should be done in a separate system per ShipBehavior, similar to how tasks work now
 impl Idle {
     pub fn search_for_something_to_do(
         mut commands: Commands,
-        ships: Query<(Entity, &ShipBehavior, &Self)>,
+        simulation_time: Res<SimulationTime>,
+        mut ships: Query<(Entity, &ShipBehavior, &mut Self)>,
         mut buy_orders: Query<(Entity, &mut BuyOrders)>,
         mut sell_orders: Query<(Entity, &mut SellOrders)>,
         mut inventories: Query<&mut Inventory>,
     ) {
+        let now = simulation_time.seconds();
+
         ships
-            .iter()
-            .for_each(|(entity, ship_behavior, task)| match ship_behavior {
+            .iter_mut()
+            .filter(|(_, _, task)| task.next_update <= now)
+            .for_each(|(entity, ship_behavior, mut task)| match ship_behavior {
                 ShipBehavior::HoldPosition => {
                     // Stay idle
                 }
@@ -30,6 +40,7 @@ impl Idle {
                     let plan =
                         TradePlan::create_from(inventory.capacity, &buy_orders, &sell_orders);
                     let Some(plan) = plan else {
+                        task.next_update = now + 2;
                         return;
                     };
                     let [mut this_inventory, mut seller_inventory, mut buyer_inventory] =
