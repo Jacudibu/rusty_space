@@ -7,10 +7,10 @@ use crate::utils::TradeIntent;
 use bevy::prelude::{Commands, Component, Entity, Query};
 use std::collections::VecDeque;
 
-#[derive(Component, Copy, Clone)]
+#[derive(Component)]
 pub struct Idle;
 
-// TODO: This should be done in a separate system per ShipBehavior, similar to tasks
+// TODO: This should be done in a separate system per ShipBehavior, similar to how tasks work now
 impl Idle {
     pub fn search_for_something_to_do(
         mut commands: Commands,

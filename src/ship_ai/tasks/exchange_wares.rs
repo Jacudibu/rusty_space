@@ -3,15 +3,17 @@ use crate::production::InventoryUpdateForProductionEvent;
 use crate::ship_ai::task_finished_event::TaskFinishedEvent;
 use crate::ship_ai::task_queue::TaskQueue;
 use crate::ship_ai::task_result::TaskResult;
-use crate::ship_ai::tasks;
 use crate::ship_ai::tasks::send_completion_events;
+use crate::ship_ai::{tasks, MoveToEntity};
 use crate::simulation_time::{SimulationSeconds, SimulationTime};
 use crate::utils::ExchangeWareData;
 use crate::utils::TradeIntent;
-use bevy::prelude::{error, Commands, Component, Entity, EventReader, EventWriter, Query, Res};
+use bevy::prelude::{
+    error, Added, Commands, Component, Entity, EventReader, EventWriter, Query, Res,
+};
 use std::sync::{Arc, Mutex};
 
-#[derive(Copy, Clone, Component)]
+#[derive(Component)]
 pub struct ExchangeWares {
     pub finishes_at: SimulationSeconds,
     pub target: Entity,
@@ -97,6 +99,21 @@ impl ExchangeWares {
                     "Unable to find entity for task completion: {}",
                     event.entity
                 );
+            }
+        }
+    }
+
+    /// To avoid the O(a + n) query runtime for change detection, this just iterates through all relevant TaskFinishedEvents.
+    /// Even in a busy session, there should always be *way, WAY* less of those than Entities.
+    pub fn on_task_creation(
+        mut query: Query<&mut Self>,
+        mut finished_events: EventReader<TaskFinishedEvent<MoveToEntity>>,
+        simulation_time: Res<SimulationTime>,
+    ) {
+        let now = simulation_time.seconds();
+        for x in finished_events.read() {
+            if let Ok(mut creation) = query.get_mut(x.entity) {
+                creation.finishes_at = now + 5;
             }
         }
     }

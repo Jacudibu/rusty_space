@@ -1,7 +1,7 @@
 use crate::ship_ai::task_finished_event::TaskFinishedEvent;
 use crate::ship_ai::tasks::{ExchangeWares, Idle, MoveToEntity};
 use bevy::app::App;
-use bevy::prelude::{IntoSystemConfigs, Plugin, Update};
+use bevy::prelude::{IntoSystemConfigs, Plugin, PostUpdate, Update};
 
 pub struct ShipAiPlugin;
 impl Plugin for ShipAiPlugin {
@@ -18,5 +18,6 @@ impl Plugin for ShipAiPlugin {
                 MoveToEntity::complete_tasks.after(MoveToEntity::run_tasks),
             ),
         );
+        app.add_systems(PostUpdate, ExchangeWares::on_task_creation);
     }
 }

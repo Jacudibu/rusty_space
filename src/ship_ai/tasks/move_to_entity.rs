@@ -11,7 +11,7 @@ use bevy::prelude::{
 };
 use std::sync::{Arc, Mutex};
 
-#[derive(Component, Copy, Clone)]
+#[derive(Component)]
 pub struct MoveToEntity {
     pub target: Entity,
 }
