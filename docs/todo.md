@@ -43,24 +43,57 @@ Too lazy to manage a whole kanban board and issues for these things yet. Roughly
 
 # Task System Overhaul
 
+Every Ship has a behavior assigned to it, which serves as its AI decision maker.
 Main tasks are handed out by the AI, and are then dynamically filled with the subtasks required to fulfill them.
 Not sure how deeply the pathfinding results should be cached here. Depends on performance.
 
+### Examples
+
+#### AutoTrade
+
 ```
+Search for good deals (repeats every couple seconds if nothing was found)
+
 Buy 50 X
   |- Move to System
   |- Move to System
   |- Move to Station
   |- Dock
   |- Exchange Wares
-```
 
-```
 Sell 50 X
   |- Undock
   |- Move to Station
   |- Dock
   |- Exchange Wares
+  
+(Repeat)
+```
+
+#### AutoBuild:
+
+```
+Search for construction sites lacking builders (repeats every couple seconds if nothing was found)
+
+Build Station
+  |- Move to System
+  |- Move to Station
+  |- Build
+
+```
+
+#### Sector Patrol
+
+Probably not 100% accurate given that combat isn't implemented yet
+
+```
+Search for hostile enemies (repeated every couple seconds if nothing was found)
+
+Attack Target 
+  |- Fly to target
+  |- Attack target
+
+(Repeat)
 ```
 
 # Station Building

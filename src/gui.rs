@@ -1,12 +1,12 @@
-use crate::components::{
-    BuyOrders, ExchangeWareData, Inventory, SelectableEntity, SellOrders, ShipTask, TaskQueue,
-    TradeOrder, Velocity,
-};
+use crate::components::{BuyOrders, Inventory, SelectableEntity, SellOrders, TradeOrder, Velocity};
 use crate::entity_selection::Selected;
 use crate::game_data::GameData;
 use crate::production::{ProductionComponent, ShipyardComponent};
 use crate::session_data::SessionData;
+use crate::ship_ai::TaskInsideQueue;
+use crate::ship_ai::TaskQueue;
 use crate::simulation_time::SimulationTime;
+use crate::utils::ExchangeWareData;
 use crate::SpriteHandles;
 use bevy::prelude::{
     AssetServer, Commands, Entity, Name, NextState, Query, Res, ResMut, Resource, State, States,
@@ -55,11 +55,10 @@ impl UiIcons {
         }
     }
 
-    pub fn get_task(&self, task: &ShipTask) -> SizedTexture {
+    pub fn get_task(&self, task: &TaskInsideQueue) -> SizedTexture {
         match task {
-            ShipTask::DoNothing => self.idle,
-            ShipTask::MoveTo(_) => self.move_to,
-            ShipTask::ExchangeWares(_, data) => match data {
+            TaskInsideQueue::MoveToEntity { .. } => self.move_to,
+            TaskInsideQueue::ExchangeWares { data, .. } => match data {
                 ExchangeWareData::Buy(_, _) => self.buy,
                 ExchangeWareData::Sell(_, _) => self.sell,
             },
@@ -261,28 +260,35 @@ pub fn list_selection_details(
 
                 if let Some(task_queue) = task_queue {
                     ui.heading("Tasks");
-                    for task in &task_queue.queue {
-                        ui.horizontal(|ui| {
-                            ui.image(images.get_task(task));
-                            ui.label(match task {
-                                ShipTask::DoNothing => "Idle".into(),
-                                ShipTask::MoveTo(entity) => format!("Move to {entity}"),
-                                ShipTask::ExchangeWares(_, data) => match data {
-                                    ExchangeWareData::Buy(item_id, amount) => {
-                                        format!(
-                                            "Buy {amount}x{}",
-                                            game_data.items.get(item_id).unwrap().name
-                                        )
+
+                    if task_queue.is_empty() {
+                        ui.image(images.idle);
+                        ui.label("Idle");
+                    } else {
+                        for task in &task_queue.queue {
+                            ui.horizontal(|ui| {
+                                ui.image(images.get_task(task));
+                                ui.label(match task {
+                                    TaskInsideQueue::MoveToEntity { target } => {
+                                        format!("Move to {}", target)
                                     }
-                                    ExchangeWareData::Sell(item_id, amount) => {
-                                        format!(
-                                            "Sell {amount}x{}",
-                                            game_data.items.get(item_id).unwrap().name
-                                        )
-                                    }
-                                },
+                                    TaskInsideQueue::ExchangeWares { data, .. } => match data {
+                                        ExchangeWareData::Buy(item_id, amount) => {
+                                            format!(
+                                                "Buy {amount}x{}",
+                                                game_data.items.get(item_id).unwrap().name
+                                            )
+                                        }
+                                        ExchangeWareData::Sell(item_id, amount) => {
+                                            format!(
+                                                "Sell {amount}x{}",
+                                                game_data.items.get(item_id).unwrap().name
+                                            )
+                                        }
+                                    },
+                                });
                             });
-                        });
+                        }
                     }
                 }
             });
@@ -319,7 +325,7 @@ fn draw_ship_summary_row(
         if let Some(task_queue) = task_queue {
             if let Some(task) = task_queue.queue.front() {
                 match task {
-                    ShipTask::MoveTo(_) => {
+                    TaskInsideQueue::MoveToEntity { .. } => {
                         ui.image(images.get_task(task));
                         if let Some(next_task) = task_queue.queue.get(1) {
                             ui.image(images.get_task(next_task));

@@ -2,6 +2,7 @@ use crate::entity_selection::EntitySelectionPlugin;
 use crate::game_data::GameData;
 use crate::production::ProductionPlugin;
 use crate::session_data::SessionData;
+use crate::ship_ai::ShipAiPlugin;
 use crate::simulation_time::SimulationTime;
 use bevy::asset::AssetServer;
 use bevy::core::Name;
@@ -27,6 +28,7 @@ mod production;
 mod session_data;
 mod ship_ai;
 mod simulation_time;
+mod trade_plan;
 mod utils;
 
 fn main() {
@@ -45,11 +47,11 @@ fn main() {
     .add_plugins(EguiPlugin)
     .add_plugins(ProductionPlugin)
     .add_plugins(EntitySelectionPlugin)
+    .add_plugins(ShipAiPlugin)
     .insert_resource(GameData::mock_data())
     .insert_resource(SessionData::mock_data())
     .insert_resource(SimulationTime::default())
     .init_state::<gui::MouseCursorOverUiState>()
-    .add_event::<ship_ai::TaskFinishedEvent>()
     .add_systems(
         Startup,
         (
@@ -71,10 +73,7 @@ fn main() {
             gui::list_selection_details,
             camera::move_camera,
             camera::zoom_camera,
-            ship_ai::handle_idle_ships,
-            ship_ai::run_ship_tasks,
-            ship_ai::complete_tasks.after(ship_ai::run_ship_tasks),
-            physics::move_things.after(ship_ai::run_ship_tasks),
+            physics::move_things.after(ship_ai::MoveToEntity::run_tasks),
         ),
     );
 
