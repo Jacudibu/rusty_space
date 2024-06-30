@@ -5,7 +5,7 @@ use crate::production::shipyard_component::ShipyardComponent;
 use crate::production::state::GlobalProductionState;
 use crate::production::{InventoryUpdateForProductionEvent, ProductionComponent};
 use crate::session_data::SessionData;
-use crate::simulation_time::SimulationTime;
+use crate::utils::SimulationTime;
 use crate::{mock_helpers, utils, SpriteHandles};
 use bevy::log::error;
 use bevy::prelude::{Commands, EventWriter, Or, Query, Res, ResMut, Transform, With};
@@ -31,7 +31,7 @@ pub fn check_if_production_is_finished_and_start_new_one(
         Or<(With<ProductionComponent>, With<ShipyardComponent>)>,
     >,
 ) {
-    let current = simulation_time.seconds();
+    let current = simulation_time.now();
     while let Some(next) = global_production_state.peek() {
         if current < next.finished_at {
             break;

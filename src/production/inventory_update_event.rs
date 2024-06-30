@@ -5,8 +5,8 @@ use crate::production::production_started_event::ProductionStartedEvent;
 use crate::production::shipyard_component::{OngoingShipConstructionOrder, ShipyardComponent};
 use crate::production::ProductionComponent;
 use crate::session_data::{SessionData, ShipConfigId};
-use crate::simulation_time::SimulationTime;
 use crate::utils;
+use crate::utils::SimulationTime;
 use bevy::log::error;
 use bevy::prelude::{Entity, Event, EventReader, EventWriter, Or, Query, Res, With};
 
@@ -44,7 +44,7 @@ pub fn handle_inventory_updates(
         Or<(With<ProductionComponent>, With<ShipyardComponent>)>,
     >,
 ) {
-    let current = simulation_time.seconds();
+    let current = simulation_time.now();
     for event in event_reader.read() {
         let Ok((production, shipyard, mut inventory, buy_orders, sell_orders)) =
             query.get_mut(event.entity)

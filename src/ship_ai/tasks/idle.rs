@@ -1,19 +1,19 @@
 use crate::components::{BuyOrders, Inventory, SellOrders, ShipBehavior, TradeOrder};
 use crate::ship_ai::task_inside_queue::TaskInsideQueue;
 use crate::ship_ai::task_queue::TaskQueue;
-use crate::simulation_time::{SimulationSeconds, SimulationTime};
 use crate::trade_plan::TradePlan;
 use crate::utils::ExchangeWareData;
 use crate::utils::TradeIntent;
+use crate::utils::{Milliseconds, SimulationTime};
 use bevy::prelude::{Commands, Component, Entity, Query, Res};
 use std::collections::VecDeque;
 
 // TODO: Check if idle needs to be generic on ShipBehavior to guarantee system parallelism
 #[derive(Component, Default)]
 pub struct Idle {
-    /// Maybe using SimulationNanos would be better here, to spread out updates across more frames.
+    /// Maybe using SimulationMillis would be better here, to spread out updates across more frames.
     /// In most cases, these are expensive enough to matter.
-    next_update: SimulationSeconds,
+    next_update: Milliseconds,
 }
 
 // TODO: This should be done in a separate system per ShipBehavior, similar to how tasks work now
@@ -26,11 +26,11 @@ impl Idle {
         mut sell_orders: Query<(Entity, &mut SellOrders)>,
         mut inventories: Query<&mut Inventory>,
     ) {
-        let now = simulation_time.seconds();
+        let now_millis = simulation_time.now();
 
         ships
             .iter_mut()
-            .filter(|(_, _, task)| task.next_update <= now)
+            .filter(|(_, _, task)| task.next_update <= now_millis)
             .for_each(|(entity, ship_behavior, mut task)| match ship_behavior {
                 ShipBehavior::HoldPosition => {
                     // Stay idle
@@ -40,7 +40,7 @@ impl Idle {
                     let plan =
                         TradePlan::create_from(inventory.capacity, &buy_orders, &sell_orders);
                     let Some(plan) = plan else {
-                        task.next_update = now + 2;
+                        task.next_update = now_millis + 2;
                         return;
                     };
                     let [mut this_inventory, mut seller_inventory, mut buyer_inventory] =

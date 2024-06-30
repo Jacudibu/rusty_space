@@ -5,23 +5,21 @@ use crate::ship_ai::task_queue::TaskQueue;
 use crate::ship_ai::task_result::TaskResult;
 use crate::ship_ai::tasks::send_completion_events;
 use crate::ship_ai::{tasks, MoveToEntity};
-use crate::simulation_time::{SimulationSeconds, SimulationTime};
 use crate::utils::ExchangeWareData;
 use crate::utils::TradeIntent;
-use bevy::prelude::{
-    error, Added, Commands, Component, Entity, EventReader, EventWriter, Query, Res,
-};
+use crate::utils::{Milliseconds, SimulationTime};
+use bevy::prelude::{error, Commands, Component, Entity, EventReader, EventWriter, Query, Res};
 use std::sync::{Arc, Mutex};
 
 #[derive(Component)]
 pub struct ExchangeWares {
-    pub finishes_at: SimulationSeconds,
+    pub finishes_at: Milliseconds,
     pub target: Entity,
     pub data: ExchangeWareData,
 }
 
 impl ExchangeWares {
-    fn run(&self, simulation_seconds: SimulationSeconds) -> TaskResult {
+    fn run(&self, simulation_seconds: Milliseconds) -> TaskResult {
         if self.finishes_at > simulation_seconds {
             TaskResult::Ongoing
         } else {
@@ -66,7 +64,7 @@ impl ExchangeWares {
         simulation_time: Res<SimulationTime>,
         ships: Query<(Entity, &Self)>,
     ) {
-        let current_seconds = simulation_time.seconds();
+        let current_seconds = simulation_time.now();
         let task_completions = Arc::new(Mutex::new(Vec::<TaskFinishedEvent<Self>>::new()));
 
         ships
@@ -110,7 +108,7 @@ impl ExchangeWares {
         mut finished_events: EventReader<TaskFinishedEvent<MoveToEntity>>,
         simulation_time: Res<SimulationTime>,
     ) {
-        let now = simulation_time.seconds();
+        let now = simulation_time.now();
         for x in finished_events.read() {
             if let Ok((mut creation, mut velocity)) = query.get_mut(x.entity) {
                 creation.finishes_at = now + 2;

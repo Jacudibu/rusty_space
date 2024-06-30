@@ -1,4 +1,5 @@
 use crate::game_data::ItemRecipeElement;
+use crate::utils::Milliseconds;
 
 pub type ShipConfigId = u32;
 
@@ -10,6 +11,6 @@ pub const DEBUG_SHIP_CONFIG: ShipConfigId = 1;
 pub struct ShipConfiguration {
     pub id: ShipConfigId,
     pub name: String,
-    pub duration: u32,
+    pub duration: Milliseconds,
     pub materials: Vec<ItemRecipeElement>,
 }

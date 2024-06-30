@@ -1,17 +1,17 @@
 use crate::production::production_kind::ProductionKind;
 use crate::production::state::{GlobalProductionState, SingleProductionState};
-use crate::simulation_time::SimulationSeconds;
+use crate::utils::Milliseconds;
 use bevy::prelude::{Entity, Event, EventReader, ResMut};
 
 #[derive(Event)]
 pub struct ProductionStartedEvent {
     pub entity: Entity,
     pub kind: ProductionKind,
-    pub finishes_at: SimulationSeconds,
+    pub finishes_at: Milliseconds,
 }
 
 impl ProductionStartedEvent {
-    pub fn new(entity: Entity, kind: ProductionKind, finishes_at: SimulationSeconds) -> Self {
+    pub fn new(entity: Entity, kind: ProductionKind, finishes_at: Milliseconds) -> Self {
         Self {
             entity,
             kind,

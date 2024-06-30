@@ -1,6 +1,6 @@
 use crate::production::production_kind::ProductionKind;
 use crate::production::production_started_event::ProductionStartedEvent;
-use crate::simulation_time::SimulationSeconds;
+use crate::utils::Milliseconds;
 use bevy::prelude::{Entity, Resource};
 use std::cmp::Ordering;
 use std::collections::BinaryHeap;
@@ -38,7 +38,7 @@ impl GlobalProductionState {
 pub struct SingleProductionState {
     pub entity: Entity,
     pub kind: ProductionKind,
-    pub finished_at: SimulationSeconds,
+    pub finished_at: Milliseconds,
 }
 
 impl From<&ProductionStartedEvent> for SingleProductionState {

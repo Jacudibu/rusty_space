@@ -1,5 +1,6 @@
 use crate::game_data::ShipyardModuleId;
 use crate::session_data::ShipConfigId;
+use crate::utils::Milliseconds;
 use bevy::prelude::Component;
 use bevy::utils::HashMap;
 
@@ -16,5 +17,5 @@ pub struct ShipyardModule {
 
 pub struct OngoingShipConstructionOrder {
     pub ship_config: ShipConfigId,
-    pub finished_at: u32,
+    pub finished_at: Milliseconds,
 }

@@ -5,8 +5,8 @@ use crate::production::{ProductionComponent, ShipyardComponent};
 use crate::session_data::SessionData;
 use crate::ship_ai::TaskInsideQueue;
 use crate::ship_ai::TaskQueue;
-use crate::simulation_time::SimulationTime;
 use crate::utils::ExchangeWareData;
+use crate::utils::SimulationTime;
 use crate::SpriteHandles;
 use bevy::prelude::{
     AssetServer, Commands, Entity, Name, NextState, Query, Res, ResMut, Resource, State, States,
@@ -203,7 +203,7 @@ pub fn list_selection_details(
                         if let Some(finished_at) = module.current_run_finished_at {
                             ui.label(format!(
                                 "      Done in {}",
-                                finished_at - simulation_time.seconds()
+                                finished_at - simulation_time.now()
                             ));
                         } else {
                             ui.label("    (Inactive)");
@@ -249,7 +249,7 @@ pub fn list_selection_details(
                             ui.label(format!(
                                 "  - {} | {}",
                                 definition.name,
-                                order.finished_at - simulation_time.seconds()
+                                order.finished_at - simulation_time.now()
                             ));
                         }
                     }

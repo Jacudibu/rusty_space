@@ -3,14 +3,13 @@ use crate::game_data::GameData;
 use crate::production::ProductionPlugin;
 use crate::session_data::SessionData;
 use crate::ship_ai::ShipAiPlugin;
-use crate::simulation_time::SimulationTime;
+use crate::utils::SimulationTimePlugin;
 use bevy::asset::AssetServer;
 use bevy::core::Name;
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::prelude::{
-    App, AppExtStates, Camera2dBundle, Commands, First, Handle, Image, ImagePlugin,
-    IntoSystemConfigs, PluginGroup, PreUpdate, Res, Resource, Startup, Update, Window,
-    WindowPlugin,
+    App, AppExtStates, Camera2dBundle, Commands, Handle, Image, ImagePlugin, IntoSystemConfigs,
+    PluginGroup, PreUpdate, Res, Resource, Startup, Update, Window, WindowPlugin,
 };
 use bevy::render::camera::ScalingMode;
 use bevy::DefaultPlugins;
@@ -27,7 +26,6 @@ mod physics;
 mod production;
 mod session_data;
 mod ship_ai;
-mod simulation_time;
 mod trade_plan;
 mod utils;
 
@@ -48,9 +46,9 @@ fn main() {
     .add_plugins(ProductionPlugin)
     .add_plugins(EntitySelectionPlugin)
     .add_plugins(ShipAiPlugin)
+    .add_plugins(SimulationTimePlugin)
     .insert_resource(GameData::mock_data())
     .insert_resource(SessionData::mock_data())
-    .insert_resource(SimulationTime::default())
     .init_state::<gui::MouseCursorOverUiState>()
     .add_systems(
         Startup,
@@ -64,7 +62,6 @@ fn main() {
                 .after(initialize_data),
         ),
     )
-    .add_systems(First, simulation_time::update.after(bevy::time::TimeSystem))
     .add_systems(PreUpdate, gui::detect_mouse_cursor_over_ui)
     .add_systems(
         Update,

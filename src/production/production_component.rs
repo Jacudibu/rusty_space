@@ -1,4 +1,5 @@
 use crate::game_data::{ProductionModuleId, RecipeId};
+use crate::utils::Milliseconds;
 use bevy::prelude::Component;
 use bevy::utils::HashMap;
 
@@ -10,5 +11,5 @@ pub struct ProductionComponent {
 pub struct ProductionModule {
     pub amount: u32,
     pub recipe: RecipeId,
-    pub current_run_finished_at: Option<u32>,
+    pub current_run_finished_at: Option<Milliseconds>,
 }
