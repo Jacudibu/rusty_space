@@ -1,6 +1,7 @@
 use crate::entity_selection::EntitySelectionPlugin;
 use crate::game_data::GameData;
 use crate::production::ProductionPlugin;
+use crate::sectors::SectorPlugin;
 use crate::session_data::SessionData;
 use crate::ship_ai::ShipAiPlugin;
 use crate::utils::SimulationTimePlugin;
@@ -24,6 +25,7 @@ mod gui;
 mod mock_helpers;
 mod physics;
 mod production;
+mod sectors;
 mod session_data;
 mod ship_ai;
 mod trade_plan;
@@ -47,6 +49,7 @@ fn main() {
     .add_plugins(EntitySelectionPlugin)
     .add_plugins(ShipAiPlugin)
     .add_plugins(SimulationTimePlugin)
+    .add_plugins(SectorPlugin)
     .insert_resource(GameData::mock_data())
     .insert_resource(SessionData::mock_data())
     .init_state::<gui::MouseCursorOverUiState>()

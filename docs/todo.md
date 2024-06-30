@@ -41,11 +41,47 @@ Too lazy to manage a whole kanban board and issues for these things yet. Roughly
 - Change items and recipes to stuff that makes sense
 - Spawn one station for every production module & recipe
 
+# Station Building
+
+- New stations can be created in a running game
+- Construction Materials go into separate inventory
+- Builder ships build stations with their drones or something
+- Station module costs increases with station size
+
+Modules:
+
+- Production (one module per item... or per recipe?)
+- Storage (At this point capacity won't be hardcoded anymore, yay!)
+- Docking (At this point we will need to implement a docking queue. Will look funny.)
+- Ship Building
+- Defense (later on)
+
+# Sectors
+
+Sectors keep track of the entities inside them, allowing for cheaper localized physics, trade and unit selection.
+
+- Separate the map into hexagonal sectors which are connected through gates
+- Ships can only travel between sectors by using gates
+- Draw lines between gates
+- ~~Draw borders around sectors~~
+- UI should display the name of the sector that's currently being hovered over
+
+# Sector Resources
+
+Sectors have different resource distributions, requiring either trade or expansion to fix local scarcity and rising
+demands.
+
+- Asteroids could randomly spawn at the sector edges and drift through them, until either getting harvested or leaving
+  the sector again. Density and yields depend on sector values. Wouldn't bother with station collisions, though extra
+  protective measurements could be a nice excuse to make stations more expensive in these sectors.
+- Gas Clouds... no clue. Maybe having ships or stations suck up the atmosphere of a Gas Giant? But that would make
+  limiting hourly yields fairly hard or unlogical.
+
 # Task System Overhaul
 
-Every Ship has a behavior assigned to it, which serves as its AI decision maker.
-Main tasks are handed out by the AI, and are then dynamically filled with the subtasks required to fulfill them.
-Not sure how deeply the pathfinding results should be cached here. Depends on performance.
+- ~~Every Ship has a behavior assigned to it, which serves as its AI decision maker.~~
+- Main tasks are handed out by the ShipBehavior, and are then dynamically filled with subtasks to complete them.
+    - e.g. AutoTrade: Just add `Buy X` and `Sell x`, then do the pathfinding in a more concurrent system.
 
 ### Examples
 
@@ -95,42 +131,6 @@ Attack Target
 
 (Repeat)
 ```
-
-# Station Building
-
-- New stations can be created in a running game
-- Construction Materials go into separate inventory
-- Builder ships build stations with their drones or something
-- Station module costs increases with station size
-
-Modules:
-
-- Production (one module per item... or per recipe?)
-- Storage (At this point capacity won't be hardcoded anymore, yay!)
-- Docking (At this point we will need to implement a docking queue. Will look funny.)
-- Ship Building
-- Defense (later on)
-
-# Sectors
-
-Sectors keep track of the entities inside them, allowing for localized physics and unit selection.
-
-- Separate the map into hexagonal sectors which are connected through gates
-- Ships can only travel between sectors by using gates
-- Draw lines between gates
-- Draw borders around sectors
-- UI should display the name of the sector that's currently being hovered over
-
-# Sector Resources
-
-Sectors have different resource distributions, requiring either trade or expansion to fix local scarcity and rising
-demands.
-
-- Asteroids could randomly spawn at the sector edges and drift through them, until either getting harvested or leaving
-  the sector again. Density and yields depend on sector values. Wouldn't bother with station collisions, though extra
-  protective measurements could be a nice excuse to make stations more expensive in these sectors.
-- Gas Clouds... no clue. Maybe having ships or stations suck up the atmosphere of a Gas Giant? But that would make
-  limiting hourly yields fairly hard or unlogical.
 
 # Multiplayer
 
