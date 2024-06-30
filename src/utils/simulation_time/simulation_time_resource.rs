@@ -1,3 +1,4 @@
+use crate::utils::simulation_time::simulation_timestamp::CurrentSimulationTimestamp;
 use crate::utils::Milliseconds;
 use bevy::prelude::Resource;
 use std::time::Duration;
@@ -24,10 +25,9 @@ impl SimulationTime {
         self.total += delta;
     }
 
-    /// Returns the current simulation timestamp, represented in milliseconds.
+    /// Returns the [CurrentSimulationTimestamp], which can then be used to create or interact with [SimulationTimestamp]s for task scheduling.
     #[inline]
-    pub fn now(&self) -> Milliseconds {
-        // Using the full u128 would be overkill, u64 already allows us to keep track of a couple million years
-        self.total.as_millis() as Milliseconds
+    pub fn now(&self) -> CurrentSimulationTimestamp {
+        CurrentSimulationTimestamp::from(self.total.as_millis() as Milliseconds)
     }
 }

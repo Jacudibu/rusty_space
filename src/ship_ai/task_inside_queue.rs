@@ -1,6 +1,6 @@
 use crate::ship_ai::tasks::ExchangeWares;
 use crate::ship_ai::MoveToEntity;
-use crate::utils::ExchangeWareData;
+use crate::utils::{ExchangeWareData, SimulationTimestamp};
 use bevy::ecs::system::EntityCommands;
 use bevy::prelude::Entity;
 
@@ -20,7 +20,7 @@ impl TaskInsideQueue {
         match self {
             TaskInsideQueue::ExchangeWares { target, data } => {
                 entity_commands.insert(ExchangeWares {
-                    finishes_at: 0,
+                    finishes_at: SimulationTimestamp::default(),
                     target: *target,
                     data: *data,
                 });

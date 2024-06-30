@@ -31,9 +31,9 @@ pub fn check_if_production_is_finished_and_start_new_one(
         Or<(With<ProductionComponent>, With<ShipyardComponent>)>,
     >,
 ) {
-    let current = simulation_time.now();
+    let now = simulation_time.now();
     while let Some(next) = global_production_state.peek() {
-        if current < next.finished_at {
+        if now.has_not_passed(next.finished_at) {
             break;
         }
 
@@ -86,7 +86,7 @@ pub fn check_if_production_is_finished_and_start_new_one(
                 let position = module
                     .active
                     .iter()
-                    .position(|x| x.finished_at <= current)
+                    .position(|x| now.has_passed(x.finished_at))
                     .unwrap();
                 let order = module.active.remove(position);
 

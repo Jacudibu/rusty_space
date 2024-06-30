@@ -20,7 +20,7 @@ impl SessionData {
                 ShipConfiguration {
                     id: DEBUG_SHIP_CONFIG,
                     name: "Fancy new ship".into(),
-                    duration: 5,
+                    duration: 5000,
                     materials: vec![
                         ItemRecipeElement {
                             item_id: DEBUG_ITEM_ID_A,

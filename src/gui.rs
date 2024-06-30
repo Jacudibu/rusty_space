@@ -155,6 +155,7 @@ pub fn list_selection_details(
     }
 
     if counts.total() == 1 {
+        let now = simulation_time.now();
         egui::Window::new("Selection Details")
             .anchor(Align2::LEFT_CENTER, egui::Vec2::ZERO)
             .title_bar(false)
@@ -203,7 +204,7 @@ pub fn list_selection_details(
                         if let Some(finished_at) = module.current_run_finished_at {
                             ui.label(format!(
                                 "      Done in {}",
-                                finished_at - simulation_time.now()
+                                now.remaining_time(finished_at).as_secs() + 1
                             ));
                         } else {
                             ui.label("    (Inactive)");
@@ -249,7 +250,7 @@ pub fn list_selection_details(
                             ui.label(format!(
                                 "  - {} | {}",
                                 definition.name,
-                                order.finished_at - simulation_time.now()
+                                now.remaining_time(order.finished_at).as_secs() + 1
                             ));
                         }
                     }

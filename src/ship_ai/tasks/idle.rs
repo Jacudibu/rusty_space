@@ -2,18 +2,17 @@ use crate::components::{BuyOrders, Inventory, SellOrders, ShipBehavior, TradeOrd
 use crate::ship_ai::task_inside_queue::TaskInsideQueue;
 use crate::ship_ai::task_queue::TaskQueue;
 use crate::trade_plan::TradePlan;
-use crate::utils::ExchangeWareData;
+use crate::utils::SimulationTime;
 use crate::utils::TradeIntent;
-use crate::utils::{Milliseconds, SimulationTime};
+use crate::utils::{ExchangeWareData, SimulationTimestamp};
 use bevy::prelude::{Commands, Component, Entity, Query, Res};
 use std::collections::VecDeque;
 
-// TODO: Check if idle needs to be generic on ShipBehavior to guarantee system parallelism
+// TODO: Check if idle needs to be generic on ShipBehavior to guarantee system parallelism.
+//       Alternatively, maybe just using commands.insert() with a new idle could be cheaper?
 #[derive(Component, Default)]
 pub struct Idle {
-    /// Maybe using SimulationMillis would be better here, to spread out updates across more frames.
-    /// In most cases, these are expensive enough to matter.
-    next_update: Milliseconds,
+    next_update: SimulationTimestamp,
 }
 
 // TODO: This should be done in a separate system per ShipBehavior, similar to how tasks work now
@@ -26,11 +25,11 @@ impl Idle {
         mut sell_orders: Query<(Entity, &mut SellOrders)>,
         mut inventories: Query<&mut Inventory>,
     ) {
-        let now_millis = simulation_time.now();
+        let now = simulation_time.now();
 
         ships
             .iter_mut()
-            .filter(|(_, _, task)| task.next_update <= now_millis)
+            .filter(|(_, _, task)| now.has_passed(task.next_update))
             .for_each(|(entity, ship_behavior, mut task)| match ship_behavior {
                 ShipBehavior::HoldPosition => {
                     // Stay idle
@@ -40,7 +39,7 @@ impl Idle {
                     let plan =
                         TradePlan::create_from(inventory.capacity, &buy_orders, &sell_orders);
                     let Some(plan) = plan else {
-                        task.next_update = now_millis + 2;
+                        task.next_update = now.add_seconds(2);
                         return;
                     };
                     let [mut this_inventory, mut seller_inventory, mut buyer_inventory] =

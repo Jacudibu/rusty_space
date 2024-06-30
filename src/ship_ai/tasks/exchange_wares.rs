@@ -5,22 +5,22 @@ use crate::ship_ai::task_queue::TaskQueue;
 use crate::ship_ai::task_result::TaskResult;
 use crate::ship_ai::tasks::send_completion_events;
 use crate::ship_ai::{tasks, MoveToEntity};
-use crate::utils::ExchangeWareData;
 use crate::utils::TradeIntent;
-use crate::utils::{Milliseconds, SimulationTime};
+use crate::utils::{CurrentSimulationTimestamp, SimulationTime};
+use crate::utils::{ExchangeWareData, SimulationTimestamp};
 use bevy::prelude::{error, Commands, Component, Entity, EventReader, EventWriter, Query, Res};
 use std::sync::{Arc, Mutex};
 
 #[derive(Component)]
 pub struct ExchangeWares {
-    pub finishes_at: Milliseconds,
+    pub finishes_at: SimulationTimestamp,
     pub target: Entity,
     pub data: ExchangeWareData,
 }
 
 impl ExchangeWares {
-    fn run(&self, simulation_seconds: Milliseconds) -> TaskResult {
-        if self.finishes_at > simulation_seconds {
+    fn run(&self, now: CurrentSimulationTimestamp) -> TaskResult {
+        if now.has_not_passed(self.finishes_at) {
             TaskResult::Ongoing
         } else {
             TaskResult::Finished
@@ -64,12 +64,12 @@ impl ExchangeWares {
         simulation_time: Res<SimulationTime>,
         ships: Query<(Entity, &Self)>,
     ) {
-        let current_seconds = simulation_time.now();
+        let now = simulation_time.now();
         let task_completions = Arc::new(Mutex::new(Vec::<TaskFinishedEvent<Self>>::new()));
 
         ships
             .par_iter()
-            .for_each(|(entity, task)| match task.run(current_seconds) {
+            .for_each(|(entity, task)| match task.run(now) {
                 TaskResult::Ongoing => {}
                 TaskResult::Finished | TaskResult::Aborted => task_completions
                     .lock()
@@ -111,7 +111,7 @@ impl ExchangeWares {
         let now = simulation_time.now();
         for x in finished_events.read() {
             if let Ok((mut creation, mut velocity)) = query.get_mut(x.entity) {
-                creation.finishes_at = now + 2;
+                creation.finishes_at = now.add_seconds(2);
 
                 // TODO: Remove this once docking is implemented
                 velocity.forward = 0.0;

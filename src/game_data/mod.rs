@@ -55,7 +55,7 @@ impl GameData {
             ItemRecipe {
                 id: RECIPE_A_ID,
                 name: "5C -> 10A".into(),
-                duration: 10,
+                duration: 10000,
                 input: vec![ItemRecipeElement {
                     item_id: DEBUG_ITEM_ID_C,
                     amount: 5,
@@ -71,7 +71,7 @@ impl GameData {
             ItemRecipe {
                 id: RECIPE_B_ID,
                 name: "5A -> 13B".into(),
-                duration: 20,
+                duration: 20000,
                 input: vec![ItemRecipeElement {
                     item_id: DEBUG_ITEM_ID_A,
                     amount: 5,
@@ -87,7 +87,7 @@ impl GameData {
             ItemRecipe {
                 id: RECIPE_C_ID,
                 name: "5B -> 17C".into(),
-                duration: 30,
+                duration: 30000,
                 input: vec![ItemRecipeElement {
                     item_id: DEBUG_ITEM_ID_B,
                     amount: 5,

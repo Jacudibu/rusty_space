@@ -44,7 +44,7 @@ pub fn handle_inventory_updates(
         Or<(With<ProductionComponent>, With<ShipyardComponent>)>,
     >,
 ) {
-    let current = simulation_time.now();
+    let now = simulation_time.now();
     for event in event_reader.read() {
         let Ok((production, shipyard, mut inventory, buy_orders, sell_orders)) =
             query.get_mut(event.entity)
@@ -66,7 +66,7 @@ pub fn handle_inventory_updates(
                     inventory.remove_items(&recipe.input, module.amount);
                     inventory.reserve_storage_space_for_production_yield(recipe, module.amount);
 
-                    let finish_timestamp = current + recipe.duration;
+                    let finish_timestamp = now.add_milliseconds(recipe.duration);
                     module.current_run_finished_at = Some(finish_timestamp);
 
                     production_start_event_writer.send(ProductionStartedEvent::new(
@@ -136,7 +136,7 @@ pub fn handle_inventory_updates(
                     continue;
                 };
 
-                let finish_timestamp = current + configuration.duration;
+                let finish_timestamp = now.add_milliseconds(configuration.duration);
                 module.active.push(OngoingShipConstructionOrder {
                     ship_config: next_ship_config_id,
                     finished_at: finish_timestamp,

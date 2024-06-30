@@ -12,7 +12,7 @@ pub struct ItemRecipe {
     pub id: RecipeId,
     /// Useful to differentiate if an item has multiple recipes
     pub name: String,
-    /// How long it will take to process this recipe once, in seconds
+    /// How long it will take to process this recipe once, in milliseconds
     pub duration: Milliseconds,
     /// The required ingredients to get production starting
     pub input: Vec<ItemRecipeElement>,
