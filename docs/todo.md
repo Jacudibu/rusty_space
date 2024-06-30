@@ -1,4 +1,8 @@
-Too lazy to manage a whole kanban board and issues for these things yet. Roughly sorted, these should be the next steps:
+Too lazy to manage a whole kanban board and issues for these things yet. Roughly sorted by priority. The further down we go, the less refined these get.
+
+Current performance goal: 
+1 Million Ships getting processed across the universe and 100k of them actively rendered @30 FPS on my Ryzen 7 5700X
+If my machine can handle that, I'd assume a potato can run 10% of that smoothly, which is the real goal here.
 
 # Improved Trading
 
@@ -139,9 +143,7 @@ These will limit which systems run exclusively on the host, which will then send
 clients.
 
 Level 1: Synchronize Task creation (Bare minimum, limiting the big AI decision-making to the host.)
-Level 2: Synchronize Sector transitions (Should improve positional sync, but might not even be necessary)
-Level 3: Synchronize Combat events (Hit detection / damage. This will be necessary for competitive play)
-Level 4: Synchronize Ships (The true performance nightmare we want to avoid at all costs)
+Level 2: Synchronize Sector transitions (Should improve positional sync, but might not even be necessary, needs testing)
 
 # Player Control
 
@@ -157,6 +159,16 @@ dynamically decrease faction standing.
 - Respect faction relations in Task creation (don't enter hostile sectors, don't trade with hostile stations...)
 - Players are factions
 
+# Faction AI
+
+Time to get cooking! Factions attempt to expand their territory by building both stations and ships on their own.
+Good luck implementing all of that, future me! :>
+
+# Persistence
+
+Somewhere around this moment, it's probably finally time to think about how game saving & loading should work.
+Bonus points if saving can happen in the background, maybe as an async task that's set up similarly to Bevy's render extraction phase.
+
 # Advanced Unit Selection
 
 Units aren't completely selected until the mouse button is actually released. Add some kind of Hover Step.
@@ -166,8 +178,27 @@ components.
 - Shift+Clicking should not clear previous selection, selects additional entities
 - CTRL+Clicking does not clear previous selection, deselects entities
 
+# Combat
+
+At this point the simulation should be big enough to decide how combat should work in regard to performance.
+Simulating individual projectiles, beams or missiles would be cool as hecc, but the physics behind that would probably eat our CPU cores alive. Therefore, this should be a 2 Step process.
+
+Step 1: Ship Firing Arcs
+Define the firing arcs and ranges at which ships can fire, and the required physics to test if any overlaps happen. Make damage happen instantly on weapon cooldown.
+
+Step 2: Projectiles
+For the lulz, don't apply the damage instantly and spawn the projectiles. If we restrict collision detection to stuff within the same sector and have low fire rates, this *might* be manageable for a dozen or so ships. Or not. Either way, it's gonna be fun to watch for a bit. If the simulation for some strange reason still runs on a somewhat bearable framerate during two big clashes, it could be toggled on or off through a setting.
+
+## Multiplayer #2
+
+Level 3: Synchronize Combat events (Hit detection / damage) This will be very much necessary for any level of non-cooperative play.
+
 # Upgrades & Research
 
 Certain properties of Stations and ships should be upgradeable in small % intervals by investing a big amount of
 resources.
 E.g. Engine Speed or turning angle, or station storage.
+
+# Planets
+
+Sectors with only one or two gates and otherwise low resources might have celestial bodies inside them, orbiting a Star or Black Hole at veeeery slow speeds. These planets could be colonized by the sector owner for additional resources, but usually it should be both cheaper and more efficient to just harvest more asteroids rather than bothering with the extra costs from dealing with various atmospheres and gravitation. However, once the entire Universe is colonized and borders are well established in between factions and resources grow sparse, they might be a way to unlock additional resource production over time.
