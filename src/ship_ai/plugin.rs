@@ -1,5 +1,6 @@
+use crate::ship_ai::behaviors;
 use crate::ship_ai::task_finished_event::TaskFinishedEvent;
-use crate::ship_ai::tasks::{ExchangeWares, Idle, MoveToEntity};
+use crate::ship_ai::tasks::{ExchangeWares, MoveToEntity};
 use bevy::app::App;
 use bevy::prelude::{IntoSystemConfigs, Plugin, PostUpdate, Update};
 
@@ -11,7 +12,7 @@ impl Plugin for ShipAiPlugin {
         app.add_systems(
             Update,
             (
-                Idle::search_for_something_to_do,
+                behaviors::auto_trade::handle_idle_ships,
                 ExchangeWares::run_tasks,
                 ExchangeWares::complete_tasks.after(ExchangeWares::run_tasks),
                 MoveToEntity::run_tasks,
