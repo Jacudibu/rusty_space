@@ -101,6 +101,8 @@ pub struct SpriteHandles {
     station_selected: Handle<Image>,
     ship: Handle<Image>,
     ship_selected: Handle<Image>,
+    gate: Handle<Image>,
+    gate_selected: Handle<Image>,
 }
 
 pub fn initialize_data(mut commands: Commands, asset_server: Res<AssetServer>) {
@@ -109,6 +111,8 @@ pub fn initialize_data(mut commands: Commands, asset_server: Res<AssetServer>) {
         station_selected: asset_server.load("station_selected.png"),
         ship: asset_server.load("ship.png"),
         ship_selected: asset_server.load("ship_selected.png"),
+        gate: asset_server.load("gate.png"),
+        gate_selected: asset_server.load("gate_selected.png"),
     };
     commands.insert_resource(sprites);
 

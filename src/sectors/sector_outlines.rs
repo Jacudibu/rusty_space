@@ -1,6 +1,8 @@
 use crate::sectors::plugin::MapLayout;
 use crate::sectors::sector::SectorComponent;
-use bevy::prelude::{GizmoConfigGroup, Gizmos, InheritedVisibility, Query, Reflect, Res, Vec2};
+use bevy::prelude::{
+    GizmoConfigGroup, Gizmos, InheritedVisibility, Query, Reflect, Res, Vec2, ViewVisibility,
+};
 use hexx::{Hex, HexLayout};
 
 #[derive(Default, Reflect, GizmoConfigGroup)]
@@ -9,7 +11,7 @@ pub struct SectorOutlineGizmos;
 pub fn draw_sector_outlines(
     mut gizmos: Gizmos<SectorOutlineGizmos>,
     layout: Res<MapLayout>,
-    sectors: Query<(&SectorComponent, &InheritedVisibility)>,
+    sectors: Query<(&SectorComponent, &ViewVisibility)>,
 ) {
     let mut offset_layout = layout.hex_layout.clone();
     offset_layout.hex_size = hexx::Vec2::splat(-5.0);
@@ -17,10 +19,7 @@ pub fn draw_sector_outlines(
         .all_vertices()
         .map(|vertex| offset_layout.vertex_coordinates(vertex));
 
-    for (sector, _) in sectors
-        .iter()
-        .filter(|(_, &visibility)| visibility == InheritedVisibility::VISIBLE)
-    {
+    for (sector, _) in sectors.iter().filter(|(_, &visibility)| true /*TODO*/) {
         let vertices = sector_border_vertices(sector.coordinate, &layout.hex_layout, offset);
 
         gizmos.line_2d(vertices[0], vertices[1], bevy::color::palettes::css::YELLOW);
