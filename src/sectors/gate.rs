@@ -8,7 +8,6 @@ use bevy::prelude::{
     BuildChildren, Commands, Component, Entity, EventWriter, Name, SpriteBundle, Transform, Vec2,
 };
 use hexx::Hex;
-use std::fmt::format;
 
 #[derive(Eq, PartialEq, Hash, Copy, Clone)]
 pub struct GateId {

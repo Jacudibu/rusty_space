@@ -23,9 +23,24 @@ impl SectorData {
     }
 }
 
+/// Marker Component for Sectors
 #[derive(Component)]
 pub struct SectorComponent {
     pub coordinate: Hex,
+}
+
+/// Component for entities inside sectors
+#[derive(Component)]
+pub struct InSector {
+    pub sector: Hex,
+}
+
+impl From<&SectorData> for InSector {
+    fn from(value: &SectorData) -> Self {
+        Self {
+            sector: value.coordinate,
+        }
+    }
 }
 
 pub type AllSectors = KeyValueResource<Hex, SectorData>;

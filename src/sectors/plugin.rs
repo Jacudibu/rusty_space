@@ -21,7 +21,6 @@ impl Plugin for SectorPlugin {
             .init_gizmo_group::<SectorOutlineGizmos>()
             .init_gizmo_group::<GateConnectionGizmos>()
             .add_event::<SetupGateConnectionEvent>()
-            .add_systems(Startup, spawn_test_stuff.after(crate::initialize_data))
             .add_systems(
                 Update,
                 (
@@ -33,7 +32,7 @@ impl Plugin for SectorPlugin {
     }
 }
 
-fn spawn_test_stuff(
+pub fn spawn_test_universe(
     mut commands: Commands,
     sprites: Res<SpriteHandles>,
     map_layout: Res<MapLayout>,

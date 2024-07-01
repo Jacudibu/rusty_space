@@ -4,6 +4,7 @@ use crate::production::production_kind::ProductionKind;
 use crate::production::shipyard_component::ShipyardComponent;
 use crate::production::state::GlobalProductionState;
 use crate::production::{InventoryUpdateForProductionEvent, ProductionComponent};
+use crate::sectors::{AllSectors, InSector};
 use crate::session_data::SessionData;
 use crate::utils::SimulationTime;
 use crate::{mock_helpers, utils, SpriteHandles};
@@ -14,6 +15,7 @@ use bevy::prelude::{Commands, EventWriter, Or, Query, Res, ResMut, Transform, Wi
 pub fn check_if_production_is_finished_and_start_new_one(
     mut commands: Commands,
     sprites: Res<SpriteHandles>,
+    sectors: Res<AllSectors>,
     simulation_time: Res<SimulationTime>,
     mut global_production_state: ResMut<GlobalProductionState>,
     game_data: Res<GameData>,
@@ -27,6 +29,7 @@ pub fn check_if_production_is_finished_and_start_new_one(
             Option<&mut BuyOrders>,
             Option<&mut SellOrders>,
             &Transform,
+            &InSector,
         ),
         Or<(With<ProductionComponent>, With<ShipyardComponent>)>,
     >,
@@ -40,8 +43,15 @@ pub fn check_if_production_is_finished_and_start_new_one(
         let next = global_production_state.pop().unwrap();
 
         // TODO: Put this into another event?
-        let Ok((production, shipyard, mut inventory, buy_orders, sell_orders, transform)) =
-            query.get_mut(next.entity)
+        let Ok((
+            production,
+            shipyard,
+            mut inventory,
+            buy_orders,
+            sell_orders,
+            transform,
+            in_sector,
+        )) = query.get_mut(next.entity)
         else {
             error!(
                 "Was unable to trigger production finish for entity {}!",
@@ -99,6 +109,7 @@ pub fn check_if_production_is_finished_and_start_new_one(
                     &mut commands,
                     &sprites,
                     definition.name.clone(),
+                    sectors.get(&in_sector.sector).unwrap(),
                     transform.translation.truncate(),
                     0.0,
                 );

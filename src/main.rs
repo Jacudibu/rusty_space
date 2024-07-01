@@ -58,8 +58,12 @@ fn main() {
         (
             initialize_data,
             (
-                mock_helpers::spawn_mock_ships,
-                mock_helpers::spawn_mock_stations,
+                (
+                    sectors::spawn_test_universe,
+                    mock_helpers::spawn_mock_stations,
+                    mock_helpers::spawn_mock_ships,
+                )
+                    .chain(),
                 gui::initialize,
             )
                 .after(initialize_data),

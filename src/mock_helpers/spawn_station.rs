@@ -5,12 +5,14 @@ use crate::game_data::{
     RECIPE_A_ID, RECIPE_B_ID, RECIPE_C_ID, SHIPYARD_MODULE_ID,
 };
 use crate::production::{ProductionComponent, ProductionModule, ShipyardComponent, ShipyardModule};
+use crate::sectors::{AllSectors, InSector, SectorData};
 use crate::session_data::DEBUG_SHIP_CONFIG;
 use crate::{constants, SpriteHandles};
 use bevy::core::Name;
 use bevy::math::Vec2;
-use bevy::prelude::{default, Commands, Res, SpriteBundle, Transform};
+use bevy::prelude::{default, BuildChildren, Commands, Entity, Res, SpriteBundle, Transform};
 use bevy::utils::HashMap;
+use hexx::Hex;
 
 pub struct MockStationProductionArgs {
     modules: Vec<MockStationProductionArgElement>,
@@ -58,6 +60,7 @@ pub fn spawn_station(
     sprites: &SpriteHandles,
     name: &str,
     pos: Vec2,
+    sector: &SectorData,
     buys: Vec<&ItemDefinition>,
     sells: Vec<&ItemDefinition>,
     production: Option<MockStationProductionArgs>,
@@ -67,6 +70,7 @@ pub fn spawn_station(
         .spawn((
             Name::new(name.to_string()),
             SelectableEntity::Station,
+            InSector::from(sector),
             SpriteBundle {
                 texture: sprites.station.clone(),
                 transform: Transform::from_xyz(pos.x, pos.y, constants::STATION_LAYER),
@@ -80,6 +84,7 @@ pub fn spawn_station(
                     .collect(),
             ),
         ))
+        .set_parent(sector.entity)
         .id();
 
     if !buys.is_empty() {
@@ -111,12 +116,17 @@ pub fn spawn_mock_stations(
     mut commands: Commands,
     sprites: Res<SpriteHandles>,
     game_data: Res<GameData>,
+    all_sectors: Res<AllSectors>,
 ) {
+    let center = all_sectors.get(&Hex::ZERO).unwrap();
+    let bottom_left = all_sectors.get(&Hex::new(0, -1)).unwrap();
+
     spawn_station(
         &mut commands,
         &sprites,
         "Station A",
         Vec2::new(-200.0, -200.0),
+        bottom_left,
         vec![&game_data.items[&DEBUG_ITEM_ID_A]],
         vec![&game_data.items[&DEBUG_ITEM_ID_B]],
         Some(MockStationProductionArgs::new(vec![
@@ -129,6 +139,7 @@ pub fn spawn_mock_stations(
         &sprites,
         "Station B",
         Vec2::new(200.0, -200.0),
+        center,
         vec![&game_data.items[&DEBUG_ITEM_ID_B]],
         vec![&game_data.items[&DEBUG_ITEM_ID_C]],
         Some(MockStationProductionArgs::new(vec![
@@ -141,6 +152,7 @@ pub fn spawn_mock_stations(
         &sprites,
         "Station C",
         Vec2::new(0.0, 200.0),
+        center,
         vec![&game_data.items[&DEBUG_ITEM_ID_C]],
         vec![&game_data.items[&DEBUG_ITEM_ID_A]],
         Some(MockStationProductionArgs::new(vec![
@@ -153,6 +165,7 @@ pub fn spawn_mock_stations(
         &sprites,
         "Shipyard",
         Vec2::new(0.0, 0.0),
+        center,
         vec![
             &game_data.items[&DEBUG_ITEM_ID_A],
             &game_data.items[&DEBUG_ITEM_ID_B],

@@ -64,9 +64,9 @@ Modules:
 
 Sectors keep track of the entities inside them, allowing for cheaper localized physics, trade and unit selection.
 
-- Separate the map into hexagonal sectors which are connected through gates
+- ~~Separate the map into hexagonal sectors which are connected through gates~~
 - Ships can only travel between sectors by using gates
-- Draw lines between gates
+- ~~Draw lines between gates~~
 - ~~Draw borders around sectors~~
 - UI should display the name of the sector that's currently being hovered over
 
