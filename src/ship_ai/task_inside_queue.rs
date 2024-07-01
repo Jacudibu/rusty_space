@@ -1,8 +1,10 @@
-use crate::ship_ai::tasks::ExchangeWares;
+use crate::sectors::GateId;
+use crate::ship_ai::tasks::{ExchangeWares, UseGate};
 use crate::ship_ai::MoveToEntity;
 use crate::utils::{ExchangeWareData, SimulationTimestamp};
 use bevy::ecs::system::EntityCommands;
 use bevy::prelude::Entity;
+use hexx::Hex;
 
 /// Defines a Task inside the [TaskQueue]. New task components can be created from these.
 pub enum TaskInsideQueue {
@@ -12,6 +14,10 @@ pub enum TaskInsideQueue {
     },
     MoveToEntity {
         target: Entity,
+    },
+    UseGate {
+        exit_sector: Hex,
+        exit_gate: GateId,
     },
 }
 
@@ -27,6 +33,17 @@ impl TaskInsideQueue {
             }
             TaskInsideQueue::MoveToEntity { target } => {
                 entity_commands.insert(MoveToEntity { target: *target });
+            }
+            TaskInsideQueue::UseGate {
+                exit_sector,
+                exit_gate,
+            } => {
+                entity_commands.insert(UseGate {
+                    started_at: SimulationTimestamp::default(),
+                    finishes_at: SimulationTimestamp::default(),
+                    exit_sector: *exit_sector,
+                    exit_gate: *exit_gate,
+                });
             }
         }
     }

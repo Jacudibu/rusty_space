@@ -2,6 +2,7 @@ use crate::utils::KeyValueResource;
 use bevy::prelude::{Commands, Component, Entity, SpatialBundle, Transform, Vec3};
 use bevy::utils::HashMap;
 use hexx::{Hex, HexLayout};
+use std::ops::Deref;
 
 pub struct SectorData {
     pub coordinate: Hex,
@@ -30,7 +31,7 @@ pub struct SectorComponent {
 }
 
 /// Component for entities inside sectors
-#[derive(Component)]
+#[derive(Component, PartialEq, Eq)]
 pub struct InSector {
     pub sector: Hex,
 }

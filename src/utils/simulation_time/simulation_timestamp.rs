@@ -12,6 +12,11 @@ impl CurrentSimulationTimestamp {
         Self(milliseconds)
     }
 
+    /// Returns the current simulation timestamp in [Milliseconds].
+    pub fn get(&self) -> Milliseconds {
+        self.0
+    }
+
     /// Returns true if the provided timestamp lies within the past.
     #[inline]
     pub fn has_passed(&self, timestamp: SimulationTimestamp) -> bool {
@@ -49,6 +54,18 @@ impl CurrentSimulationTimestamp {
 /// Represents a specific Timestamp in Milliseconds since session start.
 #[derive(Copy, Clone, Eq, PartialEq, Default)]
 pub struct SimulationTimestamp(Milliseconds);
+
+impl SimulationTimestamp {
+    pub fn milliseconds(&self) -> Milliseconds {
+        self.0
+    }
+}
+
+impl From<CurrentSimulationTimestamp> for SimulationTimestamp {
+    fn from(value: CurrentSimulationTimestamp) -> Self {
+        Self(value.0)
+    }
+}
 
 impl Ord for SimulationTimestamp {
     fn cmp(&self, other: &Self) -> Ordering {

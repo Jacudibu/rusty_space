@@ -1,25 +1,29 @@
 use crate::components::{BuyOrders, SellOrders, TradeOrder};
 use crate::game_data::ItemId;
+use crate::sectors::InSector;
 use bevy::prelude::{Entity, Query};
+use hexx::Hex;
 
 pub struct TradePlan {
     pub item_id: ItemId,
     pub amount: u32,
     pub profit: u32,
     pub seller: Entity,
+    pub seller_sector: Hex,
     pub buyer: Entity,
+    pub buyer_sector: Hex,
 }
 
 impl TradePlan {
     pub fn create_from(
         storage_capacity: u32,
-        buy_orders: &Query<(Entity, &mut BuyOrders)>,
-        sell_orders: &Query<(Entity, &mut SellOrders)>,
+        buy_orders: &Query<(Entity, &mut BuyOrders, &InSector)>,
+        sell_orders: &Query<(Entity, &mut SellOrders, &InSector)>,
     ) -> Option<Self> {
         let mut best_offer: Option<TradePlan> = None;
 
-        for (buyer, buy_orders) in buy_orders.iter() {
-            for (seller, sell_orders) in sell_orders.iter() {
+        for (buyer, buy_orders, buyer_sector) in buy_orders.iter() {
+            for (seller, sell_orders, seller_sector) in sell_orders.iter() {
                 if buyer == seller {
                     continue;
                 }
@@ -50,7 +54,9 @@ impl TradePlan {
                                 amount,
                                 profit,
                                 seller,
+                                seller_sector: seller_sector.sector,
                                 buyer,
+                                buyer_sector: buyer_sector.sector,
                             });
                         }
                     }

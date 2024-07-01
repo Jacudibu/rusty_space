@@ -1,6 +1,6 @@
 use crate::ship_ai::behaviors;
 use crate::ship_ai::task_finished_event::TaskFinishedEvent;
-use crate::ship_ai::tasks::{ExchangeWares, MoveToEntity};
+use crate::ship_ai::tasks::{ExchangeWares, MoveToEntity, UseGate};
 use bevy::app::App;
 use bevy::prelude::{IntoSystemConfigs, Plugin, PostUpdate, Update};
 
@@ -9,6 +9,7 @@ impl Plugin for ShipAiPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<TaskFinishedEvent<MoveToEntity>>();
         app.add_event::<TaskFinishedEvent<ExchangeWares>>();
+        app.add_event::<TaskFinishedEvent<UseGate>>();
         app.add_systems(
             Update,
             (
@@ -17,8 +18,13 @@ impl Plugin for ShipAiPlugin {
                 ExchangeWares::complete_tasks.after(ExchangeWares::run_tasks),
                 MoveToEntity::run_tasks,
                 MoveToEntity::complete_tasks.after(MoveToEntity::run_tasks),
+                UseGate::run_tasks,
+                UseGate::complete_tasks.after(UseGate::run_tasks),
             ),
         );
-        app.add_systems(PostUpdate, ExchangeWares::on_task_creation);
+        app.add_systems(
+            PostUpdate,
+            (ExchangeWares::on_task_creation, UseGate::on_task_creation),
+        );
     }
 }

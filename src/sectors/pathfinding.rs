@@ -1,7 +1,38 @@
 use crate::sectors::sector::AllSectors;
+use crate::sectors::GateId;
+use bevy::prelude::Entity;
 use hexx::Hex;
 
-fn find_path(sectors: &AllSectors, from: Hex, to: Hex) -> Option<Vec<Hex>> {
+pub struct PathElement {
+    pub enter_sector: Hex,
+    pub enter_gate_entity: Entity,
+    pub exit_sector: Hex,
+    pub exit_gate: GateId,
+}
+
+/// Returns the fastest gate-path between `from` and `to`.   
+pub fn find_path(sectors: &AllSectors, from: Hex, to: Hex) -> Option<Vec<PathElement>> {
+    let path = find_path_internal(sectors, from, to)?;
+
+    let mut result = Vec::with_capacity(path.len() - 1);
+    for i in 0..(path.len() - 1) {
+        let sector = &sectors[&path[i]];
+        let next_sector = &sectors[&path[i + 1]];
+        result.push(PathElement {
+            enter_sector: sector.coordinate,
+            enter_gate_entity: sector.gates[&next_sector.coordinate],
+            exit_sector: next_sector.coordinate,
+            exit_gate: GateId {
+                from: sector.coordinate,
+                to: next_sector.coordinate,
+            },
+        });
+    }
+
+    Some(result)
+}
+
+fn find_path_internal(sectors: &AllSectors, from: Hex, to: Hex) -> Option<Vec<Hex>> {
     hexx::algorithms::a_star(from, to, |a, b| {
         if a == b {
             return Some(0);
@@ -50,9 +81,8 @@ mod test {
 
         let result = find_path(&all_sectors, from, to).unwrap();
 
-        assert_eq!(result.len(), 2);
-        assert_eq!(result[0], from);
-        assert_eq!(result[1], to);
+        assert_eq!(result.len(), 1);
+        assert_eq!(result[0].enter_sector, from);
     }
 
     #[test]
@@ -74,9 +104,8 @@ mod test {
 
         let result = find_path(&all_sectors, center, top_right).unwrap();
 
-        assert_eq!(result.len(), 3);
-        assert_eq!(result[0], center);
-        assert_eq!(result[1], right);
-        assert_eq!(result[2], top_right);
+        assert_eq!(result.len(), 2);
+        assert_eq!(result[0].enter_sector, center);
+        assert_eq!(result[1].enter_sector, right);
     }
 }

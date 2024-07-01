@@ -62,6 +62,7 @@ impl UiIcons {
 
     pub fn get_task(&self, task: &TaskInsideQueue) -> SizedTexture {
         match task {
+            TaskInsideQueue::UseGate { .. } => self.move_to,
             TaskInsideQueue::MoveToEntity { .. } => self.move_to,
             TaskInsideQueue::ExchangeWares { data, .. } => match data {
                 ExchangeWareData::Buy(_, _) => self.buy,
@@ -286,6 +287,12 @@ pub fn list_selection_details(
                             ui.horizontal(|ui| {
                                 ui.image(images.get_task(task));
                                 ui.label(match task {
+                                    TaskInsideQueue::UseGate { exit_sector, .. } => {
+                                        format!(
+                                            "Using gate to [{},{}]",
+                                            exit_sector.x, exit_sector.y
+                                        )
+                                    }
                                     TaskInsideQueue::MoveToEntity { target } => {
                                         format!("Move to {}", target)
                                     }

@@ -1,6 +1,7 @@
 use crate::sectors::gate::{spawn_gates, AllGates};
 use crate::sectors::gate_connection::{
-    draw_gate_connections, on_setup_gate_connection, GateConnectionGizmos, SetupGateConnectionEvent,
+    draw_gate_connections, on_setup_gate_connection, AllGateConnections, GateConnectionGizmos,
+    SetupGateConnectionEvent,
 };
 use crate::sectors::map_layout::MapLayout;
 use crate::sectors::sector::{spawn_sector, AllSectors};
@@ -121,4 +122,5 @@ pub fn spawn_test_universe(
 
     commands.insert_resource(all_sectors);
     commands.insert_resource(all_gates);
+    commands.insert_resource(AllGateConnections::default())
 }

@@ -9,6 +9,14 @@ pub struct TaskQueue {
     pub queue: VecDeque<TaskInsideQueue>,
 }
 
+impl TaskQueue {
+    pub fn with_capacity(capacity: usize) -> Self {
+        TaskQueue {
+            queue: VecDeque::with_capacity(capacity),
+        }
+    }
+}
+
 impl Deref for TaskQueue {
     type Target = VecDeque<TaskInsideQueue>;
 

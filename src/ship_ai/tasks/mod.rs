@@ -4,10 +4,13 @@ use std::sync::{Arc, Mutex};
 mod exchange_wares;
 mod idle;
 mod move_to_entity;
+mod use_gate;
 
 use crate::ship_ai::task_finished_event::TaskFinishedEvent;
 use crate::ship_ai::task_queue::TaskQueue;
-pub use {exchange_wares::ExchangeWares, idle::Idle, move_to_entity::MoveToEntity};
+pub use {
+    exchange_wares::ExchangeWares, idle::Idle, move_to_entity::MoveToEntity, use_gate::UseGate,
+};
 
 pub fn send_completion_events<T: Component>(
     mut event_writer: EventWriter<TaskFinishedEvent<T>>,

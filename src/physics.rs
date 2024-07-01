@@ -1,7 +1,8 @@
 use crate::components::Velocity;
-use bevy::prelude::{Query, Res, Time, Transform, Vec3};
+use crate::sectors::InSector;
+use bevy::prelude::{Query, Res, Time, Transform, Vec3, With};
 
-pub fn move_things(time: Res<Time>, mut query: Query<(&mut Transform, &Velocity)>) {
+pub fn move_things(time: Res<Time>, mut query: Query<(&mut Transform, &Velocity), With<InSector>>) {
     query.par_iter_mut().for_each(|(mut transform, velocity)| {
         transform.rotate_z(velocity.angular * time.delta_seconds());
 

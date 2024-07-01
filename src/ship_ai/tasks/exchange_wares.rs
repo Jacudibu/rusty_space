@@ -110,13 +110,15 @@ impl ExchangeWares {
     ) {
         let now = simulation_time.now();
         for x in finished_events.read() {
-            if let Ok((mut creation, mut velocity)) = query.get_mut(x.entity) {
-                creation.finishes_at = now.add_seconds(2);
+            let Ok((mut created_component, mut velocity)) = query.get_mut(x.entity) else {
+                continue;
+            };
 
-                // TODO: Remove this once docking is implemented
-                velocity.forward = 0.0;
-                velocity.angular = 0.0;
-            }
+            created_component.finishes_at = now.add_seconds(2);
+
+            // TODO: Remove this once docking is implemented
+            velocity.forward = 0.0;
+            velocity.angular = 0.0;
         }
     }
 }
