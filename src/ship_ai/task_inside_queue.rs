@@ -26,7 +26,7 @@ impl TaskInsideQueue {
         match self {
             TaskInsideQueue::ExchangeWares { target, data } => {
                 entity_commands.insert(ExchangeWares {
-                    finishes_at: SimulationTimestamp::default(),
+                    finishes_at: SimulationTimestamp::MAX,
                     target: *target,
                     data: *data,
                 });
@@ -39,8 +39,8 @@ impl TaskInsideQueue {
                 exit_gate,
             } => {
                 entity_commands.insert(UseGate {
-                    started_at: SimulationTimestamp::default(),
-                    finishes_at: SimulationTimestamp::default(),
+                    started_at: SimulationTimestamp::MIN,
+                    finishes_at: SimulationTimestamp::MAX,
                     exit_sector: *exit_sector,
                     exit_gate: *exit_gate,
                 });

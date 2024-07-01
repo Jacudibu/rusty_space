@@ -52,10 +52,13 @@ impl CurrentSimulationTimestamp {
 }
 
 /// Represents a specific Timestamp in Milliseconds since session start.
-#[derive(Copy, Clone, Eq, PartialEq, Default)]
+#[derive(Copy, Clone, Eq, PartialEq)]
 pub struct SimulationTimestamp(Milliseconds);
 
 impl SimulationTimestamp {
+    pub const MIN: SimulationTimestamp = SimulationTimestamp(Milliseconds::MIN);
+    pub const MAX: SimulationTimestamp = SimulationTimestamp(Milliseconds::MAX);
+
     pub fn milliseconds(&self) -> Milliseconds {
         self.0
     }
