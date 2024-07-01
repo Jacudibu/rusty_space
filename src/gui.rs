@@ -157,6 +157,7 @@ pub fn list_selection_details(
         ),
         With<Selected>,
     >,
+    names: Query<&Name>,
 ) {
     let counts = selected
         .iter()
@@ -294,7 +295,7 @@ pub fn list_selection_details(
                                         )
                                     }
                                     TaskInsideQueue::MoveToEntity { target } => {
-                                        format!("Move to {}", target)
+                                        format!("Move to {}", names.get(*target).unwrap())
                                     }
                                     TaskInsideQueue::ExchangeWares { data, .. } => match data {
                                         ExchangeWareData::Buy(item_id, amount) => {
