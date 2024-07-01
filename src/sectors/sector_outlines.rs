@@ -1,4 +1,4 @@
-use crate::sectors::plugin::MapLayout;
+use crate::sectors::map_layout::MapLayout;
 use crate::sectors::sector::SectorComponent;
 use bevy::prelude::{
     GizmoConfigGroup, Gizmos, InheritedVisibility, Query, Reflect, Res, Vec2, ViewVisibility,

@@ -2,6 +2,7 @@ use crate::components::{BuyOrders, Inventory, SelectableEntity, SellOrders, Trad
 use crate::entity_selection::Selected;
 use crate::game_data::GameData;
 use crate::production::{ProductionComponent, ShipyardComponent};
+use crate::sectors::GateComponent;
 use crate::session_data::SessionData;
 use crate::ship_ai::TaskInsideQueue;
 use crate::ship_ai::TaskQueue;
@@ -18,17 +19,19 @@ use bevy_egui::{egui, EguiContexts};
 
 #[derive(Default)]
 struct SelectableCount {
+    pub gates: u32,
     pub stations: u32,
     pub ships: u32,
 }
 
 impl SelectableCount {
     pub fn total(&self) -> u32 {
-        self.stations + self.ships
+        self.stations + self.ships + self.gates
     }
 
     pub fn add(mut self, selectable_entity: &SelectableEntity) -> Self {
         match selectable_entity {
+            SelectableEntity::Gate => self.gates += 1,
             SelectableEntity::Station => self.stations += 1,
             SelectableEntity::Ship => self.ships += 1,
         }
@@ -38,6 +41,7 @@ impl SelectableCount {
 
 #[derive(Resource)]
 pub struct UiIcons {
+    pub gate: SizedTexture,
     pub ship: SizedTexture,
     pub station: SizedTexture,
 
@@ -50,6 +54,7 @@ pub struct UiIcons {
 impl UiIcons {
     pub fn get_selectable(&self, selectable: &SelectableEntity) -> SizedTexture {
         match selectable {
+            SelectableEntity::Gate => self.gate,
             SelectableEntity::Station => self.station,
             SelectableEntity::Ship => self.ship,
         }
@@ -80,6 +85,7 @@ pub fn initialize(
     const ICON_SIZE: [f32; 2] = [16.0, 16.0];
 
     let icons = UiIcons {
+        gate: SizedTexture::new(contexts.add_image(sprites.gate.clone()), ICON_SIZE),
         ship: SizedTexture::new(contexts.add_image(sprites.ship.clone()), ICON_SIZE),
         station: SizedTexture::new(contexts.add_image(sprites.station.clone()), ICON_SIZE),
         idle: SizedTexture::new(contexts.add_image(idle), ICON_SIZE),
@@ -119,6 +125,10 @@ pub fn list_selection_icons_and_counts(
                     ui.image(images.ship);
                     ui.label(format!("x {}", counts.ships));
                 }
+                if counts.gates > 0 {
+                    ui.image(images.gate);
+                    ui.label(format!("x {}", counts.gates));
+                }
             });
         });
 }
@@ -135,13 +145,14 @@ pub fn list_selection_details(
             Entity,
             &SelectableEntity,
             &Name,
-            &Inventory,
+            Option<&Inventory>,
             Option<&Velocity>,
             Option<&TaskQueue>,
             Option<&BuyOrders>,
             Option<&SellOrders>,
             Option<&ProductionComponent>,
             Option<&ShipyardComponent>,
+            Option<&GateComponent>,
         ),
         With<Selected>,
     >,
@@ -166,31 +177,36 @@ pub fn list_selection_details(
                     _,
                     selectable,
                     name,
-                    storage,
+                    inventory,
                     velocity,
                     task_queue,
                     buy_orders,
                     sell_orders,
                     production_module,
                     shipyard,
+                    _,
                 ) = selected.single();
-                draw_ship_summary_row(&images, ui, selectable, name, storage, velocity, task_queue);
+                draw_ship_summary_row(
+                    &images, ui, selectable, name, inventory, velocity, task_queue,
+                );
 
-                ui.heading("Inventory");
-                let inventory = storage.inventory();
-                if inventory.is_empty() {
-                    ui.label("Empty");
-                } else {
-                    for (item_id, amount) in storage.inventory() {
-                        let item = game_data.items.get(item_id).unwrap();
-                        ui.label(format!(
-                            "{} x {} (+{}, -{}, +{}(Prod))",
-                            item.name,
-                            amount.currently_available,
-                            amount.planned_buying,
-                            amount.planned_selling,
-                            amount.planned_producing
-                        ));
+                if let Some(inventory) = inventory {
+                    ui.heading("Inventory");
+                    let inventory = inventory.inventory();
+                    if inventory.is_empty() {
+                        ui.label("Empty");
+                    } else {
+                        for (item_id, amount) in inventory {
+                            let item = game_data.items.get(item_id).unwrap();
+                            ui.label(format!(
+                                "{} x {} (+{}, -{}, +{}(Prod))",
+                                item.name,
+                                amount.currently_available,
+                                amount.planned_buying,
+                                amount.planned_selling,
+                                amount.planned_producing
+                            ));
+                        }
                     }
                 }
 
@@ -303,7 +319,8 @@ pub fn list_selection_details(
         .collapsible(false)
         .resizable(false)
         .show(context.ctx_mut(), |ui| {
-            for (_, selectable, name, storage, velocity, task_queue, _, _, _, _) in selected.iter()
+            for (_, selectable, name, storage, velocity, task_queue, _, _, _, _, _) in
+                selected.iter()
             {
                 draw_ship_summary_row(&images, ui, selectable, name, storage, velocity, task_queue);
             }
@@ -315,7 +332,7 @@ fn draw_ship_summary_row(
     ui: &mut Ui,
     selectable: &SelectableEntity,
     name: &Name,
-    inventory: &Inventory,
+    inventory: Option<&Inventory>,
     velocity: Option<&Velocity>,
     task_queue: Option<&TaskQueue>,
 ) {
@@ -339,7 +356,9 @@ fn draw_ship_summary_row(
             }
         }
 
-        ui.label(format!("{:.0}%", inventory.ratio() * 100.0));
+        if let Some(inventory) = inventory {
+            ui.label(format!("{:.0}%", inventory.ratio() * 100.0));
+        }
 
         if let Some(velocity) = velocity {
             ui.label(format!("{:.0}u/s", velocity.forward));

@@ -18,7 +18,7 @@ pub fn process_mouse_clicks(
     existing_mouse_interaction: Option<Res<MouseInteraction>>,
     last_mouse_interaction: Option<Res<LastMouseInteraction>>,
     mut mouse_button_events: EventReader<MouseButtonInput>,
-    selectables: Query<(Entity, &Transform, &SelectableEntity)>,
+    selectables: Query<(Entity, &GlobalTransform, &SelectableEntity)>,
     camera: Query<(&Camera, &GlobalTransform)>,
     selected_entities: Query<Entity, With<Selected>>,
     mouse_cursor_over_ui_state: Res<State<MouseCursorOverUiState>>,
@@ -49,7 +49,7 @@ pub fn process_mouse_clicks(
                     physics::overlap_circle_with_circle(
                         cursor_world_pos,
                         RADIUS_CURSOR,
-                        transform.translation,
+                        transform.translation(),
                         selectable.radius(),
                     )
                 });
@@ -83,7 +83,7 @@ pub fn process_mouse_clicks(
 
 fn process_double_click(
     commands: &mut Commands,
-    selectables: &Query<(Entity, &Transform, &SelectableEntity)>,
+    selectables: &Query<(Entity, &GlobalTransform, &SelectableEntity)>,
     camera: &Query<(&Camera, &GlobalTransform)>,
     entity_selectable: &SelectableEntity,
 ) {
@@ -111,7 +111,7 @@ fn process_double_click(
                 right,
                 bottom,
                 top,
-                transform.translation,
+                transform.translation(),
                 selectable.radius(),
             )
         })
@@ -137,8 +137,8 @@ pub fn update_active_mouse_interaction(
     mut commands: Commands,
     mouse_interaction: Option<ResMut<MouseInteraction>>,
     mouse_cursor: Option<Res<MouseCursor>>,
-    unselected_entities: Query<(Entity, &Transform, &SelectableEntity), Without<Selected>>,
-    selected_entities: Query<(Entity, &Transform, &SelectableEntity), With<Selected>>,
+    unselected_entities: Query<(Entity, &GlobalTransform, &SelectableEntity), Without<Selected>>,
+    selected_entities: Query<(Entity, &GlobalTransform, &SelectableEntity), With<Selected>>,
 ) {
     let Some(mut mouse_interaction) = mouse_interaction else {
         return;
@@ -166,7 +166,7 @@ pub fn update_active_mouse_interaction(
                     right,
                     bottom,
                     top,
-                    transform.translation,
+                    transform.translation(),
                     selectable.radius(),
                 )
             })
@@ -182,7 +182,7 @@ pub fn update_active_mouse_interaction(
                     right,
                     bottom,
                     top,
-                    transform.translation,
+                    transform.translation(),
                     selectable.radius(),
                 )
             })

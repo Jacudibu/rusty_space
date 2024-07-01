@@ -2,16 +2,17 @@ use crate::sectors::gate::{spawn_gates, AllGates};
 use crate::sectors::gate_connection::{
     draw_gate_connections, on_setup_gate_connection, GateConnectionGizmos, SetupGateConnectionEvent,
 };
+use crate::sectors::map_layout::MapLayout;
 use crate::sectors::sector::{spawn_sector, AllSectors};
 use crate::sectors::sector_outlines::{draw_sector_outlines, SectorOutlineGizmos};
 use crate::utils::SectorPosition;
 use crate::SpriteHandles;
 use bevy::app::Update;
 use bevy::prelude::{
-    on_event, App, AppGizmoBuilder, Commands, EventWriter, IntoSystemConfigs, Plugin, Res,
-    Resource, Startup, Vec2,
+    on_event, App, AppGizmoBuilder, Commands, EventWriter, IntoSystemConfigs, Plugin, Res, Startup,
+    Vec2,
 };
-use hexx::{Hex, HexLayout, HexOrientation};
+use hexx::Hex;
 
 pub struct SectorPlugin;
 impl Plugin for SectorPlugin {
@@ -87,24 +88,38 @@ fn spawn_test_stuff(
         &mut gate_connection_events,
     );
 
+    spawn_gates(
+        &mut commands,
+        &sprites,
+        SectorPosition {
+            sector: right,
+            position: Vec2::new(-200.0, 130.0),
+        },
+        SectorPosition {
+            sector: top_right,
+            position: Vec2::new(200.0, -130.0),
+        },
+        &mut all_sectors,
+        &mut all_gates,
+        &mut gate_connection_events,
+    );
+
+    spawn_gates(
+        &mut commands,
+        &sprites,
+        SectorPosition {
+            sector: center,
+            position: Vec2::new(-150.0, -150.0),
+        },
+        SectorPosition {
+            sector: bottom_left,
+            position: Vec2::new(200.0, 130.0),
+        },
+        &mut all_sectors,
+        &mut all_gates,
+        &mut gate_connection_events,
+    );
+
     commands.insert_resource(all_sectors);
     commands.insert_resource(all_gates);
-}
-
-#[derive(Resource)]
-pub struct MapLayout {
-    pub hex_layout: HexLayout,
-}
-
-impl Default for MapLayout {
-    fn default() -> Self {
-        MapLayout {
-            hex_layout: HexLayout {
-                orientation: HexOrientation::Pointy,
-                hex_size: hexx::Vec2::splat(500.0),
-                invert_y: true,
-                ..Default::default()
-            },
-        }
-    }
 }

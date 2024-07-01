@@ -1,12 +1,14 @@
+use crate::components::SelectableEntity;
 use crate::sectors::gate_connection::SetupGateConnectionEvent;
 use crate::sectors::sector::AllSectors;
 use crate::utils::KeyValueResource;
 use crate::utils::SectorPosition;
 use crate::{constants, SpriteHandles};
 use bevy::prelude::{
-    BuildChildren, Commands, Component, Entity, EventWriter, SpriteBundle, Transform, Vec2,
+    BuildChildren, Commands, Component, Entity, EventWriter, Name, SpriteBundle, Transform, Vec2,
 };
 use hexx::Hex;
+use std::fmt::format;
 
 #[derive(Eq, PartialEq, Hash, Copy, Clone)]
 pub struct GateId {
@@ -67,6 +69,11 @@ fn spawn_gate(
     let entity = commands
         .spawn((
             GateComponent { id },
+            Name::new(format!(
+                "Gate [{},{}] -> [{},{}]",
+                pos.sector.x, pos.sector.y, other.sector.x, other.sector.y
+            )),
+            SelectableEntity::Gate,
             SpriteBundle {
                 transform: Transform::from_translation(pos.position.extend(constants::GATE_LAYER)),
                 texture: sprites.gate.clone(),
