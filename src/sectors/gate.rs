@@ -1,7 +1,10 @@
+use crate::sectors::gate_connection::SetupGateConnectionEvent;
 use crate::sectors::sector::AllSectors;
 use crate::utils::data_resource::KeyValueResource;
 use crate::{constants, SpriteHandles};
-use bevy::prelude::{BuildChildren, Commands, Component, Entity, SpriteBundle, Transform, Vec2};
+use bevy::prelude::{
+    BuildChildren, Commands, Component, Entity, EventWriter, SpriteBundle, Transform, Vec2,
+};
 use hexx::Hex;
 
 #[derive(Eq, PartialEq, Hash, Copy, Clone)]
@@ -11,6 +14,7 @@ pub struct GateId {
 }
 
 impl GateId {
+    /// Returns the ID for the gate this one is connected to.
     pub fn invert(&self) -> Self {
         GateId {
             from: self.to,
@@ -32,19 +36,6 @@ pub struct GateComponent {
 
 pub type AllGates = KeyValueResource<GateId, GateData>;
 
-// TODO: Alternatively or maybe also:
-pub struct DoubleGateData {
-    id: (Hex, Hex),
-    entities: (Entity, Entity),
-    positions: (Vec2, Vec2),
-}
-
-// Might be more idiomatic to some degree as we don't have any overhead with ID generation,
-// but hashing in a way where we don't need two maps might be a bit annoying...?
-// Could try a custom data type instead of the hex tuple
-// GateConnections would ideally also use a (Hex, Hex) id, but they could be spawned together with the two gates.
-pub type AllDoubleGates = KeyValueResource<(Hex, Hex), GateData>;
-
 pub fn spawn_gates(
     commands: &mut Commands,
     sprites: &SpriteHandles,
@@ -52,9 +43,11 @@ pub fn spawn_gates(
     b: SectorPosition,
     all_sectors: &mut AllSectors,
     all_gates: &mut AllGates,
+    gate_connection_events: &mut EventWriter<SetupGateConnectionEvent>,
 ) {
-    spawn_gate(commands, sprites, &a, &b, all_sectors, all_gates);
-    spawn_gate(commands, sprites, &b, &a, all_sectors, all_gates);
+    let from = spawn_gate(commands, sprites, &a, &b, all_sectors, all_gates);
+    let to = spawn_gate(commands, sprites, &b, &a, all_sectors, all_gates);
+    gate_connection_events.send(SetupGateConnectionEvent { from, to });
 }
 
 fn spawn_gate(
@@ -64,7 +57,7 @@ fn spawn_gate(
     other: &SectorPosition,
     all_sectors: &mut AllSectors,
     all_gates: &mut AllGates,
-) {
+) -> Entity {
     let id = GateId {
         from: pos.sector,
         to: other.sector,
@@ -92,6 +85,8 @@ fn spawn_gate(
             position: pos.position,
         },
     );
+
+    entity
 }
 
 pub struct SectorPosition {

@@ -1,11 +1,14 @@
 use crate::sectors::gate::{spawn_gates, AllGates, SectorPosition};
-use crate::sectors::gate_lines::{draw_gate_lines, GateLineGizmos};
+use crate::sectors::gate_connection::{
+    draw_gate_connections, on_setup_gate_connection, GateConnectionGizmos, SetupGateConnectionEvent,
+};
 use crate::sectors::sector::{spawn_sector, AllSectors};
 use crate::sectors::sector_outlines::{draw_sector_outlines, SectorOutlineGizmos};
 use crate::SpriteHandles;
 use bevy::app::Update;
 use bevy::prelude::{
-    App, AppGizmoBuilder, Commands, IntoSystemConfigs, Plugin, Res, Resource, Startup, Vec2,
+    on_event, App, AppGizmoBuilder, Commands, EventWriter, IntoSystemConfigs, Plugin, Res,
+    Resource, Startup, Vec2,
 };
 use hexx::{Hex, HexLayout, HexOrientation};
 
@@ -14,9 +17,17 @@ impl Plugin for SectorPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<MapLayout>()
             .init_gizmo_group::<SectorOutlineGizmos>()
-            .init_gizmo_group::<GateLineGizmos>()
+            .init_gizmo_group::<GateConnectionGizmos>()
+            .add_event::<SetupGateConnectionEvent>()
             .add_systems(Startup, spawn_test_stuff.after(crate::initialize_data))
-            .add_systems(Update, (draw_sector_outlines, draw_gate_lines));
+            .add_systems(
+                Update,
+                (
+                    draw_sector_outlines,
+                    draw_gate_connections,
+                    on_setup_gate_connection.run_if(on_event::<SetupGateConnectionEvent>()),
+                ),
+            );
     }
 }
 
@@ -24,6 +35,7 @@ fn spawn_test_stuff(
     mut commands: Commands,
     sprites: Res<SpriteHandles>,
     map_layout: Res<MapLayout>,
+    mut gate_connection_events: EventWriter<SetupGateConnectionEvent>,
 ) {
     let mut all_sectors = AllSectors::default();
     let mut all_gates = AllGates::default();
@@ -71,6 +83,7 @@ fn spawn_test_stuff(
         },
         &mut all_sectors,
         &mut all_gates,
+        &mut gate_connection_events,
     );
 
     commands.insert_resource(all_sectors);

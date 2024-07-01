@@ -1,5 +1,5 @@
 mod gate;
-mod gate_lines;
+mod gate_connection;
 mod plugin;
 mod sector;
 mod sector_outlines;
