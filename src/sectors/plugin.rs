@@ -1,9 +1,10 @@
-use crate::sectors::gate::{spawn_gates, AllGates, SectorPosition};
+use crate::sectors::gate::{spawn_gates, AllGates};
 use crate::sectors::gate_connection::{
     draw_gate_connections, on_setup_gate_connection, GateConnectionGizmos, SetupGateConnectionEvent,
 };
 use crate::sectors::sector::{spawn_sector, AllSectors};
 use crate::sectors::sector_outlines::{draw_sector_outlines, SectorOutlineGizmos};
+use crate::utils::SectorPosition;
 use crate::SpriteHandles;
 use bevy::app::Update;
 use bevy::prelude::{
@@ -42,8 +43,8 @@ fn spawn_test_stuff(
 
     let center = Hex::ZERO;
     let right = Hex::new(1, 0);
-    let bottom_right = Hex::new(0, 1);
-    let top_left = Hex::new(0, -1);
+    let top_right = Hex::new(0, 1);
+    let bottom_left = Hex::new(0, -1);
 
     spawn_sector(
         &mut commands,
@@ -60,13 +61,13 @@ fn spawn_test_stuff(
     spawn_sector(
         &mut commands,
         &map_layout.hex_layout,
-        bottom_right,
+        top_right,
         &mut all_sectors,
     );
     spawn_sector(
         &mut commands,
         &map_layout.hex_layout,
-        top_left,
+        bottom_left,
         &mut all_sectors,
     );
 
@@ -101,6 +102,7 @@ impl Default for MapLayout {
             hex_layout: HexLayout {
                 orientation: HexOrientation::Pointy,
                 hex_size: hexx::Vec2::splat(500.0),
+                invert_y: true,
                 ..Default::default()
             },
         }

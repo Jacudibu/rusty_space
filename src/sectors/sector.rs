@@ -1,11 +1,12 @@
-use crate::utils::data_resource::KeyValueResource;
-use bevy::prelude::{Commands, Component, Entity, SpatialBundle, Transform, Vec2, Vec3};
+use crate::utils::KeyValueResource;
+use bevy::prelude::{Commands, Component, Entity, SpatialBundle, Transform, Vec3};
+use bevy::utils::HashMap;
 use hexx::{Hex, HexLayout};
 
 pub struct SectorData {
     pub coordinate: Hex,
     pub entity: Entity,
-    pub gates: Vec<(Entity, Hex)>,
+    pub gates: HashMap<Hex, Entity>,
     pub ships: Vec<Entity>,
     pub stations: Vec<Entity>,
 }
@@ -15,7 +16,7 @@ impl SectorData {
         SectorData {
             coordinate,
             entity,
-            gates: Vec::new(),
+            gates: HashMap::new(),
             ships: Vec::new(),
             stations: Vec::new(),
         }

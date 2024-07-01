@@ -1,6 +1,7 @@
 use crate::sectors::gate_connection::SetupGateConnectionEvent;
 use crate::sectors::sector::AllSectors;
-use crate::utils::data_resource::KeyValueResource;
+use crate::utils::KeyValueResource;
+use crate::utils::SectorPosition;
 use crate::{constants, SpriteHandles};
 use bevy::prelude::{
     BuildChildren, Commands, Component, Entity, EventWriter, SpriteBundle, Transform, Vec2,
@@ -14,7 +15,7 @@ pub struct GateId {
 }
 
 impl GateId {
-    /// Returns the ID for the gate this one is connected to.
+    /// Returns the ID for the connected gate.
     pub fn invert(&self) -> Self {
         GateId {
             from: self.to,
@@ -75,7 +76,7 @@ fn spawn_gate(
         .set_parent(sector.entity)
         .id();
 
-    sector.gates.push((entity, other.sector));
+    sector.gates.insert(other.sector, entity);
 
     all_gates.insert(
         id,
@@ -87,9 +88,4 @@ fn spawn_gate(
     );
 
     entity
-}
-
-pub struct SectorPosition {
-    pub sector: Hex,
-    pub position: Vec2,
 }
