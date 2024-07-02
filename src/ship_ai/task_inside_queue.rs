@@ -38,8 +38,7 @@ impl TaskInsideQueue {
                 exit_gate,
             } => {
                 entity_commands.insert(UseGate {
-                    started_at: SimulationTimestamp::MIN,
-                    finishes_at: SimulationTimestamp::MAX,
+                    progress: 0.0,
                     exit_sector: *exit_sector,
                     exit_gate: *exit_gate,
                 });

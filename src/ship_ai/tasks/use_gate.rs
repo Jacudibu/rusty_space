@@ -1,38 +1,32 @@
+use crate::constants;
 use crate::sectors::{AllGateConnections, GateId, InSector, SectorId};
 use crate::ship_ai::task_finished_event::TaskFinishedEvent;
 use crate::ship_ai::task_queue::TaskQueue;
 use crate::ship_ai::task_result::TaskResult;
 use crate::ship_ai::tasks::send_completion_events;
 use crate::ship_ai::{tasks, MoveToEntity};
-use crate::utils::SimulationTimestamp;
-use crate::utils::{CurrentSimulationTimestamp, SimulationTime};
 use bevy::prelude::{
-    error, Commands, Component, Entity, EventReader, EventWriter, Query, Res, Transform,
+    error, Commands, Component, Entity, EventReader, EventWriter, Query, Res, Time, Transform,
 };
 use std::sync::{Arc, Mutex};
 
 #[derive(Component)]
 pub struct UseGate {
-    pub started_at: SimulationTimestamp,
-    pub finishes_at: SimulationTimestamp,
+    pub progress: f32,
     pub exit_sector: SectorId,
     pub exit_gate: GateId,
 }
 
 impl UseGate {
     fn run(
-        &self,
-        now: CurrentSimulationTimestamp,
+        &mut self,
+        delta_travel: f32,
         transform: &mut Transform,
         all_gate_connections: &AllGateConnections,
     ) -> TaskResult {
-        if now.has_not_passed(self.finishes_at) {
-            let max = self.finishes_at.milliseconds() - self.started_at.milliseconds();
-            let passed = now.get() - self.started_at.milliseconds();
-
-            let t = passed as f32 / max as f32;
-            let t = -2.0 * t.powi(3) + 3.0 * t.powi(2);
-
+        self.progress += delta_travel;
+        if self.progress <= 1.0 {
+            let t = -2.0 * self.progress.powi(3) + 3.0 * self.progress.powi(2);
             let connection_data = all_gate_connections.get(&self.exit_gate).unwrap();
             transform.translation = connection_data.ship_curve.position(t);
 
@@ -44,17 +38,17 @@ impl UseGate {
 
     pub fn run_tasks(
         event_writer: EventWriter<TaskFinishedEvent<Self>>,
-        simulation_time: Res<SimulationTime>,
-        mut ships: Query<(Entity, &Self, &mut Transform)>,
+        time: Res<Time>,
+        mut ships: Query<(Entity, &mut Self, &mut Transform)>,
         all_gate_connections: Res<AllGateConnections>,
     ) {
-        let now = simulation_time.now();
         let task_completions = Arc::new(Mutex::new(Vec::<TaskFinishedEvent<Self>>::new()));
+        let delta_travel = time.delta_seconds() / constants::SECONDS_TO_TRAVEL_THROUGH_GATE;
 
         ships
             .par_iter_mut()
-            .for_each(|(entity, task, mut transform)| {
-                match task.run(now, &mut transform, &all_gate_connections) {
+            .for_each(|(entity, mut task, mut transform)| {
+                match task.run(delta_travel, &mut transform, &all_gate_connections) {
                     TaskResult::Ongoing => {}
                     TaskResult::Finished | TaskResult::Aborted => task_completions
                         .lock()
@@ -89,18 +83,13 @@ impl UseGate {
 
     pub fn on_task_creation(
         mut commands: Commands,
-        mut query: Query<&mut Self>,
+        query: Query<&Self>,
         mut triggers: EventReader<TaskFinishedEvent<MoveToEntity>>,
-        simulation_time: Res<SimulationTime>,
     ) {
-        let now = simulation_time.now();
         for x in triggers.read() {
-            let Ok(mut created_component) = query.get_mut(x.entity) else {
+            if query.get(x.entity).is_err() {
                 continue;
-            };
-
-            created_component.started_at = now.into();
-            created_component.finishes_at = now.add_seconds(3);
+            }
 
             commands.entity(x.entity).remove::<InSector>();
         }
