@@ -4,3 +4,6 @@ pub const MOCK_INVENTORY_SIZE: u32 = 5000; // 500000000;
 pub const SHIP_LAYER: f32 = 10.0;
 pub const STATION_LAYER: f32 = 5.0;
 pub const GATE_LAYER: f32 = 5.0;
+
+/// Sadly linestrip depth seems to be ignored by 2D Cameras. Right now this constant purely exists to avoid magic numbers.
+pub const GATE_CONNECTION_LAYER: f32 = 0.0;

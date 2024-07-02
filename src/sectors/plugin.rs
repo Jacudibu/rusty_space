@@ -10,8 +10,7 @@ use crate::utils::SectorPosition;
 use crate::SpriteHandles;
 use bevy::app::Update;
 use bevy::prelude::{
-    on_event, App, AppGizmoBuilder, Commands, EventWriter, IntoSystemConfigs, Plugin, Res, Startup,
-    Vec2,
+    on_event, App, AppGizmoBuilder, Commands, EventWriter, IntoSystemConfigs, Plugin, Res, Vec2,
 };
 use hexx::Hex;
 

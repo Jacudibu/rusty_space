@@ -42,7 +42,7 @@ impl UseGate {
                 .get(connection_entity.inner())
                 .unwrap();
 
-            transform.translation = connection_entity.evaluate(connection, t).extend(SHIP_LAYER);
+            transform.translation = connection_entity.evaluate_ship_position(connection, t);
 
             TaskResult::Ongoing
         } else {
