@@ -5,6 +5,7 @@ use crate::ship_ai::task_queue::TaskQueue;
 use crate::ship_ai::task_result::TaskResult;
 use crate::ship_ai::tasks::send_completion_events;
 use crate::ship_ai::{tasks, MoveToEntity};
+use crate::utils::interpolation;
 use bevy::prelude::{
     error, Commands, Component, Entity, EventReader, EventWriter, Query, Res, Time, Transform,
 };
@@ -26,7 +27,7 @@ impl UseGate {
     ) -> TaskResult {
         self.progress += delta_travel;
         if self.progress <= 1.0 {
-            let t = -2.0 * self.progress.powi(3) + 3.0 * self.progress.powi(2);
+            let t = interpolation::smooth_step(self.progress);
             let connection_data = all_gate_connections.get(&self.exit_gate).unwrap();
             transform.translation = connection_data.ship_curve.position(t);
 

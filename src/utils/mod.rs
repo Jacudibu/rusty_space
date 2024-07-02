@@ -1,5 +1,6 @@
 mod data_resource;
 mod exchange_ware_data;
+pub mod interpolation;
 mod price_range;
 mod price_setting;
 mod sector_position;
