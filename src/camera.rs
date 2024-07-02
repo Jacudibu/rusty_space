@@ -1,7 +1,6 @@
-use crate::utils::interpolation;
 use bevy::input::mouse::MouseWheel;
 use bevy::input::ButtonInput;
-use bevy::math::Vec3;
+use bevy::math::{Vec3, VectorSpace};
 use bevy::prelude::{
     Component, EventReader, KeyCode, OrthographicProjection, Query, Res, Time, Transform, With,
 };
@@ -30,9 +29,8 @@ const ZOOM_SPEED_MOUSE: f32 = 0.2;
 const MIN_ZOOM: f32 = 0.25;
 const MAX_ZOOM: f32 = 4.0;
 
-// Lower values mean faster slowdowns
-const MOVEMENT_SLOWDOWN: f32 = 0.075;
-const ZOOM_SLOWDOWN: f32 = 0.1;
+const MOVEMENT_SLOWDOWN: f32 = 13.0;
+const ZOOM_SLOWDOWN: f32 = 10.0;
 
 pub fn move_camera(
     keys: Res<ButtonInput<KeyCode>>,
@@ -101,16 +99,17 @@ pub fn animate_smooth_camera_zoom(
     time: Res<Time>,
     mut query: Query<(&mut OrthographicProjection, &SmoothZooming), With<MainCamera>>,
 ) {
-    let (mut projection, zoom_factor) = query.get_single_mut().unwrap();
-    if projection.scale == zoom_factor.target {
+    let (mut projection, smooth_zoom) = query.get_single_mut().unwrap();
+    if projection.scale == smooth_zoom.target {
         return;
     }
 
-    projection.scale = interpolation::weighted_average(
-        projection.scale,
-        zoom_factor.target,
-        ZOOM_SLOWDOWN / time.delta_seconds(),
-    );
+    let t = time.delta_seconds() * ZOOM_SLOWDOWN;
+    projection.scale = if t < 1.0 {
+        projection.scale.lerp(smooth_zoom.target, t)
+    } else {
+        smooth_zoom.target
+    };
 }
 
 pub fn animate_smooth_camera_movement(
@@ -122,17 +121,10 @@ pub fn animate_smooth_camera_movement(
         return;
     }
 
-    transform.translation = Vec3 {
-        x: interpolation::weighted_average(
-            transform.translation.x,
-            smooth_move.target.x,
-            MOVEMENT_SLOWDOWN / time.delta_seconds(),
-        ),
-        y: interpolation::weighted_average(
-            transform.translation.y,
-            smooth_move.target.y,
-            MOVEMENT_SLOWDOWN / time.delta_seconds(),
-        ),
-        z: transform.translation.z,
+    let t = time.delta_seconds() * MOVEMENT_SLOWDOWN;
+    transform.translation = if t < 1.0 {
+        transform.translation.lerp(smooth_move.target, t)
+    } else {
+        smooth_move.target
     };
 }
