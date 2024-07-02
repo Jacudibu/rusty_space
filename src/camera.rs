@@ -1,13 +1,32 @@
+use crate::utils::interpolation;
+use bevy::input::mouse::MouseWheel;
 use bevy::input::ButtonInput;
 use bevy::math::Vec3;
 use bevy::prelude::{
-    Component, KeyCode, OrthographicProjection, Query, Res, Time, Transform, Vec2, With,
+    Component, EventReader, KeyCode, OrthographicProjection, Query, Res, Time, Transform, Vec2,
+    With,
 };
 
 #[derive(Component)]
 pub struct MainCamera;
 
+#[derive(Component)]
+pub struct SmoothZooming {
+    target: f32,
+}
+
+impl Default for SmoothZooming {
+    fn default() -> Self {
+        Self { target: 1.0 }
+    }
+}
+
 const CAMERA_SPEED: f32 = 100.0;
+const ZOOM_SPEED_KEYBOARD: f32 = 2.0;
+const ZOOM_SPEED_MOUSE: f32 = 0.2;
+const ZOOM_SLOWDOWN: f32 = 0.1;
+const MIN_ZOOM: f32 = 0.25;
+const MAX_ZOOM: f32 = 4.0;
 
 pub fn move_camera(
     keys: Res<ButtonInput<KeyCode>>,
@@ -43,15 +62,16 @@ pub fn move_camera(
     camera.get_single_mut().unwrap().translation += dir * CAMERA_SPEED * time.delta_seconds();
 }
 
-pub fn zoom_camera(
+pub fn zoom_camera_with_buttons(
     keys: Res<ButtonInput<KeyCode>>,
-    mut projection: Query<&mut OrthographicProjection, With<MainCamera>>,
+    time: Res<Time>,
+    mut query: Query<&mut SmoothZooming, With<MainCamera>>,
 ) {
     let mut dir: f32 = 0.0;
-    if keys.just_pressed(KeyCode::KeyR) {
+    if keys.pressed(KeyCode::KeyR) {
         dir += 1.0;
     }
-    if keys.just_pressed(KeyCode::KeyF) {
+    if keys.pressed(KeyCode::KeyF) {
         dir -= 1.0;
     }
 
@@ -59,9 +79,35 @@ pub fn zoom_camera(
         return;
     }
 
-    if dir > 0.0 {
-        projection.get_single_mut().unwrap().scale *= 1.5;
-    } else {
-        projection.get_single_mut().unwrap().scale /= 1.5;
+    let mut zoom_factor = query.get_single_mut().unwrap();
+
+    zoom_factor.target += dir * time.delta_seconds() * ZOOM_SPEED_KEYBOARD;
+    zoom_factor.target = zoom_factor.target.clamp(MIN_ZOOM, MAX_ZOOM);
+}
+
+pub fn zoom_camera_with_scroll_wheel(
+    mut scroll_event: EventReader<MouseWheel>,
+    mut query: Query<&mut SmoothZooming, With<MainCamera>>,
+) {
+    for event in scroll_event.read() {
+        let mut zoom_factor = query.get_single_mut().unwrap();
+        zoom_factor.target += -event.y * ZOOM_SPEED_MOUSE;
+        zoom_factor.target = zoom_factor.target.clamp(MIN_ZOOM, MAX_ZOOM);
     }
+}
+
+pub fn animate_smooth_camera_zoom(
+    time: Res<Time>,
+    mut query: Query<(&mut OrthographicProjection, &SmoothZooming), With<MainCamera>>,
+) {
+    let (mut projection, zoom_factor) = query.get_single_mut().unwrap();
+    if projection.scale == zoom_factor.target {
+        return;
+    }
+
+    projection.scale = interpolation::low_pass_filter(
+        projection.scale,
+        zoom_factor.target,
+        ZOOM_SLOWDOWN / time.delta_seconds(),
+    );
 }

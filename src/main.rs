@@ -76,7 +76,11 @@ fn main() {
             gui::list_selection_icons_and_counts,
             gui::list_selection_details,
             camera::move_camera,
-            camera::zoom_camera,
+            camera::zoom_camera_with_buttons,
+            camera::zoom_camera_with_scroll_wheel,
+            camera::animate_smooth_camera_zoom
+                .after(camera::zoom_camera_with_scroll_wheel)
+                .after(camera::zoom_camera_with_buttons),
             physics::move_things.after(ship_ai::MoveToEntity::run_tasks),
         ),
     );
@@ -122,5 +126,10 @@ pub fn initialize_data(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     let mut camera_bundle = Camera2dBundle::default();
     camera_bundle.projection.scaling_mode = ScalingMode::WindowSize(1.0);
-    commands.spawn((Name::new("Camera"), camera::MainCamera, camera_bundle));
+    commands.spawn((
+        Name::new("Camera"),
+        camera::MainCamera,
+        camera::SmoothZooming::default(),
+        camera_bundle,
+    ));
 }

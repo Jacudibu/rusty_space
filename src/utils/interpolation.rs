@@ -12,3 +12,8 @@ pub fn smooth_step(t: f32) -> f32 {
 pub fn smoother_step(t: f32) -> f32 {
     t * t * t * (t * (t * 6.0 - 15.0) + 10.0)
 }
+
+/// Calculates the weighted average.
+pub fn low_pass_filter(current: f32, target: f32, slowdown_factor: f32) -> f32 {
+    ((current * (slowdown_factor - 1.0)) + target) / slowdown_factor
+}
