@@ -4,7 +4,8 @@ use crate::production::production_kind::ProductionKind;
 use crate::production::shipyard_component::ShipyardComponent;
 use crate::production::state::GlobalProductionState;
 use crate::production::{InventoryUpdateForProductionEvent, ProductionComponent};
-use crate::sectors::{AllSectors, InSector};
+use crate::sectors::AllSectors;
+use crate::sectors::InSector;
 use crate::session_data::SessionData;
 use crate::utils::SimulationTime;
 use crate::{mock_helpers, utils, SpriteHandles};
@@ -15,7 +16,7 @@ use bevy::prelude::{Commands, EventWriter, Or, Query, Res, ResMut, Transform, Wi
 pub fn check_if_production_is_finished_and_start_new_one(
     mut commands: Commands,
     sprites: Res<SpriteHandles>,
-    sectors: Res<AllSectors>,
+    mut all_sectors: ResMut<AllSectors>,
     simulation_time: Res<SimulationTime>,
     mut global_production_state: ResMut<GlobalProductionState>,
     game_data: Res<GameData>,
@@ -109,7 +110,8 @@ pub fn check_if_production_is_finished_and_start_new_one(
                     &mut commands,
                     &sprites,
                     definition.name.clone(),
-                    sectors.get(&in_sector.sector).unwrap(),
+                    &mut all_sectors,
+                    in_sector.get(),
                     transform.translation.truncate(),
                     0.0,
                 );

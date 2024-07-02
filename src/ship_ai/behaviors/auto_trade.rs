@@ -1,5 +1,6 @@
 use crate::components::{BuyOrders, Inventory, SellOrders, TradeOrder};
-use crate::sectors::{find_path, AllSectors, InSector};
+use crate::sectors::InSector;
+use crate::sectors::{find_path, AllSectors};
 use crate::ship_ai::{Idle, TaskInsideQueue, TaskQueue};
 use crate::trade_plan::TradePlan;
 use crate::utils::{ExchangeWareData, SimulationTime, TradeIntent};
@@ -59,8 +60,8 @@ pub fn handle_idle_ships(
             );
 
             let mut queue = TaskQueue::with_capacity(4);
-            if ship_sector.sector != plan.seller_sector {
-                let path = find_path(&all_sectors, ship_sector.sector, plan.seller_sector).unwrap();
+            if ship_sector != plan.seller_sector {
+                let path = find_path(&all_sectors, ship_sector.get(), plan.seller_sector).unwrap();
                 for x in path {
                     queue.push_back(TaskInsideQueue::MoveToEntity {
                         target: x.enter_gate_entity,

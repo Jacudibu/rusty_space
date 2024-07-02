@@ -5,15 +5,13 @@ use crate::game_data::{
     RECIPE_A_ID, RECIPE_B_ID, RECIPE_C_ID, SHIPYARD_MODULE_ID,
 };
 use crate::production::{ProductionComponent, ProductionModule, ShipyardComponent, ShipyardModule};
-use crate::sectors::{AllSectors, InSector, SectorData};
+use crate::sectors::{AllSectors, SectorId};
 use crate::session_data::DEBUG_SHIP_CONFIG;
 use crate::{constants, SpriteHandles};
 use bevy::core::Name;
 use bevy::math::Vec2;
-use bevy::prelude::{default, Commands, Res, SpriteBundle, Transform};
+use bevy::prelude::{default, Commands, Res, ResMut, SpriteBundle, Transform};
 use bevy::utils::HashMap;
-use hexx::Hex;
-
 pub struct MockStationProductionArgs {
     modules: Vec<MockStationProductionArgElement>,
 }
@@ -55,23 +53,26 @@ impl MockStationProductionArgElement {
     }
 }
 
+#[allow(clippy::too_many_arguments)] // It's hopeless... :')
 pub fn spawn_station(
     commands: &mut Commands,
+    all_sectors: &mut AllSectors,
     sprites: &SpriteHandles,
     name: &str,
     pos: Vec2,
-    sector: &SectorData,
+    sector_id: SectorId,
     buys: Vec<&ItemDefinition>,
     sells: Vec<&ItemDefinition>,
     production: Option<MockStationProductionArgs>,
     shipyard: Option<bool>,
 ) {
-    let pos = pos + sector.world_pos;
-    let station = commands
+    let sector_data = all_sectors.get_mut(&sector_id).unwrap();
+
+    let pos = pos + sector_data.world_pos;
+    let entity = commands
         .spawn((
             Name::new(name.to_string()),
             SelectableEntity::Station,
-            InSector::from(sector),
             SpriteBundle {
                 texture: sprites.station.clone(),
                 transform: Transform::from_xyz(pos.x, pos.y, constants::STATION_LAYER),
@@ -88,18 +89,18 @@ pub fn spawn_station(
         .id();
 
     if !buys.is_empty() {
-        commands.entity(station).insert(BuyOrders::mock(buys));
+        commands.entity(entity).insert(BuyOrders::mock(buys));
     }
     if !sells.is_empty() {
-        commands.entity(station).insert(SellOrders::mock(sells));
+        commands.entity(entity).insert(SellOrders::mock(sells));
     }
 
     if let Some(production) = production {
-        commands.entity(station).insert(production.parse());
+        commands.entity(entity).insert(production.parse());
     }
 
     if shipyard.is_some() {
-        commands.entity(station).insert(ShipyardComponent {
+        commands.entity(entity).insert(ShipyardComponent {
             modules: HashMap::from([(
                 SHIPYARD_MODULE_ID,
                 ShipyardModule {
@@ -110,19 +111,22 @@ pub fn spawn_station(
             queue: vec![DEBUG_SHIP_CONFIG; 100],
         });
     }
+
+    sector_data.add_station(commands, entity);
 }
 
 pub fn spawn_mock_stations(
     mut commands: Commands,
     sprites: Res<SpriteHandles>,
     game_data: Res<GameData>,
-    all_sectors: Res<AllSectors>,
+    mut all_sectors: ResMut<AllSectors>,
 ) {
-    let center = all_sectors.get(&Hex::ZERO).unwrap();
-    let bottom_left = all_sectors.get(&Hex::new(0, -1)).unwrap();
+    let center = SectorId::default();
+    let bottom_left = SectorId::new(0, -1);
 
     spawn_station(
         &mut commands,
+        &mut all_sectors,
         &sprites,
         "Station A",
         Vec2::new(-200.0, -200.0),
@@ -136,6 +140,7 @@ pub fn spawn_mock_stations(
     );
     spawn_station(
         &mut commands,
+        &mut all_sectors,
         &sprites,
         "Station B",
         Vec2::new(200.0, -200.0),
@@ -149,6 +154,7 @@ pub fn spawn_mock_stations(
     );
     spawn_station(
         &mut commands,
+        &mut all_sectors,
         &sprites,
         "Station C",
         Vec2::new(0.0, 200.0),
@@ -162,6 +168,7 @@ pub fn spawn_mock_stations(
     );
     spawn_station(
         &mut commands,
+        &mut all_sectors,
         &sprites,
         "Shipyard",
         Vec2::new(0.0, 0.0),

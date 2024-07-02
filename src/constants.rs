@@ -1,6 +1,12 @@
-pub const SHIP_COUNT: u32 = 10;
-pub const MOCK_INVENTORY_SIZE: u32 = 5000;
+// Simple Test Values.
+// pub const SHIP_COUNT: u32 = 10;
+// pub const MOCK_INVENTORY_SIZE: u32 = 5000;
 
+// Very Late Endgame Values
+pub const SHIP_COUNT: u32 = 200000;
+pub const MOCK_INVENTORY_SIZE: u32 = 50000000;
+
+// Stress Test Values
 // pub const SHIP_COUNT: u32 = 1000000;
 // pub const MOCK_INVENTORY_SIZE: u32 = 500000000;
 

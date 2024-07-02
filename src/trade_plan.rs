@@ -1,6 +1,7 @@
 use crate::components::{BuyOrders, SellOrders, TradeOrder};
 use crate::game_data::ItemId;
-use crate::sectors::{InSector, SectorId};
+use crate::sectors::InSector;
+use crate::sectors::SectorId;
 use bevy::prelude::{Entity, Query};
 
 pub struct TradePlan {
@@ -53,9 +54,9 @@ impl TradePlan {
                                 amount,
                                 profit,
                                 seller,
-                                seller_sector: seller_sector.sector,
+                                seller_sector: seller_sector.get(),
                                 buyer,
-                                buyer_sector: buyer_sector.sector,
+                                buyer_sector: buyer_sector.get(),
                             });
                         }
                     }

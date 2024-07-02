@@ -51,6 +51,7 @@ fn find_path_internal(sectors: &AllSectors, from: Hex, to: Hex) -> Option<Vec<He
 mod test {
     use crate::sectors::pathfinding::find_path;
     use crate::sectors::sector::*;
+    use crate::sectors::sector_data::SectorData;
     use bevy::prelude::Entity;
     use bevy::utils::HashMap;
     use hexx::Hex;
