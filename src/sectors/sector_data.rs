@@ -29,20 +29,30 @@ impl SectorData {
     /// Adds ship to this sector and inserts the [InSector] component to it.
     pub fn add_ship(&mut self, commands: &mut Commands, entity: Entity) {
         self.ships.insert(entity);
-        commands.entity(entity).insert(InSector { sector: self.id });
+        self.in_sector(commands, entity);
     }
 
     /// Removes ship from this sector whilst also deleting its [InSector] component.
     pub fn remove_ship(&mut self, commands: &mut Commands, entity: Entity) {
         let result = self.ships.remove(&entity);
         debug_assert!(result, "removed ships should always be in sector!");
-
         commands.entity(entity).remove::<InSector>();
     }
 
     /// Adds the station to this sector and inserts the [InSector] component to it.
     pub fn add_station(&mut self, commands: &mut Commands, entity: Entity) {
         self.stations.insert(entity);
+        self.in_sector(commands, entity);
+    }
+
+    /// Adds the gate to this sector and inserts the [InSector] component to it.
+    pub fn add_gate(&mut self, commands: &mut Commands, entity: Entity, destination: SectorId) {
+        self.gates.insert(destination, entity);
+        self.in_sector(commands, entity);
+    }
+
+    /// Adds the [InSector] component linking to `self` to the provided Entity.
+    fn in_sector(&self, commands: &mut Commands, entity: Entity) {
         commands.entity(entity).insert(InSector { sector: self.id });
     }
 }

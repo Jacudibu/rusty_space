@@ -64,8 +64,8 @@ fn spawn_gate(
         from: pos.sector,
         to: other.sector,
     };
-    let sector = all_sectors.get_mut(&pos.sector).unwrap();
-    let position = sector.world_pos + pos.local_position;
+    let sector_data = all_sectors.get_mut(&pos.sector).unwrap();
+    let position = sector_data.world_pos + pos.local_position;
     let entity = commands
         .spawn((
             GateComponent { id },
@@ -82,7 +82,7 @@ fn spawn_gate(
         ))
         .id();
 
-    sector.gates.insert(other.sector, entity);
+    sector_data.add_gate(commands, entity, other.sector);
 
     all_gates.insert(
         id,

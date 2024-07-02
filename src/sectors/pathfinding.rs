@@ -52,21 +52,20 @@ mod test {
     use crate::sectors::pathfinding::find_path;
     use crate::sectors::sector::*;
     use crate::sectors::sector_data::SectorData;
-    use bevy::prelude::Entity;
-    use bevy::utils::HashMap;
+    use bevy::prelude::{Entity, Vec2, World};
     use hexx::Hex;
 
     fn add_sector(all_sectors: &mut AllSectors, pos: Hex, gates: Vec<(Hex, Entity)>) {
-        all_sectors.insert(
-            pos,
-            SectorData {
-                id: pos,
-                entity: Entity::from_raw(0),
-                gates: HashMap::from_iter(gates),
-                ships: Vec::new(),
-                stations: Vec::new(),
-            },
-        );
+        let mut fake_world = World::default();
+        let mut commands = fake_world.commands();
+        let entity = commands.spawn(SectorComponent { coordinate: pos }).id();
+
+        let mut sector_data = SectorData::new(pos, entity, Vec2::ZERO);
+        for (hex, entity) in gates {
+            sector_data.add_gate(&mut commands, entity, hex);
+        }
+
+        all_sectors.insert(pos, sector_data);
     }
 
     #[test]
