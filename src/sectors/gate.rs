@@ -5,7 +5,7 @@ use crate::utils::KeyValueResource;
 use crate::utils::SectorPosition;
 use crate::{constants, SpriteHandles};
 use bevy::prelude::{
-    BuildChildren, Commands, Component, Entity, EventWriter, Name, SpriteBundle, Transform, Vec2,
+    Commands, Component, Entity, EventWriter, Name, SpriteBundle, Transform, Vec2,
 };
 use hexx::Hex;
 

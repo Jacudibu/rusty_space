@@ -4,7 +4,6 @@ use crate::ship_ai::{Idle, TaskInsideQueue, TaskQueue};
 use crate::trade_plan::TradePlan;
 use crate::utils::{ExchangeWareData, SimulationTime, TradeIntent};
 use bevy::prelude::{Commands, Component, Entity, Query, Res};
-use std::collections::VecDeque;
 
 #[derive(Component)]
 pub struct AutoTradeBehavior;

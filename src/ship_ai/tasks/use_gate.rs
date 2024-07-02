@@ -1,5 +1,4 @@
-use crate::constants::SHIP_LAYER;
-use crate::sectors::{AllGateConnections, AllGates, AllSectors, GateConnection, GateId, InSector};
+use crate::sectors::{AllGateConnections, GateId, InSector};
 use crate::ship_ai::task_finished_event::TaskFinishedEvent;
 use crate::ship_ai::task_queue::TaskQueue;
 use crate::ship_ai::task_result::TaskResult;
@@ -8,8 +7,7 @@ use crate::ship_ai::{tasks, MoveToEntity};
 use crate::utils::SimulationTimestamp;
 use crate::utils::{CurrentSimulationTimestamp, SimulationTime};
 use bevy::prelude::{
-    error, BuildChildren, BuildChildrenTransformExt, Commands, Component, Entity, EventReader,
-    EventWriter, Query, Res, Transform,
+    error, Commands, Component, Entity, EventReader, EventWriter, Query, Res, Transform,
 };
 use hexx::Hex;
 use std::sync::{Arc, Mutex};
@@ -28,7 +26,6 @@ impl UseGate {
         now: CurrentSimulationTimestamp,
         transform: &mut Transform,
         all_gate_connections: &AllGateConnections,
-        connection_components: &Query<&GateConnection>,
     ) -> TaskResult {
         if now.has_not_passed(self.finishes_at) {
             let max = self.finishes_at.milliseconds() - self.started_at.milliseconds();
@@ -37,12 +34,8 @@ impl UseGate {
             let t = passed as f32 / max as f32;
             let t = -2.0 * t.powi(3) + 3.0 * t.powi(2);
 
-            let connection_entity = all_gate_connections.get(&self.exit_gate).unwrap();
-            let connection = connection_components
-                .get(connection_entity.inner())
-                .unwrap();
-
-            transform.translation = connection_entity.evaluate_ship_position(connection, t);
+            let connection_data = all_gate_connections.get(&self.exit_gate).unwrap();
+            transform.translation = connection_data.ship_curve.position(t);
 
             TaskResult::Ongoing
         } else {
@@ -55,7 +48,6 @@ impl UseGate {
         simulation_time: Res<SimulationTime>,
         mut ships: Query<(Entity, &Self, &mut Transform)>,
         all_gate_connections: Res<AllGateConnections>,
-        connection_components: Query<&GateConnection>,
     ) {
         let now = simulation_time.now();
         let task_completions = Arc::new(Mutex::new(Vec::<TaskFinishedEvent<Self>>::new()));
@@ -63,12 +55,7 @@ impl UseGate {
         ships
             .par_iter_mut()
             .for_each(|(entity, task, mut transform)| {
-                match task.run(
-                    now,
-                    &mut transform,
-                    &all_gate_connections,
-                    &connection_components,
-                ) {
+                match task.run(now, &mut transform, &all_gate_connections) {
                     TaskResult::Ongoing => {}
                     TaskResult::Finished | TaskResult::Aborted => task_completions
                         .lock()

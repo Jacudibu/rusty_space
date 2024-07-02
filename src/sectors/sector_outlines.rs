@@ -1,8 +1,6 @@
 use crate::sectors::map_layout::MapLayout;
 use crate::sectors::sector::SectorComponent;
-use bevy::prelude::{
-    GizmoConfigGroup, Gizmos, InheritedVisibility, Query, Reflect, Res, Vec2, ViewVisibility,
-};
+use bevy::prelude::{GizmoConfigGroup, Gizmos, Query, Reflect, Res, Vec2, ViewVisibility};
 use hexx::{Hex, HexLayout};
 
 #[derive(Default, Reflect, GizmoConfigGroup)]
