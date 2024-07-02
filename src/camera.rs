@@ -32,7 +32,7 @@ pub fn move_camera(
         // Guaranteed to move everything off-screen
         camera.get_single_mut().unwrap().translation = Vec2::splat(10000000.0).extend(0.0);
     }
-    if keys.pressed(KeyCode::KeyR) {
+    if keys.pressed(KeyCode::KeyG) {
         camera.get_single_mut().unwrap().translation = Vec3::ZERO;
     }
 
