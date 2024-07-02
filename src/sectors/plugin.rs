@@ -77,11 +77,11 @@ pub fn spawn_test_universe(
         &sprites,
         SectorPosition {
             sector: center,
-            position: Vec2::new(250.0, 0.0),
+            local_position: Vec2::new(250.0, 0.0),
         },
         SectorPosition {
             sector: right,
-            position: Vec2::new(-250.0, 0.0),
+            local_position: Vec2::new(-250.0, 0.0),
         },
         &mut all_sectors,
         &mut all_gates,
@@ -93,11 +93,11 @@ pub fn spawn_test_universe(
         &sprites,
         SectorPosition {
             sector: right,
-            position: Vec2::new(-200.0, 130.0),
+            local_position: Vec2::new(-200.0, 130.0),
         },
         SectorPosition {
             sector: top_right,
-            position: Vec2::new(200.0, -130.0),
+            local_position: Vec2::new(200.0, -130.0),
         },
         &mut all_sectors,
         &mut all_gates,
@@ -109,11 +109,11 @@ pub fn spawn_test_universe(
         &sprites,
         SectorPosition {
             sector: center,
-            position: Vec2::new(-150.0, -150.0),
+            local_position: Vec2::new(-150.0, -150.0),
         },
         SectorPosition {
             sector: bottom_left,
-            position: Vec2::new(200.0, 130.0),
+            local_position: Vec2::new(200.0, 130.0),
         },
         &mut all_sectors,
         &mut all_gates,

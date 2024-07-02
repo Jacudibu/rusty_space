@@ -83,27 +83,13 @@ impl UseGate {
     pub fn complete_tasks(
         mut commands: Commands,
         mut event_reader: EventReader<TaskFinishedEvent<Self>>,
-        mut all_ships_with_task: Query<(Entity, &mut TaskQueue, &mut Transform, &Self)>,
-        all_sectors: Res<AllSectors>,
-        all_gates: Res<AllGates>,
+        mut all_ships_with_task: Query<(Entity, &mut TaskQueue, &Self)>,
     ) {
         for event in event_reader.read() {
-            if let Ok((entity, mut queue, mut transform, task)) =
-                all_ships_with_task.get_mut(event.entity)
-            {
-                let sector = all_sectors.get(&task.exit_sector).unwrap();
-
-                transform.translation = all_gates
-                    .get(&task.exit_gate)
-                    .unwrap()
-                    .position
-                    .extend(SHIP_LAYER);
-
+            if let Ok((entity, mut queue, task)) = all_ships_with_task.get_mut(event.entity) {
                 commands
                     .entity(entity)
-                    .remove::<UseGate>()
-                    .insert(InSector::from(sector))
-                    .set_parent_in_place(sector.entity);
+                    .insert(InSector::from(task.exit_sector));
 
                 tasks::remove_task_and_add_new_one::<Self>(&mut commands, entity, &mut queue);
             } else {
@@ -130,10 +116,7 @@ impl UseGate {
             created_component.started_at = now.into();
             created_component.finishes_at = now.add_seconds(3);
 
-            commands
-                .entity(x.entity)
-                .remove::<InSector>()
-                .remove_parent();
+            commands.entity(x.entity).remove::<InSector>();
         }
     }
 }

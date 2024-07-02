@@ -28,7 +28,7 @@ impl GateId {
 pub struct GateData {
     pub id: GateId,
     pub entity: Entity,
-    pub position: Vec2,
+    pub world_position: Vec2,
 }
 
 #[derive(Component)]
@@ -65,6 +65,7 @@ fn spawn_gate(
         to: other.sector,
     };
     let sector = all_sectors.get_mut(&pos.sector).unwrap();
+    let position = sector.world_pos + pos.local_position;
     let entity = commands
         .spawn((
             GateComponent { id },
@@ -74,12 +75,11 @@ fn spawn_gate(
             )),
             SelectableEntity::Gate,
             SpriteBundle {
-                transform: Transform::from_translation(pos.position.extend(constants::GATE_LAYER)),
+                transform: Transform::from_translation(position.extend(constants::GATE_LAYER)),
                 texture: sprites.gate.clone(),
                 ..Default::default()
             },
         ))
-        .set_parent(sector.entity)
         .id();
 
     sector.gates.insert(other.sector, entity);
@@ -89,7 +89,7 @@ fn spawn_gate(
         GateData {
             id,
             entity,
-            position: pos.position,
+            world_position: position,
         },
     );
 

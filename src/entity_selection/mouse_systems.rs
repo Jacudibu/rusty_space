@@ -7,7 +7,7 @@ use bevy::input::mouse::MouseButtonInput;
 use bevy::input::ButtonState;
 use bevy::prelude::{
     Camera, Commands, Entity, EventReader, GlobalTransform, MouseButton, Query, Real, Res, ResMut,
-    State, Time, Transform, Vec2, With, Without,
+    State, Time, Vec2, With, Without,
 };
 
 #[allow(clippy::too_many_arguments)]

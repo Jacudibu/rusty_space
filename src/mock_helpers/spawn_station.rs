@@ -5,7 +5,7 @@ use crate::game_data::{
     RECIPE_A_ID, RECIPE_B_ID, RECIPE_C_ID, SHIPYARD_MODULE_ID,
 };
 use crate::production::{ProductionComponent, ProductionModule, ShipyardComponent, ShipyardModule};
-use crate::sectors::{AllSectors, InSector, SectorData};
+use crate::sectors::{AllSectors, InSector, MapLayout, SectorData};
 use crate::session_data::DEBUG_SHIP_CONFIG;
 use crate::{constants, SpriteHandles};
 use bevy::core::Name;
@@ -66,6 +66,7 @@ pub fn spawn_station(
     production: Option<MockStationProductionArgs>,
     shipyard: Option<bool>,
 ) {
+    let pos = pos + sector.world_pos;
     let station = commands
         .spawn((
             Name::new(name.to_string()),
@@ -84,7 +85,6 @@ pub fn spawn_station(
                     .collect(),
             ),
         ))
-        .set_parent(sector.entity)
         .id();
 
     if !buys.is_empty() {
