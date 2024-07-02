@@ -3,8 +3,7 @@ use bevy::input::mouse::MouseWheel;
 use bevy::input::ButtonInput;
 use bevy::math::Vec3;
 use bevy::prelude::{
-    Component, EventReader, KeyCode, OrthographicProjection, Query, Res, Time, Transform, Vec2,
-    With,
+    Component, EventReader, KeyCode, OrthographicProjection, Query, Res, Time, Transform, With,
 };
 
 #[derive(Component)]
@@ -21,7 +20,7 @@ impl Default for SmoothZooming {
     }
 }
 
-const CAMERA_SPEED: f32 = 100.0;
+const CAMERA_SPEED: f32 = 1000.0;
 const ZOOM_SPEED_KEYBOARD: f32 = 2.0;
 const ZOOM_SPEED_MOUSE: f32 = 0.2;
 const ZOOM_SLOWDOWN: f32 = 0.1;
@@ -31,7 +30,7 @@ const MAX_ZOOM: f32 = 4.0;
 pub fn move_camera(
     keys: Res<ButtonInput<KeyCode>>,
     time: Res<Time>,
-    mut camera: Query<&mut Transform, With<MainCamera>>,
+    mut query: Query<(&mut Transform, &OrthographicProjection), With<MainCamera>>,
 ) {
     let mut dir = Vec3::ZERO;
 
@@ -47,19 +46,14 @@ pub fn move_camera(
     if keys.pressed(KeyCode::KeyD) {
         dir.x += 1.0;
     }
-    if keys.pressed(KeyCode::KeyT) {
-        // Guaranteed to move everything off-screen
-        camera.get_single_mut().unwrap().translation = Vec2::splat(10000000.0).extend(0.0);
-    }
-    if keys.pressed(KeyCode::KeyG) {
-        camera.get_single_mut().unwrap().translation = Vec3::ZERO;
-    }
 
     if dir.length() < 0.01 {
         return;
     }
 
-    camera.get_single_mut().unwrap().translation += dir * CAMERA_SPEED * time.delta_seconds();
+    let (mut transform, projection) = query.get_single_mut().unwrap();
+    let zoom_factor = 1.0 / projection.scale;
+    transform.translation += ((dir * CAMERA_SPEED) / zoom_factor) * time.delta_seconds();
 }
 
 pub fn zoom_camera_with_buttons(
@@ -105,7 +99,7 @@ pub fn animate_smooth_camera_zoom(
         return;
     }
 
-    projection.scale = interpolation::low_pass_filter(
+    projection.scale = interpolation::weighted_average(
         projection.scale,
         zoom_factor.target,
         ZOOM_SLOWDOWN / time.delta_seconds(),
