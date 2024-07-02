@@ -76,6 +76,7 @@ fn main() {
             gui::list_selection_icons_and_counts,
             gui::list_selection_details,
             camera::move_camera,
+            camera::animate_smooth_camera_movement.after(camera::move_camera),
             camera::zoom_camera_with_buttons,
             camera::zoom_camera_with_scroll_wheel,
             camera::animate_smooth_camera_zoom
@@ -130,6 +131,7 @@ pub fn initialize_data(mut commands: Commands, asset_server: Res<AssetServer>) {
         Name::new("Camera"),
         camera::MainCamera,
         camera::SmoothZooming::default(),
+        camera::SmoothMoving::default(),
         camera_bundle,
     ));
 }
