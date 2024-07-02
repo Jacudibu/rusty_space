@@ -1,3 +1,4 @@
+use crate::camera::CameraControllerPlugin;
 use crate::entity_selection::EntitySelectionPlugin;
 use crate::game_data::GameData;
 use crate::production::ProductionPlugin;
@@ -50,6 +51,7 @@ fn main() {
     .add_plugins(ShipAiPlugin)
     .add_plugins(SimulationTimePlugin)
     .add_plugins(SectorPlugin)
+    .add_plugins(CameraControllerPlugin)
     .insert_resource(GameData::mock_data())
     .insert_resource(SessionData::mock_data())
     .init_state::<gui::MouseCursorOverUiState>()
@@ -75,13 +77,6 @@ fn main() {
         (
             gui::list_selection_icons_and_counts,
             gui::list_selection_details,
-            camera::move_camera,
-            camera::animate_smooth_camera_movement.after(camera::move_camera),
-            camera::zoom_camera_with_buttons,
-            camera::zoom_camera_with_scroll_wheel,
-            camera::animate_smooth_camera_zoom
-                .after(camera::zoom_camera_with_scroll_wheel)
-                .after(camera::zoom_camera_with_buttons),
             physics::move_things.after(ship_ai::MoveToEntity::run_tasks),
         ),
     );
@@ -129,9 +124,7 @@ pub fn initialize_data(mut commands: Commands, asset_server: Res<AssetServer>) {
     camera_bundle.projection.scaling_mode = ScalingMode::WindowSize(1.0);
     commands.spawn((
         Name::new("Camera"),
-        camera::MainCamera,
-        camera::SmoothZooming::default(),
-        camera::SmoothMoving::default(),
+        camera::MainCameraBundle::default(),
         camera_bundle,
     ));
 }
