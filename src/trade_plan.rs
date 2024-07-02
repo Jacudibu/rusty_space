@@ -1,17 +1,16 @@
 use crate::components::{BuyOrders, SellOrders, TradeOrder};
 use crate::game_data::ItemId;
-use crate::sectors::InSector;
+use crate::sectors::{InSector, SectorId};
 use bevy::prelude::{Entity, Query};
-use hexx::Hex;
 
 pub struct TradePlan {
     pub item_id: ItemId,
     pub amount: u32,
     pub profit: u32,
     pub seller: Entity,
-    pub seller_sector: Hex,
+    pub seller_sector: SectorId,
     pub buyer: Entity,
-    pub buyer_sector: Hex,
+    pub buyer_sector: SectorId,
 }
 
 impl TradePlan {

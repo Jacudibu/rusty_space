@@ -3,11 +3,13 @@ use bevy::prelude::{Commands, Component, Entity, SpatialBundle, Transform, Vec2,
 use bevy::utils::HashMap;
 use hexx::{Hex, HexLayout};
 
+pub type SectorId = Hex;
+
 pub struct SectorData {
-    pub coordinate: Hex,
+    pub id: SectorId,
     pub entity: Entity,
     pub world_pos: Vec2,
-    pub gates: HashMap<Hex, Entity>,
+    pub gates: HashMap<SectorId, Entity>,
     pub ships: Vec<Entity>,
     pub stations: Vec<Entity>,
 }
@@ -15,7 +17,7 @@ pub struct SectorData {
 impl SectorData {
     pub fn new(coordinate: Hex, entity: Entity, world_pos: Vec2) -> Self {
         SectorData {
-            coordinate,
+            id: coordinate,
             entity,
             world_pos,
             gates: HashMap::new(),
@@ -34,24 +36,22 @@ pub struct SectorComponent {
 /// Component for entities inside sectors
 #[derive(Component, PartialEq, Eq)]
 pub struct InSector {
-    pub sector: Hex,
+    pub sector: SectorId,
 }
 
 impl From<&SectorData> for InSector {
     fn from(value: &SectorData) -> Self {
-        Self {
-            sector: value.coordinate,
-        }
+        Self { sector: value.id }
     }
 }
 
-impl From<Hex> for InSector {
-    fn from(value: Hex) -> Self {
+impl From<SectorId> for InSector {
+    fn from(value: SectorId) -> Self {
         Self { sector: value }
     }
 }
 
-pub type AllSectors = KeyValueResource<Hex, SectorData>;
+pub type AllSectors = KeyValueResource<SectorId, SectorData>;
 
 pub fn spawn_sector(
     commands: &mut Commands,

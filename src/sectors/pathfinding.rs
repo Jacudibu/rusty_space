@@ -1,12 +1,12 @@
 use crate::sectors::sector::AllSectors;
-use crate::sectors::GateId;
+use crate::sectors::{GateId, SectorId};
 use bevy::prelude::Entity;
 use hexx::Hex;
 
 pub struct PathElement {
-    pub enter_sector: Hex,
+    pub enter_sector: SectorId,
     pub enter_gate_entity: Entity,
-    pub exit_sector: Hex,
+    pub exit_sector: SectorId,
     pub exit_gate: GateId,
 }
 
@@ -19,12 +19,12 @@ pub fn find_path(sectors: &AllSectors, from: Hex, to: Hex) -> Option<Vec<PathEle
         let sector = &sectors[&path[i]];
         let next_sector = &sectors[&path[i + 1]];
         result.push(PathElement {
-            enter_sector: sector.coordinate,
-            enter_gate_entity: sector.gates[&next_sector.coordinate],
-            exit_sector: next_sector.coordinate,
+            enter_sector: sector.id,
+            enter_gate_entity: sector.gates[&next_sector.id],
+            exit_sector: next_sector.id,
             exit_gate: GateId {
-                from: sector.coordinate,
-                to: next_sector.coordinate,
+                from: sector.id,
+                to: next_sector.id,
             },
         });
     }
@@ -59,7 +59,7 @@ mod test {
         all_sectors.insert(
             pos,
             SectorData {
-                coordinate: pos,
+                id: pos,
                 entity: Entity::from_raw(0),
                 gates: HashMap::from_iter(gates),
                 ships: Vec::new(),

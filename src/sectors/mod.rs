@@ -8,7 +8,6 @@ mod sector_outlines;
 
 pub use gate::{GateComponent, GateId};
 pub use gate_connection::AllGateConnections;
-pub use map_layout::MapLayout;
 pub use pathfinding::find_path;
 pub use plugin::{spawn_test_universe, SectorPlugin};
-pub use sector::{AllSectors, InSector, SectorData};
+pub use sector::{AllSectors, InSector, SectorData, SectorId};

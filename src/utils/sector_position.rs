@@ -1,7 +1,7 @@
+use crate::sectors::SectorId;
 use bevy::math::Vec2;
-use hexx::Hex;
 
 pub struct SectorPosition {
-    pub sector: Hex,
+    pub sector: SectorId,
     pub local_position: Vec2,
 }

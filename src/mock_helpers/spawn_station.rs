@@ -5,12 +5,12 @@ use crate::game_data::{
     RECIPE_A_ID, RECIPE_B_ID, RECIPE_C_ID, SHIPYARD_MODULE_ID,
 };
 use crate::production::{ProductionComponent, ProductionModule, ShipyardComponent, ShipyardModule};
-use crate::sectors::{AllSectors, InSector, MapLayout, SectorData};
+use crate::sectors::{AllSectors, InSector, SectorData};
 use crate::session_data::DEBUG_SHIP_CONFIG;
 use crate::{constants, SpriteHandles};
 use bevy::core::Name;
 use bevy::math::Vec2;
-use bevy::prelude::{default, BuildChildren, Commands, Entity, Res, SpriteBundle, Transform};
+use bevy::prelude::{default, Commands, Res, SpriteBundle, Transform};
 use bevy::utils::HashMap;
 use hexx::Hex;
 

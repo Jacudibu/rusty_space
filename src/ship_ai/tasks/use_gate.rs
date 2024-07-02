@@ -1,4 +1,4 @@
-use crate::sectors::{AllGateConnections, GateId, InSector};
+use crate::sectors::{AllGateConnections, GateId, InSector, SectorId};
 use crate::ship_ai::task_finished_event::TaskFinishedEvent;
 use crate::ship_ai::task_queue::TaskQueue;
 use crate::ship_ai::task_result::TaskResult;
@@ -9,14 +9,13 @@ use crate::utils::{CurrentSimulationTimestamp, SimulationTime};
 use bevy::prelude::{
     error, Commands, Component, Entity, EventReader, EventWriter, Query, Res, Transform,
 };
-use hexx::Hex;
 use std::sync::{Arc, Mutex};
 
 #[derive(Component)]
 pub struct UseGate {
     pub started_at: SimulationTimestamp,
     pub finishes_at: SimulationTimestamp,
-    pub exit_sector: Hex,
+    pub exit_sector: SectorId,
     pub exit_gate: GateId,
 }
 
