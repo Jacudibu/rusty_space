@@ -1,5 +1,5 @@
 use crate::constants;
-use crate::sectors::{AllGateConnections, GatePair};
+use crate::sectors::{AllGateConnections, GateId, SectorEntity};
 use crate::sectors::{InSector, Sector};
 use crate::ship_ai::task_finished_event::TaskFinishedEvent;
 use crate::ship_ai::task_queue::TaskQueue;
@@ -15,8 +15,8 @@ use std::sync::{Arc, Mutex};
 #[derive(Component)]
 pub struct UseGate {
     pub progress: f32,
-    pub exit_sector: Entity,
-    pub exit_gate: GatePair,
+    pub exit_sector: SectorEntity,
+    pub exit_gate: GateId,
 }
 
 impl UseGate {
@@ -70,11 +70,10 @@ impl UseGate {
     ) {
         for event in event_reader.read() {
             if let Ok((entity, mut queue, task)) = all_ships_with_task.get_mut(event.entity) {
-                all_sectors.get_mut(task.exit_sector).unwrap().add_ship(
-                    &mut commands,
-                    task.exit_sector,
-                    entity,
-                );
+                all_sectors
+                    .get_mut(task.exit_sector.get())
+                    .unwrap()
+                    .add_ship(&mut commands, task.exit_sector, entity);
 
                 tasks::remove_task_and_add_new_one::<Self>(&mut commands, entity, &mut queue);
             } else {
@@ -97,7 +96,7 @@ impl UseGate {
                 continue;
             };
 
-            let mut sector = all_sectors.get_mut(in_sector.get()).unwrap();
+            let mut sector = all_sectors.get_mut(in_sector.get().get()).unwrap();
             sector.remove_ship(&mut commands, x.entity);
         }
     }

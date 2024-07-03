@@ -291,7 +291,7 @@ pub fn list_selection_details(
                                     TaskInsideQueue::UseGate { exit_sector, .. } => {
                                         format!(
                                             "Using gate to {}",
-                                            names.get(*exit_sector).unwrap()
+                                            names.get(exit_sector.get()).unwrap()
                                         )
                                     }
                                     TaskInsideQueue::MoveToEntity { target } => {

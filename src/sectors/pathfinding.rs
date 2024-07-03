@@ -1,24 +1,29 @@
-use crate::sectors::{GatePair, Sector};
+use crate::sectors::sector_entity::SectorEntity;
+use crate::sectors::{GateEntity, GateId, Sector};
 use bevy::prelude::{Entity, Query};
 use bevy::utils::HashMap;
 use std::cmp::Ordering;
 use std::collections::BinaryHeap;
 
 pub struct PathElement {
-    pub enter_sector: Entity,
+    pub enter_sector: SectorEntity,
     pub enter_gate_entity: Entity,
-    pub exit_sector: Entity,
-    pub exit_gate: GatePair,
+    pub exit_sector: SectorEntity,
+    pub exit_gate: GateId,
 }
 
 /// Returns the fastest gate-path between `from` and `to`.   
-pub fn find_path(sectors: &Query<&Sector>, from: Entity, to: Entity) -> Option<Vec<PathElement>> {
+pub fn find_path(
+    sectors: &Query<&Sector>,
+    from: SectorEntity,
+    to: SectorEntity,
+) -> Option<Vec<PathElement>> {
     a_star(sectors, from, to)
 }
 
 struct SearchNode {
-    sector: Entity,
-    entry_gate: Entity,
+    sector: SectorEntity,
+    enter_at_gate: GateEntity,
     cost: u32,
 }
 
@@ -27,7 +32,7 @@ const GATE_COST: u32 = 200;
 impl Eq for SearchNode {}
 impl PartialEq for SearchNode {
     fn eq(&self, other: &Self) -> bool {
-        self.sector == other.sector && self.entry_gate == other.entry_gate
+        self.sector == other.sector && self.enter_at_gate == other.enter_at_gate
     }
 }
 
@@ -58,44 +63,44 @@ fn cost(sectors: &Query<&Sector>, from: Entity, to: Entity) -> Option<u32> {
     }
 }
 
+// -> Which gate to use, where does it lead?
+
 fn reconstruct_path(
     sectors: &Query<&Sector>,
     // <(Sector, Gate), NextSector>
-    came_from: &HashMap<(Entity, Entity), Entity>,
+    came_from: &HashMap<(SectorEntity, GateEntity), SectorEntity>,
     end: SearchNode,
 ) -> Vec<PathElement> {
     let exit_sector = sectors.get(end.sector).unwrap();
-    let origin = came_from[&(end.sector, end.entry_gate)];
-    let gates = exit_sector.gates.get();
-    let mut path: Vec<_> = std::iter::successors(Some(PathElement {
-        exit_sector: end.sector,
-        exit_gate: origin
-        
-    }), move |&current| {
-        if let Some(confusion) = came_from.get(&(current.exit_sector, current.enter_gate_entity)) {
+    let origin = came_from[&(end.sector, end.enter_at_gate)];
 
-            Some(PathElement {
-                exit_sector: *confusion,
+    let mut path: Vec<_> = std::iter::successors(Some(end), move |&current| {
+        came_from
+            .get(&(current.sector, current.enter_at_gate))
+            .copied()
+    })
+    .reverse()
+    .collect();
 
-            })
-        } 
-        else {None}
-    }).reverse().collect()
+    Vec::new()
 }
 
-fn a_star(sectors: &Query<&Sector>, from: Entity, to: Entity) -> Option<Vec<PathElement>> {
+fn a_star(
+    sectors: &Query<&Sector>,
+    from: SectorEntity,
+    to: SectorEntity,
+) -> Option<Vec<PathElement>> {
     // TODO: startnode is a vec of all start sector gates
     let mut open = BinaryHeap::new();
-    // <(Sector, Gate), u32>
-    let mut costs: HashMap<(Entity, Entity), u32> = HashMap::new();
+    let mut costs: HashMap<(SectorEntity, GateEntity), u32> = HashMap::new();
 
-    for (sector, (from_gate, to_gate)) in &sectors.get(from).unwrap().gates {
+    for (sector, gate_pair) in &sectors.get(from).unwrap().gates {
         let cost_to_gate = cost(sectors, from, *sector).unwrap() - GATE_COST;
-        let this = (from, *to_gate);
+        let this = (*sector, gate_pair.from);
         costs.insert(this, cost_to_gate);
         open.push(SearchNode {
             sector: *sector,
-            entry_gate: *to_gate,
+            enter_at_gate: gate_pair.to,
             cost: cost_to_gate,
         })
     }
@@ -110,22 +115,22 @@ fn a_star(sectors: &Query<&Sector>, from: Entity, to: Entity) -> Option<Vec<Path
             return Some(reconstruct_path(sectors, &came_from, node));
         }
 
-        let current_cost = costs[&(node.sector, node.entry_gate)];
-        for (sector, (from_gate, to_gate)) in &sectors.get(node.sector).unwrap().gates {
+        let current_cost = costs[&(node.sector, node.enter_at_gate)];
+        for (sector, gate_pair) in &sectors.get(node.sector).unwrap().gates {
             let Some(cost) = cost(sectors, node.sector, *sector) else {
                 // No gate found, with how we traverse this, this should never happen?
                 // TODO: Needs some testing, could optimize out the Option if correct
                 continue;
             };
 
-            let neighbor = (*sector, *from_gate);
+            let neighbor = (*sector, gate_pair.from);
             let neighbor_cost = current_cost + cost;
             if !costs.contains_key(&neighbor) || costs[&neighbor] > neighbor_cost {
                 came_from.insert(neighbor, node.sector);
                 costs.insert(neighbor, neighbor_cost);
                 open.push(SearchNode {
                     sector: *sector,
-                    entry_gate: *to_gate,
+                    enter_at_gate: gate_pair.to,
                     cost: neighbor_cost,
                 })
             }

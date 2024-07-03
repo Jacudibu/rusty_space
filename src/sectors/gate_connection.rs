@@ -1,5 +1,5 @@
 use crate::constants::{GATE_CONNECTION_LAYER, SHIP_LAYER};
-use crate::sectors::{GateComponent, GatePair};
+use crate::sectors::{GateComponent, GateEntity, GateId};
 use crate::utils::KeyValueResource;
 use bevy::math::Vec2;
 use bevy::prelude::{
@@ -9,12 +9,12 @@ use bevy::prelude::{
 
 #[derive(Component)]
 pub struct GateConnectionComponent {
-    pub id: GatePair,
+    pub id: GateId,
     pub render_positions: Vec<Vec3>,
 }
 
 pub struct GateConnectionData {
-    pub id: GatePair,
+    pub id: GateId,
     pub entity: Entity,
     pub ship_curve: CubicCurve<Vec3>,
 }
@@ -24,11 +24,11 @@ pub struct GateConnectionGizmos;
 
 #[derive(Event)]
 pub struct SetupGateConnectionEvent {
-    pub from: Entity,
-    pub to: Entity,
+    pub from: GateEntity,
+    pub to: GateEntity,
 }
 
-pub type AllGateConnections = KeyValueResource<GatePair, GateConnectionData>;
+pub type AllGateConnections = KeyValueResource<GateId, GateConnectionData>;
 
 pub fn on_setup_gate_connection(
     mut commands: Commands,
@@ -37,8 +37,8 @@ pub fn on_setup_gate_connection(
     mut all_gate_connections: ResMut<AllGateConnections>,
 ) {
     for event in events.read() {
-        let (from_transform, from_component) = &gates.get(event.from).unwrap();
-        let (to_transform, to_component) = &gates.get(event.to).unwrap();
+        let (from_transform, from_component) = &gates.get(event.from.get()).unwrap();
+        let (to_transform, to_component) = &gates.get(event.to.get()).unwrap();
         let a = from_transform.translation().truncate();
         let b = to_transform.translation().truncate();
         let difference = a - b;

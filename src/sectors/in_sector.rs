@@ -1,4 +1,5 @@
-use bevy::prelude::{Component, Entity};
+use crate::sectors::sector_entity::SectorEntity;
+use bevy::prelude::Component;
 
 /// Component for entities inside sectors.
 ///
@@ -6,23 +7,23 @@ use bevy::prelude::{Component, Entity};
 /// you should probably use the respective functions there.
 #[derive(Component, PartialEq, Eq)]
 pub struct InSector {
-    pub(in crate::sectors) sector: Entity,
+    pub(in crate::sectors) sector: SectorEntity,
 }
 
 impl InSector {
-    pub fn get(&self) -> Entity {
+    pub fn get(&self) -> SectorEntity {
         self.sector
     }
 }
 
-impl PartialEq<Entity> for InSector {
-    fn eq(&self, other: &Entity) -> bool {
+impl PartialEq<SectorEntity> for InSector {
+    fn eq(&self, other: &SectorEntity) -> bool {
         &self.sector == other
     }
 }
 
-impl PartialEq<Entity> for &InSector {
-    fn eq(&self, other: &Entity) -> bool {
+impl PartialEq<SectorEntity> for &InSector {
+    fn eq(&self, other: &SectorEntity) -> bool {
         &self.sector == other
     }
 }

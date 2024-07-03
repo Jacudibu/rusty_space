@@ -5,12 +5,12 @@ use crate::game_data::{
     RECIPE_A_ID, RECIPE_B_ID, RECIPE_C_ID, SHIPYARD_MODULE_ID,
 };
 use crate::production::{ProductionComponent, ProductionModule, ShipyardComponent, ShipyardModule};
-use crate::sectors::{DebugSectors, Sector};
+use crate::sectors::{DebugSectors, Sector, SectorEntity};
 use crate::session_data::DEBUG_SHIP_CONFIG;
 use crate::{constants, SpriteHandles};
 use bevy::core::Name;
 use bevy::math::Vec2;
-use bevy::prelude::{default, Commands, Entity, Query, Res, SpriteBundle, Transform};
+use bevy::prelude::{default, Commands, Query, Res, SpriteBundle, Transform};
 use bevy::utils::HashMap;
 pub struct MockStationProductionArgs {
     modules: Vec<MockStationProductionArgElement>,
@@ -60,13 +60,13 @@ pub fn spawn_station(
     sprites: &SpriteHandles,
     name: &str,
     pos: Vec2,
-    sector_entity: Entity,
+    sector_entity: SectorEntity,
     buys: Vec<&ItemDefinition>,
     sells: Vec<&ItemDefinition>,
     production: Option<MockStationProductionArgs>,
     shipyard: Option<bool>,
 ) {
-    let mut sector = sector_query.get_mut(sector_entity).unwrap();
+    let mut sector = sector_query.get_mut(sector_entity.get()).unwrap();
 
     let pos = pos + sector.world_pos;
     let entity = commands

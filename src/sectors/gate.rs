@@ -1,23 +1,21 @@
 use crate::components::SelectableEntity;
 use crate::sectors::gate_connection::SetupGateConnectionEvent;
-use crate::sectors::Sector;
+use crate::sectors::{GateEntity, Sector, SectorEntity};
 use crate::utils::KeyValueResource;
 use crate::utils::SectorPosition;
 use crate::{constants, SpriteHandles};
-use bevy::prelude::{
-    Commands, Component, Entity, EventWriter, Name, Query, SpriteBundle, Transform, Vec2,
-};
+use bevy::prelude::{Commands, Component, EventWriter, Name, Query, SpriteBundle, Transform, Vec2};
 
 #[derive(Eq, PartialEq, Hash, Copy, Clone)]
-pub struct GatePair {
-    pub from: Entity,
-    pub to: Entity,
+pub struct GateId {
+    pub from: SectorEntity,
+    pub to: SectorEntity,
 }
 
-impl GatePair {
+impl GateId {
     /// Returns the ID for the connected gate.
     pub fn invert(&self) -> Self {
-        GatePair {
+        GateId {
             from: self.to,
             to: self.from,
         }
@@ -25,17 +23,17 @@ impl GatePair {
 }
 
 pub struct GateData {
-    pub id: GatePair,
-    pub entity: Entity,
+    pub id: GateId,
+    pub entity: GateEntity,
     pub world_position: Vec2,
 }
 
 #[derive(Component)]
 pub struct GateComponent {
-    pub id: GatePair,
+    pub id: GateId,
 }
 
-pub type AllGates = KeyValueResource<GatePair, GateData>;
+pub type AllGates = KeyValueResource<GateId, GateData>;
 
 pub fn spawn_gates(
     commands: &mut Commands,
@@ -47,7 +45,7 @@ pub fn spawn_gates(
     gate_connection_events: &mut EventWriter<SetupGateConnectionEvent>,
 ) {
     let [mut from_sector, mut to_sector] = sector_query
-        .get_many_mut([from_pos.sector, to_pos.sector])
+        .get_many_mut([from_pos.sector.get(), to_pos.sector.get()])
         .unwrap();
 
     let from_gate = spawn_gate(
@@ -86,8 +84,8 @@ fn spawn_gate(
     from: &mut Sector,
     to: &Sector,
     all_gates: &mut AllGates,
-) -> Entity {
-    let id = GatePair {
+) -> GateEntity {
+    let id = GateId {
         from: pos.sector,
         to: other.sector,
     };
@@ -108,6 +106,7 @@ fn spawn_gate(
         ))
         .id();
 
+    let entity = GateEntity::from(entity);
     all_gates.insert(
         id,
         GateData {

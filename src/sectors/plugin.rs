@@ -6,13 +6,13 @@ use crate::sectors::gate_connection::{
 use crate::sectors::map_layout::MapLayout;
 use crate::sectors::sector::spawn_sector;
 use crate::sectors::sector_outlines::{draw_sector_outlines, SectorOutlineGizmos};
-use crate::sectors::Sector;
+use crate::sectors::{Sector, SectorEntity};
 use crate::utils::SectorPosition;
 use crate::SpriteHandles;
 use bevy::app::Update;
 use bevy::prelude::{
-    on_event, App, AppGizmoBuilder, Commands, Entity, EventWriter, IntoSystemConfigs, Plugin,
-    Query, Res, Resource, Vec2,
+    on_event, App, AppGizmoBuilder, Commands, EventWriter, IntoSystemConfigs, Plugin, Query, Res,
+    Resource, Vec2,
 };
 use hexx::Hex;
 
@@ -36,10 +36,10 @@ impl Plugin for SectorPlugin {
 
 #[derive(Resource)]
 pub struct DebugSectors {
-    pub center: Entity,
-    pub right: Entity,
-    pub top_right: Entity,
-    pub bottom_left: Entity,
+    pub center: SectorEntity,
+    pub right: SectorEntity,
+    pub top_right: SectorEntity,
+    pub bottom_left: SectorEntity,
 }
 
 pub fn spawn_test_sectors(mut commands: Commands, map_layout: Res<MapLayout>) {
