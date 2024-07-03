@@ -1,7 +1,7 @@
 use crate::sectors::sector::GatePair;
 use crate::sectors::sector_entity::SectorEntity;
 use crate::sectors::{GateEntity, Sector};
-use bevy::prelude::Query;
+use bevy::prelude::{Query, Transform, Vec3};
 use bevy::utils::HashMap;
 use std::cmp::Ordering;
 use std::collections::BinaryHeap;
@@ -14,10 +14,12 @@ pub struct PathElement {
 /// Returns the fastest gate-path between `from` and `to`.   
 pub fn find_path(
     sectors: &Query<&Sector>,
+    gate_positions: &Query<&Transform>,
     from: SectorEntity,
+    from_position: Vec3,
     to: SectorEntity,
 ) -> Option<Vec<PathElement>> {
-    a_star(sectors, from, to)
+    a_star(sectors, gate_positions, from, from_position, to)
 }
 
 struct SearchNode {
@@ -47,14 +49,26 @@ impl Ord for SearchNode {
     }
 }
 
-fn cost(sectors: &Query<&Sector>, from: SectorEntity, to: SectorEntity) -> Option<u32> {
-    if from == to {
+fn cost(
+    sectors: &Query<&Sector>,
+    gate_positions: &Query<&Transform>,
+    from_sector: SectorEntity,
+    from_pos_in_sector: Vec3,
+    to: SectorEntity,
+) -> Option<u32> {
+    if from_sector == to {
         return Some(0);
     }
 
-    let a = sectors.get(from.get()).unwrap();
+    let a = sectors.get(from_sector.get()).unwrap();
 
-    a.gates.get(&to).map(|gate| GATE_COST)
+    a.gates.get(&to).map(|gate| {
+        let to_gate = gate_positions.get(gate.from.get()).unwrap();
+        from_pos_in_sector
+            .distance_squared(to_gate.translation)
+            .abs() as u32
+            + GATE_COST
+    })
 }
 
 fn reconstruct_path(
@@ -82,14 +96,17 @@ fn reconstruct_path(
 
 fn a_star(
     sectors: &Query<&Sector>,
+    gate_positions: &Query<&Transform>,
     from: SectorEntity,
+    from_position: Vec3,
     to: SectorEntity,
 ) -> Option<Vec<PathElement>> {
     let mut open = BinaryHeap::new();
     let mut costs: HashMap<(SectorEntity, GatePair), u32> = HashMap::new();
 
     for (sector, gate_pair) in &sectors.get(from.get()).unwrap().gates {
-        let cost_to_gate = cost(sectors, from, *sector).unwrap() - GATE_COST;
+        let cost_to_gate =
+            cost(sectors, gate_positions, from, from_position, *sector).unwrap() - GATE_COST;
         let this = (*sector, *gate_pair);
         costs.insert(this, cost_to_gate);
         open.push(SearchNode {
@@ -111,9 +128,13 @@ fn a_star(
 
         let current_cost = costs[&(node.sector, node.gate_pair)];
         for (sector, gate_pair) in &sectors.get(node.sector.get()).unwrap().gates {
-            let Some(cost) = cost(sectors, node.sector, *sector) else {
-                // No gate found, with how we traverse this, this should never happen?
-                // TODO: Needs some testing, could optimize out the Option if correct
+            let gate_pos = gate_positions
+                .get(node.gate_pair.to.get())
+                .unwrap()
+                .translation;
+
+            let Some(cost) = cost(sectors, gate_positions, node.sector, gate_pos, *sector) else {
+                // Technically this never happens... yet. Maybe once we have initial sector fog of war, though.
                 continue;
             };
 

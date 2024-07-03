@@ -4,7 +4,7 @@ use crate::sectors::{InSector, Sector};
 use crate::ship_ai::{Idle, TaskInsideQueue, TaskQueue};
 use crate::trade_plan::TradePlan;
 use crate::utils::{ExchangeWareData, SimulationTime, TradeIntent};
-use bevy::prelude::{Commands, Component, Entity, Query, Res};
+use bevy::prelude::{Commands, Component, Entity, Query, Res, Transform};
 
 #[derive(Component)]
 pub struct AutoTradeBehavior;
@@ -17,21 +17,22 @@ pub fn handle_idle_ships(
     mut sell_orders: Query<(Entity, &mut SellOrders, &InSector)>,
     mut inventories: Query<&mut Inventory>,
     all_sectors: Query<&Sector>,
+    all_transforms: Query<&Transform>,
 ) {
     let now = simulation_time.now();
 
     ships
         .iter_mut()
         .filter(|(_, _, task, _)| now.has_passed(task.next_update))
-        .for_each(|(entity, _behavior, mut task, ship_sector)| {
-            let inventory = inventories.get(entity).unwrap();
+        .for_each(|(ship_entity, _behavior, mut task, ship_sector)| {
+            let inventory = inventories.get(ship_entity).unwrap();
             let plan = TradePlan::create_from(inventory.capacity, &buy_orders, &sell_orders);
             let Some(plan) = plan else {
                 task.next_update = now.add_seconds(2);
                 return;
             };
             let [mut this_inventory, mut seller_inventory, mut buyer_inventory] = inventories
-                .get_many_mut([entity, plan.seller, plan.buyer])
+                .get_many_mut([ship_entity, plan.seller, plan.buyer])
                 .unwrap();
 
             this_inventory.create_order(plan.item_id, TradeIntent::Buy, plan.amount);
@@ -41,7 +42,7 @@ pub fn handle_idle_ships(
             buyer_inventory.create_order(plan.item_id, TradeIntent::Buy, plan.amount);
 
             update_buy_and_sell_orders_for_entity(
-                entity,
+                ship_entity,
                 &this_inventory,
                 &mut buy_orders,
                 &mut sell_orders,
@@ -61,7 +62,15 @@ pub fn handle_idle_ships(
 
             let mut queue = TaskQueue::with_capacity(4);
             if ship_sector != plan.seller_sector {
-                let path = find_path(&all_sectors, ship_sector.get(), plan.seller_sector).unwrap();
+                let ship_pos = all_transforms.get(ship_entity).unwrap().translation;
+                let path = find_path(
+                    &all_sectors,
+                    &all_transforms,
+                    ship_sector.get(),
+                    ship_pos,
+                    plan.seller_sector,
+                )
+                .unwrap();
                 for x in path {
                     queue.push_back(TaskInsideQueue::MoveToEntity {
                         target: x.enter_gate.get(),
@@ -83,7 +92,16 @@ pub fn handle_idle_ships(
             });
 
             if plan.seller_sector != plan.buyer_sector {
-                let path = find_path(&all_sectors, plan.seller_sector, plan.buyer_sector).unwrap();
+                let seller_pos = all_transforms.get(plan.seller).unwrap().translation;
+                let path = find_path(
+                    &all_sectors,
+                    &all_transforms,
+                    plan.seller_sector,
+                    seller_pos,
+                    plan.buyer_sector,
+                )
+                .unwrap();
+
                 for x in path {
                     queue.push_back(TaskInsideQueue::MoveToEntity {
                         target: x.enter_gate.get(),
@@ -101,7 +119,7 @@ pub fn handle_idle_ships(
                 data: ExchangeWareData::Sell(plan.item_id, plan.amount),
             });
 
-            let mut commands = commands.entity(entity);
+            let mut commands = commands.entity(ship_entity);
             commands.remove::<Idle>();
             queue[0].create_and_insert_component(&mut commands);
             commands.insert(queue);
