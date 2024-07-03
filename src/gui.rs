@@ -2,7 +2,7 @@ use crate::components::{BuyOrders, Inventory, SelectableEntity, SellOrders, Trad
 use crate::entity_selection::Selected;
 use crate::game_data::GameData;
 use crate::production::{ProductionComponent, ShipyardComponent};
-use crate::sectors::GateComponent;
+use crate::sectors::Gate;
 use crate::session_data::SessionData;
 use crate::ship_ai::TaskInsideQueue;
 use crate::ship_ai::TaskQueue;
@@ -153,7 +153,7 @@ pub fn list_selection_details(
             Option<&SellOrders>,
             Option<&ProductionComponent>,
             Option<&ShipyardComponent>,
-            Option<&GateComponent>,
+            Option<&Gate>,
         ),
         With<Selected>,
     >,

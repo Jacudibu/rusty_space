@@ -1,6 +1,5 @@
-use crate::sectors::sector::GatePair;
-use crate::sectors::sector_entity::SectorEntity;
-use crate::sectors::{GateEntity, Sector};
+use crate::sectors::sector::GatePairInSector;
+use crate::sectors::{GateEntity, Sector, SectorEntity};
 use bevy::prelude::{Query, Transform, Vec3};
 use bevy::utils::HashMap;
 use std::cmp::Ordering;
@@ -24,7 +23,7 @@ pub fn find_path(
 
 struct SearchNode {
     sector: SectorEntity,
-    gate_pair: GatePair,
+    gate_pair: GatePairInSector,
     cost: u32,
 }
 
@@ -72,7 +71,7 @@ fn cost(
 }
 
 fn reconstruct_path(
-    came_from: &HashMap<SectorEntity, (SectorEntity, GatePair)>,
+    came_from: &HashMap<SectorEntity, (SectorEntity, GatePairInSector)>,
     end: SearchNode,
 ) -> Vec<PathElement> {
     let mut path: Vec<PathElement> = std::iter::successors(
@@ -102,7 +101,7 @@ fn a_star(
     to: SectorEntity,
 ) -> Option<Vec<PathElement>> {
     let mut open = BinaryHeap::new();
-    let mut costs: HashMap<(SectorEntity, GatePair), u32> = HashMap::new();
+    let mut costs: HashMap<(SectorEntity, GatePairInSector), u32> = HashMap::new();
 
     for (sector, gate_pair) in &sectors.get(from.get()).unwrap().gates {
         let cost_to_gate =
@@ -117,7 +116,7 @@ fn a_star(
     }
 
     // <NextSector, (PreviousSector, Gate)>
-    let mut came_from: HashMap<SectorEntity, (SectorEntity, GatePair)> = HashMap::new();
+    let mut came_from: HashMap<SectorEntity, (SectorEntity, GatePairInSector)> = HashMap::new();
 
     while let Some(node) = open.pop() {
         if node.sector == to {

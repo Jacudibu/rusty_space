@@ -1,4 +1,4 @@
-use crate::sectors::sector_entity::SectorEntity;
+use crate::sectors::SectorEntity;
 use bevy::prelude::Component;
 
 /// Component for entities inside sectors.

@@ -1,7 +1,7 @@
 use crate::components::SelectableEntity;
 use crate::sectors::GateConnectedSectors;
 use crate::sectors::SetupGateConnectionEvent;
-use crate::sectors::{GateComponent, GateEntity, Sector};
+use crate::sectors::{Gate, GateEntity, Sector};
 use crate::utils::SectorPosition;
 use crate::{constants, SpriteHandles};
 use bevy::core::Name;
@@ -56,7 +56,7 @@ fn spawn_gate(
     let position = from.world_pos + pos.local_position;
     let entity = commands
         .spawn((
-            GateComponent {
+            Gate {
                 connected_sectors: GateConnectedSectors {
                     from: pos.sector,
                     to: other.sector,

@@ -1,14 +1,10 @@
-use crate::sectors::sector_entity::SectorEntity;
+use crate::sectors::typed_entity::TypedEntity;
 use crate::sectors::{GateEntity, InSector};
 use bevy::prelude::{Commands, Component, Entity, Vec2};
 use bevy::utils::{HashMap, HashSet};
 use hexx::Hex;
 
-#[derive(Eq, PartialEq, Hash, Copy, Clone)]
-pub struct GatePair {
-    pub from: GateEntity,
-    pub to: GateEntity,
-}
+pub type SectorEntity = TypedEntity<Sector>;
 
 /// Marker Component for Sectors
 #[derive(Component)]
@@ -16,7 +12,7 @@ pub struct Sector {
     pub coordinate: Hex,
     pub world_pos: Vec2,
 
-    pub gates: HashMap<SectorEntity, GatePair>,
+    pub gates: HashMap<SectorEntity, GatePairInSector>,
     ships: HashSet<Entity>,
     stations: HashSet<Entity>,
 }
@@ -62,7 +58,7 @@ impl Sector {
     ) {
         self.gates.insert(
             destination_sector,
-            GatePair {
+            GatePairInSector {
                 from: this_gate,
                 to: destination_gate,
             },
@@ -76,4 +72,10 @@ impl Sector {
             sector: sector_entity,
         });
     }
+}
+
+#[derive(Eq, PartialEq, Hash, Copy, Clone)]
+pub struct GatePairInSector {
+    pub from: GateEntity,
+    pub to: GateEntity,
 }

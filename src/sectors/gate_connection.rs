@@ -1,5 +1,5 @@
 use crate::constants::{GATE_CONNECTION_LAYER, SHIP_LAYER};
-use crate::sectors::{GateComponent, GateEntity, GateTransitCurve};
+use crate::sectors::{Gate, GateEntity, GateTransitCurve};
 use bevy::math::Vec2;
 use bevy::prelude::{
     Commands, Component, CubicBezier, CubicCurve, CubicGenerator, Event, EventReader,
@@ -23,7 +23,7 @@ pub struct SetupGateConnectionEvent {
 pub fn on_setup_gate_connection(
     mut commands: Commands,
     mut events: EventReader<SetupGateConnectionEvent>,
-    gates: Query<&GlobalTransform, With<GateComponent>>,
+    gates: Query<&GlobalTransform, With<Gate>>,
 ) {
     for event in events.read() {
         let a = gates.get(event.from.get()).unwrap();

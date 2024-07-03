@@ -1,5 +1,18 @@
+use crate::sectors::typed_entity::TypedEntity;
 use crate::sectors::SectorEntity;
 use bevy::prelude::{Component, CubicCurve, Vec3};
+
+pub type GateEntity = TypedEntity<Gate>;
+
+#[derive(Component)]
+pub struct Gate {
+    pub connected_sectors: GateConnectedSectors,
+}
+
+#[derive(Component)]
+pub struct GateTransitCurve {
+    pub transit_curve: CubicCurve<Vec3>,
+}
 
 #[derive(Eq, PartialEq, Hash, Copy, Clone)]
 pub struct GateConnectedSectors {
@@ -15,14 +28,4 @@ impl GateConnectedSectors {
             to: self.from,
         }
     }
-}
-
-#[derive(Component)]
-pub struct GateComponent {
-    pub connected_sectors: GateConnectedSectors,
-}
-
-#[derive(Component)]
-pub struct GateTransitCurve {
-    pub transit_curve: CubicCurve<Vec3>,
 }
