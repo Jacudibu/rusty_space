@@ -9,13 +9,7 @@ use bevy::prelude::{
 
 #[derive(Component)]
 pub struct GateConnectionComponent {
-    pub id: GateConnectedSectors,
     pub render_positions: Vec<Vec3>,
-}
-
-pub struct GateConnectionData {
-    pub id: GateConnectedSectors,
-    pub entity: Entity,
 }
 
 #[derive(Default, Reflect, GizmoConfigGroup)]
@@ -26,8 +20,6 @@ pub struct SetupGateConnectionEvent {
     pub from: GateEntity,
     pub to: GateEntity,
 }
-
-pub type AllGateConnections = KeyValueResource<GateConnectedSectors, GateConnectionData>;
 
 pub fn on_setup_gate_connection(
     mut commands: Commands,
@@ -49,7 +41,6 @@ pub fn on_setup_gate_connection(
         let ship_curve_inverted = create_curve(b, b_curve, a_curve, a);
 
         commands.spawn(GateConnectionComponent {
-            id: from_component.connected_sectors,
             render_positions: ship_curve
                 .iter_positions(20)
                 .map(|x| x.truncate().extend(GATE_CONNECTION_LAYER))
