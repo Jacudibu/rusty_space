@@ -1,3 +1,4 @@
+use crate::constants;
 use bevy::prelude::Resource;
 use hexx::{HexLayout, HexOrientation};
 
@@ -11,7 +12,7 @@ impl Default for MapLayout {
         MapLayout {
             hex_layout: HexLayout {
                 orientation: HexOrientation::Pointy,
-                hex_size: hexx::Vec2::splat(500.0),
+                hex_size: hexx::Vec2::splat(constants::SECTOR_SIZE),
                 invert_y: true,
                 ..Default::default()
             },

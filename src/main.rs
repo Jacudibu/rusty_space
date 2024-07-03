@@ -5,6 +5,7 @@ use crate::production::ProductionPlugin;
 use crate::sectors::SectorPlugin;
 use crate::session_data::SessionData;
 use crate::ship_ai::ShipAiPlugin;
+use crate::test_universe::TestUniversePlugin;
 use crate::utils::SimulationTimePlugin;
 use bevy::asset::AssetServer;
 use bevy::core::Name;
@@ -23,12 +24,14 @@ mod constants;
 mod entity_selection;
 mod game_data;
 mod gui;
-mod mock_helpers;
+mod map_layout;
 mod physics;
 mod production;
 mod sectors;
 mod session_data;
 mod ship_ai;
+mod spawn_helpers;
+mod test_universe;
 mod trade_plan;
 mod utils;
 
@@ -52,25 +55,13 @@ fn main() {
     .add_plugins(SimulationTimePlugin)
     .add_plugins(SectorPlugin)
     .add_plugins(CameraControllerPlugin)
+    .add_plugins(TestUniversePlugin)
     .insert_resource(GameData::mock_data())
     .insert_resource(SessionData::mock_data())
     .init_state::<gui::MouseCursorOverUiState>()
     .add_systems(
         Startup,
-        (
-            initialize_data,
-            (
-                (
-                    sectors::spawn_test_sectors,
-                    sectors::spawn_test_gates,
-                    mock_helpers::spawn_mock_stations,
-                    mock_helpers::spawn_mock_ships,
-                )
-                    .chain(),
-                gui::initialize,
-            )
-                .after(initialize_data),
-        ),
+        (initialize_data, (gui::initialize,).after(initialize_data)),
     )
     .add_systems(PreUpdate, gui::detect_mouse_cursor_over_ui)
     .add_systems(

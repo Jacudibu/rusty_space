@@ -1,9 +1,8 @@
 use crate::sectors::sector_entity::SectorEntity;
 use crate::sectors::{GateEntity, InSector};
-use bevy::core::Name;
-use bevy::prelude::{Commands, Component, Entity, SpatialBundle, Transform, Vec2, Vec3};
+use bevy::prelude::{Commands, Component, Entity, Vec2};
 use bevy::utils::{HashMap, HashSet};
-use hexx::{Hex, HexLayout};
+use hexx::Hex;
 
 #[derive(Eq, PartialEq, Hash, Copy, Clone)]
 pub struct GatePair {
@@ -77,26 +76,4 @@ impl Sector {
             sector: sector_entity,
         });
     }
-}
-
-pub fn spawn_sector(commands: &mut Commands, layout: &HexLayout, coordinate: Hex) -> SectorEntity {
-    let position = layout.hex_to_world_pos(coordinate);
-    // TODO: remove this once hexx is updated to same glam crate as bevy 0.14
-    let position = Vec2::new(position.x, position.y);
-
-    let entity = commands
-        .spawn((
-            Name::new(format!("[{},{}]", coordinate.x, coordinate.y)),
-            Sector::new(coordinate, position),
-            SpatialBundle {
-                transform: Transform {
-                    translation: Vec3::new(position.x, position.y, 0.0),
-                    ..Default::default()
-                },
-                ..Default::default()
-            },
-        ))
-        .id();
-
-    SectorEntity::from(entity)
 }

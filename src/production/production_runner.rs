@@ -7,7 +7,7 @@ use crate::production::{InventoryUpdateForProductionEvent, ProductionComponent};
 use crate::sectors::{InSector, Sector};
 use crate::session_data::SessionData;
 use crate::utils::SimulationTime;
-use crate::{mock_helpers, utils, SpriteHandles};
+use crate::{spawn_helpers, utils, SpriteHandles};
 use bevy::log::error;
 use bevy::prelude::{Commands, EventWriter, Or, Query, Res, ResMut, Transform, With};
 
@@ -105,7 +105,7 @@ pub fn check_if_production_is_finished_and_start_new_one(
                     .get(&order.ship_config)
                     .unwrap();
 
-                mock_helpers::spawn_ship(
+                spawn_helpers::spawn_ship(
                     &mut commands,
                     &sprites,
                     definition.name.clone(),

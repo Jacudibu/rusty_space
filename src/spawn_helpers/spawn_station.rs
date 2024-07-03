@@ -1,17 +1,15 @@
-use crate::components::{BuyOrders, Inventory, SelectableEntity, SellOrders};
-use crate::game_data::{
-    GameData, ItemDefinition, ProductionModuleId, RecipeId, DEBUG_ITEM_ID_A, DEBUG_ITEM_ID_B,
-    DEBUG_ITEM_ID_C, PRODUCTION_MODULE_A_ID, PRODUCTION_MODULE_B_ID, PRODUCTION_MODULE_C_ID,
-    RECIPE_A_ID, RECIPE_B_ID, RECIPE_C_ID, SHIPYARD_MODULE_ID,
-};
-use crate::production::{ProductionComponent, ProductionModule, ShipyardComponent, ShipyardModule};
-use crate::sectors::{DebugSectors, Sector, SectorEntity};
-use crate::session_data::DEBUG_SHIP_CONFIG;
-use crate::{constants, SpriteHandles};
 use bevy::core::Name;
 use bevy::math::Vec2;
-use bevy::prelude::{default, Commands, Query, Res, SpriteBundle, Transform};
+use bevy::prelude::{default, Commands, Query, SpriteBundle, Transform};
 use bevy::utils::HashMap;
+
+use crate::components::{BuyOrders, Inventory, SelectableEntity, SellOrders};
+use crate::game_data::{ItemDefinition, ProductionModuleId, RecipeId, SHIPYARD_MODULE_ID};
+use crate::production::{ProductionComponent, ProductionModule, ShipyardComponent, ShipyardModule};
+use crate::sectors::{Sector, SectorEntity};
+use crate::session_data::DEBUG_SHIP_CONFIG;
+use crate::{constants, SpriteHandles};
+
 pub struct MockStationProductionArgs {
     modules: Vec<MockStationProductionArgElement>,
 }
@@ -113,71 +111,4 @@ pub fn spawn_station(
     }
 
     sector.add_station(commands, sector_entity, entity);
-}
-
-pub fn spawn_mock_stations(
-    mut commands: Commands,
-    mut sector_query: Query<&mut Sector>,
-    sprites: Res<SpriteHandles>,
-    game_data: Res<GameData>,
-    debug_sectors: Res<DebugSectors>,
-) {
-    spawn_station(
-        &mut commands,
-        &mut sector_query,
-        &sprites,
-        "Station A",
-        Vec2::new(-200.0, -200.0),
-        debug_sectors.bottom_left,
-        vec![&game_data.items[&DEBUG_ITEM_ID_A]],
-        vec![&game_data.items[&DEBUG_ITEM_ID_B]],
-        Some(MockStationProductionArgs::new(vec![
-            MockStationProductionArgElement::new(PRODUCTION_MODULE_B_ID, RECIPE_B_ID, 5),
-        ])),
-        None,
-    );
-    spawn_station(
-        &mut commands,
-        &mut sector_query,
-        &sprites,
-        "Station B",
-        Vec2::new(200.0, -200.0),
-        debug_sectors.center,
-        vec![&game_data.items[&DEBUG_ITEM_ID_B]],
-        vec![&game_data.items[&DEBUG_ITEM_ID_C]],
-        Some(MockStationProductionArgs::new(vec![
-            MockStationProductionArgElement::new(PRODUCTION_MODULE_C_ID, RECIPE_C_ID, 3),
-        ])),
-        None,
-    );
-    spawn_station(
-        &mut commands,
-        &mut sector_query,
-        &sprites,
-        "Station C",
-        Vec2::new(0.0, 200.0),
-        debug_sectors.center,
-        vec![&game_data.items[&DEBUG_ITEM_ID_C]],
-        vec![&game_data.items[&DEBUG_ITEM_ID_A]],
-        Some(MockStationProductionArgs::new(vec![
-            MockStationProductionArgElement::new(PRODUCTION_MODULE_A_ID, RECIPE_A_ID, 1),
-        ])),
-        None,
-    );
-    spawn_station(
-        &mut commands,
-        &mut sector_query,
-        &sprites,
-        "Shipyard",
-        Vec2::new(0.0, 0.0),
-        debug_sectors.center,
-        vec![
-            &game_data.items[&DEBUG_ITEM_ID_A],
-            &game_data.items[&DEBUG_ITEM_ID_B],
-            &game_data.items[&DEBUG_ITEM_ID_C],
-        ],
-        vec![],
-        None,
-        Some(true),
-    );
 }
