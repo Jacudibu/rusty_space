@@ -15,7 +15,7 @@ pub fn spawn_ship(
     position: Vec2,
     rotation: f32,
 ) {
-    let mut sector_data = sector_query.get_mut(sector.get()).unwrap();
+    let mut sector_data = sector_query.get_mut(sector.into()).unwrap();
 
     let entity = commands
         .spawn((

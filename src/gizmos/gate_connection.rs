@@ -28,9 +28,9 @@ pub fn on_setup_gate_connection(
     transforms: Query<&GlobalTransform>,
 ) {
     for event in events.read() {
-        let a = transforms.get(event.from.get()).unwrap();
+        let a = transforms.get(event.from.into()).unwrap();
         let a = a.translation().truncate();
-        let b = transforms.get(event.to.get()).unwrap();
+        let b = transforms.get(event.to.into()).unwrap();
         let b = b.translation().truncate();
         let difference = a - b;
         let diff_rot = Vec2::new(-difference.y, difference.x) * 0.075;
@@ -48,10 +48,10 @@ pub fn on_setup_gate_connection(
                 .collect(),
         });
 
-        commands.entity(event.from.get()).insert(Gate {
+        commands.entity(event.from.into()).insert(Gate {
             transit_curve: ship_curve,
         });
-        commands.entity(event.to.get()).insert(Gate {
+        commands.entity(event.to.into()).insert(Gate {
             transit_curve: ship_curve_inverted,
         });
     }

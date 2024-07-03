@@ -16,7 +16,7 @@ pub fn spawn_gates(
     gate_connection_events: &mut EventWriter<SetupGateConnectionEvent>,
 ) {
     let [mut from_sector, mut to_sector] = sector_query
-        .get_many_mut([from_pos.sector.get(), to_pos.sector.get()])
+        .get_many_mut([from_pos.sector.into(), to_pos.sector.into()])
         .unwrap();
 
     let from_gate = spawn_gate(commands, sprites, &from_pos, &mut from_sector, &to_sector);

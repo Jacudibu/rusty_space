@@ -73,7 +73,7 @@ pub fn handle_idle_ships(
                 .unwrap();
                 for x in path {
                     queue.push_back(TaskInsideQueue::MoveToEntity {
-                        target: x.enter_gate.get(),
+                        target: x.enter_gate.into(),
                     });
                     queue.push_back(TaskInsideQueue::UseGate {
                         enter_gate: x.enter_gate,
@@ -104,7 +104,7 @@ pub fn handle_idle_ships(
 
                 for x in path {
                     queue.push_back(TaskInsideQueue::MoveToEntity {
-                        target: x.enter_gate.get(),
+                        target: x.enter_gate.into(),
                     });
                     queue.push_back(TaskInsideQueue::UseGate {
                         enter_gate: x.enter_gate,

@@ -64,7 +64,7 @@ pub fn spawn_station(
     production: Option<MockStationProductionArgs>,
     shipyard: Option<bool>,
 ) {
-    let mut sector = sector_query.get_mut(sector_entity.get()).unwrap();
+    let mut sector = sector_query.get_mut(sector_entity.into()).unwrap();
 
     let pos = pos + sector.world_pos;
     let entity = commands

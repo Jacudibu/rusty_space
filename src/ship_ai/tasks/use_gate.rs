@@ -31,7 +31,7 @@ impl UseGate {
         self.progress += delta_travel;
         if self.progress <= 1.0 {
             let t = interpolation::smooth_step(self.progress);
-            let curve = transit_curve_query.get(self.enter_gate.get()).unwrap();
+            let curve = transit_curve_query.get(self.enter_gate.into()).unwrap();
             transform.translation = curve.transit_curve.position(t);
 
             TaskResult::Ongoing
@@ -73,7 +73,7 @@ impl UseGate {
         for event in event_reader.read() {
             if let Ok((mut queue, task)) = all_ships_with_task.get_mut(event.entity) {
                 all_sectors
-                    .get_mut(task.exit_sector.get())
+                    .get_mut(task.exit_sector.into())
                     .unwrap()
                     .add_ship(
                         &mut commands,
@@ -102,7 +102,7 @@ impl UseGate {
                 continue;
             };
 
-            let mut sector = all_sectors.get_mut(in_sector.get().get()).unwrap();
+            let mut sector = all_sectors.get_mut(in_sector.get().into()).unwrap();
             sector.remove_ship(&mut commands, ShipEntity::from(x.entity));
         }
     }

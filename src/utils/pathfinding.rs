@@ -61,10 +61,10 @@ fn cost(
         return Some(0);
     }
 
-    let a = sectors.get(from_sector.get()).unwrap();
+    let a = sectors.get(from_sector.into()).unwrap();
 
     a.gates.get(&to).map(|gate| {
-        let to_gate = gate_positions.get(gate.from.get()).unwrap();
+        let to_gate = gate_positions.get(gate.from.into()).unwrap();
         from_pos_in_sector
             .distance_squared(to_gate.translation)
             .abs() as u32
@@ -105,7 +105,7 @@ fn a_star(
     let mut open = BinaryHeap::new();
     let mut costs: HashMap<(SectorEntity, GatePairInSector), u32> = HashMap::new();
 
-    for (sector, gate_pair) in &sectors.get(from.get()).unwrap().gates {
+    for (sector, gate_pair) in &sectors.get(from.into()).unwrap().gates {
         let cost_to_gate =
             cost(sectors, gate_positions, from, from_position, *sector).unwrap() - GATE_COST;
         let this = (*sector, *gate_pair);
@@ -128,9 +128,9 @@ fn a_star(
         }
 
         let current_cost = costs[&(node.sector, node.gate_pair)];
-        for (sector, gate_pair) in &sectors.get(node.sector.get()).unwrap().gates {
+        for (sector, gate_pair) in &sectors.get(node.sector.into()).unwrap().gates {
             let gate_pos = gate_positions
-                .get(node.gate_pair.to.get())
+                .get(node.gate_pair.to.into())
                 .unwrap()
                 .translation;
 

@@ -38,14 +38,14 @@ impl Sector {
     /// Adds ship to this sector and inserts the [InSector] component to it.
     pub fn add_ship(&mut self, commands: &mut Commands, sector: SectorEntity, entity: ShipEntity) {
         self.ships.insert(entity);
-        self.in_sector(commands, sector, entity.get());
+        self.in_sector(commands, sector, entity.into());
     }
 
     /// Removes ship from this sector whilst also deleting its [InSector] component.
     pub fn remove_ship(&mut self, commands: &mut Commands, entity: ShipEntity) {
         let result = self.ships.remove(&entity);
         debug_assert!(result, "removed ships should always be in sector!");
-        commands.entity(entity.get()).remove::<InSector>();
+        commands.entity(entity.into()).remove::<InSector>();
     }
 
     /// Adds the station to this sector and inserts the [InSector] component to it.
@@ -56,7 +56,7 @@ impl Sector {
         entity: StationEntity,
     ) {
         self.stations.insert(entity);
-        self.in_sector(commands, sector, entity.get());
+        self.in_sector(commands, sector, entity.into());
     }
 
     /// Adds the gate to this sector and inserts the [InSector] component to it.
@@ -75,7 +75,7 @@ impl Sector {
                 to: destination_gate,
             },
         );
-        self.in_sector(commands, this_sector, this_gate.get());
+        self.in_sector(commands, this_sector, this_gate.into());
     }
 
     /// Adds the [InSector] component linking to `self` to the provided Entity.
