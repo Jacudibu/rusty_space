@@ -1,7 +1,8 @@
 use bevy::prelude::{Entity, Query};
 
-use crate::components::{BuyOrders, InSector, SectorEntity, SellOrders, TradeOrder};
+use crate::components::{BuyOrders, InSector, SellOrders, TradeOrder};
 use crate::game_data::ItemId;
+use crate::utils::SectorEntity;
 
 pub struct TradePlan {
     pub item_id: ItemId,

@@ -1,10 +1,8 @@
-use crate::components::{GateEntity, InSector};
-use crate::utils::typed_entity::TypedEntity;
+use crate::components::InSector;
+use crate::utils::{GateEntity, SectorEntity};
 use bevy::prelude::{Commands, Component, Entity, Vec2};
 use bevy::utils::{HashMap, HashSet};
 use hexx::Hex;
-
-pub type SectorEntity = TypedEntity<Sector>;
 
 /// Marker Component for Sectors
 #[derive(Component)]

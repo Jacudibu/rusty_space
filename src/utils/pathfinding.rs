@@ -4,7 +4,8 @@ use std::collections::BinaryHeap;
 use bevy::prelude::{Query, Transform, Vec3};
 use bevy::utils::HashMap;
 
-use crate::components::{GateEntity, GatePairInSector, Sector, SectorEntity};
+use crate::components::{GatePairInSector, Sector};
+use crate::utils::{GateEntity, SectorEntity};
 
 pub struct PathElement {
     pub enter_gate: GateEntity,

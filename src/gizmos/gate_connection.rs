@@ -4,8 +4,9 @@ use bevy::prelude::{
     GizmoConfigGroup, Gizmos, GlobalTransform, Query, Reflect, Vec3,
 };
 
-use crate::components::{Gate, GateEntity};
+use crate::components::Gate;
 use crate::constants::{GATE_CONNECTION_LAYER, SHIP_LAYER};
+use crate::utils::GateEntity;
 
 #[derive(Component)]
 pub struct GateConnectionComponent {

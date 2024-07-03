@@ -1,8 +1,9 @@
 use bevy::core::Name;
 use bevy::prelude::{Commands, EventWriter, Query, SpriteBundle, Transform};
 
-use crate::components::{GateEntity, Sector, SelectableEntity};
+use crate::components::{Sector, SelectableEntity};
 use crate::gizmos::SetupGateConnectionEvent;
+use crate::utils::GateEntity;
 use crate::utils::SectorPosition;
 use crate::{constants, SpriteHandles};
 

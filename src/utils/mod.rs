@@ -1,3 +1,4 @@
+mod entity_wrappers;
 mod exchange_ware_data;
 pub mod interpolation;
 mod key_value_resource;
@@ -9,14 +10,13 @@ mod simulation_time;
 pub mod spawn_helpers;
 mod trade_intent;
 mod transaction;
-pub mod typed_entity;
 mod update_orders;
 
+pub use entity_wrappers::*;
 pub use exchange_ware_data::*;
 pub use price_range::*;
 pub use price_setting::*;
 pub use sector_position::*;
 pub use simulation_time::*;
 pub use trade_intent::*;
-pub use typed_entity::*;
 pub use update_orders::*;

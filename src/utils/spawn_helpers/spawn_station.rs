@@ -3,10 +3,11 @@ use bevy::math::Vec2;
 use bevy::prelude::{default, Commands, Query, SpriteBundle, Transform};
 use bevy::utils::HashMap;
 
-use crate::components::{BuyOrders, Inventory, Sector, SectorEntity, SelectableEntity, SellOrders};
+use crate::components::{BuyOrders, Inventory, Sector, SelectableEntity, SellOrders};
 use crate::game_data::{ItemDefinition, ProductionModuleId, RecipeId, SHIPYARD_MODULE_ID};
 use crate::production::{ProductionComponent, ProductionModule, ShipyardComponent, ShipyardModule};
 use crate::session_data::DEBUG_SHIP_CONFIG;
+use crate::utils::SectorEntity;
 use crate::{constants, SpriteHandles};
 
 pub struct MockStationProductionArgs {

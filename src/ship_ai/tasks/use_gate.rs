@@ -4,7 +4,7 @@ use bevy::prelude::{
     error, Commands, Component, Entity, EventReader, EventWriter, Query, Res, Time, Transform, With,
 };
 
-use crate::components::{Gate, GateEntity, InSector, Sector, SectorEntity};
+use crate::components::{Gate, InSector, Sector};
 use crate::constants;
 use crate::ship_ai::task_finished_event::TaskFinishedEvent;
 use crate::ship_ai::task_queue::TaskQueue;
@@ -12,6 +12,7 @@ use crate::ship_ai::task_result::TaskResult;
 use crate::ship_ai::tasks::send_completion_events;
 use crate::ship_ai::{tasks, MoveToEntity};
 use crate::utils::interpolation;
+use crate::utils::{GateEntity, SectorEntity};
 
 #[derive(Component)]
 pub struct UseGate {
