@@ -1,7 +1,6 @@
 use crate::components::SelectableEntity;
-use crate::sectors::GateConnectedSectors;
 use crate::sectors::SetupGateConnectionEvent;
-use crate::sectors::{Gate, GateEntity, Sector};
+use crate::sectors::{GateEntity, Sector};
 use crate::utils::SectorPosition;
 use crate::{constants, SpriteHandles};
 use bevy::core::Name;
@@ -19,22 +18,8 @@ pub fn spawn_gates(
         .get_many_mut([from_pos.sector.get(), to_pos.sector.get()])
         .unwrap();
 
-    let from_gate = spawn_gate(
-        commands,
-        sprites,
-        &from_pos,
-        &to_pos,
-        &mut from_sector,
-        &to_sector,
-    );
-    let to_gate = spawn_gate(
-        commands,
-        sprites,
-        &to_pos,
-        &from_pos,
-        &mut to_sector,
-        &from_sector,
-    );
+    let from_gate = spawn_gate(commands, sprites, &from_pos, &mut from_sector, &to_sector);
+    let to_gate = spawn_gate(commands, sprites, &to_pos, &mut to_sector, &from_sector);
 
     from_sector.add_gate(commands, from_pos.sector, from_gate, to_pos.sector, to_gate);
     to_sector.add_gate(commands, to_pos.sector, to_gate, from_pos.sector, from_gate);
@@ -49,19 +34,12 @@ fn spawn_gate(
     commands: &mut Commands,
     sprites: &SpriteHandles,
     pos: &SectorPosition,
-    other: &SectorPosition,
     from: &mut Sector,
     to: &Sector,
 ) -> GateEntity {
     let position = from.world_pos + pos.local_position;
     let entity = commands
         .spawn((
-            Gate {
-                connected_sectors: GateConnectedSectors {
-                    from: pos.sector,
-                    to: other.sector,
-                },
-            },
             Name::new(format!(
                 "Gate [{},{}] -> [{},{}]",
                 from.coordinate.x, from.coordinate.y, to.coordinate.x, to.coordinate.y

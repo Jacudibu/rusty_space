@@ -7,7 +7,7 @@ mod sector;
 mod sector_outlines;
 mod typed_entity;
 
-pub use gate::{Gate, GateConnectedSectors, GateEntity, GateTransitCurve};
+pub use gate::{Gate, GateEntity};
 pub use gate_connection::SetupGateConnectionEvent;
 pub use in_sector::InSector;
 pub use pathfinding::find_path;

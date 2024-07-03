@@ -1,5 +1,5 @@
 use crate::constants;
-use crate::sectors::{GateEntity, GateTransitCurve, SectorEntity};
+use crate::sectors::{Gate, GateEntity, SectorEntity};
 use crate::sectors::{InSector, Sector};
 use crate::ship_ai::task_finished_event::TaskFinishedEvent;
 use crate::ship_ai::task_queue::TaskQueue;
@@ -24,7 +24,7 @@ impl UseGate {
         &mut self,
         delta_travel: f32,
         transform: &mut Transform,
-        transit_curve_query: &Query<&GateTransitCurve>,
+        transit_curve_query: &Query<&Gate>,
     ) -> TaskResult {
         self.progress += delta_travel;
         if self.progress <= 1.0 {
@@ -42,7 +42,7 @@ impl UseGate {
         event_writer: EventWriter<TaskFinishedEvent<Self>>,
         time: Res<Time>,
         mut ships: Query<(Entity, &mut Self, &mut Transform)>,
-        transit_curve_query: Query<&GateTransitCurve>,
+        transit_curve_query: Query<&Gate>,
     ) {
         let task_completions = Arc::new(Mutex::new(Vec::<TaskFinishedEvent<Self>>::new()));
         let delta_travel = time.delta_seconds() / constants::SECONDS_TO_TRAVEL_THROUGH_GATE;

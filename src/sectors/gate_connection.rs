@@ -1,9 +1,9 @@
 use crate::constants::{GATE_CONNECTION_LAYER, SHIP_LAYER};
-use crate::sectors::{Gate, GateEntity, GateTransitCurve};
+use crate::sectors::{Gate, GateEntity};
 use bevy::math::Vec2;
 use bevy::prelude::{
     Commands, Component, CubicBezier, CubicCurve, CubicGenerator, Event, EventReader,
-    GizmoConfigGroup, Gizmos, GlobalTransform, Query, Reflect, Vec3, With,
+    GizmoConfigGroup, Gizmos, GlobalTransform, Query, Reflect, Vec3,
 };
 
 #[derive(Component)]
@@ -23,12 +23,12 @@ pub struct SetupGateConnectionEvent {
 pub fn on_setup_gate_connection(
     mut commands: Commands,
     mut events: EventReader<SetupGateConnectionEvent>,
-    gates: Query<&GlobalTransform, With<Gate>>,
+    transforms: Query<&GlobalTransform>,
 ) {
     for event in events.read() {
-        let a = gates.get(event.from.get()).unwrap();
+        let a = transforms.get(event.from.get()).unwrap();
         let a = a.translation().truncate();
-        let b = gates.get(event.to.get()).unwrap();
+        let b = transforms.get(event.to.get()).unwrap();
         let b = b.translation().truncate();
         let difference = a - b;
         let diff_rot = Vec2::new(-difference.y, difference.x) * 0.075;
@@ -46,10 +46,10 @@ pub fn on_setup_gate_connection(
                 .collect(),
         });
 
-        commands.entity(event.from.get()).insert(GateTransitCurve {
+        commands.entity(event.from.get()).insert(Gate {
             transit_curve: ship_curve,
         });
-        commands.entity(event.to.get()).insert(GateTransitCurve {
+        commands.entity(event.to.get()).insert(Gate {
             transit_curve: ship_curve_inverted,
         });
     }
