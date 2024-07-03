@@ -9,7 +9,7 @@ mod sector;
 mod sector_entity;
 mod sector_outlines;
 
-pub use gate::{GateComponent, GateConnectedSectors, GateTransitCurve};
+pub use gate::{GateComponent, GateTransitCurve};
 pub use gate_entity::GateEntity;
 pub use in_sector::InSector;
 pub use pathfinding::find_path;

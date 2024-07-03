@@ -1,6 +1,6 @@
-mod data_resource;
 mod exchange_ware_data;
 pub mod interpolation;
+mod key_value_resource;
 mod price_range;
 mod price_setting;
 mod sector_position;
@@ -9,8 +9,8 @@ mod trade_intent;
 mod transaction;
 mod update_orders;
 
-pub use data_resource::*;
 pub use exchange_ware_data::*;
+pub use key_value_resource::*;
 pub use price_range::*;
 pub use price_setting::*;
 pub use sector_position::*;

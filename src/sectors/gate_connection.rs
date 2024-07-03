@@ -1,10 +1,9 @@
 use crate::constants::{GATE_CONNECTION_LAYER, SHIP_LAYER};
-use crate::sectors::{GateComponent, GateConnectedSectors, GateEntity, GateTransitCurve};
-use crate::utils::KeyValueResource;
+use crate::sectors::{GateComponent, GateEntity, GateTransitCurve};
 use bevy::math::Vec2;
 use bevy::prelude::{
-    Commands, Component, CubicBezier, CubicCurve, CubicGenerator, Entity, Event, EventReader,
-    GizmoConfigGroup, Gizmos, GlobalTransform, Query, Reflect, Vec3,
+    Commands, Component, CubicBezier, CubicCurve, CubicGenerator, Event, EventReader,
+    GizmoConfigGroup, Gizmos, GlobalTransform, Query, Reflect, Vec3, With,
 };
 
 #[derive(Component)]
@@ -24,13 +23,13 @@ pub struct SetupGateConnectionEvent {
 pub fn on_setup_gate_connection(
     mut commands: Commands,
     mut events: EventReader<SetupGateConnectionEvent>,
-    gates: Query<(&GlobalTransform, &GateComponent)>,
+    gates: Query<&GlobalTransform, With<GateComponent>>,
 ) {
     for event in events.read() {
-        let (from_transform, from_component) = &gates.get(event.from.get()).unwrap();
-        let (to_transform, _) = &gates.get(event.to.get()).unwrap();
-        let a = from_transform.translation().truncate();
-        let b = to_transform.translation().truncate();
+        let a = gates.get(event.from.get()).unwrap();
+        let a = a.translation().truncate();
+        let b = gates.get(event.to.get()).unwrap();
+        let b = b.translation().truncate();
         let difference = a - b;
         let diff_rot = Vec2::new(-difference.y, difference.x) * 0.075;
 
