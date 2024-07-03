@@ -102,11 +102,11 @@ impl MoveToEntity {
     pub fn complete_tasks(
         mut commands: Commands,
         mut event_reader: EventReader<TaskFinishedEvent<Self>>,
-        mut all_ships_with_task: Query<(Entity, &mut TaskQueue), With<Self>>,
+        mut all_ships_with_task: Query<&mut TaskQueue, With<Self>>,
     ) {
         for event in event_reader.read() {
-            if let Ok((entity, mut queue)) = all_ships_with_task.get_mut(event.entity) {
-                tasks::remove_task_and_add_new_one::<Self>(&mut commands, entity, &mut queue);
+            if let Ok(mut queue) = all_ships_with_task.get_mut(event.entity) {
+                tasks::remove_task_and_add_new_one::<Self>(&mut commands, event.entity, &mut queue);
             } else {
                 error!(
                     "Unable to find entity for task completion: {}",

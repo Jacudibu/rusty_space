@@ -8,7 +8,7 @@ use crate::ship_ai::tasks::send_completion_events;
 use crate::ship_ai::{tasks, MoveToEntity};
 use crate::utils::interpolation;
 use bevy::prelude::{
-    error, Commands, Component, Entity, EventReader, EventWriter, Query, Res, Time, Transform,
+    error, Commands, Component, Entity, EventReader, EventWriter, Query, Res, Time, Transform, With,
 };
 use std::sync::{Arc, Mutex};
 
@@ -65,17 +65,17 @@ impl UseGate {
     pub fn complete_tasks(
         mut commands: Commands,
         mut event_reader: EventReader<TaskFinishedEvent<Self>>,
-        mut all_ships_with_task: Query<(Entity, &mut TaskQueue, &Self)>,
+        mut all_ships_with_task: Query<(&mut TaskQueue, &Self)>,
         mut all_sectors: Query<&mut Sector>,
     ) {
         for event in event_reader.read() {
-            if let Ok((entity, mut queue, task)) = all_ships_with_task.get_mut(event.entity) {
+            if let Ok((mut queue, task)) = all_ships_with_task.get_mut(event.entity) {
                 all_sectors
                     .get_mut(task.exit_sector.get())
                     .unwrap()
-                    .add_ship(&mut commands, task.exit_sector, entity);
+                    .add_ship(&mut commands, task.exit_sector, event.entity);
 
-                tasks::remove_task_and_add_new_one::<Self>(&mut commands, entity, &mut queue);
+                tasks::remove_task_and_add_new_one::<Self>(&mut commands, event.entity, &mut queue);
             } else {
                 error!(
                     "Unable to find entity for task completion: {}",
@@ -87,12 +87,12 @@ impl UseGate {
 
     pub fn on_task_creation(
         mut commands: Commands,
-        query: Query<(&Self, &InSector)>,
+        query: Query<&InSector, With<Self>>,
         mut triggers: EventReader<TaskFinishedEvent<MoveToEntity>>,
         mut all_sectors: Query<&mut Sector>,
     ) {
         for x in triggers.read() {
-            let Ok((_, in_sector)) = query.get(x.entity) else {
+            let Ok(in_sector) = query.get(x.entity) else {
                 continue;
             };
 

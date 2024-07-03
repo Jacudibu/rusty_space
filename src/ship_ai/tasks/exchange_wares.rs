@@ -83,15 +83,15 @@ impl ExchangeWares {
     pub fn complete_tasks(
         mut commands: Commands,
         mut event_reader: EventReader<TaskFinishedEvent<Self>>,
-        mut all_ships_with_task: Query<(Entity, &mut TaskQueue, &Self)>,
+        mut all_ships_with_task: Query<(&mut TaskQueue, &Self)>,
         mut all_storages: Query<&mut Inventory>,
         mut event_writer: EventWriter<InventoryUpdateForProductionEvent>,
     ) {
         for event in event_reader.read() {
-            if let Ok((entity, mut queue, task)) = all_ships_with_task.get_mut(event.entity) {
-                task.complete(entity, &mut all_storages, &mut event_writer);
+            if let Ok((mut queue, task)) = all_ships_with_task.get_mut(event.entity) {
+                task.complete(event.entity, &mut all_storages, &mut event_writer);
 
-                tasks::remove_task_and_add_new_one::<Self>(&mut commands, entity, &mut queue);
+                tasks::remove_task_and_add_new_one::<Self>(&mut commands, event.entity, &mut queue);
             } else {
                 error!(
                     "Unable to find entity for task completion: {}",
