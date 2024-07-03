@@ -4,10 +4,12 @@ mod in_sector;
 mod inventory;
 mod sector;
 mod selectable_entity;
+mod ship;
+mod station;
 mod trade;
 mod velocity;
 
 pub use {
     engine::Engine, gate::*, in_sector::*, inventory::Inventory, sector::*, selectable_entity::*,
-    trade::*, velocity::Velocity,
+    ship::*, station::*, trade::*, velocity::Velocity,
 };

@@ -1,5 +1,5 @@
 use crate::components::InSector;
-use crate::utils::{GateEntity, SectorEntity};
+use crate::utils::{GateEntity, SectorEntity, ShipEntity, StationEntity};
 use bevy::prelude::{Commands, Component, Entity, Vec2};
 use bevy::utils::{HashMap, HashSet};
 use hexx::Hex;
@@ -11,8 +11,8 @@ pub struct Sector {
     pub world_pos: Vec2,
 
     pub gates: HashMap<SectorEntity, GatePairInSector>,
-    ships: HashSet<Entity>,
-    stations: HashSet<Entity>,
+    ships: HashSet<ShipEntity>,
+    stations: HashSet<StationEntity>,
 }
 
 #[derive(Eq, PartialEq, Hash, Copy, Clone)]
@@ -36,22 +36,27 @@ impl Sector {
     }
 
     /// Adds ship to this sector and inserts the [InSector] component to it.
-    pub fn add_ship(&mut self, commands: &mut Commands, sector: SectorEntity, entity: Entity) {
+    pub fn add_ship(&mut self, commands: &mut Commands, sector: SectorEntity, entity: ShipEntity) {
         self.ships.insert(entity);
-        self.in_sector(commands, sector, entity);
+        self.in_sector(commands, sector, entity.get());
     }
 
     /// Removes ship from this sector whilst also deleting its [InSector] component.
-    pub fn remove_ship(&mut self, commands: &mut Commands, entity: Entity) {
+    pub fn remove_ship(&mut self, commands: &mut Commands, entity: ShipEntity) {
         let result = self.ships.remove(&entity);
         debug_assert!(result, "removed ships should always be in sector!");
-        commands.entity(entity).remove::<InSector>();
+        commands.entity(entity.get()).remove::<InSector>();
     }
 
     /// Adds the station to this sector and inserts the [InSector] component to it.
-    pub fn add_station(&mut self, commands: &mut Commands, sector: SectorEntity, entity: Entity) {
+    pub fn add_station(
+        &mut self,
+        commands: &mut Commands,
+        sector: SectorEntity,
+        entity: StationEntity,
+    ) {
         self.stations.insert(entity);
-        self.in_sector(commands, sector, entity);
+        self.in_sector(commands, sector, entity.get());
     }
 
     /// Adds the gate to this sector and inserts the [InSector] component to it.

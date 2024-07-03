@@ -1,6 +1,6 @@
-use crate::components::{Engine, Inventory, Sector, SelectableEntity, Velocity};
+use crate::components::{Engine, Inventory, Sector, SelectableEntity, Ship, Velocity};
 use crate::ship_ai::{AutoTradeBehavior, Idle};
-use crate::utils::SectorEntity;
+use crate::utils::{SectorEntity, ShipEntity};
 use crate::{constants, SpriteHandles};
 use bevy::core::Name;
 use bevy::math::{Quat, Vec2};
@@ -20,6 +20,7 @@ pub fn spawn_ship(
     let entity = commands
         .spawn((
             Name::new(name),
+            Ship,
             SelectableEntity::Ship,
             AutoTradeBehavior,
             Idle::default(),
@@ -38,5 +39,5 @@ pub fn spawn_ship(
         ))
         .id();
 
-    sector_data.add_ship(commands, sector, entity);
+    sector_data.add_ship(commands, sector, ShipEntity::from(entity));
 }

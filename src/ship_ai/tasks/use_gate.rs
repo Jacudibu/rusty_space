@@ -11,7 +11,7 @@ use crate::ship_ai::task_queue::TaskQueue;
 use crate::ship_ai::task_result::TaskResult;
 use crate::ship_ai::tasks::send_completion_events;
 use crate::ship_ai::{tasks, MoveToEntity};
-use crate::utils::interpolation;
+use crate::utils::{interpolation, ShipEntity};
 use crate::utils::{GateEntity, SectorEntity};
 
 #[derive(Component)]
@@ -75,7 +75,11 @@ impl UseGate {
                 all_sectors
                     .get_mut(task.exit_sector.get())
                     .unwrap()
-                    .add_ship(&mut commands, task.exit_sector, event.entity);
+                    .add_ship(
+                        &mut commands,
+                        task.exit_sector,
+                        ShipEntity::from(event.entity),
+                    );
 
                 tasks::remove_task_and_add_new_one::<Self>(&mut commands, event.entity, &mut queue);
             } else {
@@ -99,7 +103,7 @@ impl UseGate {
             };
 
             let mut sector = all_sectors.get_mut(in_sector.get().get()).unwrap();
-            sector.remove_ship(&mut commands, x.entity);
+            sector.remove_ship(&mut commands, ShipEntity::from(x.entity));
         }
     }
 }
