@@ -1,22 +1,21 @@
 use crate::constants::{GATE_CONNECTION_LAYER, SHIP_LAYER};
-use crate::sectors::{GateComponent, GateEntity, GateId};
+use crate::sectors::{GateComponent, GateConnectedSectors, GateEntity, GateTransitCurve};
 use crate::utils::KeyValueResource;
 use bevy::math::Vec2;
 use bevy::prelude::{
     Commands, Component, CubicBezier, CubicCurve, CubicGenerator, Entity, Event, EventReader,
-    GizmoConfigGroup, Gizmos, GlobalTransform, Query, Reflect, ResMut, Vec3,
+    GizmoConfigGroup, Gizmos, GlobalTransform, Query, Reflect, Vec3,
 };
 
 #[derive(Component)]
 pub struct GateConnectionComponent {
-    pub id: GateId,
+    pub id: GateConnectedSectors,
     pub render_positions: Vec<Vec3>,
 }
 
 pub struct GateConnectionData {
-    pub id: GateId,
+    pub id: GateConnectedSectors,
     pub entity: Entity,
-    pub ship_curve: CubicCurve<Vec3>,
 }
 
 #[derive(Default, Reflect, GizmoConfigGroup)]
@@ -28,17 +27,16 @@ pub struct SetupGateConnectionEvent {
     pub to: GateEntity,
 }
 
-pub type AllGateConnections = KeyValueResource<GateId, GateConnectionData>;
+pub type AllGateConnections = KeyValueResource<GateConnectedSectors, GateConnectionData>;
 
 pub fn on_setup_gate_connection(
     mut commands: Commands,
     mut events: EventReader<SetupGateConnectionEvent>,
     gates: Query<(&GlobalTransform, &GateComponent)>,
-    mut all_gate_connections: ResMut<AllGateConnections>,
 ) {
     for event in events.read() {
         let (from_transform, from_component) = &gates.get(event.from.get()).unwrap();
-        let (to_transform, to_component) = &gates.get(event.to.get()).unwrap();
+        let (to_transform, _) = &gates.get(event.to.get()).unwrap();
         let a = from_transform.translation().truncate();
         let b = to_transform.translation().truncate();
         let difference = a - b;
@@ -50,32 +48,20 @@ pub fn on_setup_gate_connection(
         let ship_curve = create_curve(a, a_curve, b_curve, b);
         let ship_curve_inverted = create_curve(b, b_curve, a_curve, a);
 
-        let entity = commands
-            .spawn(GateConnectionComponent {
-                id: from_component.id,
-                render_positions: ship_curve
-                    .iter_positions(20)
-                    .map(|x| x.truncate().extend(GATE_CONNECTION_LAYER))
-                    .collect(),
-            })
-            .id();
+        commands.spawn(GateConnectionComponent {
+            id: from_component.connected_sectors,
+            render_positions: ship_curve
+                .iter_positions(20)
+                .map(|x| x.truncate().extend(GATE_CONNECTION_LAYER))
+                .collect(),
+        });
 
-        all_gate_connections.insert(
-            from_component.id,
-            GateConnectionData {
-                id: from_component.id,
-                entity,
-                ship_curve,
-            },
-        );
-        all_gate_connections.insert(
-            to_component.id,
-            GateConnectionData {
-                id: to_component.id,
-                entity,
-                ship_curve: ship_curve_inverted,
-            },
-        );
+        commands.entity(event.from.get()).insert(GateTransitCurve {
+            transit_curve: ship_curve,
+        });
+        commands.entity(event.to.get()).insert(GateTransitCurve {
+            transit_curve: ship_curve_inverted,
+        });
     }
 }
 

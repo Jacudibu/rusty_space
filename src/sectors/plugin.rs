@@ -1,7 +1,6 @@
-use crate::sectors::gate::{spawn_gates, AllGates};
+use crate::sectors::gate::spawn_gates;
 use crate::sectors::gate_connection::{
-    draw_gate_connections, on_setup_gate_connection, AllGateConnections, GateConnectionGizmos,
-    SetupGateConnectionEvent,
+    draw_gate_connections, on_setup_gate_connection, GateConnectionGizmos, SetupGateConnectionEvent,
 };
 use crate::sectors::map_layout::MapLayout;
 use crate::sectors::sector::spawn_sector;
@@ -68,8 +67,6 @@ pub fn spawn_test_gates(
     mut sectors: Query<&mut Sector>,
     debug_sectors: Res<DebugSectors>,
 ) {
-    let mut all_gates = AllGates::default();
-
     spawn_gates(
         &mut commands,
         &mut sectors,
@@ -82,7 +79,6 @@ pub fn spawn_test_gates(
             sector: debug_sectors.right,
             local_position: Vec2::new(-250.0, 0.0),
         },
-        &mut all_gates,
         &mut gate_connection_events,
     );
 
@@ -98,7 +94,6 @@ pub fn spawn_test_gates(
             sector: debug_sectors.top_right,
             local_position: Vec2::new(200.0, -130.0),
         },
-        &mut all_gates,
         &mut gate_connection_events,
     );
 
@@ -114,10 +109,6 @@ pub fn spawn_test_gates(
             sector: debug_sectors.bottom_left,
             local_position: Vec2::new(200.0, 130.0),
         },
-        &mut all_gates,
         &mut gate_connection_events,
     );
-
-    commands.insert_resource(all_gates);
-    commands.insert_resource(AllGateConnections::default())
 }

@@ -17,7 +17,7 @@ pub fn draw_sector_outlines(
         .all_vertices()
         .map(|vertex| offset_layout.vertex_coordinates(vertex));
 
-    for (sector, _) in sectors.iter().filter(|(_, &visibility)| true /*TODO*/) {
+    for (sector, _) in sectors.iter().filter(|(_, &_visibility)| true /*TODO*/) {
         let vertices = sector_border_vertices(sector.coordinate, &layout.hex_layout, offset);
 
         gizmos.line_2d(vertices[0], vertices[1], bevy::color::palettes::css::YELLOW);

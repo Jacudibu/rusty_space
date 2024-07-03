@@ -1,4 +1,4 @@
-use crate::sectors::{GateId, SectorEntity};
+use crate::sectors::{GateEntity, SectorEntity};
 use crate::ship_ai::tasks::{ExchangeWares, UseGate};
 use crate::ship_ai::MoveToEntity;
 use crate::utils::{ExchangeWareData, SimulationTimestamp};
@@ -15,8 +15,8 @@ pub enum TaskInsideQueue {
         target: Entity,
     },
     UseGate {
+        enter_gate: GateEntity,
         exit_sector: SectorEntity,
-        exit_gate: GateId,
     },
 }
 
@@ -34,13 +34,13 @@ impl TaskInsideQueue {
                 entity_commands.insert(MoveToEntity { target: *target });
             }
             TaskInsideQueue::UseGate {
+                enter_gate,
                 exit_sector,
-                exit_gate,
             } => {
                 entity_commands.insert(UseGate {
                     progress: 0.0,
                     exit_sector: *exit_sector,
-                    exit_gate: *exit_gate,
+                    enter_gate: *enter_gate,
                 });
             }
         }

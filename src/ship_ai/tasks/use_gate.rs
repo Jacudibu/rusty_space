@@ -1,5 +1,5 @@
 use crate::constants;
-use crate::sectors::{AllGateConnections, GateId, SectorEntity};
+use crate::sectors::{GateEntity, GateTransitCurve, SectorEntity};
 use crate::sectors::{InSector, Sector};
 use crate::ship_ai::task_finished_event::TaskFinishedEvent;
 use crate::ship_ai::task_queue::TaskQueue;
@@ -15,8 +15,8 @@ use std::sync::{Arc, Mutex};
 #[derive(Component)]
 pub struct UseGate {
     pub progress: f32,
+    pub enter_gate: GateEntity,
     pub exit_sector: SectorEntity,
-    pub exit_gate: GateId,
 }
 
 impl UseGate {
@@ -24,13 +24,13 @@ impl UseGate {
         &mut self,
         delta_travel: f32,
         transform: &mut Transform,
-        all_gate_connections: &AllGateConnections,
+        transit_curve_query: &Query<&GateTransitCurve>,
     ) -> TaskResult {
         self.progress += delta_travel;
         if self.progress <= 1.0 {
             let t = interpolation::smooth_step(self.progress);
-            let connection_data = all_gate_connections.get(&self.exit_gate).unwrap();
-            transform.translation = connection_data.ship_curve.position(t);
+            let curve = transit_curve_query.get(self.enter_gate.get()).unwrap();
+            transform.translation = curve.transit_curve.position(t);
 
             TaskResult::Ongoing
         } else {
@@ -42,7 +42,7 @@ impl UseGate {
         event_writer: EventWriter<TaskFinishedEvent<Self>>,
         time: Res<Time>,
         mut ships: Query<(Entity, &mut Self, &mut Transform)>,
-        all_gate_connections: Res<AllGateConnections>,
+        transit_curve_query: Query<&GateTransitCurve>,
     ) {
         let task_completions = Arc::new(Mutex::new(Vec::<TaskFinishedEvent<Self>>::new()));
         let delta_travel = time.delta_seconds() / constants::SECONDS_TO_TRAVEL_THROUGH_GATE;
@@ -50,7 +50,7 @@ impl UseGate {
         ships
             .par_iter_mut()
             .for_each(|(entity, mut task, mut transform)| {
-                match task.run(delta_travel, &mut transform, &all_gate_connections) {
+                match task.run(delta_travel, &mut transform, &transit_curve_query) {
                     TaskResult::Ongoing => {}
                     TaskResult::Finished | TaskResult::Aborted => task_completions
                         .lock()

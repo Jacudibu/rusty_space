@@ -64,11 +64,11 @@ pub fn handle_idle_ships(
                 let path = find_path(&all_sectors, ship_sector.get(), plan.seller_sector).unwrap();
                 for x in path {
                     queue.push_back(TaskInsideQueue::MoveToEntity {
-                        target: x.enter_gate_entity,
+                        target: x.enter_gate.get(),
                     });
                     queue.push_back(TaskInsideQueue::UseGate {
+                        enter_gate: x.enter_gate,
                         exit_sector: x.exit_sector,
-                        exit_gate: x.exit_gate,
                     })
                 }
             }
@@ -86,11 +86,11 @@ pub fn handle_idle_ships(
                 let path = find_path(&all_sectors, plan.seller_sector, plan.buyer_sector).unwrap();
                 for x in path {
                     queue.push_back(TaskInsideQueue::MoveToEntity {
-                        target: x.enter_gate_entity,
+                        target: x.enter_gate.get(),
                     });
                     queue.push_back(TaskInsideQueue::UseGate {
+                        enter_gate: x.enter_gate,
                         exit_sector: x.exit_sector,
-                        exit_gate: x.exit_gate,
                     })
                 }
             }

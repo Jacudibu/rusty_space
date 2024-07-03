@@ -1,39 +1,37 @@
 use crate::components::SelectableEntity;
 use crate::sectors::gate_connection::SetupGateConnectionEvent;
 use crate::sectors::{GateEntity, Sector, SectorEntity};
-use crate::utils::KeyValueResource;
 use crate::utils::SectorPosition;
 use crate::{constants, SpriteHandles};
-use bevy::prelude::{Commands, Component, EventWriter, Name, Query, SpriteBundle, Transform, Vec2};
+use bevy::prelude::{
+    Commands, Component, CubicCurve, EventWriter, Name, Query, SpriteBundle, Transform, Vec3,
+};
 
 #[derive(Eq, PartialEq, Hash, Copy, Clone)]
-pub struct GateId {
+pub struct GateConnectedSectors {
     pub from: SectorEntity,
     pub to: SectorEntity,
 }
 
-impl GateId {
+impl GateConnectedSectors {
     /// Returns the ID for the connected gate.
     pub fn invert(&self) -> Self {
-        GateId {
+        GateConnectedSectors {
             from: self.to,
             to: self.from,
         }
     }
 }
 
-pub struct GateData {
-    pub id: GateId,
-    pub entity: GateEntity,
-    pub world_position: Vec2,
+#[derive(Component)]
+pub struct GateComponent {
+    pub connected_sectors: GateConnectedSectors,
 }
 
 #[derive(Component)]
-pub struct GateComponent {
-    pub id: GateId,
+pub struct GateTransitCurve {
+    pub transit_curve: CubicCurve<Vec3>,
 }
-
-pub type AllGates = KeyValueResource<GateId, GateData>;
 
 pub fn spawn_gates(
     commands: &mut Commands,
@@ -41,7 +39,6 @@ pub fn spawn_gates(
     sprites: &SpriteHandles,
     from_pos: SectorPosition,
     to_pos: SectorPosition,
-    all_gates: &mut AllGates,
     gate_connection_events: &mut EventWriter<SetupGateConnectionEvent>,
 ) {
     let [mut from_sector, mut to_sector] = sector_query
@@ -55,7 +52,6 @@ pub fn spawn_gates(
         &to_pos,
         &mut from_sector,
         &to_sector,
-        all_gates,
     );
     let to_gate = spawn_gate(
         commands,
@@ -64,7 +60,6 @@ pub fn spawn_gates(
         &from_pos,
         &mut to_sector,
         &from_sector,
-        all_gates,
     );
 
     from_sector.add_gate(commands, from_pos.sector, from_gate, to_pos.sector, to_gate);
@@ -83,16 +78,16 @@ fn spawn_gate(
     other: &SectorPosition,
     from: &mut Sector,
     to: &Sector,
-    all_gates: &mut AllGates,
 ) -> GateEntity {
-    let id = GateId {
-        from: pos.sector,
-        to: other.sector,
-    };
     let position = from.world_pos + pos.local_position;
     let entity = commands
         .spawn((
-            GateComponent { id },
+            GateComponent {
+                connected_sectors: GateConnectedSectors {
+                    from: pos.sector,
+                    to: other.sector,
+                },
+            },
             Name::new(format!(
                 "Gate [{},{}] -> [{},{}]",
                 from.coordinate.x, from.coordinate.y, to.coordinate.x, to.coordinate.y
@@ -107,14 +102,5 @@ fn spawn_gate(
         .id();
 
     let entity = GateEntity::from(entity);
-    all_gates.insert(
-        id,
-        GateData {
-            id,
-            entity,
-            world_position: position,
-        },
-    );
-
     entity
 }
