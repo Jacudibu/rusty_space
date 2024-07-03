@@ -1,11 +1,16 @@
 use bevy::math::Vec2;
 use bevy::prelude::{
-    Commands, CubicBezier, CubicCurve, CubicGenerator, Event, EventReader, GizmoConfigGroup,
-    Gizmos, GlobalTransform, Query, Reflect, Vec3,
+    Commands, Component, CubicBezier, CubicCurve, CubicGenerator, Event, EventReader,
+    GizmoConfigGroup, Gizmos, GlobalTransform, Query, Reflect, Vec3,
 };
 
-use crate::components::{Gate, GateConnectionComponent, GateEntity};
+use crate::components::{Gate, GateEntity};
 use crate::constants::{GATE_CONNECTION_LAYER, SHIP_LAYER};
+
+#[derive(Component)]
+pub struct GateConnectionComponent {
+    pub render_positions: Vec<Vec3>,
+}
 
 #[derive(Default, Reflect, GizmoConfigGroup)]
 pub struct GateConnectionGizmos;

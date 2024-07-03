@@ -1,6 +1,5 @@
 mod engine;
 mod gate;
-mod gate_connection;
 mod in_sector;
 mod inventory;
 mod sector;
@@ -9,6 +8,6 @@ mod trade;
 mod velocity;
 
 pub use {
-    engine::Engine, gate::*, gate_connection::*, in_sector::*, inventory::Inventory, sector::*,
-    selectable_entity::*, trade::*, velocity::Velocity,
+    engine::Engine, gate::*, in_sector::*, inventory::Inventory, sector::*, selectable_entity::*,
+    trade::*, velocity::Velocity,
 };

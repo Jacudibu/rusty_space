@@ -3,8 +3,8 @@ use bevy::prelude::{Commands, EventWriter, Query, Res};
 
 use crate::components::Sector;
 use crate::gizmos::SetupGateConnectionEvent;
-use crate::spawn_helpers::spawn_gates;
 use crate::test_universe::plugin::TestSectors;
+use crate::utils::spawn_helpers::spawn_gates;
 use crate::utils::SectorPosition;
 use crate::SpriteHandles;
 

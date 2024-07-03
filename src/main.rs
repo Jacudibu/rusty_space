@@ -30,7 +30,6 @@ mod physics;
 mod production;
 mod session_data;
 mod ship_ai;
-mod spawn_helpers;
 mod test_universe;
 mod trade_plan;
 mod utils;

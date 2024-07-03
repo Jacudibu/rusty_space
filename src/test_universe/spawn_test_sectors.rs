@@ -1,6 +1,6 @@
 use crate::map_layout::MapLayout;
-use crate::spawn_helpers::spawn_sector;
 use crate::test_universe::plugin::TestSectors;
+use crate::utils::spawn_helpers::spawn_sector;
 use bevy::prelude::{Commands, Res};
 use hexx::Hex;
 

@@ -3,7 +3,8 @@ use bevy::prelude::{Commands, Query, Res};
 
 use crate::components::Sector;
 use crate::test_universe::plugin::TestSectors;
-use crate::{constants, spawn_helpers, SpriteHandles};
+use crate::utils::spawn_helpers;
+use crate::{constants, SpriteHandles};
 
 pub fn spawn_test_ships(
     mut commands: Commands,

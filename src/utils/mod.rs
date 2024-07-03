@@ -6,6 +6,7 @@ mod price_range;
 mod price_setting;
 mod sector_position;
 mod simulation_time;
+pub mod spawn_helpers;
 mod trade_intent;
 mod transaction;
 pub mod typed_entity;
