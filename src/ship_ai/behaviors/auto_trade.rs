@@ -1,10 +1,10 @@
-use crate::components::{BuyOrders, Inventory, SellOrders, TradeOrder};
-use crate::sectors::find_path;
-use crate::sectors::{InSector, Sector};
+use bevy::prelude::{Commands, Component, Entity, Query, Res, Transform};
+
+use crate::components::{BuyOrders, InSector, Inventory, Sector, SellOrders, TradeOrder};
+use crate::gizmos::find_path;
 use crate::ship_ai::{Idle, TaskInsideQueue, TaskQueue};
 use crate::trade_plan::TradePlan;
 use crate::utils::{ExchangeWareData, SimulationTime, TradeIntent};
-use bevy::prelude::{Commands, Component, Entity, Query, Res, Transform};
 
 #[derive(Component)]
 pub struct AutoTradeBehavior;

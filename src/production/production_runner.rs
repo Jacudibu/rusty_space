@@ -1,15 +1,15 @@
-use crate::components::{BuyOrders, Inventory, SellOrders};
+use bevy::log::error;
+use bevy::prelude::{Commands, EventWriter, Or, Query, Res, ResMut, Transform, With};
+
+use crate::components::{BuyOrders, InSector, Inventory, Sector, SellOrders};
 use crate::game_data::GameData;
 use crate::production::production_kind::ProductionKind;
 use crate::production::shipyard_component::ShipyardComponent;
 use crate::production::state::GlobalProductionState;
 use crate::production::{InventoryUpdateForProductionEvent, ProductionComponent};
-use crate::sectors::{InSector, Sector};
 use crate::session_data::SessionData;
 use crate::utils::SimulationTime;
 use crate::{spawn_helpers, utils, SpriteHandles};
-use bevy::log::error;
-use bevy::prelude::{Commands, EventWriter, Or, Query, Res, ResMut, Transform, With};
 
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
 pub fn check_if_production_is_finished_and_start_new_one(

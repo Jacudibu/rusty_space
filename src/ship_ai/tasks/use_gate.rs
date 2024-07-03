@@ -1,16 +1,17 @@
+use std::sync::{Arc, Mutex};
+
+use bevy::prelude::{
+    error, Commands, Component, Entity, EventReader, EventWriter, Query, Res, Time, Transform, With,
+};
+
+use crate::components::{Gate, GateEntity, InSector, Sector, SectorEntity};
 use crate::constants;
-use crate::sectors::{Gate, GateEntity, SectorEntity};
-use crate::sectors::{InSector, Sector};
 use crate::ship_ai::task_finished_event::TaskFinishedEvent;
 use crate::ship_ai::task_queue::TaskQueue;
 use crate::ship_ai::task_result::TaskResult;
 use crate::ship_ai::tasks::send_completion_events;
 use crate::ship_ai::{tasks, MoveToEntity};
 use crate::utils::interpolation;
-use bevy::prelude::{
-    error, Commands, Component, Entity, EventReader, EventWriter, Query, Res, Time, Transform, With,
-};
-use std::sync::{Arc, Mutex};
 
 #[derive(Component)]
 pub struct UseGate {

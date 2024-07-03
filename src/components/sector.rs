@@ -1,5 +1,5 @@
-use crate::sectors::typed_entity::TypedEntity;
-use crate::sectors::{GateEntity, InSector};
+use crate::components::{GateEntity, InSector};
+use crate::utils::typed_entity::TypedEntity;
 use bevy::prelude::{Commands, Component, Entity, Vec2};
 use bevy::utils::{HashMap, HashSet};
 use hexx::Hex;
@@ -15,6 +15,15 @@ pub struct Sector {
     pub gates: HashMap<SectorEntity, GatePairInSector>,
     ships: HashSet<Entity>,
     stations: HashSet<Entity>,
+}
+
+#[derive(Eq, PartialEq, Hash, Copy, Clone)]
+pub struct GatePairInSector {
+    /// The gate inside this sector
+    pub from: GateEntity,
+
+    /// The gate it's connected to
+    pub to: GateEntity,
 }
 
 impl Sector {
@@ -72,10 +81,4 @@ impl Sector {
             sector: sector_entity,
         });
     }
-}
-
-#[derive(Eq, PartialEq, Hash, Copy, Clone)]
-pub struct GatePairInSector {
-    pub from: GateEntity,
-    pub to: GateEntity,
 }

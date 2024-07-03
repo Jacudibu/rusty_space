@@ -1,5 +1,4 @@
-use crate::components::{Engine, Inventory, SelectableEntity, Velocity};
-use crate::sectors::{Sector, SectorEntity};
+use crate::components::{Engine, Inventory, Sector, SectorEntity, SelectableEntity, Velocity};
 use crate::ship_ai::{AutoTradeBehavior, Idle};
 use crate::{constants, SpriteHandles};
 use bevy::core::Name;

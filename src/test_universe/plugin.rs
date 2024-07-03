@@ -1,5 +1,5 @@
+use crate::components::SectorEntity;
 use crate::initialize_data;
-use crate::sectors::SectorEntity;
 use crate::test_universe::spawn_test_gates::spawn_test_gates;
 use crate::test_universe::spawn_test_sectors::spawn_test_sectors;
 use crate::test_universe::spawn_test_ships::spawn_test_ships;

@@ -1,9 +1,10 @@
-use crate::sectors::sector::GatePairInSector;
-use crate::sectors::{GateEntity, Sector, SectorEntity};
-use bevy::prelude::{Query, Transform, Vec3};
-use bevy::utils::HashMap;
 use std::cmp::Ordering;
 use std::collections::BinaryHeap;
+
+use bevy::prelude::{Query, Transform, Vec3};
+use bevy::utils::HashMap;
+
+use crate::components::{GateEntity, GatePairInSector, Sector, SectorEntity};
 
 pub struct PathElement {
     pub enter_gate: GateEntity,
@@ -156,10 +157,11 @@ fn a_star(
 
 #[cfg(test)]
 mod test {
-    use crate::sectors::pathfinding::find_path;
-    use crate::sectors::*;
     use bevy::prelude::{Entity, Vec2, Vec3, World};
     use hexx::Hex;
+
+    use crate::gizmos::*;
+    use crate::utils::pathfinding::find_path;
 
     fn add_sector(world: &mut World, pos: Hex, gates: Vec<(Hex, Entity)>) -> Entity {
         let sector = Sector::new(pos, Vec2::ZERO);

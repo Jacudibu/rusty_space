@@ -1,7 +1,8 @@
-use crate::map_layout::MapLayout;
-use crate::sectors::sector::Sector;
 use bevy::prelude::{GizmoConfigGroup, Gizmos, Query, Reflect, Res, Vec2, ViewVisibility};
 use hexx::{Hex, HexLayout};
+
+use crate::components::Sector;
+use crate::map_layout::MapLayout;
 
 #[derive(Default, Reflect, GizmoConfigGroup)]
 pub struct SectorOutlineGizmos;

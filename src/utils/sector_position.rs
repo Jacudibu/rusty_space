@@ -1,4 +1,4 @@
-use crate::sectors::SectorEntity;
+use crate::components::SectorEntity;
 use bevy::math::Vec2;
 
 pub struct SectorPosition {

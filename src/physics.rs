@@ -1,5 +1,4 @@
-use crate::components::Velocity;
-use crate::sectors::InSector;
+use crate::components::{InSector, Velocity};
 use bevy::prelude::{Query, Res, Time, Transform, Vec3, With};
 
 pub fn move_things(time: Res<Time>, mut query: Query<(&mut Transform, &Velocity), With<InSector>>) {

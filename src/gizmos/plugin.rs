@@ -1,8 +1,8 @@
-use crate::map_layout::MapLayout;
-use crate::sectors::gate_connection::{
+use crate::gizmos::gate_connection::{
     draw_gate_connections, on_setup_gate_connection, GateConnectionGizmos, SetupGateConnectionEvent,
 };
-use crate::sectors::sector_outlines::{draw_sector_outlines, SectorOutlineGizmos};
+use crate::gizmos::sector_outlines::{draw_sector_outlines, SectorOutlineGizmos};
+use crate::map_layout::MapLayout;
 use bevy::app::Update;
 use bevy::prelude::{on_event, App, AppGizmoBuilder, IntoSystemConfigs, Plugin};
 pub struct SectorPlugin;

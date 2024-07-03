@@ -1,4 +1,4 @@
-use crate::sectors::SectorEntity;
+use crate::components::SectorEntity;
 use bevy::prelude::Component;
 
 /// Component for entities inside sectors.
@@ -7,7 +7,7 @@ use bevy::prelude::Component;
 /// you should probably use the respective functions there.
 #[derive(Component, PartialEq, Eq)]
 pub struct InSector {
-    pub(in crate::sectors) sector: SectorEntity,
+    pub(crate) sector: SectorEntity,
 }
 
 impl InSector {

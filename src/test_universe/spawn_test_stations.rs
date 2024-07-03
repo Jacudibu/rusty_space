@@ -1,13 +1,14 @@
+use bevy::math::Vec2;
+use bevy::prelude::{Commands, Query, Res};
+
+use crate::components::Sector;
 use crate::game_data::{
     GameData, DEBUG_ITEM_ID_A, DEBUG_ITEM_ID_B, DEBUG_ITEM_ID_C, PRODUCTION_MODULE_A_ID,
     PRODUCTION_MODULE_B_ID, PRODUCTION_MODULE_C_ID, RECIPE_A_ID, RECIPE_B_ID, RECIPE_C_ID,
 };
-use crate::sectors::Sector;
 use crate::spawn_helpers::{MockStationProductionArgElement, MockStationProductionArgs};
 use crate::test_universe::plugin::TestSectors;
 use crate::{spawn_helpers, SpriteHandles};
-use bevy::math::Vec2;
-use bevy::prelude::{Commands, Query, Res};
 
 pub fn spawn_test_stations(
     mut commands: Commands,

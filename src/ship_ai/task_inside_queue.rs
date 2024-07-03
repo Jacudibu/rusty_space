@@ -1,9 +1,10 @@
-use crate::sectors::{GateEntity, SectorEntity};
+use bevy::ecs::system::EntityCommands;
+use bevy::prelude::Entity;
+
+use crate::components::{GateEntity, SectorEntity};
 use crate::ship_ai::tasks::{ExchangeWares, UseGate};
 use crate::ship_ai::MoveToEntity;
 use crate::utils::{ExchangeWareData, SimulationTimestamp};
-use bevy::ecs::system::EntityCommands;
-use bevy::prelude::Entity;
 
 /// Defines a Task inside the [TaskQueue]. New task components can be created from these.
 pub enum TaskInsideQueue {

@@ -1,14 +1,3 @@
-use crate::components::{BuyOrders, Inventory, SelectableEntity, SellOrders, TradeOrder, Velocity};
-use crate::entity_selection::Selected;
-use crate::game_data::GameData;
-use crate::production::{ProductionComponent, ShipyardComponent};
-use crate::sectors::Gate;
-use crate::session_data::SessionData;
-use crate::ship_ai::TaskInsideQueue;
-use crate::ship_ai::TaskQueue;
-use crate::utils::ExchangeWareData;
-use crate::utils::SimulationTime;
-use crate::SpriteHandles;
 use bevy::prelude::{
     AssetServer, Commands, Entity, Name, NextState, Query, Res, ResMut, Resource, State, States,
     With,
@@ -16,6 +5,19 @@ use bevy::prelude::{
 use bevy_egui::egui::load::SizedTexture;
 use bevy_egui::egui::{Align2, Ui};
 use bevy_egui::{egui, EguiContexts};
+
+use crate::components::{
+    BuyOrders, Gate, Inventory, SelectableEntity, SellOrders, TradeOrder, Velocity,
+};
+use crate::entity_selection::Selected;
+use crate::game_data::GameData;
+use crate::production::{ProductionComponent, ShipyardComponent};
+use crate::session_data::SessionData;
+use crate::ship_ai::TaskInsideQueue;
+use crate::ship_ai::TaskQueue;
+use crate::utils::ExchangeWareData;
+use crate::utils::SimulationTime;
+use crate::SpriteHandles;
 
 #[derive(Default)]
 struct SelectableCount {

@@ -1,4 +1,4 @@
-use crate::sectors::{Sector, SectorEntity};
+use crate::components::{Sector, SectorEntity};
 use bevy::core::Name;
 use bevy::math::{Vec2, Vec3};
 use bevy::prelude::{Commands, SpatialBundle, Transform};

@@ -1,10 +1,12 @@
-use crate::sectors::{Sector, SetupGateConnectionEvent};
+use bevy::math::Vec2;
+use bevy::prelude::{Commands, EventWriter, Query, Res};
+
+use crate::components::Sector;
+use crate::gizmos::SetupGateConnectionEvent;
 use crate::spawn_helpers::spawn_gates;
 use crate::test_universe::plugin::TestSectors;
 use crate::utils::SectorPosition;
 use crate::SpriteHandles;
-use bevy::math::Vec2;
-use bevy::prelude::{Commands, EventWriter, Query, Res};
 
 pub fn spawn_test_gates(
     mut commands: Commands,

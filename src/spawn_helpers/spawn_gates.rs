@@ -1,10 +1,10 @@
-use crate::components::SelectableEntity;
-use crate::sectors::SetupGateConnectionEvent;
-use crate::sectors::{GateEntity, Sector};
-use crate::utils::SectorPosition;
-use crate::{constants, SpriteHandles};
 use bevy::core::Name;
 use bevy::prelude::{Commands, EventWriter, Query, SpriteBundle, Transform};
+
+use crate::components::{GateEntity, Sector, SelectableEntity};
+use crate::gizmos::SetupGateConnectionEvent;
+use crate::utils::SectorPosition;
+use crate::{constants, SpriteHandles};
 
 pub fn spawn_gates(
     commands: &mut Commands,
