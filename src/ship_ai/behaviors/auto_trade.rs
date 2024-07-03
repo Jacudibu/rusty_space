@@ -1,6 +1,6 @@
 use crate::components::{BuyOrders, Inventory, SellOrders, TradeOrder};
-use crate::sectors::InSector;
-use crate::sectors::{find_path, AllSectors};
+use crate::sectors::find_path;
+use crate::sectors::{InSector, Sector};
 use crate::ship_ai::{Idle, TaskInsideQueue, TaskQueue};
 use crate::trade_plan::TradePlan;
 use crate::utils::{ExchangeWareData, SimulationTime, TradeIntent};
@@ -16,7 +16,7 @@ pub fn handle_idle_ships(
     mut buy_orders: Query<(Entity, &mut BuyOrders, &InSector)>,
     mut sell_orders: Query<(Entity, &mut SellOrders, &InSector)>,
     mut inventories: Query<&mut Inventory>,
-    all_sectors: Res<AllSectors>,
+    all_sectors: Query<&Sector>,
 ) {
     let now = simulation_time.now();
 

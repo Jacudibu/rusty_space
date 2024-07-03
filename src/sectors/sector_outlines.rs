@@ -1,5 +1,5 @@
 use crate::sectors::map_layout::MapLayout;
-use crate::sectors::sector::SectorComponent;
+use crate::sectors::sector::Sector;
 use bevy::prelude::{GizmoConfigGroup, Gizmos, Query, Reflect, Res, Vec2, ViewVisibility};
 use hexx::{Hex, HexLayout};
 
@@ -9,7 +9,7 @@ pub struct SectorOutlineGizmos;
 pub fn draw_sector_outlines(
     mut gizmos: Gizmos<SectorOutlineGizmos>,
     layout: Res<MapLayout>,
-    sectors: Query<(&SectorComponent, &ViewVisibility)>,
+    sectors: Query<(&Sector, &ViewVisibility)>,
 ) {
     let mut offset_layout = layout.hex_layout.clone();
     offset_layout.hex_size = hexx::Vec2::splat(-5.0);

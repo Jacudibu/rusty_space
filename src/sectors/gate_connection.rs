@@ -1,5 +1,5 @@
 use crate::constants::{GATE_CONNECTION_LAYER, SHIP_LAYER};
-use crate::sectors::{GateComponent, GateId};
+use crate::sectors::{GateComponent, GatePair};
 use crate::utils::KeyValueResource;
 use bevy::math::Vec2;
 use bevy::prelude::{
@@ -9,12 +9,12 @@ use bevy::prelude::{
 
 #[derive(Component)]
 pub struct GateConnectionComponent {
-    pub id: GateId,
+    pub id: GatePair,
     pub render_positions: Vec<Vec3>,
 }
 
 pub struct GateConnectionData {
-    pub id: GateId,
+    pub id: GatePair,
     pub entity: Entity,
     pub ship_curve: CubicCurve<Vec3>,
 }
@@ -28,7 +28,7 @@ pub struct SetupGateConnectionEvent {
     pub to: Entity,
 }
 
-pub type AllGateConnections = KeyValueResource<GateId, GateConnectionData>;
+pub type AllGateConnections = KeyValueResource<GatePair, GateConnectionData>;
 
 pub fn on_setup_gate_connection(
     mut commands: Commands,

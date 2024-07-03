@@ -290,8 +290,8 @@ pub fn list_selection_details(
                                 ui.label(match task {
                                     TaskInsideQueue::UseGate { exit_sector, .. } => {
                                         format!(
-                                            "Using gate to [{},{}]",
-                                            exit_sector.x, exit_sector.y
+                                            "Using gate to {}",
+                                            names.get(*exit_sector).unwrap()
                                         )
                                     }
                                     TaskInsideQueue::MoveToEntity { target } => {

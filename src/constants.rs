@@ -3,12 +3,12 @@
 // pub const MOCK_INVENTORY_SIZE: u32 = 5000;
 
 // Very Late Endgame Values
-pub const SHIP_COUNT: u32 = 200000;
-pub const MOCK_INVENTORY_SIZE: u32 = 50000000;
+//pub const SHIP_COUNT: u32 = 200000;
+//pub const MOCK_INVENTORY_SIZE: u32 = 50000000;
 
 // Stress Test Values
-// pub const SHIP_COUNT: u32 = 1000000;
-// pub const MOCK_INVENTORY_SIZE: u32 = 500000000;
+pub const SHIP_COUNT: u32 = 1000000;
+pub const MOCK_INVENTORY_SIZE: u32 = 500000000;
 
 pub const SECONDS_TO_TRAVEL_THROUGH_GATE: f32 = 2.0;
 

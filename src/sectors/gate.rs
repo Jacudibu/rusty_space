@@ -1,24 +1,23 @@
 use crate::components::SelectableEntity;
 use crate::sectors::gate_connection::SetupGateConnectionEvent;
-use crate::sectors::sector::AllSectors;
+use crate::sectors::Sector;
 use crate::utils::KeyValueResource;
 use crate::utils::SectorPosition;
 use crate::{constants, SpriteHandles};
 use bevy::prelude::{
-    Commands, Component, Entity, EventWriter, Name, SpriteBundle, Transform, Vec2,
+    Commands, Component, Entity, EventWriter, Name, Query, SpriteBundle, Transform, Vec2,
 };
-use hexx::Hex;
 
 #[derive(Eq, PartialEq, Hash, Copy, Clone)]
-pub struct GateId {
-    pub from: Hex,
-    pub to: Hex,
+pub struct GatePair {
+    pub from: Entity,
+    pub to: Entity,
 }
 
-impl GateId {
+impl GatePair {
     /// Returns the ID for the connected gate.
     pub fn invert(&self) -> Self {
-        GateId {
+        GatePair {
             from: self.to,
             to: self.from,
         }
@@ -26,30 +25,57 @@ impl GateId {
 }
 
 pub struct GateData {
-    pub id: GateId,
+    pub id: GatePair,
     pub entity: Entity,
     pub world_position: Vec2,
 }
 
 #[derive(Component)]
 pub struct GateComponent {
-    pub id: GateId,
+    pub id: GatePair,
 }
 
-pub type AllGates = KeyValueResource<GateId, GateData>;
+pub type AllGates = KeyValueResource<GatePair, GateData>;
 
 pub fn spawn_gates(
     commands: &mut Commands,
+    sector_query: &mut Query<&mut Sector>,
     sprites: &SpriteHandles,
-    a: SectorPosition,
-    b: SectorPosition,
-    all_sectors: &mut AllSectors,
+    from_pos: SectorPosition,
+    to_pos: SectorPosition,
     all_gates: &mut AllGates,
     gate_connection_events: &mut EventWriter<SetupGateConnectionEvent>,
 ) {
-    let from = spawn_gate(commands, sprites, &a, &b, all_sectors, all_gates);
-    let to = spawn_gate(commands, sprites, &b, &a, all_sectors, all_gates);
-    gate_connection_events.send(SetupGateConnectionEvent { from, to });
+    let [mut from_sector, mut to_sector] = sector_query
+        .get_many_mut([from_pos.sector, to_pos.sector])
+        .unwrap();
+
+    let from_gate = spawn_gate(
+        commands,
+        sprites,
+        &from_pos,
+        &to_pos,
+        &mut from_sector,
+        &to_sector,
+        all_gates,
+    );
+    let to_gate = spawn_gate(
+        commands,
+        sprites,
+        &to_pos,
+        &from_pos,
+        &mut to_sector,
+        &from_sector,
+        all_gates,
+    );
+
+    from_sector.add_gate(commands, from_pos.sector, from_gate, to_pos.sector, to_gate);
+    to_sector.add_gate(commands, to_pos.sector, to_gate, from_pos.sector, from_gate);
+
+    gate_connection_events.send(SetupGateConnectionEvent {
+        from: from_gate,
+        to: to_gate,
+    });
 }
 
 fn spawn_gate(
@@ -57,21 +83,21 @@ fn spawn_gate(
     sprites: &SpriteHandles,
     pos: &SectorPosition,
     other: &SectorPosition,
-    all_sectors: &mut AllSectors,
+    from: &mut Sector,
+    to: &Sector,
     all_gates: &mut AllGates,
 ) -> Entity {
-    let id = GateId {
+    let id = GatePair {
         from: pos.sector,
         to: other.sector,
     };
-    let sector_data = all_sectors.get_mut(&pos.sector).unwrap();
-    let position = sector_data.world_pos + pos.local_position;
+    let position = from.world_pos + pos.local_position;
     let entity = commands
         .spawn((
             GateComponent { id },
             Name::new(format!(
                 "Gate [{},{}] -> [{},{}]",
-                pos.sector.x, pos.sector.y, other.sector.x, other.sector.y
+                from.coordinate.x, from.coordinate.y, to.coordinate.x, to.coordinate.y
             )),
             SelectableEntity::Gate,
             SpriteBundle {
@@ -81,8 +107,6 @@ fn spawn_gate(
             },
         ))
         .id();
-
-    sector_data.add_gate(commands, entity, other.sector);
 
     all_gates.insert(
         id,

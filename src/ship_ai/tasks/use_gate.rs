@@ -1,6 +1,6 @@
 use crate::constants;
-use crate::sectors::InSector;
-use crate::sectors::{AllGateConnections, AllSectors, GateId, SectorId};
+use crate::sectors::{AllGateConnections, GatePair};
+use crate::sectors::{InSector, Sector};
 use crate::ship_ai::task_finished_event::TaskFinishedEvent;
 use crate::ship_ai::task_queue::TaskQueue;
 use crate::ship_ai::task_result::TaskResult;
@@ -8,16 +8,15 @@ use crate::ship_ai::tasks::send_completion_events;
 use crate::ship_ai::{tasks, MoveToEntity};
 use crate::utils::interpolation;
 use bevy::prelude::{
-    error, Commands, Component, Entity, EventReader, EventWriter, Query, Res, ResMut, Time,
-    Transform,
+    error, Commands, Component, Entity, EventReader, EventWriter, Query, Res, Time, Transform,
 };
 use std::sync::{Arc, Mutex};
 
 #[derive(Component)]
 pub struct UseGate {
     pub progress: f32,
-    pub exit_sector: SectorId,
-    pub exit_gate: GateId,
+    pub exit_sector: Entity,
+    pub exit_gate: GatePair,
 }
 
 impl UseGate {
@@ -67,14 +66,15 @@ impl UseGate {
         mut commands: Commands,
         mut event_reader: EventReader<TaskFinishedEvent<Self>>,
         mut all_ships_with_task: Query<(Entity, &mut TaskQueue, &Self)>,
-        mut all_sectors: ResMut<AllSectors>,
+        mut all_sectors: Query<&mut Sector>,
     ) {
         for event in event_reader.read() {
             if let Ok((entity, mut queue, task)) = all_ships_with_task.get_mut(event.entity) {
-                all_sectors
-                    .get_mut(&task.exit_sector)
-                    .unwrap()
-                    .add_ship(&mut commands, entity);
+                all_sectors.get_mut(task.exit_sector).unwrap().add_ship(
+                    &mut commands,
+                    task.exit_sector,
+                    entity,
+                );
 
                 tasks::remove_task_and_add_new_one::<Self>(&mut commands, entity, &mut queue);
             } else {
@@ -90,14 +90,14 @@ impl UseGate {
         mut commands: Commands,
         query: Query<(&Self, &InSector)>,
         mut triggers: EventReader<TaskFinishedEvent<MoveToEntity>>,
-        mut all_sectors: ResMut<AllSectors>,
+        mut all_sectors: Query<&mut Sector>,
     ) {
         for x in triggers.read() {
             let Ok((_, in_sector)) = query.get(x.entity) else {
                 continue;
             };
 
-            let sector = all_sectors.get_mut(&in_sector.get()).unwrap();
+            let mut sector = all_sectors.get_mut(in_sector.get()).unwrap();
             sector.remove_ship(&mut commands, x.entity);
         }
     }

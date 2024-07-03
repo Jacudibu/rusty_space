@@ -1,83 +1,176 @@
-use crate::sectors::sector::AllSectors;
-use crate::sectors::{GateId, SectorId};
-use bevy::prelude::Entity;
-use hexx::Hex;
+use crate::sectors::{GatePair, Sector};
+use bevy::prelude::{Entity, Query};
+use bevy::utils::HashMap;
+use std::cmp::Ordering;
+use std::collections::BinaryHeap;
 
 pub struct PathElement {
-    pub enter_sector: SectorId,
+    pub enter_sector: Entity,
     pub enter_gate_entity: Entity,
-    pub exit_sector: SectorId,
-    pub exit_gate: GateId,
+    pub exit_sector: Entity,
+    pub exit_gate: GatePair,
 }
 
 /// Returns the fastest gate-path between `from` and `to`.   
-pub fn find_path(sectors: &AllSectors, from: Hex, to: Hex) -> Option<Vec<PathElement>> {
-    let path = find_path_internal(sectors, from, to)?;
-
-    let mut result = Vec::with_capacity(path.len() - 1);
-    for i in 0..(path.len() - 1) {
-        let sector = &sectors[&path[i]];
-        let next_sector = &sectors[&path[i + 1]];
-        result.push(PathElement {
-            enter_sector: sector.id,
-            enter_gate_entity: sector.gates[&next_sector.id],
-            exit_sector: next_sector.id,
-            exit_gate: GateId {
-                from: sector.id,
-                to: next_sector.id,
-            },
-        });
-    }
-
-    Some(result)
+pub fn find_path(sectors: &Query<&Sector>, from: Entity, to: Entity) -> Option<Vec<PathElement>> {
+    a_star(sectors, from, to)
 }
 
-fn find_path_internal(sectors: &AllSectors, from: Hex, to: Hex) -> Option<Vec<Hex>> {
-    hexx::algorithms::a_star(from, to, |a, b| {
-        if a == b {
-            return Some(0);
+struct SearchNode {
+    sector: Entity,
+    entry_gate: Entity,
+    cost: u32,
+}
+
+const GATE_COST: u32 = 200;
+
+impl Eq for SearchNode {}
+impl PartialEq for SearchNode {
+    fn eq(&self, other: &Self) -> bool {
+        self.sector == other.sector && self.entry_gate == other.entry_gate
+    }
+}
+
+impl PartialOrd for SearchNode {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for SearchNode {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.cost.cmp(&other.cost)
+    }
+}
+
+fn cost(sectors: &Query<&Sector>, from: Entity, to: Entity) -> Option<u32> {
+    if from == to {
+        return Some(0);
+    }
+
+    let a = sectors.get(from).unwrap();
+
+    if let Some(gate) = a.gates.get(&to) {
+        // TODO: distance to gate as cost
+        Some(GATE_COST)
+    } else {
+        None
+    }
+}
+
+fn reconstruct_path(
+    sectors: &Query<&Sector>,
+    // <(Sector, Gate), NextSector>
+    came_from: &HashMap<(Entity, Entity), Entity>,
+    end: SearchNode,
+) -> Vec<PathElement> {
+    let exit_sector = sectors.get(end.sector).unwrap();
+    let origin = came_from[&(end.sector, end.entry_gate)];
+    let gates = exit_sector.gates.get();
+    let mut path: Vec<_> = std::iter::successors(Some(PathElement {
+        exit_sector: end.sector,
+        exit_gate: origin
+        
+    }), move |&current| {
+        if let Some(confusion) = came_from.get(&(current.exit_sector, current.enter_gate_entity)) {
+
+            Some(PathElement {
+                exit_sector: *confusion,
+
+            })
+        } 
+        else {None}
+    }).reverse().collect()
+}
+
+fn a_star(sectors: &Query<&Sector>, from: Entity, to: Entity) -> Option<Vec<PathElement>> {
+    // TODO: startnode is a vec of all start sector gates
+    let mut open = BinaryHeap::new();
+    // <(Sector, Gate), u32>
+    let mut costs: HashMap<(Entity, Entity), u32> = HashMap::new();
+
+    for (sector, (from_gate, to_gate)) in &sectors.get(from).unwrap().gates {
+        let cost_to_gate = cost(sectors, from, *sector).unwrap() - GATE_COST;
+        let this = (from, *to_gate);
+        costs.insert(this, cost_to_gate);
+        open.push(SearchNode {
+            sector: *sector,
+            entry_gate: *to_gate,
+            cost: cost_to_gate,
+        })
+    }
+
+    // <(Sector, Gate), NextSector>
+    let mut came_from: HashMap<(Entity, Entity), Entity> = HashMap::new();
+
+    while let Some(node) = open.pop() {
+        if node.sector == to {
+            // TODO: multiple paths may lead to the same goal, and this might not be the best yet
+            //       continue until all nodes have a bigger cost than the current best
+            return Some(reconstruct_path(sectors, &came_from, node));
         }
 
-        let sector = sectors.get(&a)?;
-        let target_gate = sector.gates.get(&b)?;
+        let current_cost = costs[&(node.sector, node.entry_gate)];
+        for (sector, (from_gate, to_gate)) in &sectors.get(node.sector).unwrap().gates {
+            let Some(cost) = cost(sectors, node.sector, *sector) else {
+                // No gate found, with how we traverse this, this should never happen?
+                // TODO: Needs some testing, could optimize out the Option if correct
+                continue;
+            };
 
-        // TODO: Distance between gates should affect cost, but sadly we lack information on our origin as long as we use the built-in a_star function
-        //       Spinning our own would in general speed things up since 60%+ of all_neighbors gate connections don't exist here
-        Some(1)
-    })
+            let neighbor = (*sector, *from_gate);
+            let neighbor_cost = current_cost + cost;
+            if !costs.contains_key(&neighbor) || costs[&neighbor] > neighbor_cost {
+                came_from.insert(neighbor, node.sector);
+                costs.insert(neighbor, neighbor_cost);
+                open.push(SearchNode {
+                    sector: *sector,
+                    entry_gate: *to_gate,
+                    cost: neighbor_cost,
+                })
+            }
+        }
+    }
+
+    None
 }
 
 #[cfg(test)]
 mod test {
     use crate::sectors::pathfinding::find_path;
-    use crate::sectors::sector::*;
-    use crate::sectors::sector_data::SectorData;
-    use bevy::prelude::{Entity, Vec2, World};
+    use crate::sectors::*;
+    use bevy::prelude::{Entity, Vec2, Vec3, World};
     use hexx::Hex;
 
-    fn add_sector(all_sectors: &mut AllSectors, pos: Hex, gates: Vec<(Hex, Entity)>) {
-        let mut fake_world = World::default();
-        let mut commands = fake_world.commands();
-        let entity = commands.spawn(SectorComponent { coordinate: pos }).id();
+    fn add_sector(world: &mut World, pos: Hex, gates: Vec<(Hex, Entity)>) -> Entity {
+        let sector = Sector::new(pos, Vec2::ZERO);
+        world.spawn(sector).id()
+    }
 
-        let mut sector_data = SectorData::new(pos, entity, Vec2::ZERO);
-        for (hex, entity) in gates {
-            sector_data.add_gate(&mut commands, entity, hex);
+    fn add_gates(world: &mut World, gates: Vec<((Entity, Vec3), (Entity, Vec3))>) {
+        let mut commands = world.commands();
+        let mut query = world.query::<&mut Sector>();
+        for (a, b) in gates {
+            let [mut a_sector, mut b_sector] = query.get_many_mut(world, [a.0, b.0]).unwrap();
+            todo!();
+            //world.spawn(GateComponent {  })
+
+            a_sector.add_gate(&mut commands, a.0, .., b.0, ..)
         }
 
-        all_sectors.insert(pos, sector_data);
+        world.flush()
     }
 
     #[test]
     fn find_path_to_neighbor() {
-        let mut all_sectors = AllSectors::default();
+        let mut world = World::default();
         let from = Hex::new(0, 0);
         let to = Hex::new(1, 0);
 
         let mock_entity = Entity::from_raw(0);
 
-        add_sector(&mut all_sectors, from, vec![(to, mock_entity)]);
-        add_sector(&mut all_sectors, to, vec![(from, mock_entity)]);
+        add_sector(&mut world, from, vec![(to, mock_entity)]);
+        add_sector(&mut world, to, vec![(from, mock_entity)]);
 
         let result = find_path(&all_sectors, from, to).unwrap();
 

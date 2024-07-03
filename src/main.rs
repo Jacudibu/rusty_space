@@ -61,7 +61,8 @@ fn main() {
             initialize_data,
             (
                 (
-                    sectors::spawn_test_universe,
+                    sectors::spawn_test_sectors,
+                    sectors::spawn_test_gates,
                     mock_helpers::spawn_mock_stations,
                     mock_helpers::spawn_mock_ships,
                 )

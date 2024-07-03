@@ -5,12 +5,12 @@ use crate::game_data::{
     RECIPE_A_ID, RECIPE_B_ID, RECIPE_C_ID, SHIPYARD_MODULE_ID,
 };
 use crate::production::{ProductionComponent, ProductionModule, ShipyardComponent, ShipyardModule};
-use crate::sectors::{AllSectors, SectorId};
+use crate::sectors::{DebugSectors, Sector};
 use crate::session_data::DEBUG_SHIP_CONFIG;
 use crate::{constants, SpriteHandles};
 use bevy::core::Name;
 use bevy::math::Vec2;
-use bevy::prelude::{default, Commands, Res, ResMut, SpriteBundle, Transform};
+use bevy::prelude::{default, Commands, Entity, Query, Res, SpriteBundle, Transform};
 use bevy::utils::HashMap;
 pub struct MockStationProductionArgs {
     modules: Vec<MockStationProductionArgElement>,
@@ -56,19 +56,19 @@ impl MockStationProductionArgElement {
 #[allow(clippy::too_many_arguments)] // It's hopeless... :')
 pub fn spawn_station(
     commands: &mut Commands,
-    all_sectors: &mut AllSectors,
+    sector_query: &mut Query<&mut Sector>,
     sprites: &SpriteHandles,
     name: &str,
     pos: Vec2,
-    sector_id: SectorId,
+    sector_entity: Entity,
     buys: Vec<&ItemDefinition>,
     sells: Vec<&ItemDefinition>,
     production: Option<MockStationProductionArgs>,
     shipyard: Option<bool>,
 ) {
-    let sector_data = all_sectors.get_mut(&sector_id).unwrap();
+    let mut sector = sector_query.get_mut(sector_entity).unwrap();
 
-    let pos = pos + sector_data.world_pos;
+    let pos = pos + sector.world_pos;
     let entity = commands
         .spawn((
             Name::new(name.to_string()),
@@ -112,25 +112,23 @@ pub fn spawn_station(
         });
     }
 
-    sector_data.add_station(commands, entity);
+    sector.add_station(commands, sector_entity, entity);
 }
 
 pub fn spawn_mock_stations(
     mut commands: Commands,
+    mut sector_query: Query<&mut Sector>,
     sprites: Res<SpriteHandles>,
     game_data: Res<GameData>,
-    mut all_sectors: ResMut<AllSectors>,
+    debug_sectors: Res<DebugSectors>,
 ) {
-    let center = SectorId::default();
-    let bottom_left = SectorId::new(0, -1);
-
     spawn_station(
         &mut commands,
-        &mut all_sectors,
+        &mut sector_query,
         &sprites,
         "Station A",
         Vec2::new(-200.0, -200.0),
-        bottom_left,
+        debug_sectors.bottom_left,
         vec![&game_data.items[&DEBUG_ITEM_ID_A]],
         vec![&game_data.items[&DEBUG_ITEM_ID_B]],
         Some(MockStationProductionArgs::new(vec![
@@ -140,11 +138,11 @@ pub fn spawn_mock_stations(
     );
     spawn_station(
         &mut commands,
-        &mut all_sectors,
+        &mut sector_query,
         &sprites,
         "Station B",
         Vec2::new(200.0, -200.0),
-        center,
+        debug_sectors.center,
         vec![&game_data.items[&DEBUG_ITEM_ID_B]],
         vec![&game_data.items[&DEBUG_ITEM_ID_C]],
         Some(MockStationProductionArgs::new(vec![
@@ -154,11 +152,11 @@ pub fn spawn_mock_stations(
     );
     spawn_station(
         &mut commands,
-        &mut all_sectors,
+        &mut sector_query,
         &sprites,
         "Station C",
         Vec2::new(0.0, 200.0),
-        center,
+        debug_sectors.center,
         vec![&game_data.items[&DEBUG_ITEM_ID_C]],
         vec![&game_data.items[&DEBUG_ITEM_ID_A]],
         Some(MockStationProductionArgs::new(vec![
@@ -168,11 +166,11 @@ pub fn spawn_mock_stations(
     );
     spawn_station(
         &mut commands,
-        &mut all_sectors,
+        &mut sector_query,
         &sprites,
         "Shipyard",
         Vec2::new(0.0, 0.0),
-        center,
+        debug_sectors.center,
         vec![
             &game_data.items[&DEBUG_ITEM_ID_A],
             &game_data.items[&DEBUG_ITEM_ID_B],

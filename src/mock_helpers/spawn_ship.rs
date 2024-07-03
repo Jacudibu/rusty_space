@@ -1,20 +1,21 @@
 use crate::components::{Engine, Inventory, SelectableEntity, Velocity};
-use crate::sectors::{AllSectors, SectorId};
+use crate::sectors::{DebugSectors, Sector};
 use crate::ship_ai::{AutoTradeBehavior, Idle};
 use crate::{constants, SpriteHandles};
 use bevy::core::Name;
 use bevy::math::{Quat, Vec2};
-use bevy::prelude::{default, Commands, Res, ResMut, SpriteBundle, Transform};
+use bevy::prelude::{default, Commands, Entity, Query, Res, SpriteBundle, Transform};
+
 pub fn spawn_ship(
     commands: &mut Commands,
     sprites: &SpriteHandles,
     name: String,
-    all_sectors: &mut AllSectors,
-    sector_id: SectorId,
+    sector_query: &mut Query<&mut Sector>,
+    sector_entity: Entity,
     position: Vec2,
     rotation: f32,
 ) {
-    let sector_data = all_sectors.get_mut(&sector_id).unwrap();
+    let mut sector_data = sector_query.get_mut(sector_entity).unwrap();
 
     let entity = commands
         .spawn((
@@ -37,21 +38,22 @@ pub fn spawn_ship(
         ))
         .id();
 
-    sector_data.add_ship(commands, entity);
+    sector_data.add_ship(commands, sector_entity, entity);
 }
 
 pub fn spawn_mock_ships(
     mut commands: Commands,
     sprites: Res<SpriteHandles>,
-    mut sectors: ResMut<AllSectors>,
+    mut sector_query: Query<&mut Sector>,
+    debug_sectors: Res<DebugSectors>,
 ) {
     for i in 0..constants::SHIP_COUNT {
         spawn_ship(
             &mut commands,
             &sprites,
             format!("Ship {i}"),
-            &mut sectors,
-            SectorId::default(),
+            &mut sector_query,
+            debug_sectors.center,
             Vec2::ZERO,
             ((std::f32::consts::PI * 2.0) / constants::SHIP_COUNT as f32) * i as f32,
         )
