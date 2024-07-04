@@ -1,5 +1,6 @@
 use crate::camera::{moving, zooming};
-use bevy::prelude::{App, IntoSystemConfigs, Plugin, Update};
+use crate::gui::MouseCursorOverUiState;
+use bevy::prelude::{in_state, App, IntoSystemConfigs, Plugin, Update};
 
 pub struct CameraControllerPlugin;
 impl Plugin for CameraControllerPlugin {
@@ -10,7 +11,8 @@ impl Plugin for CameraControllerPlugin {
                 moving::move_camera,
                 moving::animate_smooth_camera_movement.after(moving::move_camera),
                 zooming::zoom_camera_with_buttons,
-                zooming::zoom_camera_with_scroll_wheel,
+                zooming::zoom_camera_with_scroll_wheel
+                    .run_if(in_state(MouseCursorOverUiState::NotOverUI)),
                 zooming::animate_smooth_camera_zoom
                     .after(zooming::zoom_camera_with_scroll_wheel)
                     .after(zooming::zoom_camera_with_buttons),

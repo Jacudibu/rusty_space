@@ -333,6 +333,7 @@ pub fn list_selection_details(
         .title_bar(false)
         .collapsible(false)
         .resizable(false)
+        .vscroll(true)
         .show(context.ctx_mut(), |ui| {
             for (_, selectable, name, storage, velocity, task_queue, _, _, _, _, _) in
                 selected.iter()

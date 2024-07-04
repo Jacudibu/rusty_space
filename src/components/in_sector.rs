@@ -3,7 +3,7 @@ use bevy::prelude::Component;
 
 /// Component for entities inside sectors.
 ///
-/// These are managed by [SectorData], so if you feel a need to manually add or remove them,
+/// These are managed by [Sector], so if you feel a need to manually add or remove them,
 /// you should probably use the respective functions there.
 #[derive(Component, PartialEq, Eq)]
 pub struct InSector {

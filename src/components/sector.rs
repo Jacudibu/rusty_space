@@ -54,8 +54,19 @@ impl Sector {
         sector: SectorEntity,
         entity: AsteroidEntity,
     ) {
-        self.asteroids.insert(entity);
+        self.add_asteroid_in_place(entity);
         self.in_sector(commands, sector, entity.into());
+    }
+
+    /// Adds asteroid to this sectors' asteroid set.
+    pub fn add_asteroid_in_place(&mut self, entity: AsteroidEntity) {
+        self.asteroids.insert(entity);
+    }
+
+    /// Removes asteroid from this sector, but doesn't touch any [InSector] components.
+    pub fn remove_asteroid_in_place(&mut self, entity: AsteroidEntity) {
+        let result = self.asteroids.remove(&entity);
+        debug_assert!(result, "removed asteroids should always be in sector!");
     }
 
     /// Adds ship to this sector and inserts the [InSector] component to it.
