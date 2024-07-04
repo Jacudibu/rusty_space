@@ -1,13 +1,13 @@
 use crate::components::{Asteroid, Sector};
 use crate::map_layout::MapLayout;
 use crate::utils::{
-    spawn_helpers, AsteroidEntity, CurrentSimulationTimestamp, Milliseconds, SectorEntity,
-    SimulationTime, SimulationTimestamp,
+    spawn_helpers, AsteroidEntity, CurrentSimulationTimestamp, SectorEntity, SimulationTime,
+    SimulationTimestamp,
 };
 use crate::SpriteHandles;
 use bevy::prelude::{
     on_event, Alpha, App, Commands, Event, EventReader, IntoSystemConfigs, Plugin, Query, Res,
-    ResMut, Resource, Sprite, Transform, Update, Vec2, Vec3, Visibility, With,
+    ResMut, Resource, Sprite, Update, Vec2, Vec3, Visibility, With,
 };
 use bevy::time::Time;
 use bevy::utils::HashSet;

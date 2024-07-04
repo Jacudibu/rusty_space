@@ -25,7 +25,7 @@ pub fn spawn_asteroid(
             AutoTradeBehavior::default(),
             Velocity {
                 forward: asteroid_data.forward_velocity,
-                angular: asteroid_data.angular_velocity,
+                angular: 0.0,
             },
             SpriteBundle {
                 texture: sprites.asteroid.clone(),

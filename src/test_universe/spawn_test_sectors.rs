@@ -18,7 +18,6 @@ pub fn spawn_test_sectors(
 
     let asteroids = Some(SectorAsteroidData {
         forward_velocity: 10.0,
-        angular_velocity: 0.001,
     });
 
     let center_sector = spawn_sector(
