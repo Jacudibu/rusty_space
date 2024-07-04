@@ -1,8 +1,9 @@
+use crate::asteroid_system::AsteroidPlugin;
 use crate::camera::CameraControllerPlugin;
 use crate::diagnostics::DiagnosticsPlugin;
 use crate::entity_selection::EntitySelectionPlugin;
 use crate::game_data::GameData;
-use crate::gizmos::SectorPlugin;
+use crate::gizmos::GizmoPlugin;
 use crate::production::ProductionPlugin;
 use crate::session_data::SessionData;
 use crate::ship_ai::ShipAiPlugin;
@@ -18,6 +19,7 @@ use bevy::render::camera::ScalingMode;
 use bevy::DefaultPlugins;
 use bevy_egui::EguiPlugin;
 
+mod asteroid_system;
 mod camera;
 mod components;
 mod constants;
@@ -53,7 +55,8 @@ fn main() {
     .add_plugins(EntitySelectionPlugin)
     .add_plugins(ShipAiPlugin)
     .add_plugins(SimulationTimePlugin)
-    .add_plugins(SectorPlugin)
+    .add_plugins(GizmoPlugin)
+    .add_plugins(AsteroidPlugin)
     .add_plugins(CameraControllerPlugin)
     .add_plugins(TestUniversePlugin)
     .add_plugins(DiagnosticsPlugin)
@@ -89,22 +92,26 @@ fn get_window_title() -> String {
 
 #[derive(Resource)]
 pub struct SpriteHandles {
-    station: Handle<Image>,
-    station_selected: Handle<Image>,
-    ship: Handle<Image>,
-    ship_selected: Handle<Image>,
+    asteroid: Handle<Image>,
+    asteroid_selected: Handle<Image>,
     gate: Handle<Image>,
     gate_selected: Handle<Image>,
+    ship: Handle<Image>,
+    ship_selected: Handle<Image>,
+    station: Handle<Image>,
+    station_selected: Handle<Image>,
 }
 
 pub fn initialize_data(mut commands: Commands, asset_server: Res<AssetServer>) {
     let sprites = SpriteHandles {
-        station: asset_server.load("station.png"),
-        station_selected: asset_server.load("station_selected.png"),
-        ship: asset_server.load("ship.png"),
-        ship_selected: asset_server.load("ship_selected.png"),
+        asteroid: asset_server.load("asteroid.png"),
+        asteroid_selected: asset_server.load("asteroid_selected.png"),
         gate: asset_server.load("gate.png"),
         gate_selected: asset_server.load("gate_selected.png"),
+        ship: asset_server.load("ship.png"),
+        ship_selected: asset_server.load("ship_selected.png"),
+        station: asset_server.load("station.png"),
+        station_selected: asset_server.load("station_selected.png"),
     };
     commands.insert_resource(sprites);
 

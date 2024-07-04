@@ -1,3 +1,4 @@
+mod asteroid;
 mod engine;
 mod gate;
 mod in_sector;
@@ -10,6 +11,6 @@ mod trade;
 mod velocity;
 
 pub use {
-    engine::Engine, gate::*, in_sector::*, inventory::Inventory, sector::*, selectable_entity::*,
-    ship::*, station::*, trade::*, velocity::Velocity,
+    asteroid::*, engine::Engine, gate::*, in_sector::*, inventory::Inventory, sector::*,
+    selectable_entity::*, ship::*, station::*, trade::*, velocity::Velocity,
 };

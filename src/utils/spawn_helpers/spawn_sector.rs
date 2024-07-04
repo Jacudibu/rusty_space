@@ -1,11 +1,18 @@
-use crate::components::Sector;
+use crate::asteroid_system::SectorWasSpawnedEvent;
+use crate::components::{Sector, SectorAsteroidData};
 use crate::utils::SectorEntity;
 use bevy::core::Name;
 use bevy::math::{Vec2, Vec3};
-use bevy::prelude::{Commands, SpatialBundle, Transform};
+use bevy::prelude::{Commands, EventWriter, SpatialBundle, Transform};
 use hexx::{Hex, HexLayout};
 
-pub fn spawn_sector(commands: &mut Commands, layout: &HexLayout, coordinate: Hex) -> SectorEntity {
+pub fn spawn_sector(
+    commands: &mut Commands,
+    layout: &HexLayout,
+    coordinate: Hex,
+    asteroids: Option<SectorAsteroidData>,
+    sector_spawn_event: &mut EventWriter<SectorWasSpawnedEvent>,
+) -> SectorEntity {
     let position = layout.hex_to_world_pos(coordinate);
     // TODO: remove this once hexx is updated to same glam crate as bevy 0.14
     let position = Vec2::new(position.x, position.y);
@@ -13,7 +20,7 @@ pub fn spawn_sector(commands: &mut Commands, layout: &HexLayout, coordinate: Hex
     let entity = commands
         .spawn((
             Name::new(format!("[{},{}]", coordinate.x, coordinate.y)),
-            Sector::new(coordinate, position),
+            Sector::new(coordinate, position, asteroids),
             SpatialBundle {
                 transform: Transform {
                     translation: Vec3::new(position.x, position.y, 0.0),
@@ -24,5 +31,7 @@ pub fn spawn_sector(commands: &mut Commands, layout: &HexLayout, coordinate: Hex
         ))
         .id();
 
-    SectorEntity::from(entity)
+    let sector = SectorEntity::from(entity);
+    sector_spawn_event.send(SectorWasSpawnedEvent { sector });
+    sector
 }

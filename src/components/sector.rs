@@ -1,5 +1,5 @@
 use crate::components::InSector;
-use crate::utils::{GateEntity, SectorEntity, ShipEntity, StationEntity};
+use crate::utils::{AsteroidEntity, GateEntity, SectorEntity, ShipEntity, StationEntity};
 use bevy::prelude::{Commands, Component, Entity, Vec2};
 use bevy::utils::{HashMap, HashSet};
 use hexx::Hex;
@@ -13,6 +13,16 @@ pub struct Sector {
     pub gates: HashMap<SectorEntity, GatePairInSector>,
     ships: HashSet<ShipEntity>,
     stations: HashSet<StationEntity>,
+
+    pub asteroid_data: Option<SectorAsteroidData>,
+    pub asteroids: HashSet<AsteroidEntity>,
+}
+
+#[derive(Copy, Clone)]
+pub struct SectorAsteroidData {
+    // All asteroids within a Sector behave the same
+    pub forward_velocity: f32,
+    pub angular_velocity: f32,
 }
 
 #[derive(Eq, PartialEq, Hash, Copy, Clone)]
@@ -25,14 +35,27 @@ pub struct GatePairInSector {
 }
 
 impl Sector {
-    pub fn new(coordinate: Hex, world_pos: Vec2) -> Self {
+    pub fn new(coordinate: Hex, world_pos: Vec2, asteroids: Option<SectorAsteroidData>) -> Self {
         Sector {
             coordinate,
             world_pos,
+            asteroid_data: asteroids,
+            asteroids: HashSet::new(),
             gates: HashMap::new(),
             ships: HashSet::new(),
             stations: HashSet::new(),
         }
+    }
+
+    /// Adds asteroid to this sector and inserts the [InSector] component to it.
+    pub fn add_asteroid(
+        &mut self,
+        commands: &mut Commands,
+        sector: SectorEntity,
+        entity: AsteroidEntity,
+    ) {
+        self.asteroids.insert(entity);
+        self.in_sector(commands, sector, entity.into());
     }
 
     /// Adds ship to this sector and inserts the [InSector] component to it.

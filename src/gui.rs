@@ -21,6 +21,7 @@ use crate::SpriteHandles;
 
 #[derive(Default)]
 struct SelectableCount {
+    pub asteroids: u32,
     pub gates: u32,
     pub stations: u32,
     pub ships: u32,
@@ -33,9 +34,10 @@ impl SelectableCount {
 
     pub fn add(mut self, selectable_entity: &SelectableEntity) -> Self {
         match selectable_entity {
+            SelectableEntity::Asteroid => self.asteroids += 1,
             SelectableEntity::Gate => self.gates += 1,
-            SelectableEntity::Station => self.stations += 1,
             SelectableEntity::Ship => self.ships += 1,
+            SelectableEntity::Station => self.stations += 1,
         }
         self
     }
@@ -43,6 +45,7 @@ impl SelectableCount {
 
 #[derive(Resource)]
 pub struct UiIcons {
+    pub asteroid: SizedTexture,
     pub gate: SizedTexture,
     pub ship: SizedTexture,
     pub station: SizedTexture,
@@ -56,9 +59,10 @@ pub struct UiIcons {
 impl UiIcons {
     pub fn get_selectable(&self, selectable: &SelectableEntity) -> SizedTexture {
         match selectable {
+            SelectableEntity::Asteroid => self.asteroid,
             SelectableEntity::Gate => self.gate,
-            SelectableEntity::Station => self.station,
             SelectableEntity::Ship => self.ship,
+            SelectableEntity::Station => self.station,
         }
     }
 
@@ -88,6 +92,7 @@ pub fn initialize(
     const ICON_SIZE: [f32; 2] = [16.0, 16.0];
 
     let icons = UiIcons {
+        asteroid: SizedTexture::new(contexts.add_image(sprites.asteroid.clone()), ICON_SIZE),
         gate: SizedTexture::new(contexts.add_image(sprites.gate.clone()), ICON_SIZE),
         ship: SizedTexture::new(contexts.add_image(sprites.ship.clone()), ICON_SIZE),
         station: SizedTexture::new(contexts.add_image(sprites.station.clone()), ICON_SIZE),

@@ -5,8 +5,8 @@ use crate::gizmos::sector_outlines::{draw_sector_outlines, SectorOutlineGizmos};
 use crate::map_layout::MapLayout;
 use bevy::app::Update;
 use bevy::prelude::{on_event, App, AppGizmoBuilder, IntoSystemConfigs, Plugin};
-pub struct SectorPlugin;
-impl Plugin for SectorPlugin {
+pub struct GizmoPlugin;
+impl Plugin for GizmoPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<MapLayout>()
             .init_gizmo_group::<SectorOutlineGizmos>()
