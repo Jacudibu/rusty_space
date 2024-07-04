@@ -1,4 +1,5 @@
 use crate::camera::CameraControllerPlugin;
+use crate::diagnostics::DiagnosticsPlugin;
 use crate::entity_selection::EntitySelectionPlugin;
 use crate::game_data::GameData;
 use crate::gizmos::SectorPlugin;
@@ -9,7 +10,6 @@ use crate::test_universe::TestUniversePlugin;
 use crate::utils::SimulationTimePlugin;
 use bevy::asset::AssetServer;
 use bevy::core::Name;
-use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::prelude::{
     App, AppExtStates, Camera2dBundle, Commands, Handle, Image, ImagePlugin, IntoSystemConfigs,
     PluginGroup, PreUpdate, Res, Resource, Startup, Update, Window, WindowPlugin,
@@ -21,6 +21,7 @@ use bevy_egui::EguiPlugin;
 mod camera;
 mod components;
 mod constants;
+mod diagnostics;
 mod entity_selection;
 mod game_data;
 mod gizmos;
@@ -55,6 +56,7 @@ fn main() {
     .add_plugins(SectorPlugin)
     .add_plugins(CameraControllerPlugin)
     .add_plugins(TestUniversePlugin)
+    .add_plugins(DiagnosticsPlugin)
     .insert_resource(GameData::mock_data())
     .insert_resource(SessionData::mock_data())
     .init_state::<gui::MouseCursorOverUiState>()
@@ -71,11 +73,6 @@ fn main() {
             physics::move_things.after(ship_ai::MoveToEntity::run_tasks),
         ),
     );
-
-    if constants::SHIP_COUNT > 10000 {
-        app.add_plugins(FrameTimeDiagnosticsPlugin)
-            .add_plugins(LogDiagnosticsPlugin::default());
-    }
 
     app.run();
 }
