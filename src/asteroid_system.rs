@@ -2,7 +2,6 @@ use crate::components::{Asteroid, Sector};
 use crate::map_layout::MapLayout;
 use crate::utils::{spawn_helpers, AsteroidEntity, SectorEntity};
 use crate::{constants, SpriteHandles};
-use bevy::color::Color;
 use bevy::prelude::{
     error, on_event, Alpha, App, Commands, Event, EventReader, IntoSystemConfigs, Plugin, Query,
     Res, ResMut, Resource, Sprite, Transform, Update, Vec2, Vec3, Visibility, With,
@@ -27,7 +26,7 @@ impl Plugin for AsteroidPlugin {
                 Update,
                 (
                     spawn_asteroids.run_if(on_event::<SectorWasSpawnedEvent>()),
-                    make_asteroids_disappear_when_they_leave_sector,
+                    make_asteroids_disappear_when_they_leave_sector.before(spawn_asteroids),
                     fade_asteroids,
                 ),
             );
@@ -50,18 +49,26 @@ pub fn spawn_asteroids(
             continue;
         };
 
-        for i in 0..constants::ASTEROID_COUNT {
-            let local_pos = Vec2::splat(i as f32 * 25.0);
-            spawn_helpers::spawn_asteroid(
-                &mut commands,
-                &sprites,
-                format!("Asteroid {i}"),
-                &mut sector,
-                event.sector,
-                &asteroid_data,
-                local_pos,
-                0.0,
-            );
+        const ASTEROID_CELLS: i32 = 400; // Total = ASTEROID_CELLS² * 4
+        const ASTEROID_DISTANCE: f32 = 0.5;
+
+        for ix in 0..ASTEROID_CELLS {
+            for iy in 0..ASTEROID_CELLS {
+                for (x, y) in [(ix, iy), (ix, -iy), (-ix, iy), (-ix, -iy)] {
+                    let local_pos =
+                        Vec2::new(x as f32 * ASTEROID_DISTANCE, y as f32 * ASTEROID_DISTANCE);
+                    spawn_helpers::spawn_asteroid(
+                        &mut commands,
+                        &sprites,
+                        format!("Asteroid [{x},{y}]"),
+                        &mut sector,
+                        event.sector,
+                        &asteroid_data,
+                        local_pos,
+                        0.0,
+                    );
+                }
+            }
         }
     }
 }
@@ -78,18 +85,19 @@ fn is_point_within_hexagon(point: Vec3, edges: [[hexx::Vec2; 2]; 6]) -> bool {
     intersections == 1
 }
 
-/* Performance Ideas
- Asteroids are supposed to move very slowly, so this really doesn't need to be checked every frame for every asteroid.
- Keep a resource with a VecDequeue of all Sectors with asteroids, and only test one sector per frame.
-*/
-
 #[derive(Resource, Default)]
 pub struct FadingAsteroids {
     pub asteroids: HashSet<AsteroidEntity>,
 }
 
+/* Performance Ideas
+ Asteroids are supposed to move very slowly, so this really doesn't need to be checked every frame for every asteroid.
+ Keep a resource with a VecDequeue of all Sectors with asteroids, and only test one sector per frame.
+*/
+
+/// Needs to run before [spawn_asteroids] in order to ensure no new asteroids are spawned which aren't yet synced.
 pub fn make_asteroids_disappear_when_they_leave_sector(
-    mut asteroids: Query<&Transform, With<Asteroid>>,
+    asteroids: Query<&Transform, With<Asteroid>>,
     mut fading_asteroids: ResMut<FadingAsteroids>,
     mut sector: Query<&mut Sector>,
     map_layout: Res<MapLayout>,
@@ -101,10 +109,7 @@ pub fn make_asteroids_disappear_when_they_leave_sector(
 
         let mut removals = Vec::new();
         for asteroid_entity in sector.asteroids.iter() {
-            let Ok(transform) = asteroids.get_mut(asteroid_entity.into()) else {
-                error!("Was unable to find asteroid {asteroid_entity}");
-                continue;
-            };
+            let transform = asteroids.get(asteroid_entity.into()).unwrap();
 
             if is_point_within_hexagon(transform.translation, edges) {
                 continue;
