@@ -2,17 +2,29 @@ use bevy::prelude::{Commands, Component, Entity, Query, Res, Transform};
 
 use crate::components::{BuyOrders, InSector, Inventory, Sector, SellOrders, TradeOrder};
 use crate::gizmos::find_path;
-use crate::ship_ai::{Idle, TaskInsideQueue, TaskQueue};
+use crate::ship_ai::ship_is_idle_filter::ShipIsIdleFilter;
+use crate::ship_ai::{TaskInsideQueue, TaskQueue};
 use crate::trade_plan::TradePlan;
-use crate::utils::{ExchangeWareData, SimulationTime, TradeIntent};
+use crate::utils::{ExchangeWareData, SimulationTime, SimulationTimestamp, TradeIntent};
 
 #[derive(Component)]
-pub struct AutoTradeBehavior;
+pub struct AutoTradeBehavior {
+    pub next_idle_update: SimulationTimestamp,
+}
 
+impl Default for AutoTradeBehavior {
+    fn default() -> Self {
+        Self {
+            next_idle_update: SimulationTimestamp::MIN,
+        }
+    }
+}
+
+#[allow(clippy::too_many_arguments)]
 pub fn handle_idle_ships(
     mut commands: Commands,
     simulation_time: Res<SimulationTime>,
-    mut ships: Query<(Entity, &AutoTradeBehavior, &mut Idle, &InSector)>,
+    mut ships: Query<(Entity, &mut AutoTradeBehavior, &InSector), ShipIsIdleFilter>,
     mut buy_orders: Query<(Entity, &mut BuyOrders, &InSector)>,
     mut sell_orders: Query<(Entity, &mut SellOrders, &InSector)>,
     mut inventories: Query<&mut Inventory>,
@@ -23,12 +35,12 @@ pub fn handle_idle_ships(
 
     ships
         .iter_mut()
-        .filter(|(_, _, task, _)| now.has_passed(task.next_update))
-        .for_each(|(ship_entity, _behavior, mut task, ship_sector)| {
+        .filter(|(_, behavior, _)| now.has_passed(behavior.next_idle_update))
+        .for_each(|(ship_entity, mut behavior, ship_sector)| {
             let inventory = inventories.get(ship_entity).unwrap();
             let plan = TradePlan::create_from(inventory.capacity, &buy_orders, &sell_orders);
             let Some(plan) = plan else {
-                task.next_update = now.add_seconds(2);
+                behavior.next_idle_update = now.add_seconds(2);
                 return;
             };
             let [mut this_inventory, mut seller_inventory, mut buyer_inventory] = inventories
@@ -120,7 +132,6 @@ pub fn handle_idle_ships(
             });
 
             let mut commands = commands.entity(ship_entity);
-            commands.remove::<Idle>();
             queue[0].create_and_insert_component(&mut commands);
             commands.insert(queue);
         });

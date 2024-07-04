@@ -2,15 +2,12 @@ use bevy::prelude::{Commands, Component, Entity, EventWriter, Mut};
 use std::sync::{Arc, Mutex};
 
 mod exchange_wares;
-mod idle;
 mod move_to_entity;
 mod use_gate;
 
 use crate::ship_ai::task_finished_event::TaskFinishedEvent;
 use crate::ship_ai::task_queue::TaskQueue;
-pub use {
-    exchange_wares::ExchangeWares, idle::Idle, move_to_entity::MoveToEntity, use_gate::UseGate,
-};
+pub use {exchange_wares::ExchangeWares, move_to_entity::MoveToEntity, use_gate::UseGate};
 
 pub fn send_completion_events<T: Component>(
     mut event_writer: EventWriter<TaskFinishedEvent<T>>,
@@ -42,7 +39,5 @@ pub fn remove_task_and_add_new_one<T: Component>(
     entity_commands.remove::<T>();
     if let Some(next_task) = queue.front() {
         next_task.create_and_insert_component(&mut entity_commands);
-    } else {
-        entity_commands.insert(Idle::default());
     }
 }

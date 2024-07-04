@@ -1,5 +1,5 @@
 use crate::components::{Engine, Inventory, Sector, SelectableEntity, Ship, Velocity};
-use crate::ship_ai::{AutoTradeBehavior, Idle};
+use crate::ship_ai::AutoTradeBehavior;
 use crate::utils::{SectorEntity, ShipEntity};
 use crate::{constants, SpriteHandles};
 use bevy::core::Name;
@@ -22,8 +22,7 @@ pub fn spawn_ship(
             Name::new(name),
             Ship,
             SelectableEntity::Ship,
-            AutoTradeBehavior,
-            Idle::default(),
+            AutoTradeBehavior::default(),
             Engine::default(),
             Velocity::default(),
             Inventory::new(100),
