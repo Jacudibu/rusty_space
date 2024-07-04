@@ -11,7 +11,6 @@ use bevy::prelude::{
 };
 use bevy::time::Time;
 use bevy::utils::HashSet;
-use hexx::Hex;
 
 /// ### General Idea
 /// Every Sector may have asteroids inside it, defined by its [SectorAsteroidData].
@@ -49,12 +48,6 @@ pub fn spawn_asteroids(
     mut sectors: Query<&mut Sector>,
     map_layout: Res<MapLayout>,
 ) {
-    // TODO glam hexx update 0.14 can skip that silly map conversion...
-    let hex_edges = map_layout
-        .hex_layout
-        .all_edge_coordinates(Hex::ZERO)
-        .map(|x| x.map(|x| Vec2::new(x.x, x.y)));
-
     let now = simulation_time.now();
 
     for event in sector_spawns.read() {
@@ -73,7 +66,7 @@ pub fn spawn_asteroids(
                         Vec2::new(x as f32 * ASTEROID_DISTANCE, y as f32 * ASTEROID_DISTANCE);
                     let despawn_at = calculate_asteroid_despawn_time(
                         &now,
-                        hex_edges,
+                        map_layout.hex_edge_vertices,
                         local_pos,
                         Vec2::Y * asteroid_data.forward_velocity,
                     );

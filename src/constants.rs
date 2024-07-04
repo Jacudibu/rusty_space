@@ -10,4 +10,8 @@ pub const GATE_LAYER: f32 = 5.0;
 /// Sadly linestrip depth seems to be ignored by 2D Cameras. Right now this constant purely exists to avoid magic numbers.
 pub const GATE_CONNECTION_LAYER: f32 = 0.0;
 
+/// How big should our sectors be?
 pub const SECTOR_SIZE: f32 = 500.0;
+
+/// How much of [SECTOR_SIZE] is actually part of the sector. This is where the borders are drawn and stuff starts despawning.
+pub const SECTOR_AREA_PERCENTAGE: f32 = 0.99;
