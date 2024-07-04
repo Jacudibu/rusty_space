@@ -20,7 +20,12 @@ fn init(mut commands: Commands) {
         PerfUiEntryFPSWorst::default(),
         PerfUiEntryFrameTime::default(),
         PerfUiEntryFrameTimeWorst::default(),
-        PerfUiEntryEntityCount::default(),
+        PerfUiEntryEntityCount {
+            digits: 7,
+            threshold_highlight: None,
+            color_gradient: ColorGradient::new_preset_gyr(50000.0, 200000.0, 500000.0).unwrap(),
+            ..Default::default()
+        },
         PerfUiEntryCpuUsage::default(),
         PerfUiEntryMemUsage::default(),
     ));
