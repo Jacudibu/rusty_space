@@ -1,8 +1,11 @@
 use crate::components::InSector;
-use crate::utils::{AsteroidEntity, GateEntity, SectorEntity, ShipEntity, StationEntity};
+use crate::utils::{
+    AsteroidEntityWithLifetime, GateEntity, SectorEntity, ShipEntity, StationEntity,
+};
 use bevy::prelude::{Commands, Component, Entity, Vec2};
 use bevy::utils::{HashMap, HashSet};
 use hexx::Hex;
+use std::collections::BinaryHeap;
 
 /// Marker Component for Sectors
 #[derive(Component)]
@@ -15,7 +18,7 @@ pub struct Sector {
     stations: HashSet<StationEntity>,
 
     pub asteroid_data: Option<SectorAsteroidData>,
-    pub asteroids: HashSet<AsteroidEntity>,
+    pub asteroids: BinaryHeap<AsteroidEntityWithLifetime>,
 }
 
 #[derive(Copy, Clone)]
@@ -40,7 +43,7 @@ impl Sector {
             coordinate,
             world_pos,
             asteroid_data: asteroids,
-            asteroids: HashSet::new(),
+            asteroids: BinaryHeap::new(),
             gates: HashMap::new(),
             ships: HashSet::new(),
             stations: HashSet::new(),
@@ -52,21 +55,15 @@ impl Sector {
         &mut self,
         commands: &mut Commands,
         sector: SectorEntity,
-        entity: AsteroidEntity,
+        entity: AsteroidEntityWithLifetime,
     ) {
         self.add_asteroid_in_place(entity);
-        self.in_sector(commands, sector, entity.into());
+        self.in_sector(commands, sector, entity.entity.into());
     }
 
     /// Adds asteroid to this sectors' asteroid set.
-    pub fn add_asteroid_in_place(&mut self, entity: AsteroidEntity) {
-        self.asteroids.insert(entity);
-    }
-
-    /// Removes asteroid from this sector, but doesn't touch any [InSector] components.
-    pub fn remove_asteroid_in_place(&mut self, entity: AsteroidEntity) {
-        let result = self.asteroids.remove(&entity);
-        debug_assert!(result, "removed asteroids should always be in sector!");
+    pub fn add_asteroid_in_place(&mut self, entity: AsteroidEntityWithLifetime) {
+        self.asteroids.push(entity);
     }
 
     /// Adds ship to this sector and inserts the [InSector] component to it.

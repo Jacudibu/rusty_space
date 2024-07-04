@@ -1,6 +1,6 @@
 use crate::components::{Asteroid, Sector, SectorAsteroidData, SelectableEntity, Velocity};
 use crate::ship_ai::AutoTradeBehavior;
-use crate::utils::{AsteroidEntity, SectorEntity};
+use crate::utils::{AsteroidEntity, AsteroidEntityWithLifetime, SectorEntity, SimulationTimestamp};
 use crate::{constants, SpriteHandles};
 use bevy::core::Name;
 use bevy::math::{Quat, Vec2};
@@ -15,6 +15,7 @@ pub fn spawn_asteroid(
     asteroid_data: &SectorAsteroidData,
     local_position: Vec2,
     rotation: f32,
+    despawn_at: SimulationTimestamp,
 ) {
     let entity = commands
         .spawn((
@@ -38,5 +39,12 @@ pub fn spawn_asteroid(
         ))
         .id();
 
-    sector.add_asteroid(commands, sector_entity, AsteroidEntity::from(entity));
+    sector.add_asteroid(
+        commands,
+        sector_entity,
+        AsteroidEntityWithLifetime {
+            entity: AsteroidEntity::from(entity),
+            despawn_at,
+        },
+    );
 }
