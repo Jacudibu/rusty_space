@@ -17,7 +17,7 @@ pub fn spawn_asteroid(
     sector_entity: SectorEntity,
     local_position: Vec2,
     velocity: Vec2,
-    rotation: f32,
+    sprite_rotation: f32,
     despawn_at: SimulationTimestamp,
 ) {
     let entity = commands
@@ -26,11 +26,11 @@ pub fn spawn_asteroid(
             Asteroid { ore: 100 },
             SelectableEntity::Asteroid,
             AutoTradeBehavior::default(),
-            ConstantVelocity::new(velocity),
+            ConstantVelocity::new(velocity, sprite_rotation),
             SpriteBundle {
                 texture: sprites.asteroid.clone(),
                 transform: Transform {
-                    rotation: Quat::from_rotation_z(rotation),
+                    rotation: Quat::from_rotation_z(sprite_rotation),
                     translation: (sector.world_pos + local_position).extend(constants::SHIP_LAYER),
                     ..default()
                 },

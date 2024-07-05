@@ -68,8 +68,8 @@ pub fn spawn_asteroids(
             continue;
         };
 
-        const ASTEROID_CELLS: i32 = 10; // Total = ASTEROID_CELLS² * 4
-        const ASTEROID_DISTANCE: f32 = 0.5;
+        const ASTEROID_CELLS: i32 = 4; // Total = ASTEROID_CELLS² * 4
+        const ASTEROID_DISTANCE: f32 = 30.0;
 
         for ix in 0..ASTEROID_CELLS {
             for iy in 0..ASTEROID_CELLS {
@@ -77,12 +77,8 @@ pub fn spawn_asteroids(
                     let local_pos =
                         Vec2::new(x as f32 * ASTEROID_DISTANCE, y as f32 * ASTEROID_DISTANCE);
 
-                    let velocity = if x == 0 && y == 0 {
-                        asteroid_data.forward_velocity
-                    } else {
-                        // Just to look fancy
-                        Vec2::new(x as f32 * 0.1, y as f32 * 0.1)
-                    };
+                    // TODO: randomize this a little
+                    let velocity = asteroid_data.forward_velocity;
 
                     let despawn_after = calculate_milliseconds_until_asteroid_leaves_hexagon(
                         map_layout.hex_edge_vertices,
@@ -98,7 +94,7 @@ pub fn spawn_asteroids(
                         event.sector,
                         local_pos,
                         velocity,
-                        0.0,
+                        (x * y) as f32 * 0.01,
                         now.add_milliseconds(despawn_after),
                     );
                 }
@@ -158,7 +154,7 @@ fn calculate_milliseconds_until_asteroid_leaves_hexagon(
         }
     }
 
-    (time * 1000.0) as Milliseconds // Maybe subtract 1 sec for extra fancy fade?
+    (time * 1000.0) as Milliseconds - 1 // Fade duration is ~1, so might as well subtract that for extra fancyness
 }
 
 fn calculate_asteroid_respawn_position(
@@ -245,7 +241,7 @@ pub fn respawn_asteroids(
             let (mut transform, mut visibility, velocity) =
                 asteroid_query.get_mut(asteroid.entity.into()).unwrap();
 
-            let velocity = velocity.velocity2d;
+            let velocity = velocity.velocity.truncate();
 
             let local_respawn_position = calculate_asteroid_respawn_position(
                 map_layout.hex_edge_vertices,

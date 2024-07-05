@@ -23,6 +23,7 @@ fn move_ships(time: Res<Time>, mut ships: Query<(&mut Transform, &ShipVelocity),
 
 fn move_constant_stuff(time: Res<Time>, mut items: Query<(&mut Transform, &ConstantVelocity)>) {
     items.par_iter_mut().for_each(|(mut transform, velocity)| {
+        transform.rotate_z(velocity.sprite_rotation * time.delta_seconds());
         transform.translation += velocity.velocity * time.delta_seconds();
     });
 }

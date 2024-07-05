@@ -4,14 +4,14 @@ use bevy::prelude::{Component, Vec2, Vec3};
 #[derive(Component, Default)]
 pub struct ConstantVelocity {
     pub velocity: Vec3,
-    pub velocity2d: Vec2,
+    pub sprite_rotation: f32,
 }
 
 impl ConstantVelocity {
-    pub fn new(value: Vec2) -> ConstantVelocity {
+    pub fn new(value: Vec2, sprite_rotation: f32) -> ConstantVelocity {
         ConstantVelocity {
             velocity: value.extend(0.0),
-            velocity2d: value,
+            sprite_rotation,
         }
     }
 }
