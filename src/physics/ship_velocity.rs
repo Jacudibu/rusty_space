@@ -1,14 +1,14 @@
-use crate::components::engine::Engine;
+use crate::components::Engine;
 use bevy::prelude::Component;
 
-/// Fake Physics!
+/// Fake Physics for ship movement. Has some helper methods to stir the ship depending on its engine.
 #[derive(Component, Default)]
-pub struct Velocity {
+pub struct ShipVelocity {
     pub forward: f32,
     pub angular: f32,
 }
 
-impl Velocity {
+impl ShipVelocity {
     pub fn accelerate(&mut self, engine: &Engine, delta_seconds: f32) {
         self.forward += engine.acceleration * delta_seconds;
         if self.forward > engine.max_speed {

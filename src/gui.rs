@@ -6,11 +6,10 @@ use bevy_egui::egui::load::SizedTexture;
 use bevy_egui::egui::{Align2, Ui};
 use bevy_egui::{egui, EguiContexts};
 
-use crate::components::{
-    BuyOrders, Gate, Inventory, SelectableEntity, SellOrders, TradeOrder, Velocity,
-};
+use crate::components::{BuyOrders, Gate, Inventory, SelectableEntity, SellOrders, TradeOrder};
 use crate::entity_selection::Selected;
 use crate::game_data::GameData;
+use crate::physics::ShipVelocity;
 use crate::production::{ProductionComponent, ShipyardComponent};
 use crate::session_data::SessionData;
 use crate::ship_ai::TaskInsideQueue;
@@ -158,7 +157,7 @@ pub fn list_selection_details(
             &SelectableEntity,
             &Name,
             Option<&Inventory>,
-            Option<&Velocity>,
+            Option<&ShipVelocity>,
             Option<&TaskQueue>,
             Option<&BuyOrders>,
             Option<&SellOrders>,
@@ -353,7 +352,7 @@ fn draw_ship_summary_row(
     selectable: &SelectableEntity,
     name: &Name,
     inventory: Option<&Inventory>,
-    velocity: Option<&Velocity>,
+    velocity: Option<&ShipVelocity>,
     task_queue: Option<&TaskQueue>,
 ) {
     ui.horizontal(|ui| {

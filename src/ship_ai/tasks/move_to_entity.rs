@@ -1,4 +1,5 @@
-use crate::components::{Engine, Velocity};
+use crate::components::Engine;
+use crate::physics::ShipVelocity;
 use crate::ship_ai::task_finished_event::TaskFinishedEvent;
 use crate::ship_ai::task_queue::TaskQueue;
 use crate::ship_ai::task_result::TaskResult;
@@ -22,7 +23,7 @@ impl MoveToEntity {
         this_entity: Entity,
         all_transforms: &Query<&Transform>,
         engine: &Engine,
-        velocity: &mut Velocity,
+        velocity: &mut ShipVelocity,
         time: &Time,
     ) -> TaskResult {
         let Ok(target_transform) = all_transforms.get(self.target) else {
@@ -79,7 +80,7 @@ impl MoveToEntity {
     pub fn run_tasks(
         event_writer: EventWriter<TaskFinishedEvent<Self>>,
         time: Res<Time>,
-        mut ships: Query<(Entity, &Self, &Engine, &mut Velocity)>,
+        mut ships: Query<(Entity, &Self, &Engine, &mut ShipVelocity)>,
         all_transforms: Query<&Transform>,
     ) {
         let task_completions = Arc::new(Mutex::new(Vec::<TaskFinishedEvent<Self>>::new()));

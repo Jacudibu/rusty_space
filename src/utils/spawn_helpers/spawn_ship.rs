@@ -1,4 +1,5 @@
-use crate::components::{Engine, Inventory, Sector, SelectableEntity, Ship, Velocity};
+use crate::components::{Engine, Inventory, Sector, SelectableEntity, Ship};
+use crate::physics::ShipVelocity;
 use crate::ship_ai::AutoTradeBehavior;
 use crate::utils::{SectorEntity, ShipEntity};
 use crate::{constants, SpriteHandles};
@@ -24,7 +25,7 @@ pub fn spawn_ship(
             SelectableEntity::Ship,
             AutoTradeBehavior::default(),
             Engine::default(),
-            Velocity::default(),
+            ShipVelocity::default(),
             Inventory::new(100),
             SpriteBundle {
                 texture: sprites.ship.clone(),

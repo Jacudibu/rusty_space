@@ -3,7 +3,7 @@ use crate::components::SectorAsteroidData;
 use crate::map_layout::MapLayout;
 use crate::test_universe::plugin::TestSectors;
 use crate::utils::spawn_helpers::spawn_sector;
-use bevy::prelude::{Commands, EventWriter, Res};
+use bevy::prelude::{Commands, EventWriter, Res, Vec2};
 use hexx::Hex;
 
 pub fn spawn_test_sectors(
@@ -17,7 +17,7 @@ pub fn spawn_test_sectors(
     let bottom_left = Hex::new(0, -1);
 
     let asteroids = Some(SectorAsteroidData {
-        forward_velocity: 10.0,
+        forward_velocity: Vec2::splat(10.0),
     });
 
     let center_sector = spawn_sector(

@@ -8,9 +8,8 @@ mod selectable_entity;
 mod ship;
 mod station;
 mod trade;
-mod velocity;
 
 pub use {
     asteroid::*, engine::Engine, gate::*, in_sector::*, inventory::Inventory, sector::*,
-    selectable_entity::*, ship::*, station::*, trade::*, velocity::Velocity,
+    selectable_entity::*, ship::*, station::*, trade::*,
 };

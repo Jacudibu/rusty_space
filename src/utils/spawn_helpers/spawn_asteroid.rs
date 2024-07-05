@@ -1,4 +1,5 @@
-use crate::components::{Asteroid, Sector, SectorAsteroidData, SelectableEntity, Velocity};
+use crate::components::{Asteroid, Sector, SectorAsteroidData, SelectableEntity};
+use crate::physics::{ConstantVelocity, ShipVelocity};
 use crate::ship_ai::AutoTradeBehavior;
 use crate::utils::{
     AsteroidEntity, AsteroidEntityWithTimestamp, SectorEntity, SimulationTimestamp,
@@ -14,8 +15,8 @@ pub fn spawn_asteroid(
     name: String,
     sector: &mut Sector,
     sector_entity: SectorEntity,
-    asteroid_data: &SectorAsteroidData,
     local_position: Vec2,
+    velocity: Vec2,
     rotation: f32,
     despawn_at: SimulationTimestamp,
 ) {
@@ -25,10 +26,7 @@ pub fn spawn_asteroid(
             Asteroid { ore: 100 },
             SelectableEntity::Asteroid,
             AutoTradeBehavior::default(),
-            Velocity {
-                forward: asteroid_data.forward_velocity,
-                angular: 0.0,
-            },
+            ConstantVelocity::new(velocity),
             SpriteBundle {
                 texture: sprites.asteroid.clone(),
                 transform: Transform {

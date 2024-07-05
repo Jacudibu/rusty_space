@@ -1,4 +1,5 @@
-use crate::components::{Inventory, Velocity};
+use crate::components::Inventory;
+use crate::physics::ShipVelocity;
 use crate::production::InventoryUpdateForProductionEvent;
 use crate::ship_ai::task_finished_event::TaskFinishedEvent;
 use crate::ship_ai::task_queue::TaskQueue;
@@ -104,7 +105,7 @@ impl ExchangeWares {
     /// To avoid the O(a + n) query runtime for change detection, this just iterates through all relevant TaskFinishedEvents.
     /// Even in a busy session, there should always be *way, WAY* less of those than Entities.
     pub fn on_task_creation(
-        mut query: Query<(&mut Self, &mut Velocity)>,
+        mut query: Query<(&mut Self, &mut ShipVelocity)>,
         mut finished_events: EventReader<TaskFinishedEvent<MoveToEntity>>,
         simulation_time: Res<SimulationTime>,
     ) {

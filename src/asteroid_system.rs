@@ -1,5 +1,6 @@
-use crate::components::{Asteroid, Sector, Velocity};
+use crate::components::{Asteroid, Sector};
 use crate::map_layout::MapLayout;
+use crate::physics::{ConstantVelocity, ShipVelocity};
 use crate::utils::{spawn_helpers, AsteroidEntity, Milliseconds, SectorEntity, SimulationTime};
 use crate::{constants, SpriteHandles};
 use bevy::prelude::{
@@ -67,7 +68,7 @@ pub fn spawn_asteroids(
             continue;
         };
 
-        const ASTEROID_CELLS: i32 = 100; // Total = ASTEROID_CELLS² * 4
+        const ASTEROID_CELLS: i32 = 10; // Total = ASTEROID_CELLS² * 4
         const ASTEROID_DISTANCE: f32 = 0.5;
 
         for ix in 0..ASTEROID_CELLS {
@@ -75,10 +76,18 @@ pub fn spawn_asteroids(
                 for (x, y) in [(ix, iy), (ix, -iy), (-ix, iy), (-ix, -iy)] {
                     let local_pos =
                         Vec2::new(x as f32 * ASTEROID_DISTANCE, y as f32 * ASTEROID_DISTANCE);
+
+                    let velocity = if x == 0 && y == 0 {
+                        asteroid_data.forward_velocity
+                    } else {
+                        // Just to look fancy
+                        Vec2::new(x as f32 * 0.1, y as f32 * 0.1)
+                    };
+
                     let despawn_after = calculate_milliseconds_until_asteroid_leaves_hexagon(
                         map_layout.hex_edge_vertices,
                         local_pos,
-                        Vec2::Y * asteroid_data.forward_velocity,
+                        velocity,
                     );
 
                     spawn_helpers::spawn_asteroid(
@@ -87,8 +96,8 @@ pub fn spawn_asteroids(
                         format!("Asteroid [{x},{y}]"),
                         &mut sector,
                         event.sector,
-                        &asteroid_data,
                         local_pos,
+                        velocity,
                         0.0,
                         now.add_milliseconds(despawn_after),
                     );
@@ -139,12 +148,17 @@ fn calculate_milliseconds_until_asteroid_leaves_hexagon(
             edge[1],
         ) {
             let distance = intersection.distance(local_spawn_position);
+            if distance < 1.0 {
+                // Too close, might happen when we are right on the edge
+                continue;
+            }
+
             time = distance / velocity.length();
             break;
         }
     }
 
-    (time * 1000.0) as Milliseconds
+    (time * 1000.0) as Milliseconds // Maybe subtract 1 sec for extra fancy fade?
 }
 
 fn calculate_asteroid_respawn_position(
@@ -210,7 +224,7 @@ pub fn make_asteroids_disappear_when_they_leave_sector(
 pub fn respawn_asteroids(
     mut fading_asteroids: ResMut<FadingAsteroidsIn>,
     mut sector: Query<&mut Sector>,
-    mut asteroid_query: Query<(&mut Transform, &mut Visibility, &Velocity), With<Asteroid>>,
+    mut asteroid_query: Query<(&mut Transform, &mut Visibility, &ConstantVelocity), With<Asteroid>>,
     simulation_time: Res<SimulationTime>,
     map_layout: Res<MapLayout>,
 ) {
@@ -231,7 +245,7 @@ pub fn respawn_asteroids(
             let (mut transform, mut visibility, velocity) =
                 asteroid_query.get_mut(asteroid.entity.into()).unwrap();
 
-            let velocity = Vec2::Y * velocity.forward;
+            let velocity = velocity.velocity2d;
 
             let local_respawn_position = calculate_asteroid_respawn_position(
                 map_layout.hex_edge_vertices,
