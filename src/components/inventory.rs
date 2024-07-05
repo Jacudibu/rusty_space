@@ -3,7 +3,7 @@ use crate::game_data::{ItemId, ItemRecipeElement};
 use crate::utils::TradeIntent;
 use bevy::log::error;
 use bevy::prelude::{warn, Component};
-use bevy::utils::HashMap;
+use bevy::utils::{default, HashMap};
 
 #[derive(Component)]
 pub struct Inventory {
@@ -13,11 +13,35 @@ pub struct Inventory {
 
 #[derive(Default)]
 pub struct InventoryElement {
+    /// How much is actually inside our inventory, right now
     pub currently_available: u32,
+
     pub planned_buying: u32,
     pub planned_selling: u32,
     pub planned_producing: u32,
+
+    /// Current + Buying + Selling + Producing
     pub total: u32,
+}
+
+impl InventoryElement {
+    pub fn new(amount: u32) -> Self {
+        Self {
+            currently_available: amount,
+            total: amount,
+            ..default()
+        }
+    }
+
+    pub fn add(&mut self, amount: u32) {
+        self.currently_available += amount;
+        self.total += amount;
+    }
+
+    pub fn remove(&mut self, amount: u32) {
+        self.currently_available -= amount;
+        self.total -= amount;
+    }
 }
 
 impl Inventory {
@@ -157,6 +181,17 @@ impl Inventory {
         true
     }
 
+    /// Adds an item to the inventory, creating a new entry if one didn't exist yet.
+    pub fn add_item(&mut self, item: ItemId, amount: u32) {
+        if let Some(inventory) = self.inventory.get_mut(&item) {
+            inventory.add(amount);
+        } else {
+            self.inventory.insert(item, InventoryElement::new(amount));
+        }
+    }
+
+    /// Removes an item from the inventory.
+    /// TODO: Maybe delete the entry if it's now at 0?
     pub fn remove_items(&mut self, items: &Vec<ItemRecipeElement>, multiplier: u32) {
         for item in items {
             let Some(inventory) = self.inventory.get_mut(&item.item_id) else {
@@ -164,8 +199,7 @@ impl Inventory {
                 return;
             };
 
-            inventory.currently_available -= item.amount * multiplier;
-            inventory.total -= item.amount * multiplier;
+            inventory.remove(item.amount * multiplier);
         }
     }
 

@@ -1,3 +1,4 @@
+/// Simple enum to tell how a task went. More complex tasks might opt to have their own types.
 pub enum TaskResult {
     Ongoing,
     Finished,

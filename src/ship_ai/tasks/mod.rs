@@ -2,6 +2,7 @@ use bevy::prelude::{Commands, Component, Entity, EventWriter, Mut};
 use std::sync::{Arc, Mutex};
 
 mod exchange_wares;
+mod mine_asteroid;
 mod move_to_entity;
 mod use_gate;
 

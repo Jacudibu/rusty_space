@@ -18,7 +18,7 @@ pub struct MoveToEntity {
 }
 
 impl MoveToEntity {
-    pub fn run(
+    fn run(
         &self,
         this_entity: Entity,
         all_transforms: &Query<&Transform>,
