@@ -29,7 +29,7 @@ struct SelectableCount {
 
 impl SelectableCount {
     pub fn total(&self) -> u32 {
-        self.stations + self.ships + self.gates
+        self.stations + self.ships + self.gates + self.asteroids
     }
 
     pub fn add(mut self, selectable_entity: &SelectableEntity) -> Self {
@@ -136,6 +136,10 @@ pub fn list_selection_icons_and_counts(
                 if counts.gates > 0 {
                     ui.image(images.gate);
                     ui.label(format!("x {}", counts.gates));
+                }
+                if counts.asteroids > 0 {
+                    ui.image(images.asteroid);
+                    ui.label(format!("x {}", counts.asteroids));
                 }
             });
         });

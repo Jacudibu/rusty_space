@@ -31,7 +31,7 @@ impl Plugin for AsteroidPlugin {
                     respawn_asteroids,
                     fade_asteroids_out,
                     fade_asteroids_in,
-                    draw_asteroid_debug_gizmos,
+                    //draw_asteroid_debug_gizmos,
                 ),
             );
     }
@@ -67,8 +67,8 @@ pub fn spawn_asteroids(
             continue;
         };
 
-        const ASTEROID_CELLS: i32 = 1; // Total = ASTEROID_CELLS² * 4
-        const ASTEROID_DISTANCE: f32 = 20.0;
+        const ASTEROID_CELLS: i32 = 100; // Total = ASTEROID_CELLS² * 4
+        const ASTEROID_DISTANCE: f32 = 0.5;
 
         for ix in 0..ASTEROID_CELLS {
             for iy in 0..ASTEROID_CELLS {
