@@ -1,6 +1,6 @@
 use crate::components::InSector;
 use crate::utils::{
-    AsteroidEntityWithLifetime, GateEntity, SectorEntity, ShipEntity, StationEntity,
+    AsteroidEntityWithTimestamp, GateEntity, SectorEntity, ShipEntity, StationEntity,
 };
 use bevy::prelude::{Commands, Component, Entity, Vec2};
 use bevy::utils::{HashMap, HashSet};
@@ -18,7 +18,8 @@ pub struct Sector {
     stations: HashSet<StationEntity>,
 
     pub asteroid_data: Option<SectorAsteroidData>,
-    pub asteroids: BinaryHeap<AsteroidEntityWithLifetime>,
+    pub asteroids: BinaryHeap<AsteroidEntityWithTimestamp>,
+    pub asteroid_respawns: BinaryHeap<AsteroidEntityWithTimestamp>,
 }
 
 #[derive(Copy, Clone)]
@@ -43,6 +44,7 @@ impl Sector {
             world_pos,
             asteroid_data: asteroids,
             asteroids: BinaryHeap::new(),
+            asteroid_respawns: BinaryHeap::new(),
             gates: HashMap::new(),
             ships: HashSet::new(),
             stations: HashSet::new(),
@@ -54,14 +56,14 @@ impl Sector {
         &mut self,
         commands: &mut Commands,
         sector: SectorEntity,
-        entity: AsteroidEntityWithLifetime,
+        entity: AsteroidEntityWithTimestamp,
     ) {
         self.add_asteroid_in_place(entity);
         self.in_sector(commands, sector, entity.entity.into());
     }
 
     /// Adds asteroid to this sectors' asteroid set.
-    pub fn add_asteroid_in_place(&mut self, entity: AsteroidEntityWithLifetime) {
+    pub fn add_asteroid_in_place(&mut self, entity: AsteroidEntityWithTimestamp) {
         self.asteroids.push(entity);
     }
 

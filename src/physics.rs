@@ -1,4 +1,5 @@
 use crate::components::{InSector, Velocity};
+use bevy::math::Vec2;
 use bevy::prelude::{Query, Res, Time, Transform, Vec3, With};
 
 pub fn move_things(time: Res<Time>, mut query: Query<(&mut Transform, &Velocity), With<InSector>>) {
@@ -37,4 +38,17 @@ pub fn overlap_circle_with_circle(
     let y = circle_a_center.y - circle_b_center.y;
     let distance_squared = x * x + y * y;
     distance_squared <= (circle_a_radius + circle_b_radius).powi(2)
+}
+
+#[allow(dead_code)]
+pub fn overlap_point_with_hexagon(point: Vec3, hexagon_edges: [[Vec2; 2]; 6]) -> bool {
+    let mut intersections = 0;
+    for [a, b] in hexagon_edges {
+        let is_between_y = (a.y > point.y) != (b.y > point.y);
+        if is_between_y && (point.x < (b.x - a.x) * (point.y - a.y) / (b.y - a.y) + a.x) {
+            intersections += 1;
+        }
+    }
+
+    intersections == 1
 }

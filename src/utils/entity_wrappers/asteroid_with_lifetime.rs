@@ -2,28 +2,28 @@ use crate::utils::{AsteroidEntity, SimulationTimestamp};
 use std::cmp::Ordering;
 
 #[derive(Copy, Clone)]
-pub struct AsteroidEntityWithLifetime {
+pub struct AsteroidEntityWithTimestamp {
     pub entity: AsteroidEntity,
-    pub despawn_at: SimulationTimestamp,
+    pub timestamp: SimulationTimestamp,
 }
 
-impl Eq for AsteroidEntityWithLifetime {}
+impl Eq for AsteroidEntityWithTimestamp {}
 
-impl PartialEq<Self> for AsteroidEntityWithLifetime {
+impl PartialEq<Self> for AsteroidEntityWithTimestamp {
     fn eq(&self, other: &Self) -> bool {
         other.entity == self.entity
     }
 }
 
-impl PartialOrd<Self> for AsteroidEntityWithLifetime {
+impl PartialOrd<Self> for AsteroidEntityWithTimestamp {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
     }
 }
 
-impl Ord for AsteroidEntityWithLifetime {
+impl Ord for AsteroidEntityWithTimestamp {
     fn cmp(&self, other: &Self) -> Ordering {
         // Inverted ordering so heap.max is our min element
-        other.despawn_at.cmp(&self.despawn_at)
+        other.timestamp.cmp(&self.timestamp)
     }
 }

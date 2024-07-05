@@ -10,4 +10,4 @@ pub type ShipEntity = TypedEntity<Ship>;
 pub type StationEntity = TypedEntity<Station>;
 pub type AsteroidEntity = TypedEntity<Asteroid>;
 
-pub use asteroid_with_lifetime::AsteroidEntityWithLifetime;
+pub use asteroid_with_lifetime::AsteroidEntityWithTimestamp;

@@ -1,13 +1,13 @@
-use crate::components::{Asteroid, Sector};
+use crate::components::{Asteroid, Sector, Velocity};
 use crate::map_layout::MapLayout;
 use crate::utils::{
-    spawn_helpers, AsteroidEntity, CurrentSimulationTimestamp, SectorEntity, SimulationTime,
-    SimulationTimestamp,
+    spawn_helpers, AsteroidEntity, CurrentSimulationTimestamp, Milliseconds, SectorEntity,
+    SimulationTime, SimulationTimestamp,
 };
-use crate::SpriteHandles;
+use crate::{constants, SpriteHandles};
 use bevy::prelude::{
     on_event, Alpha, App, Commands, Event, EventReader, IntoSystemConfigs, Plugin, Query, Res,
-    ResMut, Resource, Sprite, Update, Vec2, Vec3, Visibility, With,
+    ResMut, Resource, Sprite, Transform, Update, Vec2, Visibility, With,
 };
 use bevy::time::Time;
 use bevy::utils::HashSet;
@@ -23,14 +23,17 @@ use bevy::utils::HashSet;
 pub struct AsteroidPlugin;
 impl Plugin for AsteroidPlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<FadingAsteroids>()
+        app.init_resource::<FadingAsteroidsOut>()
+            .init_resource::<FadingAsteroidsIn>()
             .add_event::<SectorWasSpawnedEvent>()
             .add_systems(
                 Update,
                 (
                     spawn_asteroids.run_if(on_event::<SectorWasSpawnedEvent>()),
                     make_asteroids_disappear_when_they_leave_sector.before(spawn_asteroids),
-                    fade_asteroids,
+                    respawn_asteroids,
+                    fade_asteroids_out,
+                    fade_asteroids_in,
                 ),
             );
     }
@@ -56,16 +59,15 @@ pub fn spawn_asteroids(
             continue;
         };
 
-        const ASTEROID_CELLS: i32 = 300; // Total = ASTEROID_CELLS² * 4
-        const ASTEROID_DISTANCE: f32 = 0.5;
+        const ASTEROID_CELLS: i32 = 1; // Total = ASTEROID_CELLS² * 4
+        const ASTEROID_DISTANCE: f32 = 20.0;
 
         for ix in 0..ASTEROID_CELLS {
             for iy in 0..ASTEROID_CELLS {
                 for (x, y) in [(ix, iy), (ix, -iy), (-ix, iy), (-ix, -iy)] {
                     let local_pos =
                         Vec2::new(x as f32 * ASTEROID_DISTANCE, y as f32 * ASTEROID_DISTANCE);
-                    let despawn_at = calculate_asteroid_despawn_time(
-                        &now,
+                    let despawn_after = calculate_milliseconds_until_asteroid_leaves_hexagon(
                         map_layout.hex_edge_vertices,
                         local_pos,
                         Vec2::Y * asteroid_data.forward_velocity,
@@ -80,7 +82,7 @@ pub fn spawn_asteroids(
                         &asteroid_data,
                         local_pos,
                         0.0,
-                        despawn_at,
+                        now.add_milliseconds(despawn_after),
                     );
                 }
             }
@@ -110,12 +112,11 @@ fn intersect_lines(a1: Vec2, a2: Vec2, b1: Vec2, b2: Vec2) -> Option<Vec2> {
 
 /// ## Panics
 /// If the point is not within the hexagon or velocity is 0.
-fn calculate_asteroid_despawn_time(
-    now: &CurrentSimulationTimestamp,
+fn calculate_milliseconds_until_asteroid_leaves_hexagon(
     local_hexagon_edges: [[Vec2; 2]; 6],
     local_spawn_position: Vec2,
     velocity: Vec2,
-) -> SimulationTimestamp {
+) -> Milliseconds {
     debug_assert!(velocity.length_squared() > 0.0);
     let mut time = -1.0;
 
@@ -132,30 +133,22 @@ fn calculate_asteroid_despawn_time(
         }
     }
 
-    now.add_seconds(time as u64)
-}
-
-fn is_point_within_hexagon(point: Vec3, edges: [[hexx::Vec2; 2]; 6]) -> bool {
-    let mut intersections = 0;
-    for [a, b] in edges {
-        let is_between_y = (a.y > point.y) != (b.y > point.y);
-        if is_between_y && (point.x < (b.x - a.x) * (point.y - a.y) / (b.y - a.y) + a.x) {
-            intersections += 1;
-        }
-    }
-
-    intersections == 1
+    (time * 1000.0) as Milliseconds
 }
 
 #[derive(Resource, Default)]
-pub struct FadingAsteroids {
+pub struct FadingAsteroidsIn {
+    pub asteroids: HashSet<AsteroidEntity>,
+}
+#[derive(Resource, Default)]
+pub struct FadingAsteroidsOut {
     pub asteroids: HashSet<AsteroidEntity>,
 }
 
 /// Needs to run before [spawn_asteroids] in order to ensure no new asteroids are spawned which aren't yet synced.
 /// Technically this doesn't need to run every frame, given the super slow speed of asteroids.
 pub fn make_asteroids_disappear_when_they_leave_sector(
-    mut fading_asteroids: ResMut<FadingAsteroids>,
+    mut fading_asteroids: ResMut<FadingAsteroidsOut>,
     mut sector: Query<&mut Sector>,
     simulation_time: Res<SimulationTime>,
 ) {
@@ -163,20 +156,63 @@ pub fn make_asteroids_disappear_when_they_leave_sector(
 
     for mut sector in sector.iter_mut() {
         while let Some(next) = sector.asteroids.peek() {
-            if now.has_not_passed(next.despawn_at) {
+            if now.has_not_passed(next.timestamp) {
                 break;
             }
 
-            let ded_asteroid = sector.asteroids.pop().unwrap();
-            fading_asteroids.asteroids.insert(ded_asteroid.entity);
+            let mut asteroid = sector.asteroids.pop().unwrap();
+            asteroid
+                .timestamp
+                .add_milliseconds(constants::ASTEROID_RESPAWN_TIME_MILLISECONDS);
+            fading_asteroids.asteroids.insert(asteroid.entity);
+            sector.asteroid_respawns.push(asteroid);
+        }
+    }
+}
+
+pub fn respawn_asteroids(
+    mut fading_asteroids: ResMut<FadingAsteroidsIn>,
+    mut sector: Query<&mut Sector>,
+    mut asteroid_query: Query<(&mut Transform, &mut Visibility, &Velocity), With<Asteroid>>,
+    simulation_time: Res<SimulationTime>,
+    map_layout: Res<MapLayout>,
+) {
+    let now = simulation_time.now();
+
+    for mut sector in sector.iter_mut() {
+        while let Some(next) = sector.asteroid_respawns.peek() {
+            if now.has_not_passed(next.timestamp) {
+                break;
+            }
+
+            let mut asteroid = sector.asteroid_respawns.pop().unwrap();
+
+            // TODO: figure out new asteroid position... just intersect the hexagon edge with velocity?
+            // Or even easier, somehow clamp it to hexagon boundaries?
+            // Either way, avoid randomness so we don't need to sync anything across the network
+            let position = sector.world_pos;
+
+            let (mut transform, mut visibility, velocity) =
+                asteroid_query.get_mut(asteroid.entity.into()).unwrap();
+
+            let time = calculate_milliseconds_until_asteroid_leaves_hexagon(
+                map_layout.hex_edge_vertices,
+                position - sector.world_pos,
+                Vec2::Y * velocity.forward,
+            );
+            *visibility = Visibility::Inherited;
+            transform.translation = position.extend(constants::ASTEROID_LAYER);
+            asteroid.timestamp.add_milliseconds(time);
+            fading_asteroids.asteroids.insert(asteroid.entity);
+            sector.asteroids.push(asteroid);
         }
     }
 }
 
 /// Fades asteroid alpha values to 0 before finally turning their visibility off.
-pub fn fade_asteroids(
+pub fn fade_asteroids_out(
     time: Res<Time>,
-    mut fading_asteroids: ResMut<FadingAsteroids>,
+    mut fading_asteroids: ResMut<FadingAsteroidsOut>,
     mut asteroid_query: Query<(&mut Sprite, &mut Visibility), With<Asteroid>>,
 ) {
     let mut removals = HashSet::new();
@@ -184,12 +220,35 @@ pub fn fade_asteroids(
     for entity in &fading_asteroids.asteroids {
         let (mut sprite, mut visibility) = asteroid_query.get_mut(entity.into()).unwrap();
 
-        let alpha = sprite.color.alpha() - time.delta_seconds();
-        if alpha > 0.0 {
-            sprite.color.set_alpha(alpha);
+        let new_alpha = sprite.color.alpha() - time.delta_seconds();
+        if new_alpha > 0.0 {
+            sprite.color.set_alpha(new_alpha);
         } else {
             sprite.color.set_alpha(0.0);
             *visibility = Visibility::Hidden;
+            removals.insert(*entity);
+        }
+    }
+
+    fading_asteroids.asteroids.retain(|x| !removals.contains(x));
+}
+
+/// Fades asteroids alpha values to 1
+pub fn fade_asteroids_in(
+    time: Res<Time>,
+    mut fading_asteroids: ResMut<FadingAsteroidsIn>,
+    mut asteroid_query: Query<&mut Sprite, With<Asteroid>>,
+) {
+    let mut removals = HashSet::new();
+
+    for entity in &fading_asteroids.asteroids {
+        let mut sprite = asteroid_query.get_mut(entity.into()).unwrap();
+
+        let new_alpha = sprite.color.alpha() + time.delta_seconds();
+        if new_alpha < 1.0 {
+            sprite.color.set_alpha(new_alpha);
+        } else {
+            sprite.color.set_alpha(1.0);
             removals.insert(*entity);
         }
     }

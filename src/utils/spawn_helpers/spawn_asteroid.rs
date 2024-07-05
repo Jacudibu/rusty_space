@@ -1,6 +1,8 @@
 use crate::components::{Asteroid, Sector, SectorAsteroidData, SelectableEntity, Velocity};
 use crate::ship_ai::AutoTradeBehavior;
-use crate::utils::{AsteroidEntity, AsteroidEntityWithLifetime, SectorEntity, SimulationTimestamp};
+use crate::utils::{
+    AsteroidEntity, AsteroidEntityWithTimestamp, SectorEntity, SimulationTimestamp,
+};
 use crate::{constants, SpriteHandles};
 use bevy::core::Name;
 use bevy::math::{Quat, Vec2};
@@ -42,9 +44,9 @@ pub fn spawn_asteroid(
     sector.add_asteroid(
         commands,
         sector_entity,
-        AsteroidEntityWithLifetime {
+        AsteroidEntityWithTimestamp {
             entity: AsteroidEntity::from(entity),
-            despawn_at,
+            timestamp: despawn_at,
         },
     );
 }

@@ -62,6 +62,11 @@ impl SimulationTimestamp {
     pub fn milliseconds(&self) -> Milliseconds {
         self.0
     }
+
+    /// Adds a set amount of Milliseconds to this timestamp.
+    pub fn add_milliseconds(&mut self, amount: Milliseconds) {
+        self.0 += amount;
+    }
 }
 
 impl From<CurrentSimulationTimestamp> for SimulationTimestamp {
