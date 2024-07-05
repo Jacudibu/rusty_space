@@ -1,5 +1,5 @@
 use bevy::prelude::{
-    GizmoConfigGroup, Gizmos, Query, Reflect, Res, Transform, Vec2, ViewVisibility, With,
+    GizmoConfigGroup, Gizmos, Query, Reflect, Res, Transform, ViewVisibility, With,
 };
 
 use crate::components::Sector;
