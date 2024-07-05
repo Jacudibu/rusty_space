@@ -1,15 +1,5 @@
-use crate::components::{InSector, Velocity};
 use bevy::math::Vec2;
-use bevy::prelude::{Query, Res, Time, Transform, Vec3, With};
-
-pub fn move_things(time: Res<Time>, mut query: Query<(&mut Transform, &Velocity), With<InSector>>) {
-    query.par_iter_mut().for_each(|(mut transform, velocity)| {
-        transform.rotate_z(velocity.angular * time.delta_seconds());
-
-        let forward = transform.up();
-        transform.translation += forward * velocity.forward * time.delta_seconds();
-    });
-}
+use bevy::prelude::Vec3;
 
 pub fn overlap_rectangle_with_circle_axis_aligned(
     left: f32,

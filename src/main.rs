@@ -60,6 +60,7 @@ fn main() {
     .add_plugins(CameraControllerPlugin)
     .add_plugins(TestUniversePlugin)
     .add_plugins(DiagnosticsPlugin)
+    .add_plugins(physics::PhysicsPlugin)
     .insert_resource(GameData::mock_data())
     .insert_resource(SessionData::mock_data())
     .init_state::<gui::MouseCursorOverUiState>()
@@ -73,7 +74,6 @@ fn main() {
         (
             gui::list_selection_icons_and_counts,
             gui::list_selection_details,
-            physics::move_things.after(ship_ai::MoveToEntity::run_tasks),
         ),
     );
 
