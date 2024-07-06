@@ -8,7 +8,11 @@ mod use_gate;
 
 use crate::ship_ai::task_finished_event::TaskFinishedEvent;
 use crate::ship_ai::task_queue::TaskQueue;
-pub use {exchange_wares::ExchangeWares, move_to_entity::MoveToEntity, use_gate::UseGate};
+use crate::utils::CurrentSimulationTimestamp;
+pub use {
+    exchange_wares::ExchangeWares, mine_asteroid::MineAsteroid, move_to_entity::MoveToEntity,
+    use_gate::UseGate,
+};
 
 pub fn send_completion_events<T: Component>(
     mut event_writer: EventWriter<TaskFinishedEvent<T>>,
@@ -34,11 +38,12 @@ pub fn remove_task_and_add_new_one<T: Component>(
     commands: &mut Commands,
     entity: Entity,
     queue: &mut Mut<TaskQueue>,
+    now: CurrentSimulationTimestamp,
 ) {
     queue.queue.pop_front();
     let mut entity_commands = commands.entity(entity);
     entity_commands.remove::<T>();
     if let Some(next_task) = queue.front() {
-        next_task.create_and_insert_component(&mut entity_commands);
+        next_task.create_and_insert_component(&mut entity_commands, now);
     }
 }

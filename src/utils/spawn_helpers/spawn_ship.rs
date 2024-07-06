@@ -1,13 +1,12 @@
 use crate::components::{Engine, Inventory, Sector, SelectableEntity, Ship};
 use crate::physics::ShipVelocity;
-use crate::ship_ai::AutoTradeBehavior;
 use crate::utils::{SectorEntity, ShipEntity};
 use crate::{constants, SpriteHandles};
 use bevy::core::Name;
 use bevy::math::{Quat, Vec2};
-use bevy::prelude::{default, Commands, Query, SpriteBundle, Transform};
+use bevy::prelude::{default, Commands, Component, Query, SpriteBundle, Transform};
 
-pub fn spawn_ship(
+pub fn spawn_ship<TBehavior: Component>(
     commands: &mut Commands,
     sprites: &SpriteHandles,
     name: String,
@@ -15,6 +14,7 @@ pub fn spawn_ship(
     sector: SectorEntity,
     position: Vec2,
     rotation: f32,
+    behavior: TBehavior,
 ) {
     let mut sector_data = sector_query.get_mut(sector.into()).unwrap();
 
@@ -23,7 +23,7 @@ pub fn spawn_ship(
             Name::new(name),
             Ship,
             SelectableEntity::Ship,
-            AutoTradeBehavior::default(),
+            behavior,
             Engine::default(),
             ShipVelocity::default(),
             Inventory::new(100),

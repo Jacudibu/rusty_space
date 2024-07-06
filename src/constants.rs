@@ -1,8 +1,9 @@
 use crate::utils::Milliseconds;
 
-pub const SHIP_COUNT: u32 = 10;
+pub const TRADE_SHIP_COUNT: u32 = 10;
+pub const MINING_SHIP_COUNT: u32 = 1;
 
-pub const MOCK_INVENTORY_SIZE: u32 = 500000000;
+pub const MOCK_INVENTORY_SIZE: u32 = 5000;
 pub const SECONDS_TO_TRAVEL_THROUGH_GATE: f32 = 2.0;
 
 pub const SHIP_LAYER: f32 = 10.0;

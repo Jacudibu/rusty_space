@@ -1,6 +1,6 @@
 use crate::components::{Asteroid, Sector};
 use crate::map_layout::MapLayout;
-use crate::physics::{ConstantVelocity, ShipVelocity};
+use crate::physics::ConstantVelocity;
 use crate::utils::{spawn_helpers, AsteroidEntity, Milliseconds, SectorEntity, SimulationTime};
 use crate::{constants, SpriteHandles};
 use bevy::prelude::{
@@ -68,8 +68,8 @@ pub fn spawn_asteroids(
             continue;
         };
 
-        const ASTEROID_CELLS: i32 = 4; // Total = ASTEROID_CELLS² * 4
-        const ASTEROID_DISTANCE: f32 = 30.0;
+        const ASTEROID_CELLS: i32 = 2; // Total = ASTEROID_CELLS² * 4
+        const ASTEROID_DISTANCE: f32 = 60.0;
 
         for ix in 0..ASTEROID_CELLS {
             for iy in 0..ASTEROID_CELLS {

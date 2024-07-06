@@ -1,5 +1,5 @@
-use crate::components::{Asteroid, Sector, SectorAsteroidData, SelectableEntity};
-use crate::physics::{ConstantVelocity, ShipVelocity};
+use crate::components::{Asteroid, Sector, SelectableEntity};
+use crate::physics::ConstantVelocity;
 use crate::ship_ai::AutoTradeBehavior;
 use crate::utils::{
     AsteroidEntity, AsteroidEntityWithTimestamp, SectorEntity, SimulationTimestamp,
@@ -9,6 +9,7 @@ use bevy::core::Name;
 use bevy::math::{Quat, Vec2};
 use bevy::prelude::{default, Commands, SpriteBundle, Transform};
 
+#[allow(clippy::too_many_arguments)]
 pub fn spawn_asteroid(
     commands: &mut Commands,
     sprites: &SpriteHandles,

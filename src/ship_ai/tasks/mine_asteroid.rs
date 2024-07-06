@@ -4,13 +4,11 @@ use crate::ship_ai::task_finished_event::TaskFinishedEvent;
 use crate::ship_ai::task_queue::TaskQueue;
 use crate::ship_ai::tasks;
 use crate::ship_ai::tasks::send_completion_events;
-use crate::utils::{CurrentSimulationTimestamp, Milliseconds, SimulationTime, SimulationTimestamp};
-use bevy::log::error;
-use bevy::prelude::{
-    Commands, Component, Entity, EulerRot, EventReader, EventWriter, Query, Res, Time, Transform,
-    With,
+use crate::utils::{
+    AsteroidEntity, CurrentSimulationTimestamp, Milliseconds, SimulationTime, SimulationTimestamp,
 };
-use std::cmp::min;
+use bevy::log::error;
+use bevy::prelude::{Commands, Component, Entity, EventReader, EventWriter, Query, Res, With};
 use std::sync::{Arc, Mutex};
 
 pub const TIME_BETWEEN_MINING_UPDATES: Milliseconds = 1000;
@@ -24,8 +22,17 @@ enum TaskResult {
 
 #[derive(Component)]
 pub struct MineAsteroid {
-    pub target: Entity,
-    pub next_update: SimulationTimestamp,
+    pub target: AsteroidEntity,
+    next_update: SimulationTimestamp,
+}
+
+impl MineAsteroid {
+    pub fn new(target: AsteroidEntity, now: CurrentSimulationTimestamp) -> Self {
+        Self {
+            target,
+            next_update: now.add_milliseconds(TIME_BETWEEN_MINING_UPDATES),
+        }
+    }
 }
 
 impl MineAsteroid {
@@ -39,7 +46,7 @@ impl MineAsteroid {
             return TaskResult::Skip;
         }
 
-        let asteroid = asteroids.get(self.target).unwrap();
+        let asteroid = asteroids.get(self.target.into()).unwrap();
         let mined_amount = MINED_AMOUNT_PER_UPDATE
             .min(inventory.capacity - inventory.used())
             .min(asteroid.ore);
@@ -75,13 +82,13 @@ impl MineAsteroid {
                         mined_asteroids
                             .lock()
                             .unwrap()
-                            .push((task.target, mined_amount));
+                            .push((task.target.into(), mined_amount));
                     }
                     TaskResult::Finished { mined_amount } => {
                         mined_asteroids
                             .lock()
                             .unwrap()
-                            .push((task.target, mined_amount));
+                            .push((task.target.into(), mined_amount));
                         task_completions
                             .lock()
                             .unwrap()
@@ -112,10 +119,18 @@ impl MineAsteroid {
         mut commands: Commands,
         mut event_reader: EventReader<TaskFinishedEvent<Self>>,
         mut all_ships_with_task: Query<&mut TaskQueue, With<Self>>,
+        simulation_time: Res<SimulationTime>,
     ) {
+        let now = simulation_time.now();
+
         for event in event_reader.read() {
             if let Ok(mut queue) = all_ships_with_task.get_mut(event.entity) {
-                tasks::remove_task_and_add_new_one::<Self>(&mut commands, event.entity, &mut queue);
+                tasks::remove_task_and_add_new_one::<Self>(
+                    &mut commands,
+                    event.entity,
+                    &mut queue,
+                    now,
+                );
             } else {
                 error!(
                     "Unable to find entity for task completion: {}",

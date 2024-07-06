@@ -1,4 +1,5 @@
 use crate::utils::{AsteroidEntity, SimulationTimestamp};
+use bevy::prelude::Entity;
 use std::cmp::Ordering;
 
 #[derive(Copy, Clone)]
@@ -8,6 +9,17 @@ pub struct AsteroidEntityWithTimestamp {
 }
 
 impl Eq for AsteroidEntityWithTimestamp {}
+
+impl From<AsteroidEntityWithTimestamp> for Entity {
+    fn from(value: AsteroidEntityWithTimestamp) -> Self {
+        value.entity.into()
+    }
+}
+impl From<&AsteroidEntityWithTimestamp> for Entity {
+    fn from(value: &AsteroidEntityWithTimestamp) -> Self {
+        value.entity.into()
+    }
+}
 
 impl PartialEq<Self> for AsteroidEntityWithTimestamp {
     fn eq(&self, other: &Self) -> bool {

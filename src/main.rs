@@ -87,7 +87,10 @@ fn get_window_title() -> String {
         "RELEASE"
     };
 
-    format!("{} ships [{config}]", constants::SHIP_COUNT)
+    format!(
+        "{} ships [{config}]",
+        constants::TRADE_SHIP_COUNT + constants::MINING_SHIP_COUNT
+    )
 }
 
 #[derive(Resource)]

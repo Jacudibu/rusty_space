@@ -11,7 +11,7 @@ use crate::ship_ai::task_queue::TaskQueue;
 use crate::ship_ai::task_result::TaskResult;
 use crate::ship_ai::tasks::send_completion_events;
 use crate::ship_ai::{tasks, MoveToEntity};
-use crate::utils::{interpolation, ShipEntity};
+use crate::utils::{interpolation, ShipEntity, SimulationTime};
 use crate::utils::{GateEntity, SectorEntity};
 
 #[derive(Component)]
@@ -69,7 +69,10 @@ impl UseGate {
         mut event_reader: EventReader<TaskFinishedEvent<Self>>,
         mut all_ships_with_task: Query<(&mut TaskQueue, &Self)>,
         mut all_sectors: Query<&mut Sector>,
+        simulation_time: Res<SimulationTime>,
     ) {
+        let now = simulation_time.now();
+
         for event in event_reader.read() {
             if let Ok((mut queue, task)) = all_ships_with_task.get_mut(event.entity) {
                 all_sectors
@@ -81,7 +84,12 @@ impl UseGate {
                         ShipEntity::from(event.entity),
                     );
 
-                tasks::remove_task_and_add_new_one::<Self>(&mut commands, event.entity, &mut queue);
+                tasks::remove_task_and_add_new_one::<Self>(
+                    &mut commands,
+                    event.entity,
+                    &mut queue,
+                    now,
+                );
             } else {
                 error!(
                     "Unable to find entity for task completion: {}",

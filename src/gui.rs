@@ -6,7 +6,9 @@ use bevy_egui::egui::load::SizedTexture;
 use bevy_egui::egui::{Align2, Ui};
 use bevy_egui::{egui, EguiContexts};
 
-use crate::components::{BuyOrders, Gate, Inventory, SelectableEntity, SellOrders, TradeOrder};
+use crate::components::{
+    BuyOrders, Gate, InSector, Inventory, SelectableEntity, SellOrders, TradeOrder,
+};
 use crate::entity_selection::Selected;
 use crate::game_data::GameData;
 use crate::physics::ShipVelocity;
@@ -73,6 +75,7 @@ impl UiIcons {
                 ExchangeWareData::Buy(_, _) => self.buy,
                 ExchangeWareData::Sell(_, _) => self.sell,
             },
+            TaskInsideQueue::MineAsteroid { .. } => self.asteroid,
         }
     }
 }
@@ -164,6 +167,7 @@ pub fn list_selection_details(
             Option<&ProductionComponent>,
             Option<&ShipyardComponent>,
             Option<&Gate>,
+            Option<&InSector>,
         ),
         With<Selected>,
     >,
@@ -197,10 +201,18 @@ pub fn list_selection_details(
                     production_module,
                     shipyard,
                     _,
+                    in_sector,
                 ) = selected.single();
                 draw_ship_summary_row(
                     &images, ui, selectable, name, inventory, velocity, task_queue,
                 );
+
+                if let Some(in_sector) = in_sector {
+                    ui.label(format!(
+                        "In sector {}",
+                        names.get(in_sector.sector.into()).unwrap()
+                    ));
+                }
 
                 if let Some(inventory) = inventory {
                     ui.heading("Inventory");
@@ -321,6 +333,9 @@ pub fn list_selection_details(
                                             )
                                         }
                                     },
+                                    TaskInsideQueue::MineAsteroid { target } => {
+                                        format!("Mining {}", names.get(target.into()).unwrap())
+                                    }
                                 });
                             });
                         }
@@ -338,7 +353,7 @@ pub fn list_selection_details(
         .resizable(false)
         .vscroll(true)
         .show(context.ctx_mut(), |ui| {
-            for (_, selectable, name, storage, velocity, task_queue, _, _, _, _, _) in
+            for (_, selectable, name, storage, velocity, task_queue, _, _, _, _, _, _) in
                 selected.iter()
             {
                 draw_ship_summary_row(&images, ui, selectable, name, storage, velocity, task_queue);

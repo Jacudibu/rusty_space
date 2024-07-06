@@ -132,7 +132,7 @@ pub fn handle_idle_ships(
             });
 
             let mut commands = commands.entity(ship_entity);
-            queue[0].create_and_insert_component(&mut commands);
+            queue[0].create_and_insert_component(&mut commands, now);
             commands.insert(queue);
         });
 }
