@@ -9,8 +9,9 @@ use bevy_egui::{egui, EguiContexts};
 use crate::components::{
     BuyOrders, Gate, InSector, Inventory, SelectableEntity, SellOrders, TradeOrder,
 };
-use crate::entity_selection::Selected;
+use crate::entity_selection::{MouseCursor, Selected};
 use crate::game_data::GameData;
+use crate::map_layout::MapLayout;
 use crate::physics::ShipVelocity;
 use crate::production::{ProductionComponent, ShipyardComponent};
 use crate::session_data::SessionData;
@@ -105,6 +106,30 @@ pub fn initialize(
     };
 
     commands.insert_resource(icons);
+}
+
+pub fn draw_sector_info(
+    mut context: EguiContexts,
+    mouse_cursor: Res<MouseCursor>,
+    map: Res<MapLayout>,
+) {
+    let Some(world_pos) = mouse_cursor.world_space else {
+        return;
+    };
+
+    // TODO: hexx glam 0.14 update
+    let coordinates = map
+        .hex_layout
+        .world_pos_to_hex(hexx::Vec2::new(world_pos.x, world_pos.y));
+
+    egui::Window::new("Sector Info")
+        .anchor(Align2::CENTER_TOP, egui::Vec2::ZERO)
+        .title_bar(false)
+        .collapsible(false)
+        .resizable(false)
+        .show(context.ctx_mut(), |ui| {
+            ui.label(format!("Sector {}/{}", coordinates.x, coordinates.y));
+        });
 }
 
 pub fn list_selection_icons_and_counts(

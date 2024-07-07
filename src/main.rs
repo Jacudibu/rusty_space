@@ -72,6 +72,7 @@ fn main() {
     .add_systems(
         Update,
         (
+            gui::draw_sector_info,
             gui::list_selection_icons_and_counts,
             gui::list_selection_details,
         ),
