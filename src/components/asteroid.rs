@@ -1,8 +1,12 @@
+use crate::utils::SimulationTimestamp;
 use bevy::prelude::{Component, FloatExt, Vec3};
 
 #[derive(Component)]
 pub struct Asteroid {
     pub ore: u32,
+
+    /// Timestamp for this asteroids' next scheduled despawn or spawn event
+    pub next_event_timestamp: SimulationTimestamp,
 }
 
 impl Asteroid {

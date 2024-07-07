@@ -1,7 +1,7 @@
 use bevy::prelude::{error, Commands, Component, Entity, Query, Res, Transform};
 use std::cmp::Ordering;
 
-use crate::components::{BuyOrders, InSector, Inventory, Sector, SellOrders, TradeOrder};
+use crate::components::{BuyOrders, InSector, Inventory, Sector};
 use crate::ship_ai::ship_is_idle_filter::ShipIsIdleFilter;
 use crate::ship_ai::{TaskInsideQueue, TaskQueue};
 use crate::trade_plan::TradePlan;

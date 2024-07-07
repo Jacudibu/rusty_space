@@ -3,7 +3,7 @@ use crate::map_layout::MapLayout;
 use crate::physics::ConstantVelocity;
 use crate::utils::{
     spawn_helpers, AsteroidEntity, AsteroidEntityWithTimestamp, Milliseconds, SectorEntity,
-    SimulationTime,
+    SimulationTime, SimulationTimestamp,
 };
 use crate::{constants, SpriteHandles};
 use bevy::prelude::{
@@ -53,6 +53,7 @@ pub struct SectorWasSpawnedEvent {
 #[derive(Event)]
 pub struct AsteroidWasFullyMinedEvent {
     pub asteroid: AsteroidEntity,
+    pub despawn_timer: SimulationTimestamp,
 }
 
 const VELOCITY_RANDOM_RANGE: Range<f32> = 0.8..1.2;
@@ -82,12 +83,10 @@ pub fn spawn_asteroids(
         let position_rng = StdRng::seed_from_u64(seed);
         let mut inner_rng = StdRng::seed_from_u64(seed);
 
-        const ASTEROID_COUNT: usize = 500;
-
         for local_position in shape
             .interior_dist()
             .sample_iter(position_rng)
-            .take(ASTEROID_COUNT)
+            .take(constants::ASTEROID_COUNT)
         {
             let velocity = Vec2::new(
                 asteroid_data.forward_velocity.x * inner_rng.gen_range(VELOCITY_RANDOM_RANGE),
@@ -216,12 +215,12 @@ pub fn make_asteroids_disappear_when_they_leave_sector(
     let now = simulation_time.now();
 
     for mut sector in sector.iter_mut() {
-        while let Some(next) = sector.asteroids.peek() {
+        while let Some(next) = sector.asteroids.first() {
             if now.has_not_passed(next.timestamp) {
                 break;
             }
 
-            let asteroid = sector.asteroids.pop().unwrap();
+            let asteroid = sector.asteroids.pop_first().unwrap();
             remove_asteroid_from_sector_and_start_fading(
                 &mut fading_asteroids,
                 asteroid,
@@ -241,15 +240,13 @@ fn on_asteroid_was_fully_mined(
         let asteroid_sector = asteroids.get(event.asteroid.into()).unwrap();
         let mut sector = sectors.get_mut(asteroid_sector.sector.into()).unwrap();
 
-        // TODO: This is teh-rih-ble-gh.
-        //       Time to use a BTreeMap after all?
-        let asteroid = *sector
-            .asteroids
-            .iter()
-            .find(|x| x.entity == event.asteroid)
-            .unwrap();
-        sector.asteroids.retain(|x| x.entity != event.asteroid);
+        // I wish there was some way to do this without reconstructing this object
+        let asteroid = AsteroidEntityWithTimestamp {
+            entity: event.asteroid,
+            timestamp: event.despawn_timer,
+        };
 
+        sector.asteroids.remove(&asteroid);
         remove_asteroid_from_sector_and_start_fading(&mut fading_asteroids, asteroid, &mut sector);
     }
 }
@@ -263,7 +260,7 @@ fn remove_asteroid_from_sector_and_start_fading(
         .timestamp
         .add_milliseconds(constants::ASTEROID_RESPAWN_TIME_MILLISECONDS);
     fading_asteroids.asteroids.insert(asteroid.entity);
-    sector.asteroid_respawns.push(asteroid);
+    sector.asteroid_respawns.push(std::cmp::Reverse(asteroid));
 }
 
 pub fn respawn_asteroids(
@@ -277,11 +274,11 @@ pub fn respawn_asteroids(
 
     for mut sector in sector.iter_mut() {
         while let Some(next) = sector.asteroid_respawns.peek() {
-            if now.has_not_passed(next.timestamp) {
+            if now.has_not_passed(next.0.timestamp) {
                 break;
             }
 
-            let mut asteroid = sector.asteroid_respawns.pop().unwrap();
+            let mut asteroid = sector.asteroid_respawns.pop().unwrap().0;
 
             // TODO: figure out new asteroid position... just intersect the hexagon edge with velocity?
             // Or even easier, somehow clamp it to hexagon boundaries?
@@ -308,7 +305,7 @@ pub fn respawn_asteroids(
                 (local_respawn_position + sector.world_pos).extend(constants::ASTEROID_LAYER);
             asteroid.timestamp.add_milliseconds(time);
             fading_asteroids.asteroids.insert(asteroid.entity);
-            sector.asteroids.push(asteroid);
+            sector.asteroids.insert(asteroid);
         }
     }
 }

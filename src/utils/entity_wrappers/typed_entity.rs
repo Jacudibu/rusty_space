@@ -1,4 +1,5 @@
 use bevy::prelude::{Component, Entity};
+use std::cmp::Ordering;
 use std::fmt::{Display, Formatter};
 use std::hash::{Hash, Hasher};
 use std::marker::PhantomData;
@@ -50,7 +51,19 @@ impl<T: Component> PartialEq<Entity> for TypedEntity<T> {
 
 impl<T: Component> PartialEq<TypedEntity<T>> for Entity {
     fn eq(&self, other: &TypedEntity<T>) -> bool {
-        self == other
+        self == &other.0
+    }
+}
+
+impl<T: Component> Ord for TypedEntity<T> {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.0.cmp(&other.0)
+    }
+}
+
+impl<T: Component> PartialOrd<Self> for TypedEntity<T> {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
     }
 }
 

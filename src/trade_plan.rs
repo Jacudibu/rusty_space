@@ -4,7 +4,7 @@ use crate::components::{BuyOrders, InSector, Inventory, Sector, SellOrders, Trad
 use crate::game_data::ItemId;
 use crate::ship_ai::{TaskInsideQueue, TaskQueue};
 use crate::utils::pathfinding::PathElement;
-use crate::utils::{pathfinding, ExchangeWareData, SectorEntity, ShipEntity};
+use crate::utils::{pathfinding, ExchangeWareData, SectorEntity};
 
 pub struct TradePlan {
     pub item_id: ItemId,

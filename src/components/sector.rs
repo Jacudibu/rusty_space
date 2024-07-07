@@ -5,7 +5,7 @@ use crate::utils::{
 use bevy::prelude::{Commands, Component, Entity, Vec2};
 use bevy::utils::{HashMap, HashSet};
 use hexx::Hex;
-use std::collections::BinaryHeap;
+use std::collections::{BTreeSet, BinaryHeap};
 
 /// Marker Component for Sectors
 #[derive(Component)]
@@ -18,8 +18,8 @@ pub struct Sector {
     stations: HashSet<StationEntity>,
 
     pub asteroid_data: Option<SectorAsteroidData>,
-    pub asteroids: BinaryHeap<AsteroidEntityWithTimestamp>,
-    pub asteroid_respawns: BinaryHeap<AsteroidEntityWithTimestamp>,
+    pub asteroids: BTreeSet<AsteroidEntityWithTimestamp>,
+    pub asteroid_respawns: BinaryHeap<std::cmp::Reverse<AsteroidEntityWithTimestamp>>,
 }
 
 #[derive(Copy, Clone)]
@@ -43,7 +43,7 @@ impl Sector {
             coordinate,
             world_pos,
             asteroid_data: asteroids,
-            asteroids: BinaryHeap::new(),
+            asteroids: BTreeSet::new(),
             asteroid_respawns: BinaryHeap::new(),
             gates: HashMap::new(),
             ships: HashSet::new(),
@@ -64,7 +64,7 @@ impl Sector {
 
     /// Adds asteroid to this sectors' asteroid set.
     pub fn add_asteroid_in_place(&mut self, entity: AsteroidEntityWithTimestamp) {
-        self.asteroids.push(entity);
+        self.asteroids.insert(entity);
     }
 
     /// Adds ship to this sector and inserts the [InSector] component to it.

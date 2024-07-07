@@ -24,7 +24,10 @@ pub fn spawn_asteroid(
     let entity = commands
         .spawn((
             Name::new(name),
-            Asteroid { ore: 100 },
+            Asteroid {
+                ore: 100,
+                next_event_timestamp: despawn_at,
+            },
             SelectableEntity::Asteroid,
             AutoTradeBehavior::default(),
             ConstantVelocity::new(velocity, sprite_rotation),

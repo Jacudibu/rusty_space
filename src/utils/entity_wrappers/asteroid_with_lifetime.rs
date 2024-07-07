@@ -35,7 +35,8 @@ impl PartialOrd<Self> for AsteroidEntityWithTimestamp {
 
 impl Ord for AsteroidEntityWithTimestamp {
     fn cmp(&self, other: &Self) -> Ordering {
-        // Inverted ordering so heap.max is our min element
-        other.timestamp.cmp(&self.timestamp)
+        self.timestamp
+            .cmp(&other.timestamp)
+            .then_with(|| self.entity.cmp(&other.entity))
     }
 }
