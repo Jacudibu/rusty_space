@@ -4,11 +4,13 @@ use crate::physics::ConstantVelocity;
 use crate::utils::{spawn_helpers, AsteroidEntity, Milliseconds, SectorEntity, SimulationTime};
 use crate::{constants, SpriteHandles};
 use bevy::prelude::{
-    on_event, Alpha, App, Commands, Event, EventReader, Gizmos, IntoSystemConfigs, Plugin, Query,
-    Res, ResMut, Resource, Sprite, Transform, Update, Vec2, Visibility, With,
+    on_event, Alpha, App, Circle, Commands, Event, EventReader, Gizmos, IntoSystemConfigs, Plugin,
+    Query, Res, ResMut, Resource, ShapeSample, Sprite, Transform, Update, Vec2, Visibility, With,
 };
 use bevy::time::Time;
 use bevy::utils::HashSet;
+use rand::prelude::StdRng;
+use rand::{distributions::Distribution, Rng, SeedableRng};
 
 /// ### General Idea
 /// Every Sector may have asteroids inside it, defined by its [SectorAsteroidData].
@@ -68,37 +70,39 @@ pub fn spawn_asteroids(
             continue;
         };
 
-        const ASTEROID_CELLS: i32 = 2; // Total = ASTEROID_CELLS² * 4
-        const ASTEROID_DISTANCE: f32 = 60.0;
+        // TODO: Allow asteroids to spawn outside the sector, but change their position and lifetime accordingly - those will be the first ones to respawn
+        let shape = Circle::new(constants::SECTOR_SIZE - 100.0);
+        let seed = (sector.coordinate.x * 100000 + sector.coordinate.y) as u64;
+        let position_rng = StdRng::seed_from_u64(seed);
+        let mut rotation_rng = StdRng::seed_from_u64(seed);
 
-        for ix in 0..ASTEROID_CELLS {
-            for iy in 0..ASTEROID_CELLS {
-                for (x, y) in [(ix, iy), (ix, -iy), (-ix, iy), (-ix, -iy)] {
-                    let local_pos =
-                        Vec2::new(x as f32 * ASTEROID_DISTANCE, y as f32 * ASTEROID_DISTANCE);
+        const ASTEROID_COUNT: usize = 500;
 
-                    // TODO: randomize this a little
-                    let velocity = asteroid_data.forward_velocity;
+        for local_position in shape
+            .interior_dist()
+            .sample_iter(position_rng)
+            .take(ASTEROID_COUNT)
+        {
+            // TODO: randomize this a little
+            let velocity = asteroid_data.forward_velocity;
 
-                    let despawn_after = calculate_milliseconds_until_asteroid_leaves_hexagon(
-                        map_layout.hex_edge_vertices,
-                        local_pos,
-                        velocity,
-                    );
+            let despawn_after = calculate_milliseconds_until_asteroid_leaves_hexagon(
+                map_layout.hex_edge_vertices,
+                local_position,
+                velocity,
+            );
 
-                    spawn_helpers::spawn_asteroid(
-                        &mut commands,
-                        &sprites,
-                        format!("Asteroid [{x},{y}]"),
-                        &mut sector,
-                        event.sector,
-                        local_pos,
-                        velocity,
-                        (x * y) as f32 * 0.01,
-                        now.add_milliseconds(despawn_after),
-                    );
-                }
-            }
+            spawn_helpers::spawn_asteroid(
+                &mut commands,
+                &sprites,
+                "Asteroid".to_string(),
+                &mut sector,
+                event.sector,
+                local_position,
+                velocity,
+                rotation_rng.gen_range(0..100) as f32 * 0.000001,
+                now.add_milliseconds(despawn_after),
+            );
         }
     }
 }
