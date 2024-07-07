@@ -3,7 +3,7 @@ use bevy::prelude::{
     With,
 };
 use bevy_egui::egui::load::SizedTexture;
-use bevy_egui::egui::{Align2, Ui};
+use bevy_egui::egui::{Align2, Shadow, Ui};
 use bevy_egui::{egui, EguiContexts};
 
 use crate::components::{
@@ -87,6 +87,10 @@ pub fn initialize(
     sprites: Res<SpriteHandles>,
     asset_server: Res<AssetServer>,
 ) {
+    contexts
+        .ctx_mut()
+        .style_mut(|style| style.visuals.window_shadow = Shadow::NONE);
+
     let idle = asset_server.load("ui_icons/idle.png");
     let move_to = asset_server.load("ui_icons/move_to.png");
     let buy = asset_server.load("ui_icons/buy.png");
