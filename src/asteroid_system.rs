@@ -1,4 +1,5 @@
 use crate::components::{Asteroid, InSector, Sector};
+use crate::entity_selection::Selected;
 use crate::map_layout::MapLayout;
 use crate::physics::ConstantVelocity;
 use crate::utils::{
@@ -311,15 +312,17 @@ pub fn respawn_asteroids(
 }
 
 /// Fades asteroid alpha values to 0 before finally turning their visibility off.
+/// This will also deselect it once the alpha value reaches 0.
 pub fn fade_asteroids_out(
     time: Res<Time>,
+    mut commands: Commands,
     mut fading_asteroids: ResMut<FadingAsteroidsOut>,
-    mut asteroid_query: Query<(&mut Sprite, &mut Visibility), With<Asteroid>>,
+    mut asteroid_query: Query<(&mut Sprite, &mut Visibility, Option<&Selected>), With<Asteroid>>,
 ) {
     let mut removals = HashSet::new();
 
     for entity in &fading_asteroids.asteroids {
-        let (mut sprite, mut visibility) = asteroid_query.get_mut(entity.into()).unwrap();
+        let (mut sprite, mut visibility, selected) = asteroid_query.get_mut(entity.into()).unwrap();
 
         let new_alpha = sprite.color.alpha() - time.delta_seconds();
         if new_alpha > 0.0 {
@@ -328,6 +331,10 @@ pub fn fade_asteroids_out(
             sprite.color.set_alpha(0.0);
             *visibility = Visibility::Hidden;
             removals.insert(*entity);
+
+            if selected.is_some() {
+                commands.entity(entity.into()).remove::<Selected>();
+            }
         }
     }
 

@@ -6,8 +6,8 @@ use crate::physics;
 use bevy::input::mouse::MouseButtonInput;
 use bevy::input::ButtonState;
 use bevy::prelude::{
-    Camera, Commands, Entity, EventReader, GlobalTransform, MouseButton, Query, Real, Res, ResMut,
-    State, Time, Vec2, With, Without,
+    Camera, Commands, Entity, EventReader, GlobalTransform, InheritedVisibility, MouseButton,
+    Query, Real, Res, ResMut, State, Time, Vec2, With, Without,
 };
 
 #[allow(clippy::too_many_arguments)]
@@ -18,7 +18,12 @@ pub fn process_mouse_clicks(
     existing_mouse_interaction: Option<Res<MouseInteraction>>,
     last_mouse_interaction: Option<Res<LastMouseInteraction>>,
     mut mouse_button_events: EventReader<MouseButtonInput>,
-    selectables: Query<(Entity, &GlobalTransform, &SelectableEntity)>,
+    selectables: Query<(
+        Entity,
+        &GlobalTransform,
+        &SelectableEntity,
+        &InheritedVisibility,
+    )>,
     camera: Query<(&Camera, &GlobalTransform)>,
     selected_entities: Query<Entity, With<Selected>>,
     mouse_cursor_over_ui_state: Res<State<MouseCursorOverUiState>>,
@@ -45,16 +50,19 @@ pub fn process_mouse_clicks(
                     deselect_entity(&mut commands, entity);
                 }
 
-                let first_found_entity = selectables.iter().find(|(_, transform, selectable)| {
-                    physics::overlap_circle_with_circle(
-                        cursor_world_pos,
-                        RADIUS_CURSOR,
-                        transform.translation(),
-                        selectable.radius(),
-                    )
-                });
+                let first_found_entity = selectables
+                    .iter()
+                    .filter(|(_, _, _, visibility)| visibility == &&InheritedVisibility::VISIBLE)
+                    .find(|(_, transform, selectable, _)| {
+                        physics::overlap_circle_with_circle(
+                            cursor_world_pos,
+                            RADIUS_CURSOR,
+                            transform.translation(),
+                            selectable.radius(),
+                        )
+                    });
 
-                if let Some((entity, _, entity_selectable)) = first_found_entity {
+                if let Some((entity, _, entity_selectable, _)) = first_found_entity {
                     if is_double_click(&time, &last_mouse_interaction) {
                         process_double_click(
                             &mut commands,
@@ -83,7 +91,12 @@ pub fn process_mouse_clicks(
 
 fn process_double_click(
     commands: &mut Commands,
-    selectables: &Query<(Entity, &GlobalTransform, &SelectableEntity)>,
+    selectables: &Query<(
+        Entity,
+        &GlobalTransform,
+        &SelectableEntity,
+        &InheritedVisibility,
+    )>,
     camera: &Query<(&Camera, &GlobalTransform)>,
     entity_selectable: &SelectableEntity,
 ) {
@@ -101,8 +114,12 @@ fn process_double_click(
 
     selectables
         .iter()
-        .filter(|(_, transform, selectable)| {
+        .filter(|(_, transform, selectable, visibility)| {
             if entity_selectable != *selectable {
+                return false;
+            }
+
+            if visibility != &&InheritedVisibility::VISIBLE {
                 return false;
             }
 
@@ -115,7 +132,7 @@ fn process_double_click(
                 selectable.radius(),
             )
         })
-        .for_each(|(entity, _, _)| {
+        .for_each(|(entity, _, _, _)| {
             select_entity(commands, entity);
         });
 }
@@ -137,7 +154,15 @@ pub fn update_active_mouse_interaction(
     mut commands: Commands,
     mouse_interaction: Option<ResMut<MouseInteraction>>,
     mouse_cursor: Option<Res<MouseCursor>>,
-    unselected_entities: Query<(Entity, &GlobalTransform, &SelectableEntity), Without<Selected>>,
+    unselected_entities: Query<
+        (
+            Entity,
+            &GlobalTransform,
+            &SelectableEntity,
+            &InheritedVisibility,
+        ),
+        Without<Selected>,
+    >,
     selected_entities: Query<(Entity, &GlobalTransform, &SelectableEntity), With<Selected>>,
 ) {
     let Some(mut mouse_interaction) = mouse_interaction else {
@@ -160,7 +185,11 @@ pub fn update_active_mouse_interaction(
 
         unselected_entities
             .iter()
-            .filter(|(_, transform, selectable)| {
+            .filter(|(_, transform, selectable, visibility)| {
+                if visibility != &&InheritedVisibility::VISIBLE {
+                    return false;
+                }
+
                 physics::overlap_rectangle_with_circle_axis_aligned(
                     left,
                     right,
@@ -170,7 +199,7 @@ pub fn update_active_mouse_interaction(
                     selectable.radius(),
                 )
             })
-            .for_each(|(entity, _, _)| {
+            .for_each(|(entity, _, _, _)| {
                 select_entity(&mut commands, entity);
             });
 
