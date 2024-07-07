@@ -11,6 +11,7 @@ use bevy::time::Time;
 use bevy::utils::HashSet;
 use rand::prelude::StdRng;
 use rand::{distributions::Distribution, Rng, SeedableRng};
+use std::ops::Range;
 
 /// ### General Idea
 /// Every Sector may have asteroids inside it, defined by its [SectorAsteroidData].
@@ -44,15 +45,8 @@ pub struct SectorWasSpawnedEvent {
     pub(crate) sector: SectorEntity,
 }
 
-fn draw_asteroid_debug_gizmos(mut gizmos: Gizmos, asteroids: Query<&Transform, With<Asteroid>>) {
-    for transform in asteroids.iter() {
-        gizmos.circle_2d(
-            transform.translation.truncate(),
-            4.0,
-            bevy::color::palettes::css::DARK_ORCHID,
-        );
-    }
-}
+const VELOCITY_RANDOM_RANGE: Range<f32> = 0.8..1.2;
+const ROTATION_RANDOM_RANGE: Range<f32> = -0.0001..0.0001;
 
 pub fn spawn_asteroids(
     mut commands: Commands,
@@ -71,10 +65,11 @@ pub fn spawn_asteroids(
         };
 
         // TODO: Allow asteroids to spawn outside the sector, but change their position and lifetime accordingly - those will be the first ones to respawn
+        //       Although technically that isn't even really necessary with randomized velocity, the circle shape will break up pretty quickly
         let shape = Circle::new(constants::SECTOR_SIZE - 100.0);
         let seed = (sector.coordinate.x * 100000 + sector.coordinate.y) as u64;
         let position_rng = StdRng::seed_from_u64(seed);
-        let mut rotation_rng = StdRng::seed_from_u64(seed);
+        let mut inner_rng = StdRng::seed_from_u64(seed);
 
         const ASTEROID_COUNT: usize = 500;
 
@@ -83,8 +78,10 @@ pub fn spawn_asteroids(
             .sample_iter(position_rng)
             .take(ASTEROID_COUNT)
         {
-            // TODO: randomize this a little
-            let velocity = asteroid_data.forward_velocity;
+            let velocity = Vec2::new(
+                asteroid_data.forward_velocity.x * inner_rng.gen_range(VELOCITY_RANDOM_RANGE),
+                asteroid_data.forward_velocity.y * inner_rng.gen_range(VELOCITY_RANDOM_RANGE),
+            );
 
             let despawn_after = calculate_milliseconds_until_asteroid_leaves_hexagon(
                 map_layout.hex_edge_vertices,
@@ -100,7 +97,7 @@ pub fn spawn_asteroids(
                 event.sector,
                 local_position,
                 velocity,
-                rotation_rng.gen_range(0..100) as f32 * 0.000001,
+                inner_rng.gen_range(ROTATION_RANDOM_RANGE),
                 now.add_milliseconds(despawn_after),
             );
         }
