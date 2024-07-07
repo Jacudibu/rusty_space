@@ -33,7 +33,7 @@ pub fn handle_idle_ships(
     mut commands: Commands,
     simulation_time: Res<SimulationTime>,
     mut ships: Query<(Entity, &mut TaskQueue, &mut AutoMineBehavior, &InSector), ShipIsIdleFilter>,
-    mut buy_orders: Query<(Entity, &mut BuyOrders, &InSector)>,
+    buy_orders: Query<(Entity, &mut BuyOrders, &InSector)>,
     mut inventories: Query<&mut Inventory>,
     all_sectors: Query<&Sector>,
     all_transforms: Query<&Transform>,
@@ -90,17 +90,18 @@ pub fn handle_idle_ships(
 
                             queue.apply(&mut commands, now, ship_entity);
                         } else {
-                            behavior.next_idle_update.add_milliseconds(2000);
+                            behavior.next_idle_update = now.add_milliseconds(2000);
                             // TODO: No asteroids found -> Sector has been fully mined.
                             //       Either go somewhere else or just idle until a new one spawns.
                         }
                     } else {
+                        behavior.next_idle_update = now.add_milliseconds(2000);
                         // TODO: Move to a sector with asteroids in it
                     }
                 }
                 AutoMineState::Trading => {
-                    let Some(plan) = TradePlan::sell_own_inventory(ship_entity.into(), in_sector, &ship_inventory, &buy_orders) else {
-                        behavior.next_idle_update.add_milliseconds(2000);
+                    let Some(plan) = TradePlan::sell_anything_from_inventory(ship_entity, in_sector, &ship_inventory, &buy_orders) else {
+                        behavior.next_idle_update = now.add_milliseconds(2000);
                         return;
                     };
 

@@ -75,7 +75,8 @@ Sectors keep track of the entities inside them, allowing for cheaper localized p
 Sectors have different resource distributions, requiring either trade or expansion to fix local scarcity and rising
 demands.
 
-- Asteroids could randomly spawn at the sector edges and drift through them, until either getting harvested or leaving the sector again. Density and yields depend on sector values. Wouldn't bother with station collisions, though extra protective measurements could be a nice excuse to make stations more expensive in these sectors.
+- ~~Asteroids could randomly spawn at the sector edges and drift through them, until either getting harvested or leaving the sector again.~~
+- Density and yields depend on sector values. Wouldn't bother with station collisions, though extra protective measurements could be a nice excuse to make stations more expensive in these sectors.
 - Gas Clouds... no clue. Maybe having ships or stations suck up the atmosphere of a Gas Giant? But that would make
   limiting hourly yields fairly hard or unlogical.
 

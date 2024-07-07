@@ -69,14 +69,50 @@ impl TradePlan {
         best_offer
     }
 
-    pub fn sell_own_inventory(
-        ship: ShipEntity,
-        in_sector: &InSector,
+    pub fn sell_anything_from_inventory(
+        seller: Entity,
+        seller_sector: &InSector,
         inventory: &Inventory,
         buy_orders: &Query<(Entity, &mut BuyOrders, &InSector)>,
     ) -> Option<Self> {
-        // TODO: Seller is ship
-        None
+        let mut best_offer: Option<TradePlan> = None;
+
+        for (buyer, buy_orders, buyer_sector) in buy_orders.iter() {
+            if seller == buyer {
+                continue;
+            }
+
+            for (item_id, inventory_entry) in inventory.inventory() {
+                if let Some(buy_order) = buy_orders.orders().get(item_id) {
+                    let amount = inventory_entry.total.min(buy_order.amount);
+                    if amount == 0 {
+                        continue;
+                    }
+
+                    let profit = buy_order.price * amount;
+
+                    let is_this_a_better_offer = if let Some(existing_offer) = &best_offer {
+                        profit > existing_offer.profit
+                    } else {
+                        true
+                    };
+
+                    if is_this_a_better_offer {
+                        best_offer = Some(TradePlan {
+                            item_id: *item_id,
+                            amount,
+                            profit,
+                            seller,
+                            seller_sector: seller_sector.get(),
+                            buyer,
+                            buyer_sector: buyer_sector.get(),
+                        });
+                    }
+                }
+            }
+        }
+
+        best_offer
     }
 
     pub fn create_tasks_for_purchase(

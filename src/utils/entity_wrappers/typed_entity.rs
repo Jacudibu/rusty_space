@@ -42,6 +42,17 @@ impl<T: Component> PartialEq<Self> for TypedEntity<T> {
         self.0 == other.0
     }
 }
+impl<T: Component> PartialEq<Entity> for TypedEntity<T> {
+    fn eq(&self, other: &Entity) -> bool {
+        &self.0 == other
+    }
+}
+
+impl<T: Component> PartialEq<TypedEntity<T>> for Entity {
+    fn eq(&self, other: &TypedEntity<T>) -> bool {
+        self == other
+    }
+}
 
 impl<T: Component> Hash for TypedEntity<T> {
     fn hash<H: Hasher>(&self, state: &mut H) {
