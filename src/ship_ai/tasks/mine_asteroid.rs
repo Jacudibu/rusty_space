@@ -8,7 +8,9 @@ use crate::utils::{
     AsteroidEntity, CurrentSimulationTimestamp, Milliseconds, SimulationTime, SimulationTimestamp,
 };
 use bevy::log::error;
-use bevy::prelude::{Commands, Component, Entity, EventReader, EventWriter, Query, Res, With};
+use bevy::prelude::{
+    Commands, Component, Entity, EventReader, EventWriter, Query, Res, Transform, With,
+};
 use std::sync::{Arc, Mutex};
 
 pub const TIME_BETWEEN_MINING_UPDATES: Milliseconds = 1000;
@@ -39,14 +41,14 @@ impl MineAsteroid {
     fn run(
         &mut self,
         inventory: &mut Inventory,
-        asteroids: &Query<&mut Asteroid>,
+        asteroids: &Query<(&mut Asteroid, &mut Transform)>,
         now: CurrentSimulationTimestamp,
     ) -> TaskResult {
         if now.has_not_passed(self.next_update) {
             return TaskResult::Skip;
         }
 
-        let asteroid = asteroids.get(self.target.into()).unwrap();
+        let (asteroid, _) = asteroids.get(self.target.into()).unwrap();
         let mined_amount = MINED_AMOUNT_PER_UPDATE
             .min(inventory.capacity - inventory.used())
             .min(asteroid.ore);
@@ -67,7 +69,7 @@ impl MineAsteroid {
         event_writer: EventWriter<TaskFinishedEvent<Self>>,
         simulation_time: Res<SimulationTime>,
         mut ships: Query<(Entity, &mut Self, &mut Inventory)>,
-        mut all_asteroids: Query<&mut Asteroid>,
+        mut all_asteroids: Query<(&mut Asteroid, &mut Transform)>,
     ) {
         let task_completions = Arc::new(Mutex::new(Vec::<TaskFinishedEvent<Self>>::new()));
         let mined_asteroids = Arc::new(Mutex::new(Vec::<(Entity, u32)>::new()));
@@ -102,7 +104,10 @@ impl MineAsteroid {
                 let batch = mined_asteroids.into_inner().unwrap();
                 if !batch.is_empty() {
                     for (entity, mined_amount) in batch {
-                        all_asteroids.get_mut(entity).unwrap().ore -= mined_amount;
+                        let (mut asteroid, mut transform) = all_asteroids.get_mut(entity).unwrap();
+                        asteroid.ore -= mined_amount;
+                        transform.scale = asteroid.scale_depending_on_current_ore_volume()
+
                         // TODO: if empty, trigger despawn event!
                     }
                 }
