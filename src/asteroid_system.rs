@@ -1,11 +1,14 @@
-use crate::components::{Asteroid, Sector};
+use crate::components::{Asteroid, InSector, Sector};
 use crate::map_layout::MapLayout;
 use crate::physics::ConstantVelocity;
-use crate::utils::{spawn_helpers, AsteroidEntity, Milliseconds, SectorEntity, SimulationTime};
+use crate::utils::{
+    spawn_helpers, AsteroidEntity, AsteroidEntityWithTimestamp, Milliseconds, SectorEntity,
+    SimulationTime,
+};
 use crate::{constants, SpriteHandles};
 use bevy::prelude::{
-    on_event, Alpha, App, Circle, Commands, Event, EventReader, IntoSystemConfigs, Plugin, Query,
-    Res, ResMut, Resource, ShapeSample, Sprite, Transform, Update, Vec2, Visibility, With,
+    on_event, Alpha, App, Circle, Commands, Event, EventReader, IntoSystemConfigs, Mut, Plugin,
+    Query, Res, ResMut, Resource, ShapeSample, Sprite, Transform, Update, Vec2, Visibility, With,
 };
 use bevy::time::Time;
 use bevy::utils::HashSet;
@@ -27,11 +30,13 @@ impl Plugin for AsteroidPlugin {
         app.init_resource::<FadingAsteroidsOut>()
             .init_resource::<FadingAsteroidsIn>()
             .add_event::<SectorWasSpawnedEvent>()
+            .add_event::<AsteroidWasFullyMinedEvent>()
             .add_systems(
                 Update,
                 (
                     spawn_asteroids.run_if(on_event::<SectorWasSpawnedEvent>()),
                     make_asteroids_disappear_when_they_leave_sector.before(spawn_asteroids),
+                    on_asteroid_was_fully_mined.run_if(on_event::<AsteroidWasFullyMinedEvent>()),
                     respawn_asteroids,
                     fade_asteroids_out,
                     fade_asteroids_in,
@@ -43,6 +48,11 @@ impl Plugin for AsteroidPlugin {
 #[derive(Event)]
 pub struct SectorWasSpawnedEvent {
     pub(crate) sector: SectorEntity,
+}
+
+#[derive(Event)]
+pub struct AsteroidWasFullyMinedEvent {
+    pub asteroid: AsteroidEntity,
 }
 
 const VELOCITY_RANDOM_RANGE: Range<f32> = 0.8..1.2;
@@ -167,6 +177,8 @@ fn calculate_asteroid_respawn_position(
     let mut best_distance = 0.0;
     let mut best_intersection = None;
 
+    // TODO: Alternatively: Store the despawn position, then mirror it to the opposing hexagon side.
+
     for edge in local_hexagon_edges.iter() {
         if let Some(intersection) = intersect_lines(
             local_current_position,
@@ -209,14 +221,49 @@ pub fn make_asteroids_disappear_when_they_leave_sector(
                 break;
             }
 
-            let mut asteroid = sector.asteroids.pop().unwrap();
-            asteroid
-                .timestamp
-                .add_milliseconds(constants::ASTEROID_RESPAWN_TIME_MILLISECONDS);
-            fading_asteroids.asteroids.insert(asteroid.entity);
-            sector.asteroid_respawns.push(asteroid);
+            let asteroid = sector.asteroids.pop().unwrap();
+            remove_asteroid_from_sector_and_start_fading(
+                &mut fading_asteroids,
+                asteroid,
+                &mut sector,
+            );
         }
     }
+}
+
+fn on_asteroid_was_fully_mined(
+    mut events: EventReader<AsteroidWasFullyMinedEvent>,
+    mut fading_asteroids: ResMut<FadingAsteroidsOut>,
+    asteroids: Query<&InSector, With<Asteroid>>,
+    mut sectors: Query<&mut Sector>,
+) {
+    for event in events.read() {
+        let asteroid_sector = asteroids.get(event.asteroid.into()).unwrap();
+        let mut sector = sectors.get_mut(asteroid_sector.sector.into()).unwrap();
+
+        // TODO: This is teh-rih-ble-gh.
+        //       Time to use a BTreeMap after all?
+        let asteroid = *sector
+            .asteroids
+            .iter()
+            .find(|x| x.entity == event.asteroid)
+            .unwrap();
+        sector.asteroids.retain(|x| x.entity != event.asteroid);
+
+        remove_asteroid_from_sector_and_start_fading(&mut fading_asteroids, asteroid, &mut sector);
+    }
+}
+
+fn remove_asteroid_from_sector_and_start_fading(
+    fading_asteroids: &mut ResMut<FadingAsteroidsOut>,
+    mut asteroid: AsteroidEntityWithTimestamp,
+    sector: &mut Mut<Sector>,
+) {
+    asteroid
+        .timestamp
+        .add_milliseconds(constants::ASTEROID_RESPAWN_TIME_MILLISECONDS);
+    fading_asteroids.asteroids.insert(asteroid.entity);
+    sector.asteroid_respawns.push(asteroid);
 }
 
 pub fn respawn_asteroids(
