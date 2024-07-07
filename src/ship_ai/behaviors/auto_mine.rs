@@ -1,9 +1,10 @@
-use bevy::prelude::{Commands, Component, Entity, Query, Res, Transform};
+use bevy::prelude::{error, Commands, Component, Entity, Query, Res, Transform};
 use std::cmp::Ordering;
 
 use crate::components::{BuyOrders, InSector, Inventory, Sector, SellOrders, TradeOrder};
 use crate::ship_ai::ship_is_idle_filter::ShipIsIdleFilter;
 use crate::ship_ai::{TaskInsideQueue, TaskQueue};
+use crate::trade_plan::TradePlan;
 use crate::utils::{SimulationTime, SimulationTimestamp};
 
 #[derive(Eq, PartialEq)]
@@ -44,7 +45,6 @@ pub fn handle_idle_ships(
         .iter_mut()
         .filter(|(_, behavior, _)| now.has_passed(behavior.next_idle_update))
         .for_each(|(ship_entity, mut behavior, in_sector)| {
-            behavior.next_idle_update.add_milliseconds(2000);
             let inventory = inventories.get_mut(ship_entity).unwrap();
             let used_inventory_space = inventory.used();
 
@@ -77,6 +77,7 @@ pub fn handle_idle_ships(
                             if let Some(ord) = a_distance.partial_cmp(&b_distance) {
                                 ord
                             } else {
+                                error!("ord was None? This should never happen, please fix. a_distance: {a_distance}, b_distance: {b_distance}");
                                 Ordering::Equal
                             }
                         }) {
@@ -88,19 +89,26 @@ pub fn handle_idle_ships(
                                 target: closest_asteroid.entity,
                             });
 
-                            let mut commands = commands.entity(ship_entity);
-                            queue[0].create_and_insert_component(&mut commands, now);
-                            commands.insert(queue);
+                            queue.apply(&mut commands, now, ship_entity);
                         } else {
+                            behavior.next_idle_update.add_milliseconds(2000);
                             // TODO: No asteroids found -> Sector has been fully mined.
-                            //       Either go somewhere else or just idle.
+                            //       Either go somewhere else or just idle until a new one spawns.
                         }
                     } else {
                         // TODO: Move to a sector with asteroids in it
                     }
                 }
                 AutoMineState::Trading => {
-                    // TODO: Sell all items in inventory
+                    let Some(plan) = TradePlan::sell_own_inventory() else {
+                        behavior.next_idle_update.add_milliseconds(2000);
+                        return;
+                    };
+
+                    let mut queue = TaskQueue::with_capacity(2);
+                    plan.create_tasks_for_sale(&all_sectors, &all_transforms, &mut queue);
+
+                    queue.apply(&mut commands, now, ship_entity);
                 }
             }
         });

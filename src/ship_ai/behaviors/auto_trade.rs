@@ -38,7 +38,8 @@ pub fn handle_idle_ships(
         .filter(|(_, behavior, _)| now.has_passed(behavior.next_idle_update))
         .for_each(|(ship_entity, mut behavior, ship_sector)| {
             let inventory = inventories.get(ship_entity).unwrap();
-            let plan = TradePlan::create_from(inventory.capacity, &buy_orders, &sell_orders);
+            let plan =
+                TradePlan::search_for_trade_run(inventory.capacity, &buy_orders, &sell_orders);
             let Some(plan) = plan else {
                 behavior.next_idle_update = now.add_seconds(2);
                 return;
@@ -73,67 +74,17 @@ pub fn handle_idle_ships(
             );
 
             let mut queue = TaskQueue::with_capacity(4);
-            if ship_sector != plan.seller_sector {
-                let ship_pos = all_transforms.get(ship_entity).unwrap().translation;
-                let path = find_path(
-                    &all_sectors,
-                    &all_transforms,
-                    ship_sector.get(),
-                    ship_pos,
-                    plan.seller_sector,
-                )
-                .unwrap();
-                for x in path {
-                    queue.push_back(TaskInsideQueue::MoveToEntity {
-                        target: x.enter_gate.into(),
-                    });
-                    queue.push_back(TaskInsideQueue::UseGate {
-                        enter_gate: x.enter_gate,
-                        exit_sector: x.exit_sector,
-                    })
-                }
-            }
 
-            queue.push_back(TaskInsideQueue::MoveToEntity {
-                target: plan.seller,
-            });
+            plan.create_tasks_for_purchase(
+                &all_sectors,
+                &all_transforms,
+                ship_entity,
+                ship_sector,
+                &mut queue,
+            );
 
-            queue.push_back(TaskInsideQueue::ExchangeWares {
-                target: plan.seller,
-                data: ExchangeWareData::Buy(plan.item_id, plan.amount),
-            });
-
-            if plan.seller_sector != plan.buyer_sector {
-                let seller_pos = all_transforms.get(plan.seller).unwrap().translation;
-                let path = find_path(
-                    &all_sectors,
-                    &all_transforms,
-                    plan.seller_sector,
-                    seller_pos,
-                    plan.buyer_sector,
-                )
-                .unwrap();
-
-                for x in path {
-                    queue.push_back(TaskInsideQueue::MoveToEntity {
-                        target: x.enter_gate.into(),
-                    });
-                    queue.push_back(TaskInsideQueue::UseGate {
-                        enter_gate: x.enter_gate,
-                        exit_sector: x.exit_sector,
-                    })
-                }
-            }
-
-            queue.push_back(TaskInsideQueue::MoveToEntity { target: plan.buyer });
-            queue.push_back(TaskInsideQueue::ExchangeWares {
-                target: plan.buyer,
-                data: ExchangeWareData::Sell(plan.item_id, plan.amount),
-            });
-
-            let mut commands = commands.entity(ship_entity);
-            queue[0].create_and_insert_component(&mut commands, now);
-            commands.insert(queue);
+            plan.create_tasks_for_sale(&all_sectors, &all_transforms, &mut queue);
+            queue.apply(&mut commands, now, ship_entity);
         });
 }
 

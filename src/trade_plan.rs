@@ -1,8 +1,10 @@
-use bevy::prelude::{Entity, Query};
+use bevy::prelude::{Entity, Query, Transform};
 
-use crate::components::{BuyOrders, InSector, SellOrders, TradeOrder};
+use crate::components::{BuyOrders, InSector, Sector, SellOrders, TradeOrder};
 use crate::game_data::ItemId;
-use crate::utils::SectorEntity;
+use crate::ship_ai::{TaskInsideQueue, TaskQueue};
+use crate::utils::pathfinding::PathElement;
+use crate::utils::{pathfinding, ExchangeWareData, SectorEntity};
 
 pub struct TradePlan {
     pub item_id: ItemId,
@@ -15,7 +17,7 @@ pub struct TradePlan {
 }
 
 impl TradePlan {
-    pub fn create_from(
+    pub fn search_for_trade_run(
         storage_capacity: u32,
         buy_orders: &Query<(Entity, &mut BuyOrders, &InSector)>,
         sell_orders: &Query<(Entity, &mut SellOrders, &InSector)>,
@@ -65,5 +67,80 @@ impl TradePlan {
         }
 
         best_offer
+    }
+
+    pub fn sell_own_inventory() -> Option<Self> {
+        None
+    }
+
+    pub fn create_tasks_for_purchase(
+        &self,
+        all_sectors: &Query<&Sector>,
+        all_transforms: &Query<&Transform>,
+        ship_entity: Entity,
+        ship_sector: &InSector,
+        queue: &mut TaskQueue,
+    ) {
+        if ship_sector != self.seller_sector {
+            let ship_pos = all_transforms.get(ship_entity).unwrap().translation;
+            let path = pathfinding::find_path(
+                all_sectors,
+                all_transforms,
+                ship_sector.get(),
+                ship_pos,
+                self.seller_sector,
+            )
+            .unwrap();
+
+            create_tasks_to_move_move_to_target_systems(queue, path);
+        }
+
+        queue.push_back(TaskInsideQueue::MoveToEntity {
+            target: self.seller,
+        });
+
+        queue.push_back(TaskInsideQueue::ExchangeWares {
+            target: self.seller,
+            data: ExchangeWareData::Buy(self.item_id, self.amount),
+        });
+    }
+
+    pub fn create_tasks_for_sale(
+        &self,
+        all_sectors: &Query<&Sector>,
+        all_transforms: &Query<&Transform>,
+        queue: &mut TaskQueue,
+    ) {
+        if self.seller_sector != self.buyer_sector {
+            let seller_pos = all_transforms.get(self.seller).unwrap().translation;
+            let path = pathfinding::find_path(
+                all_sectors,
+                all_transforms,
+                self.seller_sector,
+                seller_pos,
+                self.buyer_sector,
+            )
+            .unwrap();
+
+            create_tasks_to_move_move_to_target_systems(queue, path);
+        }
+
+        queue.push_back(TaskInsideQueue::MoveToEntity { target: self.buyer });
+        queue.push_back(TaskInsideQueue::ExchangeWares {
+            target: self.buyer,
+            data: ExchangeWareData::Sell(self.item_id, self.amount),
+        });
+    }
+}
+
+fn create_tasks_to_move_move_to_target_systems(queue: &mut TaskQueue, path: Vec<PathElement>) {
+    for x in path {
+        queue.push_back(TaskInsideQueue::MoveToEntity {
+            target: x.enter_gate.into(),
+        });
+        queue.push_back(TaskInsideQueue::UseGate {
+            enter_gate: x.enter_gate,
+            exit_sector: x.exit_sector,
+        })
     }
 }
