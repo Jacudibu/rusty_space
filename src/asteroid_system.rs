@@ -4,8 +4,8 @@ use crate::physics::ConstantVelocity;
 use crate::utils::{spawn_helpers, AsteroidEntity, Milliseconds, SectorEntity, SimulationTime};
 use crate::{constants, SpriteHandles};
 use bevy::prelude::{
-    on_event, Alpha, App, Circle, Commands, Event, EventReader, Gizmos, IntoSystemConfigs, Plugin,
-    Query, Res, ResMut, Resource, ShapeSample, Sprite, Transform, Update, Vec2, Visibility, With,
+    on_event, Alpha, App, Circle, Commands, Event, EventReader, IntoSystemConfigs, Plugin, Query,
+    Res, ResMut, Resource, ShapeSample, Sprite, Transform, Update, Vec2, Visibility, With,
 };
 use bevy::time::Time;
 use bevy::utils::HashSet;
@@ -46,7 +46,7 @@ pub struct SectorWasSpawnedEvent {
 }
 
 const VELOCITY_RANDOM_RANGE: Range<f32> = 0.8..1.2;
-const ROTATION_RANDOM_RANGE: Range<f32> = -0.0001..0.0001;
+const ROTATION_RANDOM_RANGE: Range<f32> = -0.001..0.001;
 
 pub fn spawn_asteroids(
     mut commands: Commands,
@@ -64,9 +64,10 @@ pub fn spawn_asteroids(
             continue;
         };
 
-        // TODO: Allow asteroids to spawn outside the sector, but change their position and lifetime accordingly - those will be the first ones to respawn
-        //       Although technically that isn't even really necessary with randomized velocity, the circle shape will break up pretty quickly
-        let shape = Circle::new(constants::SECTOR_SIZE - 100.0);
+        // Technically it isn't even really necessary to further randomize positions with randomized velocity,
+        // This unnatural circle shape will break up once the asteroids moved across half of the sector size.
+        // TODO: We could pre-simulate that movement to make things look nicer at the start.
+        let shape = Circle::new(constants::SECTOR_SIZE * 0.8);
         let seed = (sector.coordinate.x * 100000 + sector.coordinate.y) as u64;
         let position_rng = StdRng::seed_from_u64(seed);
         let mut inner_rng = StdRng::seed_from_u64(seed);

@@ -31,7 +31,9 @@ pub fn spawn_asteroid(
             SpriteBundle {
                 texture: sprites.asteroid.clone(),
                 transform: Transform {
-                    rotation: Quat::from_rotation_z(sprite_rotation),
+                    rotation: Quat::from_rotation_z(
+                        sprite_rotation * std::f32::consts::PI * 1000.0,
+                    ),
                     translation: (sector.world_pos + local_position)
                         .extend(constants::ASTEROID_LAYER),
                     ..default()
