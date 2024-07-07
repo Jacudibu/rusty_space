@@ -17,7 +17,7 @@ use bevy::prelude::{
 };
 use bevy::render::camera::ScalingMode;
 use bevy::DefaultPlugins;
-use bevy_egui::EguiPlugin;
+use bevy_egui::{EguiPlugin, EguiStartupSet};
 
 mod asteroid_system;
 mod camera;
@@ -66,7 +66,12 @@ fn main() {
     .init_state::<gui::MouseCursorOverUiState>()
     .add_systems(
         Startup,
-        (initialize_data, (gui::initialize,).after(initialize_data)),
+        (
+            initialize_data,
+            gui::initialize
+                .after(EguiStartupSet::InitContexts)
+                .after(initialize_data),
+        ),
     )
     .add_systems(PreUpdate, gui::detect_mouse_cursor_over_ui)
     .add_systems(

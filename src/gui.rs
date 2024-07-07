@@ -7,7 +7,7 @@ use bevy_egui::egui::{Align2, Shadow, Ui};
 use bevy_egui::{egui, EguiContexts};
 
 use crate::components::{
-    BuyOrders, Gate, InSector, Inventory, SelectableEntity, SellOrders, TradeOrder,
+    Asteroid, BuyOrders, Gate, InSector, Inventory, SelectableEntity, SellOrders, TradeOrder,
 };
 use crate::entity_selection::{MouseCursor, Selected};
 use crate::game_data::GameData;
@@ -189,6 +189,7 @@ pub fn list_selection_details(
             &SelectableEntity,
             &Name,
             Option<&Inventory>,
+            Option<&Asteroid>,
             Option<&ShipVelocity>,
             Option<&TaskQueue>,
             Option<&BuyOrders>,
@@ -223,6 +224,7 @@ pub fn list_selection_details(
                     selectable,
                     name,
                     inventory,
+                    asteroid,
                     velocity,
                     task_queue,
                     buy_orders,
@@ -261,6 +263,10 @@ pub fn list_selection_details(
                             ));
                         }
                     }
+                }
+
+                if let Some(asteroid) = asteroid {
+                    ui.label(format!("Ore: {}", asteroid.ore));
                 }
 
                 if let Some(production) = production_module {
@@ -382,7 +388,7 @@ pub fn list_selection_details(
         .resizable(false)
         .vscroll(true)
         .show(context.ctx_mut(), |ui| {
-            for (_, selectable, name, storage, velocity, task_queue, _, _, _, _, _, _) in
+            for (_, selectable, name, storage, _, velocity, task_queue, _, _, _, _, _, _) in
                 selected.iter()
             {
                 draw_ship_summary_row(&images, ui, selectable, name, storage, velocity, task_queue);
