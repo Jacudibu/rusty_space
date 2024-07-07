@@ -1,11 +1,10 @@
 use bevy::prelude::{Commands, Component, Entity, Query, Res, Transform};
 
 use crate::components::{BuyOrders, InSector, Inventory, Sector, SellOrders, TradeOrder};
-use crate::gizmos::find_path;
 use crate::ship_ai::ship_is_idle_filter::ShipIsIdleFilter;
-use crate::ship_ai::{TaskInsideQueue, TaskQueue};
+use crate::ship_ai::TaskQueue;
 use crate::trade_plan::TradePlan;
-use crate::utils::{ExchangeWareData, SimulationTime, SimulationTimestamp, TradeIntent};
+use crate::utils::{SimulationTime, SimulationTimestamp, TradeIntent};
 
 #[derive(Component)]
 pub struct AutoTradeBehavior {
@@ -24,7 +23,7 @@ impl Default for AutoTradeBehavior {
 pub fn handle_idle_ships(
     mut commands: Commands,
     simulation_time: Res<SimulationTime>,
-    mut ships: Query<(Entity, &mut AutoTradeBehavior, &InSector), ShipIsIdleFilter>,
+    mut ships: Query<(Entity, &mut TaskQueue, &mut AutoTradeBehavior, &InSector), ShipIsIdleFilter>,
     mut buy_orders: Query<(Entity, &mut BuyOrders, &InSector)>,
     mut sell_orders: Query<(Entity, &mut SellOrders, &InSector)>,
     mut inventories: Query<&mut Inventory>,
@@ -35,8 +34,8 @@ pub fn handle_idle_ships(
 
     ships
         .iter_mut()
-        .filter(|(_, behavior, _)| now.has_passed(behavior.next_idle_update))
-        .for_each(|(ship_entity, mut behavior, ship_sector)| {
+        .filter(|(_, _, behavior, _)| now.has_passed(behavior.next_idle_update))
+        .for_each(|(ship_entity, mut queue, mut behavior, ship_sector)| {
             let inventory = inventories.get(ship_entity).unwrap();
             let plan =
                 TradePlan::search_for_trade_run(inventory.capacity, &buy_orders, &sell_orders);
@@ -72,8 +71,6 @@ pub fn handle_idle_ships(
                 &mut buy_orders,
                 &mut sell_orders,
             );
-
-            let mut queue = TaskQueue::with_capacity(4);
 
             plan.create_tasks_for_purchase(
                 &all_sectors,

@@ -5,7 +5,7 @@ use crate::components::{BuyOrders, InSector, Inventory, Sector, SellOrders, Trad
 use crate::ship_ai::ship_is_idle_filter::ShipIsIdleFilter;
 use crate::ship_ai::{TaskInsideQueue, TaskQueue};
 use crate::trade_plan::TradePlan;
-use crate::utils::{SimulationTime, SimulationTimestamp};
+use crate::utils::{SimulationTime, SimulationTimestamp, TradeIntent};
 
 #[derive(Eq, PartialEq)]
 enum AutoMineState {
@@ -32,7 +32,7 @@ impl Default for AutoMineBehavior {
 pub fn handle_idle_ships(
     mut commands: Commands,
     simulation_time: Res<SimulationTime>,
-    mut ships: Query<(Entity, &mut AutoMineBehavior, &InSector), ShipIsIdleFilter>,
+    mut ships: Query<(Entity, &mut TaskQueue, &mut AutoMineBehavior, &InSector), ShipIsIdleFilter>,
     mut buy_orders: Query<(Entity, &mut BuyOrders, &InSector)>,
     mut inventories: Query<&mut Inventory>,
     all_sectors: Query<&Sector>,
@@ -43,12 +43,12 @@ pub fn handle_idle_ships(
     // TODO: Benchmark this vs a priority queue
     ships
         .iter_mut()
-        .filter(|(_, behavior, _)| now.has_passed(behavior.next_idle_update))
-        .for_each(|(ship_entity, mut behavior, in_sector)| {
-            let inventory = inventories.get_mut(ship_entity).unwrap();
-            let used_inventory_space = inventory.used();
+        .filter(|(_, _, behavior, _)| now.has_passed(behavior.next_idle_update))
+        .for_each(|(ship_entity, mut queue, mut behavior, in_sector)| {
+            let ship_inventory = inventories.get_mut(ship_entity).unwrap();
+            let used_inventory_space = ship_inventory.used();
 
-            if behavior.state == AutoMineState::Mining && used_inventory_space == inventory.capacity
+            if behavior.state == AutoMineState::Mining && used_inventory_space == ship_inventory.capacity
             {
                 behavior.state = AutoMineState::Trading;
             } else if behavior.state == AutoMineState::Trading && used_inventory_space == 0 {
@@ -81,7 +81,6 @@ pub fn handle_idle_ships(
                                 Ordering::Equal
                             }
                         }) {
-                            let mut queue = TaskQueue::with_capacity(2);
                             queue.push_back(TaskInsideQueue::MoveToEntity {
                                 target: closest_asteroid.into(),
                             });
@@ -100,30 +99,21 @@ pub fn handle_idle_ships(
                     }
                 }
                 AutoMineState::Trading => {
-                    let Some(plan) = TradePlan::sell_own_inventory() else {
+                    let Some(plan) = TradePlan::sell_own_inventory(ship_entity.into(), in_sector, &ship_inventory, &buy_orders) else {
                         behavior.next_idle_update.add_milliseconds(2000);
                         return;
                     };
 
-                    let mut queue = TaskQueue::with_capacity(2);
-                    plan.create_tasks_for_sale(&all_sectors, &all_transforms, &mut queue);
+                    let [mut this_inventory, mut buyer_inventory] = inventories
+                        .get_many_mut([ship_entity, plan.buyer])
+                        .unwrap();
 
+                    this_inventory.create_order(plan.item_id, TradeIntent::Sell, plan.amount);
+                    buyer_inventory.create_order(plan.item_id, TradeIntent::Buy, plan.amount);
+                    
+                    plan.create_tasks_for_sale(&all_sectors, &all_transforms, &mut queue);
                     queue.apply(&mut commands, now, ship_entity);
                 }
             }
         });
-}
-
-fn update_buy_and_sell_orders_for_entity(
-    entity: Entity,
-    inventory: &Inventory,
-    buy_orders: &mut Query<(Entity, &mut BuyOrders, &InSector)>,
-    sell_orders: &mut Query<(Entity, &mut SellOrders, &InSector)>,
-) {
-    if let Ok(mut buy_orders) = buy_orders.get_mut(entity) {
-        buy_orders.1.update(inventory);
-    }
-    if let Ok(mut sell_orders) = sell_orders.get_mut(entity) {
-        sell_orders.1.update(inventory);
-    }
 }

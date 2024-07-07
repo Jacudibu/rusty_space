@@ -11,18 +11,17 @@ pub struct TaskQueue {
 }
 
 impl TaskQueue {
-    pub fn with_capacity(capacity: usize) -> Self {
+    pub fn new() -> Self {
         TaskQueue {
-            queue: VecDeque::with_capacity(capacity),
+            queue: VecDeque::new(),
         }
     }
 
-    pub fn apply(self, commands: &mut Commands, now: CurrentSimulationTimestamp, entity: Entity) {
-        // TODO: Just reuse existing task queue, creating a new one every time is silly
-        //       Behaviors will never run in parallel anyway
+    /// Creates the Task Component for the first item in the queue to the provided entity.
+    /// Should be called by behaviors after adding new tasks.
+    pub fn apply(&self, commands: &mut Commands, now: CurrentSimulationTimestamp, entity: Entity) {
         let mut commands = commands.entity(entity);
         self.queue[0].create_and_insert_component(&mut commands, now);
-        commands.insert(self);
     }
 }
 

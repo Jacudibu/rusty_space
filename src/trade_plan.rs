@@ -1,10 +1,10 @@
 use bevy::prelude::{Entity, Query, Transform};
 
-use crate::components::{BuyOrders, InSector, Sector, SellOrders, TradeOrder};
+use crate::components::{BuyOrders, InSector, Inventory, Sector, SellOrders, TradeOrder};
 use crate::game_data::ItemId;
 use crate::ship_ai::{TaskInsideQueue, TaskQueue};
 use crate::utils::pathfinding::PathElement;
-use crate::utils::{pathfinding, ExchangeWareData, SectorEntity};
+use crate::utils::{pathfinding, ExchangeWareData, SectorEntity, ShipEntity};
 
 pub struct TradePlan {
     pub item_id: ItemId,
@@ -69,7 +69,13 @@ impl TradePlan {
         best_offer
     }
 
-    pub fn sell_own_inventory() -> Option<Self> {
+    pub fn sell_own_inventory(
+        ship: ShipEntity,
+        in_sector: &InSector,
+        inventory: &Inventory,
+        buy_orders: &Query<(Entity, &mut BuyOrders, &InSector)>,
+    ) -> Option<Self> {
+        // TODO: Seller is ship
         None
     }
 

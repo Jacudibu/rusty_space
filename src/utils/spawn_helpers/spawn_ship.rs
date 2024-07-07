@@ -1,5 +1,6 @@
 use crate::components::{Engine, Inventory, Sector, SelectableEntity, Ship};
 use crate::physics::ShipVelocity;
+use crate::ship_ai::TaskQueue;
 use crate::utils::{SectorEntity, ShipEntity};
 use crate::{constants, SpriteHandles};
 use bevy::core::Name;
@@ -27,6 +28,7 @@ pub fn spawn_ship<TBehavior: Component>(
             Engine::default(),
             ShipVelocity::default(),
             Inventory::new(100),
+            TaskQueue::new(),
             SpriteBundle {
                 texture: sprites.ship.clone(),
                 transform: Transform {
