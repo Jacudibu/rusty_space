@@ -171,7 +171,9 @@ mod test {
 
     const LEFT2: Hex = Hex::new(-2, 0);
     const LEFT: Hex = Hex::new(-1, 0);
+    const CENTER_LEFT_TOP: Hex = Hex::new(-1, 1);
     const CENTER: Hex = Hex::new(0, 0);
+    const CENTER_RIGHT_TOP: Hex = Hex::new(1, 1);
     const RIGHT: Hex = Hex::new(1, 0);
     const RIGHT2: Hex = Hex::new(2, 0);
 
@@ -268,6 +270,71 @@ mod test {
         universe_builder.gates.add(
             HexPosition::new(RIGHT, Vec2::X),
             HexPosition::new(RIGHT2, Vec2::NEG_X),
+        );
+
+        let mut app = universe_builder.build_test_app();
+        let world = app.world_mut();
+
+        world.run_system_once(
+            |sectors: Query<&Sector>,
+             transforms: Query<&Transform>,
+             hex_to_sector: Res<HexToSectorEntityMap>| {
+                let result = find_path(
+                    &sectors,
+                    &transforms,
+                    hex_to_sector.map[&LEFT2],
+                    Vec3::ZERO,
+                    hex_to_sector.map[&RIGHT2],
+                )
+                .unwrap();
+
+                assert_eq!(result.len(), 4);
+                assert_eq!(result[0].exit_sector, hex_to_sector.map[&LEFT]);
+                assert_eq!(result[1].exit_sector, hex_to_sector.map[&CENTER]);
+                assert_eq!(result[2].exit_sector, hex_to_sector.map[&RIGHT]);
+                assert_eq!(result[3].exit_sector, hex_to_sector.map[&RIGHT2]);
+            },
+        );
+    }
+
+    #[test]
+    fn find_path_through_multiple_sectors_with_multiple_routes_returns_shortest_path() {
+        let mut universe_builder = UniverseBuilder::default();
+        universe_builder.sectors.add(LEFT);
+        universe_builder.sectors.add(LEFT2);
+        universe_builder.sectors.add(CENTER_LEFT_TOP);
+        universe_builder.sectors.add(CENTER);
+        universe_builder.sectors.add(CENTER_RIGHT_TOP);
+        universe_builder.sectors.add(RIGHT);
+        universe_builder.sectors.add(RIGHT2);
+        universe_builder.gates.add(
+            HexPosition::new(LEFT2, Vec2::X),
+            HexPosition::new(LEFT, Vec2::NEG_X),
+        );
+        universe_builder.gates.add(
+            HexPosition::new(LEFT, Vec2::X),
+            HexPosition::new(CENTER, Vec2::NEG_X),
+        );
+        universe_builder.gates.add(
+            HexPosition::new(CENTER, Vec2::X),
+            HexPosition::new(RIGHT, Vec2::NEG_X),
+        );
+        universe_builder.gates.add(
+            HexPosition::new(RIGHT, Vec2::X),
+            HexPosition::new(RIGHT2, Vec2::NEG_X),
+        );
+
+        universe_builder.gates.add(
+            HexPosition::new(LEFT, Vec2::X),
+            HexPosition::new(CENTER_LEFT_TOP, Vec2::NEG_X),
+        );
+        universe_builder.gates.add(
+            HexPosition::new(CENTER_LEFT_TOP, Vec2::X),
+            HexPosition::new(CENTER_RIGHT_TOP, Vec2::NEG_X),
+        );
+        universe_builder.gates.add(
+            HexPosition::new(CENTER_RIGHT_TOP, Vec2::X),
+            HexPosition::new(RIGHT, Vec2::NEG_X),
         );
 
         let mut app = universe_builder.build_test_app();
