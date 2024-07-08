@@ -111,9 +111,9 @@ fn reconstruct_path(
 #[cfg(test)]
 mod test {
     use crate::components::Sector;
+    use crate::hex_to_sector_entity_map::HexToSectorEntityMap;
     use crate::pathfinding::find_path;
     use crate::universe_builder::gate_builder::HexPosition;
-    use crate::universe_builder::sector_builder::HexToSectorEntityMap;
     use crate::universe_builder::UniverseBuilder;
     use bevy::ecs::system::RunSystemOnce;
     use bevy::prelude::{Query, Res, Transform, Vec2, Vec3};

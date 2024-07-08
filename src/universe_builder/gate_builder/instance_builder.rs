@@ -1,6 +1,6 @@
 use crate::components::Sector;
 use crate::gizmos::SetupGateConnectionEvent;
-use crate::universe_builder::sector_builder::HexToSectorEntityMap;
+use crate::hex_to_sector_entity_map::HexToSectorEntityMap;
 use crate::utils::spawn_helpers::spawn_gates;
 use crate::utils::SectorPosition;
 use crate::SpriteHandles;

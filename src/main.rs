@@ -28,6 +28,7 @@ mod entity_selection;
 mod game_data;
 mod gizmos;
 mod gui;
+mod hex_to_sector_entity_map;
 mod map_layout;
 mod pathfinding;
 mod physics;

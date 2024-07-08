@@ -1,9 +1,11 @@
 use crate::asteroid_system::SectorWasSpawnedEvent;
 use crate::components::SectorAsteroidData;
+use crate::hex_to_sector_entity_map::HexToSectorEntityMap;
 use crate::map_layout::MapLayout;
 use crate::test_universe::plugin::TestSectors;
 use crate::utils::spawn_helpers::spawn_sector;
 use bevy::prelude::{Commands, EventWriter, Res, Vec2};
+use bevy::utils::hashbrown::HashMap;
 use hexx::Hex;
 
 pub fn spawn_test_sectors(
@@ -54,5 +56,14 @@ pub fn spawn_test_sectors(
         right: right_sector,
         top_right: top_right_sector,
         bottom_left: bottom_left_sector,
+    });
+
+    commands.insert_resource(HexToSectorEntityMap {
+        map: HashMap::from([
+            (center, center_sector),
+            (right, right_sector),
+            (top_right, top_right_sector),
+            (bottom_left, bottom_left_sector),
+        ]),
     });
 }

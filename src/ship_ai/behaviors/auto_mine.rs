@@ -1,10 +1,13 @@
-use bevy::prelude::{error, Commands, Component, Entity, Query, Res, Transform};
 use std::cmp::Ordering;
 
+use bevy::prelude::{Commands, Component, Entity, error, Query, Res, Transform};
+
 use crate::components::{BuyOrders, InSector, Inventory, Sector};
-use crate::ship_ai::ship_is_idle_filter::ShipIsIdleFilter;
+use crate::pathfinding;
 use crate::ship_ai::{TaskInsideQueue, TaskQueue};
+use crate::ship_ai::ship_is_idle_filter::ShipIsIdleFilter;
 use crate::trade_plan::TradePlan;
+use crate::hex_to_sector_entity_map::HexToSectorEntityMap;
 use crate::utils::{SimulationTime, SimulationTimestamp, TradeIntent};
 
 #[derive(Eq, PartialEq)]
@@ -37,6 +40,7 @@ pub fn handle_idle_ships(
     mut inventories: Query<&mut Inventory>,
     all_sectors: Query<&Sector>,
     all_transforms: Query<&Transform>,
+    hex_to_sector_entity_map: Res<HexToSectorEntityMap>
 ) {
     let now = simulation_time.now();
 
@@ -59,7 +63,7 @@ pub fn handle_idle_ships(
                 AutoMineState::Mining => {
                     let sector = all_sectors.get(in_sector.sector.into()).unwrap();
                     let ship_pos = all_transforms.get(ship_entity).unwrap().translation;
-                    if let Some(asteroid_data) = sector.asteroid_data {
+                    if let Some(_asteroid_data) = sector.asteroid_data {
                         // TODO: Also Test whether asteroid_data contains the requested asteroid type
 
                         if let Some(closest_asteroid) = sector.asteroids.iter().min_by(|&a, &b| {
@@ -96,7 +100,16 @@ pub fn handle_idle_ships(
                         }
                     } else {
                         behavior.next_idle_update = now.add_milliseconds(2000);
-                        // TODO: Move to a sector with asteroids in it
+                        // TODO: Properly search for nearest sector with resources
+                        let target_sector = all_sectors.iter().find(|x| x.asteroid_data.is_some()).unwrap();
+                        let path = pathfinding::find_path(&all_sectors,
+                                                          &all_transforms,
+                                                          in_sector.sector,
+                                                          all_transforms.get(ship_entity).unwrap().translation,
+                                                          hex_to_sector_entity_map.map[&target_sector.coordinate])
+                            .unwrap();
+                        pathfinding::create_tasks_to_follow_path(&mut queue, path);
+                        queue.apply(&mut commands, now, ship_entity);
                     }
                 }
                 AutoMineState::Trading => {

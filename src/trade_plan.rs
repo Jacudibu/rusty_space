@@ -3,7 +3,6 @@ use bevy::prelude::{Entity, Query, Transform};
 use crate::components::{BuyOrders, InSector, Inventory, Sector, SellOrders, TradeOrder};
 use crate::game_data::ItemId;
 use crate::pathfinding;
-use crate::pathfinding::PathElement;
 use crate::ship_ai::{TaskInsideQueue, TaskQueue};
 use crate::utils::{ExchangeWareData, SectorEntity};
 
@@ -135,7 +134,7 @@ impl TradePlan {
             )
             .unwrap();
 
-            create_tasks_to_move_move_to_target_systems(queue, path);
+            pathfinding::create_tasks_to_follow_path(queue, path);
         }
 
         queue.push_back(TaskInsideQueue::MoveToEntity {
@@ -165,7 +164,7 @@ impl TradePlan {
             )
             .unwrap();
 
-            create_tasks_to_move_move_to_target_systems(queue, path);
+            pathfinding::create_tasks_to_follow_path(queue, path);
         }
 
         queue.push_back(TaskInsideQueue::MoveToEntity { target: self.buyer });
@@ -173,17 +172,5 @@ impl TradePlan {
             target: self.buyer,
             data: ExchangeWareData::Sell(self.item_id, self.amount),
         });
-    }
-}
-
-fn create_tasks_to_move_move_to_target_systems(queue: &mut TaskQueue, path: Vec<PathElement>) {
-    for x in path {
-        queue.push_back(TaskInsideQueue::MoveToEntity {
-            target: x.gate_pair.from.into(),
-        });
-        queue.push_back(TaskInsideQueue::UseGate {
-            enter_gate: x.gate_pair.from,
-            exit_sector: x.exit_sector,
-        })
     }
 }
