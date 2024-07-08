@@ -7,9 +7,19 @@ use bevy::utils::HashMap;
 use crate::components::{GatePairInSector, Sector};
 use crate::utils::SectorEntity;
 
+#[derive(Hash, Eq, PartialEq, Copy, Clone)]
 pub struct PathElement {
     pub exit_sector: SectorEntity,
     pub gate_pair: GatePairInSector,
+}
+
+impl PathElement {
+    pub fn new(exit_sector: SectorEntity, gate_pair: GatePairInSector) -> Self {
+        Self {
+            exit_sector,
+            gate_pair,
+        }
+    }
 }
 
 /// Returns the fastest gate-path between `from` and `to`.   
@@ -73,7 +83,7 @@ fn cost(
 }
 
 fn reconstruct_path(
-    came_from: &HashMap<(SectorEntity, GatePairInSector), (SectorEntity, GatePairInSector)>,
+    came_from: &HashMap<PathElement, PathElement>,
     end: SearchNode,
 ) -> Vec<PathElement> {
     let mut path: Vec<PathElement> = std::iter::successors(
@@ -81,14 +91,7 @@ fn reconstruct_path(
             exit_sector: end.sector,
             gate_pair: end.gate_pair,
         }),
-        move |current| {
-            came_from
-                .get(&(current.exit_sector, current.gate_pair))
-                .map(|current| PathElement {
-                    exit_sector: current.0,
-                    gate_pair: current.1,
-                })
-        },
+        move |current| came_from.get(current).copied(),
     )
     .collect();
     path.reverse();
@@ -103,23 +106,22 @@ fn a_star(
     to: SectorEntity,
 ) -> Option<Vec<PathElement>> {
     let mut open = BinaryHeap::new();
-    let mut costs: HashMap<(SectorEntity, GatePairInSector), u32> = HashMap::new();
-    // <(NextSector, EnterGatePair), (PreviousSector, PreviousGatePair)>
-    let mut came_from: HashMap<(SectorEntity, GatePairInSector), (SectorEntity, GatePairInSector)> =
-        HashMap::new();
+    let mut costs: HashMap<PathElement, u32> = HashMap::new();
 
     for (sector, gate_pair) in &sectors.get(from.into()).unwrap().gates {
         let cost_to_gate =
             cost(sectors, gate_positions, from, from_position, *sector).unwrap() - GATE_COST;
-        let this = (*sector, *gate_pair);
+        let this = PathElement::new(*sector, *gate_pair);
         costs.insert(this, cost_to_gate);
         open.push(SearchNode {
             sector: *sector,
             gate_pair: *gate_pair,
             cost: cost_to_gate,
         });
-        //came_from.insert(*sector, (from, *gate_pair));
     }
+
+    // <Next, Previous>
+    let mut came_from: HashMap<PathElement, PathElement> = HashMap::new();
 
     while let Some(node) = open.pop() {
         if node.sector == to {
@@ -129,7 +131,8 @@ fn a_star(
             return Some(reconstruct_path(&came_from, node));
         }
 
-        let current_cost = costs[&(node.sector, node.gate_pair)];
+        let current = PathElement::new(node.sector, node.gate_pair);
+        let current_cost = costs[&current];
         for (sector, gate_pair) in &sectors.get(node.sector.into()).unwrap().gates {
             let gate_pos = gate_positions
                 .get(node.gate_pair.to.into())
@@ -141,14 +144,14 @@ fn a_star(
                 continue;
             };
 
-            let neighbor = (*sector, *gate_pair);
+            let neighbor = PathElement::new(*sector, *gate_pair);
             let neighbor_cost = current_cost + cost;
             if !costs.contains_key(&neighbor) || costs[&neighbor] > neighbor_cost {
-                came_from.insert(neighbor, (node.sector, node.gate_pair));
+                came_from.insert(neighbor, current);
                 costs.insert(neighbor, neighbor_cost);
                 open.push(SearchNode {
-                    sector: neighbor.0,
-                    gate_pair: neighbor.1,
+                    sector: neighbor.exit_sector,
+                    gate_pair: neighbor.gate_pair,
                     cost: neighbor_cost,
                 })
             }
