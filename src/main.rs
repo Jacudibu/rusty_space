@@ -35,6 +35,7 @@ mod session_data;
 mod ship_ai;
 mod test_universe;
 mod trade_plan;
+mod universe_builder;
 mod utils;
 
 fn main() {

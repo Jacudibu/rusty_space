@@ -158,14 +158,37 @@ fn a_star(
 
 #[cfg(test)]
 mod test {
+    use crate::components::{Sector, SectorAsteroidData};
+    use crate::universe_builder::sector_builder::SectorSpawnData;
+    use crate::universe_builder::sector_builder::SectorSpawnDataInstanceBuilder;
+    use crate::utils::pathfinding::find_path;
     use bevy::prelude::{Entity, Vec2, Vec3, World};
     use hexx::Hex;
 
-    use crate::gizmos::*;
-    use crate::utils::pathfinding::find_path;
+    struct WorldBuilder {
+        sectors: SectorSpawnData,
+    }
 
-    fn add_sector(world: &mut World, pos: Hex, gates: Vec<(Hex, Entity)>) -> Entity {
-        let sector = Sector::new(pos, Vec2::ZERO);
+    impl WorldBuilder {
+        fn spawn_sectors() {}
+
+        pub fn add_sector(&mut self, hex: Hex) -> &SectorSpawnDataInstanceBuilder {
+            self.sectors.add(hex)
+        }
+
+        pub fn build(&self) -> World {
+            // TODO: create app and run the UniverseBuilderPlugin, then return world
+            todo!();
+        }
+    }
+
+    fn add_sector(
+        world: &mut World,
+        pos: Hex,
+        gates: Vec<(Hex, Entity)>,
+        asteroids: Option<SectorAsteroidData>,
+    ) -> Entity {
+        let sector = Sector::new(pos, Vec2::ZERO, asteroids);
         world.spawn(sector).id()
     }
 
