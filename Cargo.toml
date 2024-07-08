@@ -9,3 +9,6 @@ bevy_egui = "0.28.0"
 hexx = "0.17.0"
 iyes_perf_ui = "0.3.0"
 rand = "0.8.5"
+
+[patch.crates-io]
+hexx = { git = "https://github.com/ManevilleF/hexx.git", branch = "feat/bevy_0.14" }

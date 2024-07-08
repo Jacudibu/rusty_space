@@ -121,10 +121,7 @@ pub fn draw_sector_info(
         return;
     };
 
-    // TODO: hexx glam 0.14 update
-    let coordinates = map
-        .hex_layout
-        .world_pos_to_hex(hexx::Vec2::new(world_pos.x, world_pos.y));
+    let coordinates = map.hex_layout.world_pos_to_hex(world_pos);
 
     egui::Window::new("Sector Info")
         .anchor(Align2::CENTER_TOP, egui::Vec2::ZERO)
