@@ -13,7 +13,7 @@ pub fn create_test_sector_data() -> SectorSpawnData {
         forward_velocity: Vec2::splat(2.0),
     };
 
-    let mut sectors = SectorSpawnData::new();
+    let mut sectors = SectorSpawnData::default();
     sectors.add(center);
     sectors.add(right);
     sectors.add(top_right).with_asteroids(asteroids);

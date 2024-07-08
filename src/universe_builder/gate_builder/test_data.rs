@@ -9,7 +9,7 @@ pub fn create_test_gate_data() -> GateSpawnData {
     let top_right = Hex::new(0, 1);
     let bottom_left = Hex::new(0, -1);
 
-    let mut result = GateSpawnData::new();
+    let mut result = GateSpawnData::default();
     result.add(
         HexPosition::new(center, Vec2::new(250.0, 0.0)),
         HexPosition::new(right, Vec2::new(-250.0, 0.0)),

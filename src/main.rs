@@ -101,6 +101,7 @@ fn get_window_title() -> String {
 }
 
 #[derive(Resource)]
+#[cfg_attr(test, derive(Default))]
 pub struct SpriteHandles {
     asteroid: Handle<Image>,
     asteroid_selected: Handle<Image>,
