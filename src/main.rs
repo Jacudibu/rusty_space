@@ -62,6 +62,7 @@ fn main() {
     .add_plugins(AsteroidPlugin)
     .add_plugins(CameraControllerPlugin)
     .add_plugins(TestUniversePlugin)
+    .add_plugins(TestUniversePlugin)
     .add_plugins(DiagnosticsPlugin)
     .add_plugins(physics::PhysicsPlugin)
     .insert_resource(GameData::mock_data())

@@ -1,9 +1,9 @@
-use crate::universe_builder::gate_builder::instance_builder::HexPosition;
-use crate::universe_builder::gate_builder::resources::GateSpawnData;
+use crate::universe_builder::gate_builder::GateSpawnData;
+use crate::universe_builder::gate_builder::HexPosition;
 use bevy::prelude::Vec2;
 use hexx::Hex;
 
-pub fn create_test_gate_data() -> GateSpawnData {
+pub fn create_test_data() -> GateSpawnData {
     let center = Hex::ZERO;
     let right = Hex::new(1, 0);
     let top_right = Hex::new(0, 1);

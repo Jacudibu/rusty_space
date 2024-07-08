@@ -1,9 +1,9 @@
 use crate::components::SectorAsteroidData;
-use crate::universe_builder::sector_builder::resources::SectorSpawnData;
+use crate::universe_builder::sector_builder::SectorSpawnData;
 use bevy::math::Vec2;
 use hexx::Hex;
 
-pub fn create_test_sector_data() -> SectorSpawnData {
+pub fn create_test_data() -> SectorSpawnData {
     let center = Hex::ZERO;
     let right = Hex::new(1, 0);
     let top_right = Hex::new(0, 1);
