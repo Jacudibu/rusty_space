@@ -178,10 +178,10 @@ impl TradePlan {
 fn create_tasks_to_move_move_to_target_systems(queue: &mut TaskQueue, path: Vec<PathElement>) {
     for x in path {
         queue.push_back(TaskInsideQueue::MoveToEntity {
-            target: x.enter_gate.into(),
+            target: x.gate_pair.from.into(),
         });
         queue.push_back(TaskInsideQueue::UseGate {
-            enter_gate: x.enter_gate,
+            enter_gate: x.gate_pair.from,
             exit_sector: x.exit_sector,
         })
     }

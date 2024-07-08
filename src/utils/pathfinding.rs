@@ -5,11 +5,11 @@ use bevy::prelude::{Query, Transform, Vec3};
 use bevy::utils::HashMap;
 
 use crate::components::{GatePairInSector, Sector};
-use crate::utils::{GateEntity, SectorEntity};
+use crate::utils::SectorEntity;
 
 pub struct PathElement {
-    pub enter_gate: GateEntity,
     pub exit_sector: SectorEntity,
+    pub gate_pair: GatePairInSector,
 }
 
 /// Returns the fastest gate-path between `from` and `to`.   
@@ -73,20 +73,20 @@ fn cost(
 }
 
 fn reconstruct_path(
-    came_from: &HashMap<SectorEntity, (SectorEntity, GatePairInSector)>,
+    came_from: &HashMap<(SectorEntity, GatePairInSector), (SectorEntity, GatePairInSector)>,
     end: SearchNode,
 ) -> Vec<PathElement> {
     let mut path: Vec<PathElement> = std::iter::successors(
         Some(PathElement {
             exit_sector: end.sector,
-            enter_gate: end.gate_pair.from,
+            gate_pair: end.gate_pair,
         }),
         move |current| {
             came_from
-                .get(&current.exit_sector)
+                .get(&(current.exit_sector, current.gate_pair))
                 .map(|current| PathElement {
                     exit_sector: current.0,
-                    enter_gate: current.1.from,
+                    gate_pair: current.1,
                 })
         },
     )
@@ -104,6 +104,9 @@ fn a_star(
 ) -> Option<Vec<PathElement>> {
     let mut open = BinaryHeap::new();
     let mut costs: HashMap<(SectorEntity, GatePairInSector), u32> = HashMap::new();
+    // <(NextSector, EnterGatePair), (PreviousSector, PreviousGatePair)>
+    let mut came_from: HashMap<(SectorEntity, GatePairInSector), (SectorEntity, GatePairInSector)> =
+        HashMap::new();
 
     for (sector, gate_pair) in &sectors.get(from.into()).unwrap().gates {
         let cost_to_gate =
@@ -114,16 +117,15 @@ fn a_star(
             sector: *sector,
             gate_pair: *gate_pair,
             cost: cost_to_gate,
-        })
+        });
+        //came_from.insert(*sector, (from, *gate_pair));
     }
-
-    // <NextSector, (PreviousSector, Gate)>
-    let mut came_from: HashMap<SectorEntity, (SectorEntity, GatePairInSector)> = HashMap::new();
 
     while let Some(node) = open.pop() {
         if node.sector == to {
             // TODO: multiple paths may lead to the same goal, and this might not be the best yet
-            //       continue until all nodes have a bigger cost than the current best
+            //       if we want to move to a position further away from the gate -
+            //       continue until all nodes have a bigger cost than the current best + distance to gate
             return Some(reconstruct_path(&came_from, node));
         }
 
@@ -142,7 +144,7 @@ fn a_star(
             let neighbor = (*sector, *gate_pair);
             let neighbor_cost = current_cost + cost;
             if !costs.contains_key(&neighbor) || costs[&neighbor] > neighbor_cost {
-                came_from.insert(node.sector, neighbor);
+                came_from.insert(neighbor, (node.sector, node.gate_pair));
                 costs.insert(neighbor, neighbor_cost);
                 open.push(SearchNode {
                     sector: neighbor.0,
@@ -167,17 +169,20 @@ mod test {
     use bevy::prelude::{Query, Res, Transform, Vec2, Vec3};
     use hexx::Hex;
 
+    const LEFT2: Hex = Hex::new(-2, 0);
+    const LEFT: Hex = Hex::new(-1, 0);
+    const CENTER: Hex = Hex::new(0, 0);
+    const RIGHT: Hex = Hex::new(1, 0);
+    const RIGHT2: Hex = Hex::new(2, 0);
+
     #[test]
     fn find_path_to_neighbor() {
-        const FROM: Hex = Hex::new(0, 0);
-        const TO: Hex = Hex::new(1, 0);
-
         let mut universe_builder = UniverseBuilder::default();
-        universe_builder.sectors.add(FROM);
-        universe_builder.sectors.add(TO);
+        universe_builder.sectors.add(CENTER);
+        universe_builder.sectors.add(RIGHT);
         universe_builder.gates.add(
-            HexPosition::new(FROM, Vec2::ZERO),
-            HexPosition::new(TO, Vec2::ZERO),
+            HexPosition::new(CENTER, Vec2::ZERO),
+            HexPosition::new(RIGHT, Vec2::ZERO),
         );
 
         let mut app = universe_builder.build_test_app();
@@ -190,39 +195,103 @@ mod test {
                 let result = find_path(
                     &sectors,
                     &transforms,
-                    hex_to_sector.map[&FROM],
+                    hex_to_sector.map[&CENTER],
                     Vec3::ZERO,
-                    hex_to_sector.map[&TO],
+                    hex_to_sector.map[&RIGHT],
                 )
                 .unwrap();
 
                 assert_eq!(result.len(), 1);
-                assert_eq!(result[0].exit_sector, hex_to_sector.map[&TO]);
+                assert_eq!(result[0].exit_sector, hex_to_sector.map[&RIGHT]);
             },
         );
     }
 
-    // #[test]
-    // fn find_path_across_corner() {
-    //     let mut all_sectors = AllSectors::default();
-    //     let center = Hex::ZERO;
-    //     let right = Hex::new(1, 0);
-    //     let top_right = Hex::new(0, 1);
-    //
-    //     let mock_entity = Entity::from_raw(0);
-    //
-    //     add_sector(&mut all_sectors, center, vec![(right, mock_entity)]);
-    //     add_sector(
-    //         &mut all_sectors,
-    //         right,
-    //         vec![(center, mock_entity), (top_right, mock_entity)],
-    //     );
-    //     add_sector(&mut all_sectors, top_right, vec![(right, mock_entity)]);
-    //
-    //     let result = find_path(&all_sectors, center, top_right).unwrap();
-    //
-    //     assert_eq!(result.len(), 2);
-    //     assert_eq!(result[0].enter_sector, center);
-    //     assert_eq!(result[1].enter_sector, right);
-    // }
+    #[test]
+    fn find_path_through_single_sector() {
+        let mut universe_builder = UniverseBuilder::default();
+        universe_builder.sectors.add(LEFT);
+        universe_builder.sectors.add(CENTER);
+        universe_builder.sectors.add(RIGHT);
+        universe_builder.gates.add(
+            HexPosition::new(LEFT, Vec2::NEG_X),
+            HexPosition::new(CENTER, Vec2::NEG_X),
+        );
+        universe_builder.gates.add(
+            HexPosition::new(CENTER, Vec2::X),
+            HexPosition::new(RIGHT, Vec2::X),
+        );
+
+        let mut app = universe_builder.build_test_app();
+        let world = app.world_mut();
+
+        world.run_system_once(
+            |sectors: Query<&Sector>,
+             transforms: Query<&Transform>,
+             hex_to_sector: Res<HexToSectorEntityMap>| {
+                let result = find_path(
+                    &sectors,
+                    &transforms,
+                    hex_to_sector.map[&LEFT],
+                    Vec3::ZERO,
+                    hex_to_sector.map[&RIGHT],
+                )
+                .unwrap();
+
+                assert_eq!(result.len(), 2);
+                assert_eq!(result[0].exit_sector, hex_to_sector.map[&CENTER]);
+                assert_eq!(result[1].exit_sector, hex_to_sector.map[&RIGHT]);
+            },
+        );
+    }
+
+    #[test]
+    fn find_path_through_multiple_sectors() {
+        let mut universe_builder = UniverseBuilder::default();
+        universe_builder.sectors.add(LEFT);
+        universe_builder.sectors.add(LEFT2);
+        universe_builder.sectors.add(CENTER);
+        universe_builder.sectors.add(RIGHT);
+        universe_builder.sectors.add(RIGHT2);
+        universe_builder.gates.add(
+            HexPosition::new(LEFT2, Vec2::X),
+            HexPosition::new(LEFT, Vec2::NEG_X),
+        );
+        universe_builder.gates.add(
+            HexPosition::new(LEFT, Vec2::X),
+            HexPosition::new(CENTER, Vec2::NEG_X),
+        );
+        universe_builder.gates.add(
+            HexPosition::new(CENTER, Vec2::X),
+            HexPosition::new(RIGHT, Vec2::NEG_X),
+        );
+        universe_builder.gates.add(
+            HexPosition::new(RIGHT, Vec2::X),
+            HexPosition::new(RIGHT2, Vec2::NEG_X),
+        );
+
+        let mut app = universe_builder.build_test_app();
+        let world = app.world_mut();
+
+        world.run_system_once(
+            |sectors: Query<&Sector>,
+             transforms: Query<&Transform>,
+             hex_to_sector: Res<HexToSectorEntityMap>| {
+                let result = find_path(
+                    &sectors,
+                    &transforms,
+                    hex_to_sector.map[&LEFT2],
+                    Vec3::ZERO,
+                    hex_to_sector.map[&RIGHT2],
+                )
+                .unwrap();
+
+                assert_eq!(result.len(), 4);
+                assert_eq!(result[0].exit_sector, hex_to_sector.map[&LEFT]);
+                assert_eq!(result[1].exit_sector, hex_to_sector.map[&CENTER]);
+                assert_eq!(result[2].exit_sector, hex_to_sector.map[&RIGHT]);
+                assert_eq!(result[3].exit_sector, hex_to_sector.map[&RIGHT2]);
+            },
+        );
+    }
 }
