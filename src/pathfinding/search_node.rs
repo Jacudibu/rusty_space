@@ -26,6 +26,13 @@ impl PartialOrd for SearchNode {
 
 impl Ord for SearchNode {
     fn cmp(&self, other: &Self) -> Ordering {
-        self.cost.cmp(&other.cost)
+        self.cost.cmp(&other.cost).then_with(|| {
+            self.sector.cmp(&other.sector).then_with(|| {
+                self.gate_pair
+                    .from
+                    .cmp(&other.gate_pair.from)
+                    .then_with(|| self.gate_pair.to.cmp(&other.gate_pair.to))
+            })
+        })
     }
 }

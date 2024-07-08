@@ -1,7 +1,7 @@
 use crate::components::Sector;
 use crate::gizmos::SetupGateConnectionEvent;
 use crate::hex_to_sector_entity_map::HexToSectorEntityMap;
-use crate::universe_builder::gate_builder::resources::GateSpawnData;
+use crate::universe_builder::gate_builder::data_resource::GateSpawnData;
 use crate::SpriteHandles;
 use bevy::prelude::{Commands, EventWriter, Query, Res};
 

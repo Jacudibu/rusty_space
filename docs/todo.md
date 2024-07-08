@@ -135,14 +135,28 @@ Attack Target
 (Repeat)
 ```
 
+# Persistence
+
+- Refactor Universe generation to spawn stuff from predefined resources for the following steps
+- Saving current universe to file
+- Saving occurs in the background, without interrupting gameplay
+- Loading universe from file
+
 # Multiplayer
 
 Implement multiplayer with selectable "Sync Intensity" values. (It's just a state, ez)
 These will limit which systems run exclusively on the host, which will then send network events to the connected
 clients.
 
+Level 0: After Universe Creation, sync the map with all entities to connected clients
 Level 1: Synchronize Task creation (Bare minimum, limiting the big AI decision-making to the host.)
 Level 2: Synchronize Sector transitions (Should improve positional sync, but might not even be necessary, needs testing)
+
+# Planets
+
+Sectors with only one or two gates and otherwise low resources might have celestial bodies inside them, orbiting a Star or Black Hole at veeeery slow speeds.
+Early on, gas giants serve as a reliable source of certain gases, and energy cells can be produced with solar panels in a sector containing a star.
+Later solid planets could be colonized by the sector owner for additional resources, but usually it should be both cheaper and more efficient to just harvest more asteroids rather than bothering with the extra costs from dealing with various atmospheres and gravitation. However, once the entire Universe is colonized and borders are well established in between factions and resources grow sparse, they might be a way to unlock additional resource production over time.
 
 # Player Control
 
@@ -162,11 +176,6 @@ dynamically decrease faction standing.
 
 Time to get cooking! Factions attempt to expand their territory by building both stations and ships on their own.
 Good luck implementing all of that, future me! :>
-
-# Persistence
-
-Somewhere around this moment, it's probably finally time to think about how game saving & loading should work.
-Bonus points if saving can happen in the background, maybe as an async task that's set up similarly to Bevy's render extraction phase.
 
 # Advanced Unit Selection
 
@@ -197,7 +206,3 @@ Level 3: Synchronize Combat events (Hit detection / damage) This will be very mu
 Certain properties of Stations and ships should be upgradeable in small % intervals by investing a big amount of
 resources.
 E.g. Engine Speed or turning angle, or station storage.
-
-# Planets
-
-Sectors with only one or two gates and otherwise low resources might have celestial bodies inside them, orbiting a Star or Black Hole at veeeery slow speeds. These planets could be colonized by the sector owner for additional resources, but usually it should be both cheaper and more efficient to just harvest more asteroids rather than bothering with the extra costs from dealing with various atmospheres and gravitation. However, once the entire Universe is colonized and borders are well established in between factions and resources grow sparse, they might be a way to unlock additional resource production over time.

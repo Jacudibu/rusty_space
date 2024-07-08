@@ -1,6 +1,5 @@
+mod data_resource;
 mod instance_builder;
-mod resources;
 mod spawn_system;
-mod test_data;
 
-pub use {gates::*, instance_builder::*, resources::*, spawn_system::*};
+pub use {data_resource::*, instance_builder::*, spawn_system::*};
