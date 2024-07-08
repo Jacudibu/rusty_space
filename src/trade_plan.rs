@@ -2,9 +2,10 @@ use bevy::prelude::{Entity, Query, Transform};
 
 use crate::components::{BuyOrders, InSector, Inventory, Sector, SellOrders, TradeOrder};
 use crate::game_data::ItemId;
+use crate::pathfinding;
+use crate::pathfinding::PathElement;
 use crate::ship_ai::{TaskInsideQueue, TaskQueue};
-use crate::utils::pathfinding::PathElement;
-use crate::utils::{pathfinding, ExchangeWareData, SectorEntity};
+use crate::utils::{ExchangeWareData, SectorEntity};
 
 pub struct TradePlan {
     pub item_id: ItemId,

@@ -29,6 +29,7 @@ mod game_data;
 mod gizmos;
 mod gui;
 mod map_layout;
+mod pathfinding;
 mod physics;
 mod production;
 mod session_data;

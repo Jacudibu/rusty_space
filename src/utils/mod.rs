@@ -2,7 +2,6 @@ mod entity_wrappers;
 mod exchange_ware_data;
 pub mod interpolation;
 mod key_value_resource;
-pub mod pathfinding;
 mod price_range;
 mod price_setting;
 mod sector_position;

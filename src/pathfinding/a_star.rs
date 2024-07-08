@@ -1,63 +1,73 @@
-use std::cmp::Ordering;
+use crate::components::Sector;
+use crate::pathfinding::search_node::{SearchNode, GATE_COST};
+use crate::pathfinding::PathElement;
+use crate::utils::SectorEntity;
+use bevy::math::Vec3;
+use bevy::prelude::{Query, Transform};
+use bevy::utils::HashMap;
 use std::collections::BinaryHeap;
 
-use bevy::prelude::{Query, Transform, Vec3};
-use bevy::utils::HashMap;
-
-use crate::components::{GatePairInSector, Sector};
-use crate::utils::SectorEntity;
-
-#[derive(Hash, Eq, PartialEq, Copy, Clone)]
-pub struct PathElement {
-    pub exit_sector: SectorEntity,
-    pub gate_pair: GatePairInSector,
-}
-
-impl PathElement {
-    pub fn new(exit_sector: SectorEntity, gate_pair: GatePairInSector) -> Self {
-        Self {
-            exit_sector,
-            gate_pair,
-        }
-    }
-}
-
-/// Returns the fastest gate-path between `from` and `to`.   
-pub fn find_path(
+pub fn a_star(
     sectors: &Query<&Sector>,
     gate_positions: &Query<&Transform>,
     from: SectorEntity,
     from_position: Vec3,
     to: SectorEntity,
 ) -> Option<Vec<PathElement>> {
-    a_star(sectors, gate_positions, from, from_position, to)
-}
+    let mut open = BinaryHeap::new();
+    let mut costs: HashMap<PathElement, u32> = HashMap::new();
 
-struct SearchNode {
-    sector: SectorEntity,
-    gate_pair: GatePairInSector,
-    cost: u32,
-}
-
-const GATE_COST: u32 = 200;
-
-impl Eq for SearchNode {}
-impl PartialEq for SearchNode {
-    fn eq(&self, other: &Self) -> bool {
-        self.sector == other.sector && self.gate_pair == other.gate_pair
+    for (sector, gate_pair) in &sectors.get(from.into()).unwrap().gates {
+        let cost_to_gate =
+            cost(sectors, gate_positions, from, from_position, *sector).unwrap() - GATE_COST;
+        let this = PathElement::new(*sector, *gate_pair);
+        costs.insert(this, cost_to_gate);
+        open.push(SearchNode {
+            sector: *sector,
+            gate_pair: *gate_pair,
+            cost: cost_to_gate,
+        });
     }
-}
 
-impl PartialOrd for SearchNode {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
-    }
-}
+    // <Next, Previous>
+    let mut came_from: HashMap<PathElement, PathElement> = HashMap::new();
 
-impl Ord for SearchNode {
-    fn cmp(&self, other: &Self) -> Ordering {
-        self.cost.cmp(&other.cost)
+    while let Some(node) = open.pop() {
+        if node.sector == to {
+            // TODO: multiple paths may lead to the same goal, and this might not be the best yet,
+            //       especially if we want to move to a position further away from the gate -
+            //       continue until all nodes have a bigger cost than the current best + distance to target_position
+            return Some(reconstruct_path(&came_from, node));
+        }
+
+        let current = PathElement::new(node.sector, node.gate_pair);
+        let current_cost = costs[&current];
+        for (sector, gate_pair) in &sectors.get(node.sector.into()).unwrap().gates {
+            let gate_pos = gate_positions
+                .get(node.gate_pair.to.into())
+                .unwrap()
+                .translation;
+
+            let Some(cost) = cost(sectors, gate_positions, node.sector, gate_pos, *sector) else {
+                // Technically this never happens... yet. Maybe once we have initial sector fog of war, though.
+                continue;
+            };
+
+            let neighbor = PathElement::new(*sector, *gate_pair);
+            let neighbor_cost = current_cost + cost;
+            if !costs.contains_key(&neighbor) || costs[&neighbor] > neighbor_cost {
+                came_from.insert(neighbor, current);
+                costs.insert(neighbor, neighbor_cost);
+                open.push(SearchNode {
+                    sector: neighbor.exit_sector,
+                    gate_pair: neighbor.gate_pair,
+                    cost: neighbor_cost,
+                })
+            }
+        }
     }
+
+    None
 }
 
 fn cost(
@@ -98,76 +108,13 @@ fn reconstruct_path(
     path
 }
 
-fn a_star(
-    sectors: &Query<&Sector>,
-    gate_positions: &Query<&Transform>,
-    from: SectorEntity,
-    from_position: Vec3,
-    to: SectorEntity,
-) -> Option<Vec<PathElement>> {
-    let mut open = BinaryHeap::new();
-    let mut costs: HashMap<PathElement, u32> = HashMap::new();
-
-    for (sector, gate_pair) in &sectors.get(from.into()).unwrap().gates {
-        let cost_to_gate =
-            cost(sectors, gate_positions, from, from_position, *sector).unwrap() - GATE_COST;
-        let this = PathElement::new(*sector, *gate_pair);
-        costs.insert(this, cost_to_gate);
-        open.push(SearchNode {
-            sector: *sector,
-            gate_pair: *gate_pair,
-            cost: cost_to_gate,
-        });
-    }
-
-    // <Next, Previous>
-    let mut came_from: HashMap<PathElement, PathElement> = HashMap::new();
-
-    while let Some(node) = open.pop() {
-        if node.sector == to {
-            // TODO: multiple paths may lead to the same goal, and this might not be the best yet
-            //       if we want to move to a position further away from the gate -
-            //       continue until all nodes have a bigger cost than the current best + distance to gate
-            return Some(reconstruct_path(&came_from, node));
-        }
-
-        let current = PathElement::new(node.sector, node.gate_pair);
-        let current_cost = costs[&current];
-        for (sector, gate_pair) in &sectors.get(node.sector.into()).unwrap().gates {
-            let gate_pos = gate_positions
-                .get(node.gate_pair.to.into())
-                .unwrap()
-                .translation;
-
-            let Some(cost) = cost(sectors, gate_positions, node.sector, gate_pos, *sector) else {
-                // Technically this never happens... yet. Maybe once we have initial sector fog of war, though.
-                continue;
-            };
-
-            let neighbor = PathElement::new(*sector, *gate_pair);
-            let neighbor_cost = current_cost + cost;
-            if !costs.contains_key(&neighbor) || costs[&neighbor] > neighbor_cost {
-                came_from.insert(neighbor, current);
-                costs.insert(neighbor, neighbor_cost);
-                open.push(SearchNode {
-                    sector: neighbor.exit_sector,
-                    gate_pair: neighbor.gate_pair,
-                    cost: neighbor_cost,
-                })
-            }
-        }
-    }
-
-    None
-}
-
 #[cfg(test)]
 mod test {
     use crate::components::Sector;
+    use crate::pathfinding::find_path;
     use crate::universe_builder::gate_builder::HexPosition;
     use crate::universe_builder::sector_builder::HexToSectorEntityMap;
     use crate::universe_builder::UniverseBuilder;
-    use crate::utils::pathfinding::find_path;
     use bevy::ecs::system::RunSystemOnce;
     use bevy::prelude::{Query, Res, Transform, Vec2, Vec3};
     use hexx::Hex;
