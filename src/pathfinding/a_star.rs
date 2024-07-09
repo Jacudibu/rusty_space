@@ -113,7 +113,7 @@ mod test {
     use crate::components::Sector;
     use crate::hex_to_sector_entity_map::HexToSectorEntityMap;
     use crate::pathfinding::find_path;
-    use crate::universe_builder::gate_builder::HexPosition;
+    use crate::universe_builder::local_hex_position::LocalHexPosition;
     use crate::universe_builder::UniverseBuilder;
     use bevy::ecs::system::RunSystemOnce;
     use bevy::prelude::{Query, Res, Transform, Vec2, Vec3};
@@ -133,8 +133,8 @@ mod test {
         universe_builder.sectors.add(CENTER);
         universe_builder.sectors.add(RIGHT);
         universe_builder.gates.add(
-            HexPosition::new(CENTER, Vec2::ZERO),
-            HexPosition::new(RIGHT, Vec2::ZERO),
+            LocalHexPosition::new(CENTER, Vec2::ZERO),
+            LocalHexPosition::new(RIGHT, Vec2::ZERO),
         );
 
         let mut app = universe_builder.build_test_app();
@@ -166,12 +166,12 @@ mod test {
         universe_builder.sectors.add(CENTER);
         universe_builder.sectors.add(RIGHT);
         universe_builder.gates.add(
-            HexPosition::new(LEFT, Vec2::NEG_X),
-            HexPosition::new(CENTER, Vec2::NEG_X),
+            LocalHexPosition::new(LEFT, Vec2::NEG_X),
+            LocalHexPosition::new(CENTER, Vec2::NEG_X),
         );
         universe_builder.gates.add(
-            HexPosition::new(CENTER, Vec2::X),
-            HexPosition::new(RIGHT, Vec2::X),
+            LocalHexPosition::new(CENTER, Vec2::X),
+            LocalHexPosition::new(RIGHT, Vec2::X),
         );
 
         let mut app = universe_builder.build_test_app();
@@ -206,20 +206,20 @@ mod test {
         universe_builder.sectors.add(RIGHT);
         universe_builder.sectors.add(RIGHT2);
         universe_builder.gates.add(
-            HexPosition::new(LEFT2, Vec2::X),
-            HexPosition::new(LEFT, Vec2::NEG_X),
+            LocalHexPosition::new(LEFT2, Vec2::X),
+            LocalHexPosition::new(LEFT, Vec2::NEG_X),
         );
         universe_builder.gates.add(
-            HexPosition::new(LEFT, Vec2::X),
-            HexPosition::new(CENTER, Vec2::NEG_X),
+            LocalHexPosition::new(LEFT, Vec2::X),
+            LocalHexPosition::new(CENTER, Vec2::NEG_X),
         );
         universe_builder.gates.add(
-            HexPosition::new(CENTER, Vec2::X),
-            HexPosition::new(RIGHT, Vec2::NEG_X),
+            LocalHexPosition::new(CENTER, Vec2::X),
+            LocalHexPosition::new(RIGHT, Vec2::NEG_X),
         );
         universe_builder.gates.add(
-            HexPosition::new(RIGHT, Vec2::X),
-            HexPosition::new(RIGHT2, Vec2::NEG_X),
+            LocalHexPosition::new(RIGHT, Vec2::X),
+            LocalHexPosition::new(RIGHT2, Vec2::NEG_X),
         );
 
         let mut app = universe_builder.build_test_app();
@@ -258,33 +258,33 @@ mod test {
         universe_builder.sectors.add(RIGHT);
         universe_builder.sectors.add(RIGHT2);
         universe_builder.gates.add(
-            HexPosition::new(LEFT2, Vec2::X),
-            HexPosition::new(LEFT, Vec2::NEG_X),
+            LocalHexPosition::new(LEFT2, Vec2::X),
+            LocalHexPosition::new(LEFT, Vec2::NEG_X),
         );
         universe_builder.gates.add(
-            HexPosition::new(LEFT, Vec2::X),
-            HexPosition::new(CENTER, Vec2::NEG_X),
+            LocalHexPosition::new(LEFT, Vec2::X),
+            LocalHexPosition::new(CENTER, Vec2::NEG_X),
         );
         universe_builder.gates.add(
-            HexPosition::new(CENTER, Vec2::X),
-            HexPosition::new(RIGHT, Vec2::NEG_X),
+            LocalHexPosition::new(CENTER, Vec2::X),
+            LocalHexPosition::new(RIGHT, Vec2::NEG_X),
         );
         universe_builder.gates.add(
-            HexPosition::new(RIGHT, Vec2::X),
-            HexPosition::new(RIGHT2, Vec2::NEG_X),
+            LocalHexPosition::new(RIGHT, Vec2::X),
+            LocalHexPosition::new(RIGHT2, Vec2::NEG_X),
         );
 
         universe_builder.gates.add(
-            HexPosition::new(LEFT, Vec2::X),
-            HexPosition::new(CENTER_LEFT_TOP, Vec2::NEG_X),
+            LocalHexPosition::new(LEFT, Vec2::X),
+            LocalHexPosition::new(CENTER_LEFT_TOP, Vec2::NEG_X),
         );
         universe_builder.gates.add(
-            HexPosition::new(CENTER_LEFT_TOP, Vec2::X),
-            HexPosition::new(CENTER_RIGHT_TOP, Vec2::NEG_X),
+            LocalHexPosition::new(CENTER_LEFT_TOP, Vec2::X),
+            LocalHexPosition::new(CENTER_RIGHT_TOP, Vec2::NEG_X),
         );
         universe_builder.gates.add(
-            HexPosition::new(CENTER_RIGHT_TOP, Vec2::X),
-            HexPosition::new(RIGHT, Vec2::NEG_X),
+            LocalHexPosition::new(CENTER_RIGHT_TOP, Vec2::X),
+            LocalHexPosition::new(RIGHT, Vec2::NEG_X),
         );
 
         let mut app = universe_builder.build_test_app();

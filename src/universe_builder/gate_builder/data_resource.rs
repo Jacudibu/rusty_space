@@ -1,6 +1,5 @@
-use crate::universe_builder::gate_builder::instance_builder::{
-    GateSpawnDataInstanceBuilder, HexPosition,
-};
+use crate::universe_builder::gate_builder::instance_builder::GateSpawnDataInstanceBuilder;
+use crate::universe_builder::local_hex_position::LocalHexPosition;
 use bevy::prelude::Resource;
 
 #[derive(Resource, Default)]
@@ -9,7 +8,11 @@ pub struct GateSpawnData {
 }
 
 impl GateSpawnData {
-    pub fn add(&mut self, from: HexPosition, to: HexPosition) -> &mut GateSpawnDataInstanceBuilder {
+    pub fn add(
+        &mut self,
+        from: LocalHexPosition,
+        to: LocalHexPosition,
+    ) -> &mut GateSpawnDataInstanceBuilder {
         self.gates.push(GateSpawnDataInstanceBuilder { from, to });
         self.gates.last_mut().unwrap()
     }

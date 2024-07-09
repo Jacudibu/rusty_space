@@ -1,5 +1,5 @@
 use crate::initialize_data;
-use crate::universe_builder::{gate_builder, sector_builder};
+use crate::universe_builder::{gate_builder, sector_builder, station_builder};
 use bevy::app::App;
 use bevy::prelude::{IntoSystemConfigs, Plugin, Startup};
 
@@ -17,6 +17,7 @@ impl Plugin for UniverseBuilderPlugin {
             (
                 sector_builder::spawn_all_sectors,
                 gate_builder::spawn_all_gates,
+                station_builder::spawn_all_stations,
             )
                 .after(initialize_data)
                 .chain(),

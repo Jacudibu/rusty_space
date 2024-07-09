@@ -1,37 +1,14 @@
 use crate::components::Sector;
 use crate::gizmos::SetupGateConnectionEvent;
 use crate::hex_to_sector_entity_map::HexToSectorEntityMap;
+use crate::universe_builder::local_hex_position::LocalHexPosition;
 use crate::utils::spawn_helpers::spawn_gates;
-use crate::utils::SectorPosition;
 use crate::SpriteHandles;
-use bevy::math::Vec2;
 use bevy::prelude::{Commands, EventWriter, Query};
-use hexx::Hex;
 
 pub struct GateSpawnDataInstanceBuilder {
-    pub from: HexPosition,
-    pub to: HexPosition,
-}
-
-pub struct HexPosition {
-    pub sector: Hex,
-    pub position: Vec2,
-}
-
-impl HexPosition {
-    pub fn new(sector: Hex, position: Vec2) -> Self {
-        Self { sector, position }
-    }
-
-    pub fn to_sector_position(
-        &self,
-        hex_to_sector_entity_map: &HexToSectorEntityMap,
-    ) -> SectorPosition {
-        SectorPosition {
-            sector: hex_to_sector_entity_map.map[&self.sector],
-            local_position: self.position,
-        }
-    }
+    pub from: LocalHexPosition,
+    pub to: LocalHexPosition,
 }
 
 impl GateSpawnDataInstanceBuilder {
