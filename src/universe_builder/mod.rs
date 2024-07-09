@@ -9,3 +9,5 @@ mod test_data;
 
 pub use builder::UniverseBuilder;
 pub use local_hex_position::LocalHexPosition;
+pub use plugin::UniverseBuilderPlugin;
+pub use test_data::TestUniversePlugin;

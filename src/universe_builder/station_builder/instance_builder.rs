@@ -37,7 +37,7 @@ impl StationSpawnDataInstanceBuilder {
     }
 
     pub fn with_sells(&mut self, mut sells: Vec<ItemId>) -> &mut Self {
-        self.buys.append(&mut sells);
+        self.sells.append(&mut sells);
         self
     }
 

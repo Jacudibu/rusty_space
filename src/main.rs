@@ -7,7 +7,6 @@ use crate::gizmos::GizmoPlugin;
 use crate::production::ProductionPlugin;
 use crate::session_data::SessionData;
 use crate::ship_ai::ShipAiPlugin;
-use crate::test_universe::TestUniversePlugin;
 use crate::utils::SimulationTimePlugin;
 use bevy::asset::AssetServer;
 use bevy::core::Name;
@@ -35,7 +34,6 @@ mod physics;
 mod production;
 mod session_data;
 mod ship_ai;
-mod test_universe;
 mod trade_plan;
 mod universe_builder;
 mod utils;
@@ -61,9 +59,9 @@ fn main() {
     .add_plugins(GizmoPlugin)
     .add_plugins(AsteroidPlugin)
     .add_plugins(CameraControllerPlugin)
-    .add_plugins(TestUniversePlugin)
-    .add_plugins(TestUniversePlugin)
     .add_plugins(DiagnosticsPlugin)
+    .add_plugins(universe_builder::TestUniversePlugin)
+    .add_plugins(universe_builder::UniverseBuilderPlugin)
     .add_plugins(physics::PhysicsPlugin)
     .insert_resource(GameData::mock_data())
     .insert_resource(SessionData::mock_data())
