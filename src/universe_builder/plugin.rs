@@ -1,5 +1,5 @@
 use crate::initialize_data;
-use crate::universe_builder::{gate_builder, sector_builder, station_builder};
+use crate::universe_builder::{gate_builder, sector_builder, ship_builder, station_builder};
 use bevy::app::App;
 use bevy::prelude::{IntoSystemConfigs, Plugin, Startup};
 
@@ -7,6 +7,8 @@ use bevy::prelude::{IntoSystemConfigs, Plugin, Startup};
 ///
 /// - [sector_builder::SectorSpawnData] to define sectors
 /// - [gate_builder::GateSpawnData] to define gates
+/// - [station_builder::StationSpawnData] to define stations
+/// - [ship_builder::ShipSpawnData] to define ships
 ///
 /// Once spawned, these resources will be removed.
 pub struct UniverseBuilderPlugin;
@@ -18,6 +20,7 @@ impl Plugin for UniverseBuilderPlugin {
                 sector_builder::spawn_all_sectors,
                 gate_builder::spawn_all_gates,
                 station_builder::spawn_all_stations,
+                ship_builder::spawn_all_ships,
             )
                 .after(initialize_data)
                 .chain(),

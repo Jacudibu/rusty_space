@@ -113,7 +113,7 @@ mod test {
     use crate::components::Sector;
     use crate::hex_to_sector_entity_map::HexToSectorEntityMap;
     use crate::pathfinding::find_path;
-    use crate::universe_builder::local_hex_position::LocalHexPosition;
+    use crate::universe_builder::LocalHexPosition;
     use crate::universe_builder::UniverseBuilder;
     use bevy::ecs::system::RunSystemOnce;
     use bevy::prelude::{Query, Res, Transform, Vec2, Vec3};

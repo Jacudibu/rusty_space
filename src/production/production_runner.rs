@@ -8,7 +8,7 @@ use crate::production::shipyard_component::ShipyardComponent;
 use crate::production::state::GlobalProductionState;
 use crate::production::{InventoryUpdateForProductionEvent, ProductionComponent};
 use crate::session_data::SessionData;
-use crate::ship_ai::AutoTradeBehavior;
+use crate::ship_ai::BehaviorBuilder;
 use crate::utils::{spawn_helpers, SimulationTime};
 use crate::{utils, SpriteHandles};
 
@@ -114,7 +114,7 @@ pub fn check_if_production_is_finished_and_start_new_one(
                     in_sector.get(),
                     transform.translation.truncate(),
                     0.0,
-                    AutoTradeBehavior::default(),
+                    &BehaviorBuilder::AutoTrade,
                 );
             }
         }

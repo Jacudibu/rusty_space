@@ -2,7 +2,7 @@ use bevy::math::Vec2;
 use bevy::prelude::{Commands, Query, Res};
 
 use crate::components::Sector;
-use crate::ship_ai::{AutoMineBehavior, AutoTradeBehavior};
+use crate::ship_ai::BehaviorBuilder;
 use crate::test_universe::plugin::TestSectors;
 use crate::utils::spawn_helpers;
 use crate::{constants, SpriteHandles};
@@ -22,7 +22,7 @@ pub fn spawn_test_ships(
             debug_sectors.center,
             Vec2::ZERO,
             ((std::f32::consts::PI * 2.0) / constants::TRADE_SHIP_COUNT as f32) * i as f32,
-            AutoTradeBehavior::default(),
+            &BehaviorBuilder::AutoTrade,
         )
     }
 
@@ -35,7 +35,7 @@ pub fn spawn_test_ships(
             debug_sectors.top_right,
             Vec2::ZERO,
             ((std::f32::consts::PI * 2.0) / constants::MINING_SHIP_COUNT as f32) * i as f32,
-            AutoMineBehavior::default(),
+            &BehaviorBuilder::AutoMine,
         )
     }
 }

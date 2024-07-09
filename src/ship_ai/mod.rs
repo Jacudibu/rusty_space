@@ -9,6 +9,7 @@ mod tasks;
 
 pub use behaviors::auto_mine::AutoMineBehavior;
 pub use behaviors::auto_trade::AutoTradeBehavior;
+pub use behaviors::BehaviorBuilder;
 pub use plugin::ShipAiPlugin;
 pub use task_inside_queue::TaskInsideQueue;
 pub use task_queue::TaskQueue;

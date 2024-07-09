@@ -1,13 +1,13 @@
 use crate::components::{Engine, Inventory, Sector, SelectableEntity, Ship};
 use crate::physics::ShipVelocity;
-use crate::ship_ai::TaskQueue;
+use crate::ship_ai::{BehaviorBuilder, TaskQueue};
 use crate::utils::{SectorEntity, ShipEntity};
 use crate::{constants, SpriteHandles};
 use bevy::core::Name;
 use bevy::math::{Quat, Vec2};
-use bevy::prelude::{default, Commands, Component, Query, SpriteBundle, Transform};
+use bevy::prelude::{default, Commands, Query, SpriteBundle, Transform};
 
-pub fn spawn_ship<TBehavior: Component>(
+pub fn spawn_ship(
     commands: &mut Commands,
     sprites: &SpriteHandles,
     name: String,
@@ -15,7 +15,7 @@ pub fn spawn_ship<TBehavior: Component>(
     sector: SectorEntity,
     position: Vec2,
     rotation: f32,
-    behavior: TBehavior,
+    behavior: &BehaviorBuilder,
 ) {
     let mut sector_data = sector_query.get_mut(sector.into()).unwrap();
 
@@ -24,7 +24,6 @@ pub fn spawn_ship<TBehavior: Component>(
             Name::new(name),
             Ship,
             SelectableEntity::Ship,
-            behavior,
             Engine::default(),
             ShipVelocity::default(),
             Inventory::new(100),
@@ -40,6 +39,9 @@ pub fn spawn_ship<TBehavior: Component>(
             },
         ))
         .id();
+
+    // TODO: There must be *some* way to build that component earlier and insert it at spawn time...?
+    behavior.build_and_add_default_component(commands.entity(entity));
 
     sector_data.add_ship(commands, sector, ShipEntity::from(entity));
 }
