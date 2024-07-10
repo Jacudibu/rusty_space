@@ -8,8 +8,8 @@ use crate::utils::{
 };
 use crate::{constants, SpriteHandles};
 use bevy::prelude::{
-    on_event, Alpha, App, Circle, Commands, Event, EventReader, IntoSystemConfigs, Mut, Plugin,
-    Query, Res, ResMut, Resource, ShapeSample, Sprite, Transform, Update, Vec2, Visibility, With,
+    on_event, Alpha, App, Circle, Commands, Event, EventReader, IntoSystemConfigs, Plugin, Query,
+    Res, ResMut, Resource, ShapeSample, Sprite, Transform, Update, Vec2, Visibility, With,
 };
 use bevy::time::Time;
 use bevy::utils::HashSet;
@@ -108,6 +108,7 @@ pub fn spawn_asteroids(
                 event.sector,
                 local_position,
                 velocity,
+                inner_rng.gen_range(constants::ASTEROID_ORE_RANGE),
                 inner_rng.gen_range(ROTATION_RANDOM_RANGE),
                 now.add_milliseconds(despawn_after),
             );

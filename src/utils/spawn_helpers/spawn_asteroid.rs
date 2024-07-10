@@ -18,15 +18,15 @@ pub fn spawn_asteroid(
     sector_entity: SectorEntity,
     local_position: Vec2,
     velocity: Vec2,
+    ore_amount: u32,
     sprite_rotation: f32,
     despawn_at: SimulationTimestamp,
 ) {
-    const ORE_AMOUNT: u32 = 100;
+    let asteroid = Asteroid::new(ore_amount, despawn_at);
 
     let entity = commands
         .spawn((
             Name::new(name),
-            Asteroid::new(ORE_AMOUNT, despawn_at),
             SelectableEntity::Asteroid,
             AutoTradeBehavior::default(),
             ConstantVelocity::new(velocity, sprite_rotation),
@@ -38,10 +38,11 @@ pub fn spawn_asteroid(
                     ),
                     translation: (sector.world_pos + local_position)
                         .extend(constants::ASTEROID_LAYER),
-                    ..default()
+                    scale: asteroid.scale_depending_on_current_ore_volume(),
                 },
                 ..default()
             },
+            asteroid,
         ))
         .id();
 

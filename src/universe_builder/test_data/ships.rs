@@ -18,6 +18,7 @@ pub fn create_test_data() -> ShipSpawnData {
         );
     }
 
+    let rotation_factor = (std::f32::consts::PI * 2.0) / constants::MINING_SHIP_COUNT as f32;
     for i in 0..constants::MINING_SHIP_COUNT {
         result.add(
             LocalHexPosition::new(CENTER, Vec2::ZERO),

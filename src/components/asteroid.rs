@@ -1,3 +1,4 @@
+use crate::constants;
 use crate::utils::SimulationTimestamp;
 use bevy::prelude::{Component, FloatExt, Transform, Vec3};
 
@@ -29,8 +30,8 @@ impl Asteroid {
 
     pub fn scale_depending_on_current_ore_volume(&self) -> Vec3 {
         const MIN: f32 = 0.3;
-        const MAX: f32 = 1.0;
-        let t = self.ore as f32 / 100.0;
+        const MAX: f32 = 1.5;
+        let t = self.ore as f32 / constants::ASTEROID_ORE_RANGE.end as f32;
 
         Vec3::splat(MIN.lerp(MAX, t))
     }
