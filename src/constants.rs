@@ -9,6 +9,7 @@ pub const SECONDS_TO_TRAVEL_THROUGH_GATE: f32 = 2.0;
 
 pub const SHIP_LAYER: f32 = 10.0;
 pub const STATION_LAYER: f32 = 5.0;
+pub const STATION_ICON_LAYER: f32 = 6.0;
 pub const GATE_LAYER: f32 = 5.0;
 pub const ASTEROID_LAYER: f32 = 0.0;
 

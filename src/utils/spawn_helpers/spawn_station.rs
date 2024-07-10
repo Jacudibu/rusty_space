@@ -1,14 +1,17 @@
-use bevy::core::Name;
-use bevy::math::Vec2;
-use bevy::prelude::{default, Commands, Query, SpriteBundle, Transform};
-use bevy::utils::HashMap;
-
 use crate::components::{BuyOrders, Inventory, Sector, SelectableEntity, SellOrders, Station};
-use crate::game_data::{ItemDefinition, ProductionModuleId, RecipeId, SHIPYARD_MODULE_ID};
+use crate::game_data::{
+    ItemDefinition, ProductionModuleId, RecipeId, DEBUG_ITEM_ID_C, SHIPYARD_MODULE_ID,
+};
 use crate::production::{ProductionComponent, ProductionModule, ShipyardComponent, ShipyardModule};
 use crate::session_data::DEBUG_SHIP_CONFIG;
 use crate::utils::{SectorEntity, StationEntity};
 use crate::{constants, SpriteHandles};
+use bevy::color::Color;
+use bevy::core::Name;
+use bevy::math::Vec2;
+use bevy::prelude::{default, BuildChildren, Commands, Query, Sprite, SpriteBundle, Transform};
+use bevy::utils::HashMap;
+use hexx::Vec3;
 
 pub struct MockStationProductionArgs {
     modules: Vec<MockStationProductionArgElement>,
@@ -67,6 +70,39 @@ pub fn spawn_station(
     let mut sector = sector_query.get_mut(sector_entity.into()).unwrap();
 
     let pos = pos + sector.world_pos;
+
+    let icon_sprite = match sells.first() {
+        None => {
+            if shipyard.is_some() {
+                sprites.icon_ship.clone()
+            } else {
+                sprites.icon_unknown.clone()
+            }
+        }
+        Some(item) => match item.id {
+            // somehow matching with aliased-constants doesn't work?
+            1 => sprites.icon_item_a.clone(),
+            2 => sprites.icon_item_b.clone(),
+            3 => sprites.icon_item_c.clone(),
+            _ => sprites.icon_unknown.clone(),
+        },
+    };
+
+    let _icon_entity = commands
+        .spawn((
+            Name::new(format!("{name} (Icon)")),
+            SpriteBundle {
+                texture: icon_sprite,
+                transform: Transform::from_translation(pos.extend(constants::STATION_ICON_LAYER)),
+                sprite: Sprite {
+                    color: Color::linear_rgb(0.0, 0.0, 0.0),
+                    ..default()
+                },
+                ..default()
+            },
+        ))
+        .id();
+
     let entity = commands
         .spawn((
             Name::new(name.to_string()),
