@@ -264,6 +264,10 @@ pub fn list_selection_details(
 
                 if let Some(asteroid) = asteroid {
                     ui.label(format!("Ore: {}", asteroid.ore));
+                    ui.label(format!(
+                        "Reserved: {}",
+                        asteroid.ore - asteroid.remaining_after_reservations
+                    ));
                 }
 
                 if let Some(production) = production_module {
@@ -365,7 +369,7 @@ pub fn list_selection_details(
                                             )
                                         }
                                     },
-                                    TaskInsideQueue::MineAsteroid { target } => {
+                                    TaskInsideQueue::MineAsteroid { target, .. } => {
                                         format!("Mining {}", names.get(target.into()).unwrap())
                                     }
                                 });

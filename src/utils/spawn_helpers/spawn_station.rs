@@ -1,7 +1,5 @@
 use crate::components::{BuyOrders, Inventory, Sector, SelectableEntity, SellOrders, Station};
-use crate::game_data::{
-    ItemDefinition, ProductionModuleId, RecipeId, DEBUG_ITEM_ID_C, SHIPYARD_MODULE_ID,
-};
+use crate::game_data::{ItemDefinition, ProductionModuleId, RecipeId, SHIPYARD_MODULE_ID};
 use crate::production::{ProductionComponent, ProductionModule, ShipyardComponent, ShipyardModule};
 use crate::session_data::DEBUG_SHIP_CONFIG;
 use crate::utils::{SectorEntity, StationEntity};
@@ -9,9 +7,8 @@ use crate::{constants, SpriteHandles};
 use bevy::color::Color;
 use bevy::core::Name;
 use bevy::math::Vec2;
-use bevy::prelude::{default, BuildChildren, Commands, Query, Sprite, SpriteBundle, Transform};
+use bevy::prelude::{default, Commands, Query, Sprite, SpriteBundle, Transform};
 use bevy::utils::HashMap;
-use hexx::Vec3;
 
 pub struct MockStationProductionArgs {
     modules: Vec<MockStationProductionArgElement>,
@@ -114,10 +111,10 @@ pub fn spawn_station(
                 ..default()
             },
             Inventory::new_with_content(
-                constants::MOCK_INVENTORY_SIZE,
+                constants::MOCK_STATION_INVENTORY_SIZE,
                 sells
                     .iter()
-                    .map(|x| (x.id, constants::MOCK_INVENTORY_SIZE))
+                    .map(|x| (x.id, constants::MOCK_STATION_INVENTORY_SIZE))
                     .collect(),
             ),
         ))

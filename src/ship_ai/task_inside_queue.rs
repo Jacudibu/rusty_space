@@ -22,6 +22,7 @@ pub enum TaskInsideQueue {
     },
     MineAsteroid {
         target: AsteroidEntity,
+        reserved: u32,
     },
 }
 
@@ -52,8 +53,8 @@ impl TaskInsideQueue {
                     enter_gate: *enter_gate,
                 });
             }
-            TaskInsideQueue::MineAsteroid { target } => {
-                entity_commands.insert(tasks::MineAsteroid::new(*target, now));
+            TaskInsideQueue::MineAsteroid { target, reserved } => {
+                entity_commands.insert(tasks::MineAsteroid::new(*target, now, *reserved));
             }
         }
     }

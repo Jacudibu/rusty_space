@@ -1,14 +1,14 @@
+use bevy::math::Vec3;
+use bevy::prelude::{error, Commands, Component, Entity, Query, Res, Transform};
 use std::cmp::Ordering;
 
-use bevy::prelude::{Commands, Component, Entity, error, Query, Res, Transform};
-
-use crate::components::{BuyOrders, InSector, Inventory, Sector};
-use crate::pathfinding;
-use crate::ship_ai::{TaskInsideQueue, TaskQueue};
-use crate::ship_ai::ship_is_idle_filter::ShipIsIdleFilter;
-use crate::trade_plan::TradePlan;
+use crate::components::{Asteroid, BuyOrders, InSector, Inventory, Sector};
 use crate::hex_to_sector_entity_map::HexToSectorEntityMap;
-use crate::utils::{SimulationTime, SimulationTimestamp, TradeIntent};
+use crate::pathfinding;
+use crate::ship_ai::ship_is_idle_filter::ShipIsIdleFilter;
+use crate::ship_ai::{TaskInsideQueue, TaskQueue};
+use crate::trade_plan::TradePlan;
+use crate::utils::{AsteroidEntityWithTimestamp, SimulationTime, SimulationTimestamp, TradeIntent};
 
 #[derive(Eq, PartialEq)]
 enum AutoMineState {
@@ -39,8 +39,9 @@ pub fn handle_idle_ships(
     buy_orders: Query<(Entity, &mut BuyOrders, &InSector)>,
     mut inventories: Query<&mut Inventory>,
     all_sectors: Query<&Sector>,
+    mut all_asteroids: Query<&mut Asteroid>,
     all_transforms: Query<&Transform>,
-    hex_to_sector_entity_map: Res<HexToSectorEntityMap>
+    hex_to_sector_entity_map: Res<HexToSectorEntityMap>,
 ) {
     let now = simulation_time.now();
 
@@ -52,7 +53,8 @@ pub fn handle_idle_ships(
             let ship_inventory = inventories.get_mut(ship_entity).unwrap();
             let used_inventory_space = ship_inventory.used();
 
-            if behavior.state == AutoMineState::Mining && used_inventory_space == ship_inventory.capacity
+            if behavior.state == AutoMineState::Mining
+                && used_inventory_space == ship_inventory.capacity
             {
                 behavior.state = AutoMineState::Trading;
             } else if behavior.state == AutoMineState::Trading && used_inventory_space == 0 {
@@ -66,30 +68,37 @@ pub fn handle_idle_ships(
                     if let Some(_asteroid_data) = sector.asteroid_data {
                         // TODO: Also Test whether asteroid_data contains the requested asteroid type
 
-                        if let Some(closest_asteroid) = sector.asteroids.iter().min_by(|&a, &b| {
-                            let a_distance = all_transforms
-                                .get(a.into())
-                                .unwrap()
-                                .translation
-                                .distance_squared(ship_pos);
-                            let b_distance = all_transforms
-                                .get(b.into())
-                                .unwrap()
-                                .translation
-                                .distance_squared(ship_pos);
+                        if let Some(closest_asteroid) = sector
+                            .asteroids
+                            .iter()
+                            .filter(|x| {
+                                // TODO: Also filter for remaining lifetime
+                                all_asteroids
+                                    .get(x.entity.into())
+                                    .unwrap()
+                                    .remaining_after_reservations
+                                    > 0
+                            })
+                            .min_by(|&a, &b| {
+                                compare_asteroid_distances(&all_transforms, ship_pos, a, b)
+                            })
+                        {
+                            let mut asteroid = all_asteroids
+                                .get_mut(closest_asteroid.entity.into())
+                                .unwrap();
 
-                            if let Some(ord) = a_distance.partial_cmp(&b_distance) {
-                                ord
-                            } else {
-                                error!("ord was None? This should never happen, please fix. a_distance: {a_distance}, b_distance: {b_distance}");
-                                Ordering::Equal
-                            }
-                        }) {
+                            let reserved_amount = asteroid
+                                .remaining_after_reservations
+                                .min(ship_inventory.capacity - used_inventory_space);
+
+                            asteroid.remaining_after_reservations -= reserved_amount;
+
                             queue.push_back(TaskInsideQueue::MoveToEntity {
                                 target: closest_asteroid.into(),
                             });
                             queue.push_back(TaskInsideQueue::MineAsteroid {
                                 target: closest_asteroid.entity,
+                                reserved: reserved_amount,
                             });
 
                             queue.apply(&mut commands, now, ship_entity);
@@ -101,33 +110,67 @@ pub fn handle_idle_ships(
                     } else {
                         behavior.next_idle_update = now.add_milliseconds(2000);
                         // TODO: Properly search for nearest sector with resources
-                        let target_sector = all_sectors.iter().find(|x| x.asteroid_data.is_some()).unwrap();
-                        let path = pathfinding::find_path(&all_sectors,
-                                                          &all_transforms,
-                                                          in_sector.sector,
-                                                          all_transforms.get(ship_entity).unwrap().translation,
-                                                          hex_to_sector_entity_map.map[&target_sector.coordinate])
+                        let target_sector = all_sectors
+                            .iter()
+                            .find(|x| x.asteroid_data.is_some())
                             .unwrap();
+                        let path = pathfinding::find_path(
+                            &all_sectors,
+                            &all_transforms,
+                            in_sector.sector,
+                            all_transforms.get(ship_entity).unwrap().translation,
+                            hex_to_sector_entity_map.map[&target_sector.coordinate],
+                        )
+                        .unwrap();
                         pathfinding::create_tasks_to_follow_path(&mut queue, path);
                         queue.apply(&mut commands, now, ship_entity);
                     }
                 }
                 AutoMineState::Trading => {
-                    let Some(plan) = TradePlan::sell_anything_from_inventory(ship_entity, in_sector, &ship_inventory, &buy_orders) else {
+                    let Some(plan) = TradePlan::sell_anything_from_inventory(
+                        ship_entity,
+                        in_sector,
+                        &ship_inventory,
+                        &buy_orders,
+                    ) else {
                         behavior.next_idle_update = now.add_milliseconds(2000);
                         return;
                     };
 
-                    let [mut this_inventory, mut buyer_inventory] = inventories
-                        .get_many_mut([ship_entity, plan.buyer])
-                        .unwrap();
+                    let [mut this_inventory, mut buyer_inventory] =
+                        inventories.get_many_mut([ship_entity, plan.buyer]).unwrap();
 
                     this_inventory.create_order(plan.item_id, TradeIntent::Sell, plan.amount);
                     buyer_inventory.create_order(plan.item_id, TradeIntent::Buy, plan.amount);
-                    
+
                     plan.create_tasks_for_sale(&all_sectors, &all_transforms, &mut queue);
                     queue.apply(&mut commands, now, ship_entity);
                 }
             }
         });
+}
+
+fn compare_asteroid_distances(
+    all_transforms: &Query<&Transform>,
+    ship_pos: Vec3,
+    a: &AsteroidEntityWithTimestamp,
+    b: &AsteroidEntityWithTimestamp,
+) -> Ordering {
+    let a_distance = all_transforms
+        .get(a.into())
+        .unwrap()
+        .translation
+        .distance_squared(ship_pos);
+    let b_distance = all_transforms
+        .get(b.into())
+        .unwrap()
+        .translation
+        .distance_squared(ship_pos);
+
+    if let Some(ord) = a_distance.partial_cmp(&b_distance) {
+        ord
+    } else {
+        error!("ord was None? This should never happen, please fix. a_distance: {a_distance}, b_distance: {b_distance}");
+        Ordering::Equal
+    }
 }

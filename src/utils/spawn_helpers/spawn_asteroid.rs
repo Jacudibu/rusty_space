@@ -21,13 +21,12 @@ pub fn spawn_asteroid(
     sprite_rotation: f32,
     despawn_at: SimulationTimestamp,
 ) {
+    const ORE_AMOUNT: u32 = 100;
+
     let entity = commands
         .spawn((
             Name::new(name),
-            Asteroid {
-                ore: 100,
-                next_event_timestamp: despawn_at,
-            },
+            Asteroid::new(ORE_AMOUNT, despawn_at),
             SelectableEntity::Asteroid,
             AutoTradeBehavior::default(),
             ConstantVelocity::new(velocity, sprite_rotation),

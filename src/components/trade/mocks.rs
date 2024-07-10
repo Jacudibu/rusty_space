@@ -13,13 +13,13 @@ impl BuyOrders {
                 .iter()
                 .map(|item| {
                     let mut order = BuyOrderData {
-                        amount: constants::MOCK_INVENTORY_SIZE,
-                        buy_up_to: constants::MOCK_INVENTORY_SIZE,
+                        amount: constants::MOCK_STATION_INVENTORY_SIZE,
+                        buy_up_to: constants::MOCK_STATION_INVENTORY_SIZE,
                         price: 1,
                         price_setting: PriceSetting::Dynamic(item.price),
                     };
                     order.update(
-                        constants::MOCK_INVENTORY_SIZE,
+                        constants::MOCK_STATION_INVENTORY_SIZE,
                         Some(&InventoryElement {
                             currently_available: 0,
                             total: 0,
@@ -40,16 +40,16 @@ impl SellOrders {
                 .iter()
                 .map(|item| {
                     let mut order = SellOrderData {
-                        amount: constants::MOCK_INVENTORY_SIZE,
+                        amount: constants::MOCK_STATION_INVENTORY_SIZE,
                         keep_at_least: 0,
                         price: 100,
                         price_setting: PriceSetting::Dynamic(item.price),
                     };
                     order.update(
-                        constants::MOCK_INVENTORY_SIZE,
+                        constants::MOCK_STATION_INVENTORY_SIZE,
                         Some(&InventoryElement {
-                            currently_available: constants::MOCK_INVENTORY_SIZE,
-                            total: constants::MOCK_INVENTORY_SIZE,
+                            currently_available: constants::MOCK_STATION_INVENTORY_SIZE,
+                            total: constants::MOCK_STATION_INVENTORY_SIZE,
                             ..Default::default()
                         }),
                     );

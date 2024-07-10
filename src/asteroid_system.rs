@@ -174,6 +174,7 @@ fn calculate_asteroid_respawn_position(
     local_current_position: Vec2,
     velocity: Vec2,
 ) -> Vec2 {
+    // Avoid using randomness, so we don't need to sync anything over the network
     let mut best_distance = 0.0;
     let mut best_intersection = None;
 
@@ -211,6 +212,7 @@ pub struct FadingAsteroidsOut {
 pub fn make_asteroids_disappear_when_they_leave_sector(
     mut fading_asteroids: ResMut<FadingAsteroidsOut>,
     mut sector: Query<&mut Sector>,
+    mut asteroids: Query<&mut Asteroid>,
     simulation_time: Res<SimulationTime>,
 ) {
     let now = simulation_time.now();
@@ -221,11 +223,13 @@ pub fn make_asteroids_disappear_when_they_leave_sector(
                 break;
             }
 
-            let asteroid = sector.asteroids.pop_first().unwrap();
-            remove_asteroid_from_sector_and_start_fading(
+            let asteroid_entity = sector.asteroids.pop_first().unwrap();
+            let mut asteroid = asteroids.get_mut(asteroid_entity.entity.into()).unwrap();
+            start_asteroid_respawn_process(
                 &mut fading_asteroids,
-                asteroid,
+                asteroid_entity,
                 &mut sector,
+                &mut asteroid,
             );
         }
     }
@@ -234,40 +238,58 @@ pub fn make_asteroids_disappear_when_they_leave_sector(
 fn on_asteroid_was_fully_mined(
     mut events: EventReader<AsteroidWasFullyMinedEvent>,
     mut fading_asteroids: ResMut<FadingAsteroidsOut>,
-    asteroids: Query<&InSector, With<Asteroid>>,
+    mut asteroids: Query<(&InSector, &mut Asteroid)>,
     mut sectors: Query<&mut Sector>,
 ) {
     for event in events.read() {
-        let asteroid_sector = asteroids.get(event.asteroid.into()).unwrap();
+        let (asteroid_sector, mut asteroid) = asteroids.get_mut(event.asteroid.into()).unwrap();
         let mut sector = sectors.get_mut(asteroid_sector.sector.into()).unwrap();
 
         // I wish there was some way to do this without reconstructing this object
-        let asteroid = AsteroidEntityWithTimestamp {
+        let asteroid_entity = AsteroidEntityWithTimestamp {
             entity: event.asteroid,
             timestamp: event.despawn_timer,
         };
 
-        sector.asteroids.remove(&asteroid);
-        remove_asteroid_from_sector_and_start_fading(&mut fading_asteroids, asteroid, &mut sector);
+        // Asteroid might have already started despawning naturally, so test if it was still inside.
+        if sector.asteroids.remove(&asteroid_entity) {
+            start_asteroid_respawn_process(
+                &mut fading_asteroids,
+                asteroid_entity,
+                &mut sector,
+                &mut asteroid,
+            );
+        }
     }
 }
 
-fn remove_asteroid_from_sector_and_start_fading(
+fn start_asteroid_respawn_process(
     fading_asteroids: &mut ResMut<FadingAsteroidsOut>,
-    mut asteroid: AsteroidEntityWithTimestamp,
-    sector: &mut Mut<Sector>,
+    mut asteroid_entity: AsteroidEntityWithTimestamp,
+    sector: &mut Sector,
+    asteroid: &mut Asteroid,
 ) {
-    asteroid
+    asteroid_entity
         .timestamp
         .add_milliseconds(constants::ASTEROID_RESPAWN_TIME_MILLISECONDS);
-    fading_asteroids.asteroids.insert(asteroid.entity);
-    sector.asteroid_respawns.push(std::cmp::Reverse(asteroid));
+    asteroid
+        .next_event_timestamp
+        .add_milliseconds(constants::ASTEROID_RESPAWN_TIME_MILLISECONDS);
+    fading_asteroids.asteroids.insert(asteroid_entity.entity);
+    sector
+        .asteroid_respawns
+        .push(std::cmp::Reverse(asteroid_entity));
 }
 
 pub fn respawn_asteroids(
     mut fading_asteroids: ResMut<FadingAsteroidsIn>,
     mut sector: Query<&mut Sector>,
-    mut asteroid_query: Query<(&mut Transform, &mut Visibility, &ConstantVelocity), With<Asteroid>>,
+    mut asteroid_query: Query<(
+        &mut Asteroid,
+        &mut Transform,
+        &mut Visibility,
+        &ConstantVelocity,
+    )>,
     simulation_time: Res<SimulationTime>,
     map_layout: Res<MapLayout>,
 ) {
@@ -279,14 +301,11 @@ pub fn respawn_asteroids(
                 break;
             }
 
-            let mut asteroid = sector.asteroid_respawns.pop().unwrap().0;
+            let mut asteroid_entity = sector.asteroid_respawns.pop().unwrap().0;
 
-            // TODO: figure out new asteroid position... just intersect the hexagon edge with velocity?
-            // Or even easier, somehow clamp it to hexagon boundaries?
-            // Either way, avoid randomness so we don't need to sync anything across the network
-
-            let (mut transform, mut visibility, velocity) =
-                asteroid_query.get_mut(asteroid.entity.into()).unwrap();
+            let (mut asteroid, mut transform, mut visibility, velocity) = asteroid_query
+                .get_mut(asteroid_entity.entity.into())
+                .unwrap();
 
             let velocity = velocity.velocity.truncate();
 
@@ -296,7 +315,7 @@ pub fn respawn_asteroids(
                 velocity,
             );
 
-            let time = calculate_milliseconds_until_asteroid_leaves_hexagon(
+            let extra_millis = calculate_milliseconds_until_asteroid_leaves_hexagon(
                 map_layout.hex_edge_vertices,
                 local_respawn_position,
                 velocity,
@@ -304,9 +323,11 @@ pub fn respawn_asteroids(
             *visibility = Visibility::Inherited;
             transform.translation =
                 (local_respawn_position + sector.world_pos).extend(constants::ASTEROID_LAYER);
-            asteroid.timestamp.add_milliseconds(time);
-            fading_asteroids.asteroids.insert(asteroid.entity);
-            sector.asteroids.insert(asteroid);
+            asteroid_entity.timestamp.add_milliseconds(extra_millis);
+            asteroid.next_event_timestamp.add_milliseconds(extra_millis);
+            asteroid.reset(&mut transform);
+            fading_asteroids.asteroids.insert(asteroid_entity.entity);
+            sector.asteroids.insert(asteroid_entity);
         }
     }
 }

@@ -27,37 +27,34 @@ enum TaskResult {
 pub struct MineAsteroid {
     pub target: AsteroidEntity,
     next_update: SimulationTimestamp,
+    reserved_ore_amount: u32,
 }
 
 impl MineAsteroid {
-    pub fn new(target: AsteroidEntity, now: CurrentSimulationTimestamp) -> Self {
+    pub fn new(target: AsteroidEntity, now: CurrentSimulationTimestamp, reserved: u32) -> Self {
         Self {
             target,
             next_update: now.add_milliseconds(TIME_BETWEEN_MINING_UPDATES),
+            reserved_ore_amount: reserved,
         }
     }
 }
 
 impl MineAsteroid {
-    fn run(
-        &mut self,
-        inventory: &mut Inventory,
-        asteroids: &Query<(&mut Asteroid, &mut Transform)>,
-        now: CurrentSimulationTimestamp,
-    ) -> TaskResult {
+    fn run(&mut self, inventory: &mut Inventory, now: CurrentSimulationTimestamp) -> TaskResult {
         if now.has_not_passed(self.next_update) {
             return TaskResult::Skip;
         }
 
-        let (asteroid, _) = asteroids.get(self.target.into()).unwrap();
         let mined_amount = MINED_AMOUNT_PER_UPDATE
             .min(inventory.capacity - inventory.used())
-            .min(asteroid.ore);
+            .min(self.reserved_ore_amount);
 
         inventory.add_item(DEBUG_ITEM_ID_ORE, mined_amount);
+        self.reserved_ore_amount -= mined_amount;
 
-        // TODO: Test if we stripped this asteroid empty
-        if inventory.used() == inventory.capacity {
+        // TODO: Test if we stripped this asteroid empty or if it "despawned"
+        if self.reserved_ore_amount == 0 || inventory.used() == inventory.capacity {
             TaskResult::Finished { mined_amount }
         } else {
             self.next_update
@@ -79,8 +76,8 @@ impl MineAsteroid {
 
         ships
             .par_iter_mut()
-            .for_each(|(entity, mut task, mut inventory)| {
-                match task.run(&mut inventory, &all_asteroids, now) {
+            .for_each(
+                |(entity, mut task, mut inventory)| match task.run(&mut inventory, now) {
                     TaskResult::Skip => {}
                     TaskResult::Ongoing { mined_amount } => {
                         mined_asteroids
@@ -98,8 +95,8 @@ impl MineAsteroid {
                             .unwrap()
                             .push(TaskFinishedEvent::<Self>::new(entity))
                     }
-                }
-            });
+                },
+            );
 
         match Arc::try_unwrap(mined_asteroids) {
             Ok(mined_asteroids) => {
