@@ -352,7 +352,7 @@ pub fn list_selection_details(
                                             names.get(exit_sector.into()).unwrap()
                                         )
                                     }
-                                    TaskInsideQueue::MoveToEntity { target } => {
+                                    TaskInsideQueue::MoveToEntity { target, .. } => {
                                         format!("Move to {}", names.get(*target).unwrap())
                                     }
                                     TaskInsideQueue::ExchangeWares { data, .. } => match data {

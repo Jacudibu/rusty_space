@@ -1,5 +1,4 @@
 use crate::components::Inventory;
-use crate::physics::ShipVelocity;
 use crate::production::InventoryUpdateForProductionEvent;
 use crate::ship_ai::task_finished_event::TaskFinishedEvent;
 use crate::ship_ai::task_queue::TaskQueue;
@@ -113,21 +112,17 @@ impl ExchangeWares {
     /// To avoid the O(a + n) query runtime for change detection, this just iterates through all relevant TaskFinishedEvents.
     /// Even in a busy session, there should always be *way, WAY* less of those than Entities.
     pub fn on_task_creation(
-        mut query: Query<(&mut Self, &mut ShipVelocity)>,
+        mut query: Query<&mut Self>,
         mut finished_events: EventReader<TaskFinishedEvent<MoveToEntity>>,
         simulation_time: Res<SimulationTime>,
     ) {
         let now = simulation_time.now();
         for x in finished_events.read() {
-            let Ok((mut created_component, mut velocity)) = query.get_mut(x.entity) else {
+            let Ok(mut created_component) = query.get_mut(x.entity) else {
                 continue;
             };
 
             created_component.finishes_at = now.add_seconds(2);
-
-            // TODO: Remove this once docking is implemented
-            velocity.forward = 0.0;
-            velocity.angular = 0.0;
         }
     }
 }

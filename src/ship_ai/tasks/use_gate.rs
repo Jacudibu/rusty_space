@@ -6,6 +6,7 @@ use bevy::prelude::{
 
 use crate::components::{Gate, InSector, Sector};
 use crate::constants;
+use crate::physics::ShipVelocity;
 use crate::ship_ai::task_finished_event::TaskFinishedEvent;
 use crate::ship_ai::task_queue::TaskQueue;
 use crate::ship_ai::task_result::TaskResult;
@@ -67,14 +68,14 @@ impl UseGate {
     pub fn complete_tasks(
         mut commands: Commands,
         mut event_reader: EventReader<TaskFinishedEvent<Self>>,
-        mut all_ships_with_task: Query<(&mut TaskQueue, &Self)>,
+        mut all_ships_with_task: Query<(&mut TaskQueue, &Self, &mut ShipVelocity)>,
         mut all_sectors: Query<&mut Sector>,
         simulation_time: Res<SimulationTime>,
     ) {
         let now = simulation_time.now();
 
         for event in event_reader.read() {
-            if let Ok((mut queue, task)) = all_ships_with_task.get_mut(event.entity) {
+            if let Ok((mut queue, task, mut velocity)) = all_ships_with_task.get_mut(event.entity) {
                 all_sectors
                     .get_mut(task.exit_sector.into())
                     .unwrap()
@@ -90,6 +91,8 @@ impl UseGate {
                     &mut queue,
                     now,
                 );
+
+                velocity.forward *= 0.5;
             } else {
                 error!(
                     "Unable to find entity for task completion: {}",

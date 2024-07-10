@@ -139,6 +139,7 @@ impl TradePlan {
 
         queue.push_back(TaskInsideQueue::MoveToEntity {
             target: self.seller,
+            stop_at_target: true,
         });
 
         queue.push_back(TaskInsideQueue::ExchangeWares {
@@ -167,7 +168,10 @@ impl TradePlan {
             pathfinding::create_tasks_to_follow_path(queue, path);
         }
 
-        queue.push_back(TaskInsideQueue::MoveToEntity { target: self.buyer });
+        queue.push_back(TaskInsideQueue::MoveToEntity {
+            target: self.buyer,
+            stop_at_target: true,
+        });
         queue.push_back(TaskInsideQueue::ExchangeWares {
             target: self.buyer,
             data: ExchangeWareData::Sell(self.item_id, self.amount),

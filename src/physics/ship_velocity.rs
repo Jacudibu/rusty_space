@@ -9,6 +9,12 @@ pub struct ShipVelocity {
 }
 
 impl ShipVelocity {
+    /// Will immediately set forward & angular momentum to 0.
+    pub fn force_stop(&mut self) {
+        self.forward = 0.0;
+        self.angular = 0.0;
+    }
+
     pub fn accelerate(&mut self, engine: &Engine, delta_seconds: f32) {
         self.forward += engine.acceleration * delta_seconds;
         if self.forward > engine.max_speed {

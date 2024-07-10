@@ -28,6 +28,15 @@ impl Asteroid {
         transform.scale = self.scale_depending_on_current_ore_volume();
     }
 
+    /// Attempts to reserve the desired amount if possible, or less if there isn't as much left.
+    /// ### Returns
+    /// The actual amount which got reserved.
+    pub fn try_to_reserve(&mut self, desired_amount: u32) -> u32 {
+        let amount = desired_amount.min(self.remaining_after_reservations);
+        self.remaining_after_reservations -= amount;
+        amount
+    }
+
     pub fn scale_depending_on_current_ore_volume(&self) -> Vec3 {
         const MIN: f32 = 0.3;
         const MAX: f32 = 1.5;

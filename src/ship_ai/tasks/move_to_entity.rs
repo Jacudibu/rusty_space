@@ -16,6 +16,7 @@ use std::sync::{Arc, Mutex};
 #[derive(Component)]
 pub struct MoveToEntity {
     pub target: Entity,
+    pub stop_at_target: bool,
 }
 
 impl MoveToEntity {
@@ -60,19 +61,32 @@ impl MoveToEntity {
 
         if angle_difference.abs() > std::f32::consts::FRAC_PI_3 {
             velocity.decelerate(engine, time.delta_seconds());
-        } else {
+        } else if self.stop_at_target {
             let distance_to_stop =
                 (velocity.forward * velocity.forward) / (2.0 * engine.deceleration);
 
-            if distance > distance_to_stop {
+            let distance_travelled_this_frame = velocity.forward * time.delta_seconds();
+
+            if distance - distance_travelled_this_frame > distance_to_stop {
                 velocity.accelerate(engine, time.delta_seconds());
             } else {
                 velocity.decelerate(engine, time.delta_seconds());
             }
+        } else {
+            velocity.accelerate(engine, time.delta_seconds());
         }
 
         if distance < 5.0 {
-            TaskResult::Finished
+            if self.stop_at_target {
+                if velocity.forward < 0.3 {
+                    velocity.force_stop();
+                    TaskResult::Finished
+                } else {
+                    TaskResult::Ongoing
+                }
+            } else {
+                TaskResult::Finished
+            }
         } else {
             TaskResult::Ongoing
         }

@@ -45,6 +45,9 @@ pub fn handle_idle_ships(
 ) {
     let now = simulation_time.now();
 
+    // Avoids selecting an asteroid which is close to leaving the sector
+    let max_asteroid_age = now.add_milliseconds(15000);
+
     // TODO: Benchmark this vs a priority queue
     ships
         .iter_mut()
@@ -71,8 +74,8 @@ pub fn handle_idle_ships(
                         if let Some(closest_asteroid) = sector
                             .asteroids
                             .iter()
+                            .filter(|x| max_asteroid_age.has_not_passed(&x.timestamp))
                             .filter(|x| {
-                                // TODO: Also filter for remaining lifetime
                                 all_asteroids
                                     .get(x.entity.into())
                                     .unwrap()
@@ -88,13 +91,11 @@ pub fn handle_idle_ships(
                                 .unwrap();
 
                             let reserved_amount = asteroid
-                                .remaining_after_reservations
-                                .min(ship_inventory.capacity - used_inventory_space);
-
-                            asteroid.remaining_after_reservations -= reserved_amount;
+                                .try_to_reserve(ship_inventory.capacity - used_inventory_space);
 
                             queue.push_back(TaskInsideQueue::MoveToEntity {
                                 target: closest_asteroid.into(),
+                                stop_at_target: true,
                             });
                             queue.push_back(TaskInsideQueue::MineAsteroid {
                                 target: closest_asteroid.entity,

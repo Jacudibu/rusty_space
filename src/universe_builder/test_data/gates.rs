@@ -10,8 +10,8 @@ pub fn create_test_data() -> GateSpawnData {
         LocalHexPosition::new(RIGHT, Vec2::new(-250.0, 0.0)),
     );
     result.add(
-        LocalHexPosition::new(RIGHT, Vec2::new(-200.0, 130.0)),
-        LocalHexPosition::new(TOP_RIGHT, Vec2::new(200.0, -130.0)),
+        LocalHexPosition::new(RIGHT, Vec2::new(-200.0, 230.0)),
+        LocalHexPosition::new(TOP_RIGHT, Vec2::new(200.0, -160.0)),
     );
     result.add(
         LocalHexPosition::new(CENTER, Vec2::new(-150.0, -150.0)),

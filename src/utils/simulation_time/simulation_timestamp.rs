@@ -59,13 +59,27 @@ impl SimulationTimestamp {
     pub const MIN: SimulationTimestamp = SimulationTimestamp(Milliseconds::MIN);
     pub const MAX: SimulationTimestamp = SimulationTimestamp(Milliseconds::MAX);
 
+    #[inline]
     pub fn milliseconds(&self) -> Milliseconds {
         self.0
     }
 
     /// Adds a set amount of Milliseconds to this timestamp.
+    #[inline]
     pub fn add_milliseconds(&mut self, amount: Milliseconds) {
         self.0 += amount;
+    }
+
+    /// Returns true if the provided timestamp lies within the past when compared to Self.
+    #[inline]
+    pub fn has_passed(&self, other: &Self) -> bool {
+        self.0 >= other.0
+    }
+
+    /// Returns true if the provided timestamp lies within the future when compared to Self.
+    #[inline]
+    pub fn has_not_passed(&self, other: &Self) -> bool {
+        self.0 < other.0
     }
 }
 
