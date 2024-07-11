@@ -1,7 +1,7 @@
 use crate::utils::Milliseconds;
 use std::ops::Range;
 
-pub const TRADE_SHIP_COUNT: u32 = 10;
+pub const TRADE_SHIP_COUNT: u32 = 100;
 pub const MINING_SHIP_COUNT: u32 = 500;
 pub const ASTEROID_COUNT: usize = 400;
 

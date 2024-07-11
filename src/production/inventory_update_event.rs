@@ -123,9 +123,12 @@ pub fn handle_inventory_updates(
                 continue;
             }
 
+            // Reduce next_index if things have been popped from the queue
+            let mut ships_built_this_frame = 0;
             while !affordable_ships_from_queue.is_empty() && !available_module_ids.is_empty() {
                 let (next_index, next_ship_config_id) =
                     *affordable_ships_from_queue.first().unwrap();
+                let next_index = next_index - ships_built_this_frame;
                 let module_id = *available_module_ids.first().unwrap();
                 let module = shipyard.modules.get_mut(&module_id).unwrap();
 
@@ -156,6 +159,7 @@ pub fn handle_inventory_updates(
                     inventory.has_enough_items_in_inventory(&config.materials, 1)
                 });
                 shipyard.queue.remove(next_index);
+                ships_built_this_frame += 1;
 
                 production_start_event_writer.send(ProductionStartedEvent::new(
                     event.entity,
