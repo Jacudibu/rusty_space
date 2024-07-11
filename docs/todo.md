@@ -13,6 +13,7 @@ If my machine can handle that, I'd assume a potato can run 10% of that smoothly,
 - ~~Dynamic Pricing~~
 - Individual inventory capacities for each item
 - Individual m³-storage consumption for each item
+- Automatically generate relevant buy & sell orders for stations, depending on existing station modules
 
 # Multiple Stations
 
@@ -36,7 +37,6 @@ If my machine can handle that, I'd assume a potato can run 10% of that smoothly,
 - ~~Add item recipes~~
 - ~~Stations will process one or more ingredients to one or more new items~~
 - ~~Stations can have multiple production modules, with individual productions~~
-- Enable optional Variable yield depending on (placeholder) Sector Settings
 - ~~Shipyard Module will produce new ships~~
 
 # Less Debug Values
@@ -57,7 +57,7 @@ Modules:
 - Production (one module per item... or per recipe?)
 - Storage (At this point capacity won't be hardcoded anymore, yay!)
 - Docking (At this point we will need to implement a docking queue. Will look funny.)
-- Ship Building
+- Ship Building (With every module supporting constructing differently sized ships)
 - Defense (later on)
 
 # Sectors
@@ -68,7 +68,7 @@ Sectors keep track of the entities inside them, allowing for cheaper localized p
 - ~~Ships can only travel between sectors by using gates~~
 - ~~Draw lines between gates~~
 - ~~Draw borders around sectors~~
-- UI should display the name of the sector that's currently being hovered over
+- ~~UI should display the name of the sector that's currently being hovered over~~
 
 # Sector Resources
 
@@ -137,7 +137,7 @@ Attack Target
 
 # Persistence
 
-- Refactor Universe generation to spawn stuff from predefined resources for the following steps
+- ~~Refactor Universe generation to spawn stuff from predefined resources for the following steps~~
 - Saving current universe to file
 - Saving occurs in the background, without interrupting gameplay
 - Loading universe from file
@@ -150,12 +150,12 @@ clients.
 
 Level 0: After Universe Creation, sync the map with all entities to connected clients
 Level 1: Synchronize Task creation (Bare minimum, limiting the big AI decision-making to the host.)
-Level 2: Synchronize Sector transitions (Should improve positional sync, but might not even be necessary, needs testing)
+Level 2: Synchronize Sector transitions (Should improve positional sync, but might not even be necessary, needs testing, could be optional since we can easily just turn the related event listener off)
 
 # Planets
 
 Sectors with only one or two gates and otherwise low resources might have celestial bodies inside them, orbiting a Star or Black Hole at veeeery slow speeds.
-Early on, gas giants serve as a reliable source of certain gases, and energy cells can be produced with solar panels in a sector containing a star.
+Early on, gas giants serve as a reliable source of certain for intermediary goods, and energy cells can be produced with solar panels in a sector containing a star.
 Later solid planets could be colonized by the sector owner for additional resources, but usually it should be both cheaper and more efficient to just harvest more asteroids rather than bothering with the extra costs from dealing with various atmospheres and gravitation. However, once the entire Universe is colonized and borders are well established in between factions and resources grow sparse, they might be a way to unlock additional resource production over time.
 
 # Player Control
