@@ -226,7 +226,7 @@ pub fn make_asteroids_disappear_when_they_leave_sector(
 
             let asteroid_entity = sector.asteroids.pop_first().unwrap();
             let mut asteroid = asteroids.get_mut(asteroid_entity.entity.into()).unwrap();
-            start_asteroid_respawn_process(
+            despawn_asteroid(
                 &mut fading_asteroids,
                 asteroid_entity,
                 &mut sector,
@@ -254,7 +254,7 @@ fn on_asteroid_was_fully_mined(
 
         // Asteroid might have already started despawning naturally, so test if it was still inside.
         if sector.asteroids.remove(&asteroid_entity) {
-            start_asteroid_respawn_process(
+            despawn_asteroid(
                 &mut fading_asteroids,
                 asteroid_entity,
                 &mut sector,
@@ -264,7 +264,7 @@ fn on_asteroid_was_fully_mined(
     }
 }
 
-fn start_asteroid_respawn_process(
+fn despawn_asteroid(
     fading_asteroids: &mut ResMut<FadingAsteroidsOut>,
     mut asteroid_entity: AsteroidEntityWithTimestamp,
     sector: &mut Sector,

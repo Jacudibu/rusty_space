@@ -16,9 +16,10 @@ pub enum AsteroidState {
 }
 
 impl AsteroidState {
+    /// Toggles the state between Spawned and Despawned, and adds onto the existing timer.
     #[inline]
-    pub fn toggle_and_add_milliseconds(&self, milliseconds: Milliseconds) -> Self {
-        match self {
+    pub fn toggle_and_add_milliseconds(&mut self, milliseconds: Milliseconds) {
+        *self = match self {
             AsteroidState::Spawned { mut until } => {
                 until.add_milliseconds(milliseconds);
                 AsteroidState::Despawned { until }
@@ -27,7 +28,7 @@ impl AsteroidState {
                 until.add_milliseconds(milliseconds);
                 AsteroidState::Spawned { until }
             }
-        }
+        };
     }
 
     #[inline]
