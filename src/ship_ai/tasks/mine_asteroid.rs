@@ -41,7 +41,12 @@ impl MineAsteroid {
 }
 
 impl MineAsteroid {
-    fn run(&mut self, inventory: &mut Inventory, now: CurrentSimulationTimestamp) -> TaskResult {
+    fn run(
+        &mut self,
+        inventory: &mut Inventory,
+        now: CurrentSimulationTimestamp,
+        all_asteroids: &Query<(&mut Asteroid, &mut Transform)>,
+    ) -> TaskResult {
         if now.has_not_passed(self.next_update) {
             return TaskResult::Skip;
         }
@@ -53,14 +58,24 @@ impl MineAsteroid {
         inventory.add_item(DEBUG_ITEM_ID_ORE, mined_amount);
         self.reserved_ore_amount -= mined_amount;
 
-        // TODO: Test if we stripped this asteroid empty or if it "despawned"
         if self.reserved_ore_amount == 0 || inventory.used() == inventory.capacity {
             TaskResult::Finished { mined_amount }
+        } else if self.did_target_despawn(all_asteroids) {
+            TaskResult::Finished { mined_amount: 0 }
         } else {
             self.next_update
                 .add_milliseconds(TIME_BETWEEN_MINING_UPDATES);
             TaskResult::Ongoing { mined_amount }
         }
+    }
+
+    fn did_target_despawn(&self, all_asteroids: &Query<(&mut Asteroid, &mut Transform)>) -> bool {
+        all_asteroids
+            .get(self.target.into())
+            .unwrap()
+            .0
+            .state
+            .is_despawned()
     }
 
     pub fn run_tasks(
@@ -76,8 +91,8 @@ impl MineAsteroid {
 
         ships
             .par_iter_mut()
-            .for_each(
-                |(entity, mut task, mut inventory)| match task.run(&mut inventory, now) {
+            .for_each(|(entity, mut task, mut inventory)| {
+                match task.run(&mut inventory, now, &all_asteroids) {
                     TaskResult::Skip => {}
                     TaskResult::Ongoing { mined_amount } => {
                         mined_asteroids
@@ -95,8 +110,8 @@ impl MineAsteroid {
                             .unwrap()
                             .push(TaskFinishedEvent::<Self>::new(entity))
                     }
-                },
-            );
+                }
+            });
 
         match Arc::try_unwrap(mined_asteroids) {
             Ok(mined_asteroids) => {

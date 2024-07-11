@@ -16,6 +16,7 @@ pub enum AsteroidState {
 }
 
 impl AsteroidState {
+    #[inline]
     pub fn toggle_and_add_milliseconds(&self, milliseconds: Milliseconds) -> Self {
         match self {
             AsteroidState::Spawned { mut until } => {
@@ -29,10 +30,19 @@ impl AsteroidState {
         }
     }
 
+    #[inline]
     pub fn timestamp(&self) -> SimulationTimestamp {
         match self {
             AsteroidState::Spawned { until } => *until,
             AsteroidState::Despawned { until } => *until,
+        }
+    }
+
+    #[inline]
+    pub fn is_despawned(&self) -> bool {
+        match self {
+            AsteroidState::Spawned { .. } => false,
+            AsteroidState::Despawned { .. } => true,
         }
     }
 }
