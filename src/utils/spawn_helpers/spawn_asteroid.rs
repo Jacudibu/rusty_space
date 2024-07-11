@@ -1,4 +1,4 @@
-use crate::components::{Asteroid, Sector, SelectableEntity};
+use crate::components::{Asteroid, AsteroidState, Sector, SelectableEntity};
 use crate::physics::ConstantVelocity;
 use crate::ship_ai::AutoTradeBehavior;
 use crate::utils::{
@@ -22,7 +22,7 @@ pub fn spawn_asteroid(
     sprite_rotation: f32,
     despawn_at: SimulationTimestamp,
 ) {
-    let asteroid = Asteroid::new(ore_amount, despawn_at);
+    let asteroid = Asteroid::new(ore_amount, AsteroidState::Spawned { until: despawn_at });
 
     let entity = commands
         .spawn((

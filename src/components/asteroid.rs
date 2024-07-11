@@ -1,5 +1,5 @@
 use crate::constants;
-use crate::utils::SimulationTimestamp;
+use crate::utils::{Milliseconds, SimulationTimestamp};
 use bevy::prelude::{Component, FloatExt, Transform, Vec3};
 
 #[derive(Component)]
@@ -7,18 +7,43 @@ pub struct Asteroid {
     ore_max: u32,
     pub ore: u32,
     pub remaining_after_reservations: u32,
+    pub state: AsteroidState,
+}
 
-    /// Timestamp for this asteroids' next scheduled despawn or spawn event
-    pub next_event_timestamp: SimulationTimestamp,
+pub enum AsteroidState {
+    Spawned { until: SimulationTimestamp },
+    Despawned { until: SimulationTimestamp },
+}
+
+impl AsteroidState {
+    pub fn toggle_and_add_milliseconds(&self, milliseconds: Milliseconds) -> Self {
+        match self {
+            AsteroidState::Spawned { mut until } => {
+                until.add_milliseconds(milliseconds);
+                AsteroidState::Despawned { until }
+            }
+            AsteroidState::Despawned { mut until } => {
+                until.add_milliseconds(milliseconds);
+                AsteroidState::Spawned { until }
+            }
+        }
+    }
+
+    pub fn timestamp(&self) -> SimulationTimestamp {
+        match self {
+            AsteroidState::Spawned { until } => *until,
+            AsteroidState::Despawned { until } => *until,
+        }
+    }
 }
 
 impl Asteroid {
-    pub fn new(ore: u32, next_event_timestamp: SimulationTimestamp) -> Self {
+    pub fn new(ore: u32, state: AsteroidState) -> Self {
         Self {
             ore,
             ore_max: ore,
             remaining_after_reservations: ore,
-            next_event_timestamp,
+            state,
         }
     }
 

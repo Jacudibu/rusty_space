@@ -110,7 +110,7 @@ impl MineAsteroid {
                         if asteroid.ore == 0 {
                             asteroid_was_fully_mined_event.send(AsteroidWasFullyMinedEvent {
                                 asteroid: asteroid_entity,
-                                despawn_timer: asteroid.next_event_timestamp,
+                                despawn_timer: asteroid.state.timestamp(),
                             });
                         }
                     }

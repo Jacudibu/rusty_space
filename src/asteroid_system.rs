@@ -274,8 +274,8 @@ fn start_asteroid_respawn_process(
         .timestamp
         .add_milliseconds(constants::ASTEROID_RESPAWN_TIME_MILLISECONDS);
     asteroid
-        .next_event_timestamp
-        .add_milliseconds(constants::ASTEROID_RESPAWN_TIME_MILLISECONDS);
+        .state
+        .toggle_and_add_milliseconds(constants::ASTEROID_RESPAWN_TIME_MILLISECONDS);
     fading_asteroids.asteroids.insert(asteroid_entity.entity);
     sector
         .asteroid_respawns
@@ -325,7 +325,7 @@ pub fn respawn_asteroids(
             transform.translation =
                 (local_respawn_position + sector.world_pos).extend(constants::ASTEROID_LAYER);
             asteroid_entity.timestamp.add_milliseconds(extra_millis);
-            asteroid.next_event_timestamp.add_milliseconds(extra_millis);
+            asteroid.state.toggle_and_add_milliseconds(extra_millis);
             asteroid.reset(&mut transform);
             fading_asteroids.asteroids.insert(asteroid_entity.entity);
             sector.asteroids.insert(asteroid_entity);
