@@ -10,10 +10,20 @@ use bevy::prelude::Vec2;
 
 pub fn create_test_data() -> StationSpawnData {
     let mut result = StationSpawnData::default();
+
+    result
+        .add(
+            LocalHexPosition::new(CENTER, Vec2::new(0.0, 200.0)),
+            "Station A".into(),
+        )
+        .with_production(1, PRODUCTION_MODULE_A_ID, RECIPE_A_ID)
+        .with_buys(vec![DEBUG_ITEM_ID_C])
+        .with_sells(vec![DEBUG_ITEM_ID_A]);
+
     result
         .add(
             LocalHexPosition::new(BOTTOM_LEFT, Vec2::new(-200.0, -200.0)),
-            "Station A".into(),
+            "Station B".into(),
         )
         .with_production(5, PRODUCTION_MODULE_B_ID, RECIPE_B_ID)
         .with_buys(vec![DEBUG_ITEM_ID_A])
@@ -22,20 +32,11 @@ pub fn create_test_data() -> StationSpawnData {
     result
         .add(
             LocalHexPosition::new(CENTER, Vec2::new(200.0, -200.0)),
-            "Station B".into(),
+            "Station C".into(),
         )
         .with_production(3, PRODUCTION_MODULE_C_ID, RECIPE_C_ID)
         .with_buys(vec![DEBUG_ITEM_ID_B])
         .with_sells(vec![DEBUG_ITEM_ID_C]);
-
-    result
-        .add(
-            LocalHexPosition::new(CENTER, Vec2::new(0.0, 200.0)),
-            "Station C".into(),
-        )
-        .with_production(1, PRODUCTION_MODULE_A_ID, RECIPE_A_ID)
-        .with_buys(vec![DEBUG_ITEM_ID_C])
-        .with_sells(vec![DEBUG_ITEM_ID_A]);
 
     result
         .add(

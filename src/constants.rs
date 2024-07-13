@@ -1,14 +1,14 @@
 use crate::utils::Milliseconds;
 use std::ops::Range;
 
-pub const TRADE_SHIP_COUNT: u32 = 100;
-pub const MINING_SHIP_COUNT: u32 = 5000;
+pub const TRADE_SHIP_COUNT: u32 = 20;
+pub const MINING_SHIP_COUNT: u32 = 20;
 pub const ASTEROID_COUNT: usize = 400;
 
-pub const MOCK_STATION_INVENTORY_SIZE: u32 = 500000;
+pub const MOCK_STATION_INVENTORY_SIZE: u32 = 50000;
 pub const SECONDS_TO_TRAVEL_THROUGH_GATE: f32 = 2.0;
 
-pub const ASTEROID_ORE_RANGE: Range<u32> = 100..500;
+pub const ASTEROID_ORE_RANGE: Range<u32> = 200..500;
 
 pub const SHIP_LAYER: f32 = 10.0;
 pub const STATION_LAYER: f32 = 5.0;
