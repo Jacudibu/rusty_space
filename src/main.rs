@@ -1,21 +1,14 @@
-use crate::camera::CameraControllerPlugin;
-use crate::diagnostics::DiagnosticsPlugin;
-use crate::entity_selection::EntitySelectionPlugin;
 use crate::game_data::GameData;
-use crate::gizmos::GizmoPlugin;
-use crate::production::ProductionPlugin;
 use crate::session_data::SessionData;
-use crate::ship_ai::ShipAiPlugin;
-use crate::utils::SimulationTimePlugin;
 use bevy::asset::AssetServer;
 use bevy::core::Name;
 use bevy::prelude::{
-    App, AppExtStates, Camera2dBundle, Commands, Handle, Image, ImagePlugin, IntoSystemConfigs,
-    PluginGroup, PreUpdate, Res, Resource, Startup, Update, Window, WindowPlugin,
+    App, Camera2dBundle, Commands, Handle, Image, ImagePlugin, PluginGroup, Res, Resource, Startup,
+    Window, WindowPlugin,
 };
 use bevy::render::camera::ScalingMode;
 use bevy::DefaultPlugins;
-use bevy_egui::{EguiPlugin, EguiStartupSet};
+use bevy_egui::EguiPlugin;
 
 mod asteroids;
 mod camera;
@@ -51,38 +44,21 @@ fn main() {
             .set(ImagePlugin::default_nearest()),
     )
     .add_plugins(EguiPlugin)
-    .add_plugins(ProductionPlugin)
-    .add_plugins(EntitySelectionPlugin)
-    .add_plugins(ShipAiPlugin)
-    .add_plugins(SimulationTimePlugin)
-    .add_plugins(GizmoPlugin)
+    .add_plugins(production::ProductionPlugin)
+    .add_plugins(entity_selection::EntitySelectionPlugin)
+    .add_plugins(ship_ai::ShipAiPlugin)
+    .add_plugins(utils::SimulationTimePlugin)
+    .add_plugins(gizmos::GizmoPlugin)
+    .add_plugins(gui::GUIPlugin)
     .add_plugins(asteroids::AsteroidPlugin)
-    .add_plugins(CameraControllerPlugin)
-    .add_plugins(DiagnosticsPlugin)
+    .add_plugins(camera::CameraControllerPlugin)
+    .add_plugins(diagnostics::DiagnosticsPlugin)
     .add_plugins(universe_builder::TestUniversePlugin)
     .add_plugins(universe_builder::UniverseBuilderPlugin)
     .add_plugins(physics::PhysicsPlugin)
     .insert_resource(GameData::mock_data())
     .insert_resource(SessionData::mock_data())
-    .init_state::<gui::MouseCursorOverUiState>()
-    .add_systems(
-        Startup,
-        (
-            initialize_data,
-            gui::initialize
-                .after(EguiStartupSet::InitContexts)
-                .after(initialize_data),
-        ),
-    )
-    .add_systems(PreUpdate, gui::detect_mouse_cursor_over_ui)
-    .add_systems(
-        Update,
-        (
-            gui::draw_sector_info,
-            gui::list_selection_icons_and_counts,
-            gui::list_selection_details,
-        ),
-    );
+    .add_systems(Startup, initialize_data);
 
     app.run();
 }

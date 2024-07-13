@@ -1,10 +1,11 @@
+use bevy::app::App;
 use bevy::prelude::{
-    AssetServer, Commands, Entity, Name, NextState, Query, Res, ResMut, Resource, State, States,
-    With,
+    AppExtStates, AssetServer, Commands, Entity, IntoSystemConfigs, Name, NextState, Plugin,
+    PreUpdate, Query, Res, ResMut, Resource, Startup, State, States, Update, With,
 };
 use bevy_egui::egui::load::SizedTexture;
 use bevy_egui::egui::{Align2, Shadow, Ui};
-use bevy_egui::{egui, EguiContexts};
+use bevy_egui::{egui, EguiContexts, EguiStartupSet};
 
 use crate::components::{
     Asteroid, BuyOrders, Gate, InSector, Inventory, SelectableEntity, SellOrders, TradeOrder,
@@ -20,6 +21,28 @@ use crate::ship_ai::TaskQueue;
 use crate::utils::ExchangeWareData;
 use crate::utils::SimulationTime;
 use crate::SpriteHandles;
+
+pub struct GUIPlugin;
+impl Plugin for GUIPlugin {
+    fn build(&self, app: &mut App) {
+        app.init_state::<MouseCursorOverUiState>()
+            .add_systems(
+                Startup,
+                initialize
+                    .after(EguiStartupSet::InitContexts)
+                    .after(crate::initialize_data),
+            )
+            .add_systems(PreUpdate, detect_mouse_cursor_over_ui)
+            .add_systems(
+                Update,
+                (
+                    draw_sector_info,
+                    list_selection_icons_and_counts,
+                    list_selection_details,
+                ),
+            );
+    }
+}
 
 #[derive(Default)]
 struct SelectableCount {
