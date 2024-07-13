@@ -1,6 +1,6 @@
 use crate::components::Sector;
 use crate::gizmos::SetupGateConnectionEvent;
-use crate::hex_to_sector_entity_map::HexToSectorEntityMap;
+use crate::persistence::SectorIdMap;
 use crate::universe_builder::local_hex_position::LocalHexPosition;
 use crate::utils::spawn_helpers::spawn_gates;
 use crate::SpriteHandles;
@@ -17,7 +17,7 @@ impl GateSpawnDataInstanceBuilder {
         commands: &mut Commands,
         sprites: &SpriteHandles,
         sectors: &mut Query<&mut Sector>,
-        hex_to_sector_entity_map: &HexToSectorEntityMap,
+        sector_id_map_entity_map: &SectorIdMap,
         gate_connection_events: &mut EventWriter<SetupGateConnectionEvent>,
     ) {
         // TODO: SectorPosition is exclusively used for gate spawning, might be best to remove it
@@ -27,8 +27,8 @@ impl GateSpawnDataInstanceBuilder {
             commands,
             sectors,
             sprites,
-            self.from.to_sector_position(hex_to_sector_entity_map),
-            self.to.to_sector_position(hex_to_sector_entity_map),
+            self.from.to_sector_position(sector_id_map_entity_map),
+            self.to.to_sector_position(sector_id_map_entity_map),
             gate_connection_events,
         )
     }

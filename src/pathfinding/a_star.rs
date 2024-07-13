@@ -111,8 +111,8 @@ fn reconstruct_path(
 #[cfg(test)]
 mod test {
     use crate::components::Sector;
-    use crate::hex_to_sector_entity_map::HexToSectorEntityMap;
     use crate::pathfinding::find_path;
+    use crate::persistence::SectorIdMap;
     use crate::universe_builder::LocalHexPosition;
     use crate::universe_builder::UniverseBuilder;
     use bevy::ecs::system::RunSystemOnce;
@@ -143,18 +143,18 @@ mod test {
         world.run_system_once(
             |sectors: Query<&Sector>,
              transforms: Query<&Transform>,
-             hex_to_sector: Res<HexToSectorEntityMap>| {
+             sector_id_map: Res<SectorIdMap>| {
                 let result = find_path(
                     &sectors,
                     &transforms,
-                    hex_to_sector.map[&CENTER],
+                    sector_id_map.id_to_entity()[&CENTER],
                     Vec3::ZERO,
-                    hex_to_sector.map[&RIGHT],
+                    sector_id_map.id_to_entity()[&RIGHT],
                 )
                 .unwrap();
 
                 assert_eq!(result.len(), 1);
-                assert_eq!(result[0].exit_sector, hex_to_sector.map[&RIGHT]);
+                assert_eq!(result[0].exit_sector, sector_id_map.id_to_entity()[&RIGHT]);
             },
         );
     }
@@ -180,19 +180,19 @@ mod test {
         world.run_system_once(
             |sectors: Query<&Sector>,
              transforms: Query<&Transform>,
-             hex_to_sector: Res<HexToSectorEntityMap>| {
+             sector_id_map: Res<SectorIdMap>| {
                 let result = find_path(
                     &sectors,
                     &transforms,
-                    hex_to_sector.map[&LEFT],
+                    sector_id_map.id_to_entity()[&LEFT],
                     Vec3::ZERO,
-                    hex_to_sector.map[&RIGHT],
+                    sector_id_map.id_to_entity()[&RIGHT],
                 )
                 .unwrap();
 
                 assert_eq!(result.len(), 2);
-                assert_eq!(result[0].exit_sector, hex_to_sector.map[&CENTER]);
-                assert_eq!(result[1].exit_sector, hex_to_sector.map[&RIGHT]);
+                assert_eq!(result[0].exit_sector, sector_id_map.id_to_entity()[&CENTER]);
+                assert_eq!(result[1].exit_sector, sector_id_map.id_to_entity()[&RIGHT]);
             },
         );
     }
@@ -228,21 +228,21 @@ mod test {
         world.run_system_once(
             |sectors: Query<&Sector>,
              transforms: Query<&Transform>,
-             hex_to_sector: Res<HexToSectorEntityMap>| {
+             sector_id_map: Res<SectorIdMap>| {
                 let result = find_path(
                     &sectors,
                     &transforms,
-                    hex_to_sector.map[&LEFT2],
+                    sector_id_map.id_to_entity()[&LEFT2],
                     Vec3::ZERO,
-                    hex_to_sector.map[&RIGHT2],
+                    sector_id_map.id_to_entity()[&RIGHT2],
                 )
                 .unwrap();
 
                 assert_eq!(result.len(), 4);
-                assert_eq!(result[0].exit_sector, hex_to_sector.map[&LEFT]);
-                assert_eq!(result[1].exit_sector, hex_to_sector.map[&CENTER]);
-                assert_eq!(result[2].exit_sector, hex_to_sector.map[&RIGHT]);
-                assert_eq!(result[3].exit_sector, hex_to_sector.map[&RIGHT2]);
+                assert_eq!(result[0].exit_sector, sector_id_map.id_to_entity()[&LEFT]);
+                assert_eq!(result[1].exit_sector, sector_id_map.id_to_entity()[&CENTER]);
+                assert_eq!(result[2].exit_sector, sector_id_map.id_to_entity()[&RIGHT]);
+                assert_eq!(result[3].exit_sector, sector_id_map.id_to_entity()[&RIGHT2]);
             },
         );
     }
@@ -293,21 +293,21 @@ mod test {
         world.run_system_once(
             |sectors: Query<&Sector>,
              transforms: Query<&Transform>,
-             hex_to_sector: Res<HexToSectorEntityMap>| {
+             sector_id_map: Res<SectorIdMap>| {
                 let result = find_path(
                     &sectors,
                     &transforms,
-                    hex_to_sector.map[&LEFT2],
+                    sector_id_map.id_to_entity()[&LEFT2],
                     Vec3::ZERO,
-                    hex_to_sector.map[&RIGHT2],
+                    sector_id_map.id_to_entity()[&RIGHT2],
                 )
                 .unwrap();
 
                 assert_eq!(result.len(), 4);
-                assert_eq!(result[0].exit_sector, hex_to_sector.map[&LEFT]);
-                assert_eq!(result[1].exit_sector, hex_to_sector.map[&CENTER]);
-                assert_eq!(result[2].exit_sector, hex_to_sector.map[&RIGHT]);
-                assert_eq!(result[3].exit_sector, hex_to_sector.map[&RIGHT2]);
+                assert_eq!(result[0].exit_sector, sector_id_map.id_to_entity()[&LEFT]);
+                assert_eq!(result[1].exit_sector, sector_id_map.id_to_entity()[&CENTER]);
+                assert_eq!(result[2].exit_sector, sector_id_map.id_to_entity()[&RIGHT]);
+                assert_eq!(result[3].exit_sector, sector_id_map.id_to_entity()[&RIGHT2]);
             },
         );
     }

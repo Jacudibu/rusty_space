@@ -1,6 +1,6 @@
 use crate::components::Sector;
 use crate::game_data::{GameData, ItemId, ProductionModuleId, RecipeId, ShipyardModuleId};
-use crate::hex_to_sector_entity_map::HexToSectorEntityMap;
+use crate::persistence::SectorIdMap;
 use crate::session_data::ShipConfigId;
 use crate::universe_builder::local_hex_position::LocalHexPosition;
 use crate::utils::spawn_helpers::{
@@ -71,10 +71,10 @@ impl StationSpawnDataInstanceBuilder {
         commands: &mut Commands,
         sectors: &mut Query<&mut Sector>,
         sprites: &SpriteHandles,
-        hex_to_sector: &HexToSectorEntityMap,
+        sector_id_map: &SectorIdMap,
         game_data: &GameData,
     ) {
-        let sector_entity = hex_to_sector.map.get(&self.position.sector).unwrap();
+        let sector_entity = sector_id_map.get_entity(&self.position.sector).unwrap();
 
         // TODO: Dynamically create those depending on production
         //         Manual overrides will come later, and shouldn't be a priority here for now

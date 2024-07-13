@@ -14,8 +14,8 @@ pub struct Sector {
     pub world_pos: Vec2,
 
     pub gates: HashMap<SectorEntity, GatePairInSector>,
-    ships: HashSet<ShipEntity>,
-    stations: HashSet<StationEntity>,
+    pub ships: HashSet<ShipEntity>,
+    pub stations: HashSet<StationEntity>,
 
     pub asteroid_data: Option<SectorAsteroidData>,
     pub asteroids: BTreeSet<AsteroidEntityWithTimestamp>,

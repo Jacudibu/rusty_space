@@ -1,4 +1,4 @@
-use crate::hex_to_sector_entity_map::HexToSectorEntityMap;
+use crate::persistence::SectorIdMap;
 use crate::utils::SectorPosition;
 use bevy::math::Vec2;
 use hexx::Hex;
@@ -13,12 +13,9 @@ impl LocalHexPosition {
         Self { sector, position }
     }
 
-    pub fn to_sector_position(
-        &self,
-        hex_to_sector_entity_map: &HexToSectorEntityMap,
-    ) -> SectorPosition {
+    pub fn to_sector_position(&self, sector_id_map_entity_map: &SectorIdMap) -> SectorPosition {
         SectorPosition {
-            sector: hex_to_sector_entity_map.map[&self.sector],
+            sector: sector_id_map_entity_map.id_to_entity()[&self.sector],
             local_position: self.position,
         }
     }

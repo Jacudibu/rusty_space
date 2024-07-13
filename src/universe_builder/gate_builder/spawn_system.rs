@@ -1,6 +1,6 @@
 use crate::components::Sector;
 use crate::gizmos::SetupGateConnectionEvent;
-use crate::hex_to_sector_entity_map::HexToSectorEntityMap;
+use crate::persistence::SectorIdMap;
 use crate::universe_builder::gate_builder::data_resource::GateSpawnData;
 use crate::SpriteHandles;
 use bevy::prelude::{Commands, EventWriter, Query, Res};
@@ -10,7 +10,7 @@ pub fn spawn_all_gates(
     spawn_data: Res<GateSpawnData>,
     sprites: Res<SpriteHandles>,
     mut sectors: Query<&mut Sector>,
-    hex_to_sector_entity_map: Res<HexToSectorEntityMap>,
+    sector_id_map_entity_map: Res<SectorIdMap>,
     mut gate_connection_events: EventWriter<SetupGateConnectionEvent>,
 ) {
     for builder in &spawn_data.gates {
@@ -18,7 +18,7 @@ pub fn spawn_all_gates(
             &mut commands,
             &sprites,
             &mut sectors,
-            &hex_to_sector_entity_map,
+            &sector_id_map_entity_map,
             &mut gate_connection_events,
         );
     }

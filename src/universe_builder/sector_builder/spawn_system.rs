@@ -1,9 +1,8 @@
 use crate::asteroids::SectorWasSpawnedEvent;
-use crate::hex_to_sector_entity_map::HexToSectorEntityMap;
 use crate::map_layout::MapLayout;
+use crate::persistence::SectorIdMap;
 use crate::universe_builder::sector_builder::data_resource::SectorSpawnData;
 use bevy::prelude::{Commands, EventWriter, Res};
-use bevy::utils::HashMap;
 
 pub fn spawn_all_sectors(
     mut commands: Commands,
@@ -11,7 +10,7 @@ pub fn spawn_all_sectors(
     spawn_data: Res<SectorSpawnData>,
     mut sector_spawn_event: EventWriter<SectorWasSpawnedEvent>,
 ) {
-    let mut entity_map = HashMap::new();
+    let mut entity_map = SectorIdMap::new();
     for builder in &spawn_data.sectors {
         let entity = builder.build(
             &mut commands,
@@ -22,5 +21,5 @@ pub fn spawn_all_sectors(
     }
 
     commands.remove_resource::<SectorSpawnData>();
-    commands.insert_resource(HexToSectorEntityMap { map: entity_map });
+    commands.insert_resource(entity_map);
 }

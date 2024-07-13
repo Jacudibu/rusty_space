@@ -3,8 +3,8 @@ use bevy::prelude::{error, Commands, Component, Entity, Query, Res, Transform};
 use std::cmp::Ordering;
 
 use crate::components::{Asteroid, BuyOrders, InSector, Inventory, Sector};
-use crate::hex_to_sector_entity_map::HexToSectorEntityMap;
 use crate::pathfinding;
+use crate::persistence::SectorIdMap;
 use crate::ship_ai::ship_is_idle_filter::ShipIsIdleFilter;
 use crate::ship_ai::{TaskInsideQueue, TaskQueue};
 use crate::trade_plan::TradePlan;
@@ -41,7 +41,7 @@ pub fn handle_idle_ships(
     all_sectors: Query<&Sector>,
     mut all_asteroids: Query<&mut Asteroid>,
     all_transforms: Query<&Transform>,
-    hex_to_sector_entity_map: Res<HexToSectorEntityMap>,
+    sector_id_map: Res<SectorIdMap>,
 ) {
     let now = simulation_time.now();
 
@@ -120,7 +120,7 @@ pub fn handle_idle_ships(
                             &all_transforms,
                             in_sector.sector,
                             all_transforms.get(ship_entity).unwrap().translation,
-                            hex_to_sector_entity_map.map[&target_sector.coordinate],
+                            sector_id_map.id_to_entity()[&target_sector.coordinate],
                         )
                         .unwrap();
                         pathfinding::create_tasks_to_follow_path(&mut queue, path);
