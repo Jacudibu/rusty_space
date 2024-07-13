@@ -28,11 +28,7 @@ pub fn draw_selected_ship_task(
                 TaskInsideQueue::ExchangeWares { .. } => {}
                 TaskInsideQueue::MoveToEntity { target, .. } => {
                     let target_position = all_transforms.get(*target).unwrap().translation;
-                    gizmos.line_2d(
-                        current_position.truncate(),
-                        target_position.truncate(),
-                        GIZMO_COLOR,
-                    );
+                    gizmos.line(current_position, target_position, GIZMO_COLOR);
                     current_position = target_position;
                 }
                 TaskInsideQueue::UseGate { enter_gate, .. } => {
@@ -40,7 +36,10 @@ pub fn draw_selected_ship_task(
                     gizmos.linestrip(gate.transit_curve.iter_positions(10), GIZMO_COLOR);
                     current_position = gate.transit_curve.position(1.0);
                 }
-                TaskInsideQueue::MineAsteroid { .. } => {}
+                TaskInsideQueue::MineAsteroid { target, .. } => {
+                    let asteroid_pos = all_transforms.get(target.into()).unwrap().translation;
+                    gizmos.line(current_position, asteroid_pos, GIZMO_COLOR);
+                }
             }
         }
     }
