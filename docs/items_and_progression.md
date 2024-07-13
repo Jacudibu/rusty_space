@@ -14,11 +14,13 @@ These can be harvested from Asteroids, Gas Giants, and Planets with varying diff
 
 ##### Random Examples:
 Ore -> **Refined Metals**
+
 Silicon -> **Silicon Wafers**
 
 Refined Metals + Silicon Wafers -> **T1 Ships**. 
 
 Refined Metals + Silicon -> Makeshift Solar Panels attached to a station -> **Energy Cells**
+
 Any flammable Gas + Silicon -> **Energy Cells**
 
 ### T2: Electricity
@@ -28,12 +30,16 @@ Any flammable Gas + Silicon -> **Energy Cells**
 
 ##### Random Examples:
 Silicon Wafers + Energy Cells -> **Electronic Circuits**
+
 Methane + Energy Cells -> **Graphite** + Energy Cells -> **Graphene**
 
 Refined Metals + Electronic Circuits + Graphene -> **T2 Ships**
+
 Energy Cells + ??? -> Simple Shield Components
+
 Energy Cells + ??? -> Simple Weapon Components
-Now we can build small fighter-class ships!
+
+-> Now we can build small fighter-class ships!
 
 ### T3: Advanced Materials
 *Stuff gets more complicated, requiring rarer ingredients alongside intermediary goods from previous tiers. Players and factions will have to adjust their ships and production steps to their environment - either by sacrificing certain components such as higher level shields, trading for the required materials or expanding aggressively to secure a steady supply of their own at the risk of hostile reactions.*
@@ -43,7 +49,9 @@ These, alongside T2 Ship equipped with T3 modules, would be considered the "gold
 
 ##### Random Examples:
 Graphene + ??? + Energy Cells -> **Carbon Nanotubes**
+
 Electronic Circuits + Carbon Nanotubes -> **Advanced Circuits**
+
 Advanced Circuits + Refined Metals + Carbon Nanotubes -> **Smart Plating**
 
 ### T4: Specialized Components
