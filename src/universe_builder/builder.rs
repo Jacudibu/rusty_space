@@ -9,7 +9,7 @@ pub struct UniverseBuilder {
 #[cfg(test)]
 mod test_helpers {
     use super::*;
-    use crate::asteroid_system::SectorWasSpawnedEvent;
+    use crate::asteroids::SectorWasSpawnedEvent;
     use crate::gizmos::SetupGateConnectionEvent;
     use crate::map_layout::MapLayout;
     use crate::universe_builder::plugin::UniverseBuilderPlugin;

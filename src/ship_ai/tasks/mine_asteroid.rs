@@ -1,4 +1,4 @@
-use crate::asteroid_system::AsteroidWasFullyMinedEvent;
+use crate::asteroids::AsteroidWasFullyMinedEvent;
 use crate::components::{Asteroid, Inventory};
 use crate::game_data::DEBUG_ITEM_ID_ORE;
 use crate::ship_ai::task_finished_event::TaskFinishedEvent;

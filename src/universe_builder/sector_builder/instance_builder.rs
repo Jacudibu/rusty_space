@@ -1,4 +1,4 @@
-use crate::asteroid_system::SectorWasSpawnedEvent;
+use crate::asteroids::SectorWasSpawnedEvent;
 use crate::components::SectorAsteroidData;
 use crate::utils::spawn_helpers::spawn_sector;
 use crate::utils::SectorEntity;

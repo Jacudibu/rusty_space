@@ -1,4 +1,4 @@
-use crate::asteroid_system::SectorWasSpawnedEvent;
+use crate::asteroids::SectorWasSpawnedEvent;
 use crate::hex_to_sector_entity_map::HexToSectorEntityMap;
 use crate::map_layout::MapLayout;
 use crate::universe_builder::sector_builder::data_resource::SectorSpawnData;

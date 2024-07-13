@@ -1,4 +1,4 @@
-use crate::asteroid_system::SectorWasSpawnedEvent;
+use crate::asteroids::SectorWasSpawnedEvent;
 use crate::components::{Sector, SectorAsteroidData};
 use crate::utils::SectorEntity;
 use bevy::core::Name;

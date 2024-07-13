@@ -1,4 +1,4 @@
-use crate::components::{BuyOrders, Sector};
+use crate::components::Sector;
 use crate::game_data::{GameData, ItemId, ProductionModuleId, RecipeId, ShipyardModuleId};
 use crate::hex_to_sector_entity_map::HexToSectorEntityMap;
 use crate::session_data::ShipConfigId;

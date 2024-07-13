@@ -1,4 +1,3 @@
-use crate::asteroid_system::AsteroidPlugin;
 use crate::camera::CameraControllerPlugin;
 use crate::diagnostics::DiagnosticsPlugin;
 use crate::entity_selection::EntitySelectionPlugin;
@@ -18,7 +17,7 @@ use bevy::render::camera::ScalingMode;
 use bevy::DefaultPlugins;
 use bevy_egui::{EguiPlugin, EguiStartupSet};
 
-mod asteroid_system;
+mod asteroids;
 mod camera;
 mod components;
 mod constants;
@@ -57,7 +56,7 @@ fn main() {
     .add_plugins(ShipAiPlugin)
     .add_plugins(SimulationTimePlugin)
     .add_plugins(GizmoPlugin)
-    .add_plugins(AsteroidPlugin)
+    .add_plugins(asteroids::AsteroidPlugin)
     .add_plugins(CameraControllerPlugin)
     .add_plugins(DiagnosticsPlugin)
     .add_plugins(universe_builder::TestUniversePlugin)
