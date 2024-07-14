@@ -41,6 +41,7 @@ If my machine can handle that, I'd assume a potato can run 10% of that smoothly,
 
 # Less Debug Values
 
+- Probably easier with `leafwing_manifest` and maybe also `bevy_common_assets` 
 - Add parsing for data files, remove hardcoded Items
 - Change items and recipes to stuff that makes sense
 - Spawn one station for every production module & recipe
@@ -83,6 +84,7 @@ demands.
 # Task System Overhaul
 
 - ~~Every Ship has a behavior assigned to it, which serves as its AI decision maker.~~
+- See if beet might help implementing some of the more complex behaviors: https://github.com/mrchantey/beet
 - Main tasks are handed out by the ShipBehavior, and are then dynamically filled with subtasks to complete them.
     - e.g. AutoTrade: Just add `Buy X` and `Sell x`, then do the pathfinding in a more concurrent system.
 
