@@ -65,10 +65,12 @@ fn calculate_asteroid_respawn_position(
     velocity: Vec2,
 ) -> Vec2 {
     // Avoid using randomness, so we don't need to sync anything over the network
-    let mut best_distance = 0.0;
-    let mut best_intersection = None;
+    let mut best_distance = f32::MAX;
+    let mut despawn_intersection = None;
 
-    // TODO: Alternatively: Store the despawn position, then mirror it to the opposing hexagon side.
+    // TODO: Alternatively: Just store the mirrored despawn position and properly despawn the entity
+    //   Overall, spawning and despawning should still be cheaper than keeping the movement simulation up,
+    //   especially if the asteroid is mined very early in its lifecycle
 
     for edge in local_hexagon_edges.iter() {
         if let Some(intersection) = helpers::intersect_lines(
@@ -78,12 +80,14 @@ fn calculate_asteroid_respawn_position(
             edge[1],
         ) {
             let distance = intersection.distance_squared(local_current_position);
-            if distance > best_distance {
+            if distance < best_distance {
                 best_distance = distance;
-                best_intersection = Some(intersection);
+                despawn_intersection = Some(intersection);
             }
         }
     }
 
-    best_intersection.expect("Asteroids should always intersect with their hexagon!")
+    let result =
+        despawn_intersection.expect("Asteroids should always intersect with their hexagon!");
+    Vec2::new(-result.x, -result.y)
 }
