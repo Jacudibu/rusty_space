@@ -43,13 +43,13 @@ three of them to some degree.
 
 ## S-Type Asteroids (Silicaceous)
 
-### Silicon Electronics
+### Silicon
 - **Solar Panels:** Passive energy production, yay!
 - **Chip Manufacturing:** Wafers would be used in pretty much any kind of "smart" device.
 - **Quantum Computing:** Building ultra-fast quantum computers that revolutionize data processing and AI.
 - **Holographic Displays:** Useful for communication, entertainment and training.
 
-### Nickel / Iron: Structural components, spacecraft hulls, tools, and building materials.
+### Nickel / Iron
 - **Structural Components:** Spaceship & Station Hulls
 - **Tools:** Nuts and bolts.
 - **Space Elevators:** Main ingredient to allow easy transport of materials and people to and from planetary surfaces.
@@ -60,5 +60,7 @@ three of them to some degree.
 - **Advanced Electronics:** Yet another potential critical ingredient for those.
 - **Graviton Manipulation:** Enabling artificial gravity in habitats and advanced propulsion systems.
 - **Stealth Technology:** Rendering objects invisible or undetectable by bending light in specific ways.
-### Regolith: Construction material for building habitats and shielding against radiation.
+
+### Regolith:
 - **Radiation Shielding:** Thick walls around habitats to protect inhabitants from cosmic and solar radiation.
+- Could also be a waste product when processing or compressing raw asteroid ore.
