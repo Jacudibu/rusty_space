@@ -1,5 +1,7 @@
 use crate::components::{Asteroid, Gate, Ship, Station};
 use bevy::prelude::Component;
+use std::fmt;
+use std::fmt::{Debug, Display, Formatter};
 use std::hash::{Hash, Hasher};
 use std::marker::PhantomData;
 use std::sync::atomic::{AtomicU32, Ordering};
@@ -78,5 +80,16 @@ impl<T: Component> PartialOrd<Self> for TypedPersistentEntityId<T> {
 impl<T: Component> Hash for TypedPersistentEntityId<T> {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.0.hash(state);
+    }
+}
+
+impl<T: Component> Display for TypedPersistentEntityId<T> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "[{}] {}", std::any::type_name::<T>(), self.0)
+    }
+}
+impl<T: Component> Debug for TypedPersistentEntityId<T> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        fmt::Display::fmt(self, f)
     }
 }

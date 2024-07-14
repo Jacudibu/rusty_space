@@ -77,3 +77,28 @@ where
         self.entity_to_id.get(entity)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use bevy::prelude::Entity;
+
+    #[test]
+    fn inserting_getting_data() {
+        let id1 = PersistentGateId::default();
+        let id2 = PersistentGateId::default();
+
+        let entity1 = GateEntity::from(Entity::from_raw(1));
+        let entity2 = GateEntity::from(Entity::from_raw(2));
+
+        let mut map = GateIdMap::new();
+        map.insert(id1, entity1);
+        map.insert(id2, entity2);
+
+        assert_eq!(&id1, map.get_id(&entity1).unwrap());
+        assert_eq!(&id2, map.get_id(&entity2).unwrap());
+
+        assert_eq!(&entity1, map.get_entity(&id1).unwrap());
+        assert_eq!(&entity2, map.get_entity(&id2).unwrap());
+    }
+}
