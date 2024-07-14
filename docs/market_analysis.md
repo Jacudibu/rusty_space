@@ -6,6 +6,7 @@ One time purchase (50€), yearly DLC Releases (15€ each)
 
 ### Inspirations for us
 - Universe/Sector Layout (Hexagons connected through gates)
+- The map in general. Visually, our game is basically going to be just X4's map screen.
 - Station & Trade mechanics
 - Shipbuilding
 
