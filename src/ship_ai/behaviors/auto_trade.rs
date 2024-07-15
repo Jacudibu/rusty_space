@@ -4,7 +4,7 @@ use crate::components::{BuyOrders, InSector, Inventory, Sector, SellOrders, Trad
 use crate::ship_ai::ship_is_idle_filter::ShipIsIdleFilter;
 use crate::ship_ai::TaskQueue;
 use crate::trade_plan::TradePlan;
-use crate::utils::{SimulationTime, SimulationTimestamp, TradeIntent};
+use crate::utils::{SimulationTime, SimulationTimestamp, TradeIntent, TypedEntity};
 
 #[derive(Component)]
 pub struct AutoTradeBehavior {
@@ -44,7 +44,7 @@ pub fn handle_idle_ships(
                 return;
             };
             let [mut this_inventory, mut seller_inventory, mut buyer_inventory] = inventories
-                .get_many_mut([ship_entity, plan.seller, plan.buyer])
+                .get_many_mut([ship_entity, plan.seller.into(), plan.buyer.into()])
                 .unwrap();
 
             this_inventory.create_order(plan.item_id, TradeIntent::Buy, plan.amount);
@@ -54,7 +54,7 @@ pub fn handle_idle_ships(
             buyer_inventory.create_order(plan.item_id, TradeIntent::Buy, plan.amount);
 
             update_buy_and_sell_orders_for_entity(
-                ship_entity,
+                TypedEntity::Ship(ship_entity.into()),
                 &this_inventory,
                 &mut buy_orders,
                 &mut sell_orders,
@@ -86,15 +86,15 @@ pub fn handle_idle_ships(
 }
 
 fn update_buy_and_sell_orders_for_entity(
-    entity: Entity,
+    entity: TypedEntity,
     inventory: &Inventory,
     buy_orders: &mut Query<(Entity, &mut BuyOrders, &InSector)>,
     sell_orders: &mut Query<(Entity, &mut SellOrders, &InSector)>,
 ) {
-    if let Ok(mut buy_orders) = buy_orders.get_mut(entity) {
+    if let Ok(mut buy_orders) = buy_orders.get_mut(entity.into()) {
         buy_orders.1.update(inventory);
     }
-    if let Ok(mut sell_orders) = sell_orders.get_mut(entity) {
+    if let Ok(mut sell_orders) = sell_orders.get_mut(entity.into()) {
         sell_orders.1.update(inventory);
     }
 }

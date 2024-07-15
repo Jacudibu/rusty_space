@@ -376,7 +376,7 @@ pub fn list_selection_details(
                                         )
                                     }
                                     TaskInsideQueue::MoveToEntity { target, .. } => {
-                                        format!("Move to {}", names.get(*target).unwrap())
+                                        format!("Move to {}", names.get(target.into()).unwrap())
                                     }
                                     TaskInsideQueue::ExchangeWares { data, .. } => match data {
                                         ExchangeWareData::Buy(item_id, amount) => {

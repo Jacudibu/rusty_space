@@ -27,7 +27,7 @@ pub fn draw_selected_ship_task(
             match x {
                 TaskInsideQueue::ExchangeWares { .. } => {}
                 TaskInsideQueue::MoveToEntity { target, .. } => {
-                    let target_position = all_transforms.get(*target).unwrap().translation;
+                    let target_position = all_transforms.get(target.into()).unwrap().translation;
                     gizmos.line(current_position, target_position, GIZMO_COLOR);
                     current_position = target_position;
                 }

@@ -10,11 +10,11 @@ use std::hash::Hash;
 
 #[derive(SystemParam)]
 pub struct AllEntityIdMaps<'w> {
-    asteroids: Res<'w, AsteroidIdMap>,
-    gates: Res<'w, GateIdMap>,
-    sectors: Res<'w, SectorIdMap>,
-    ships: Res<'w, ShipIdMap>,
-    stations: Res<'w, StationIdMap>,
+    pub asteroids: Res<'w, AsteroidIdMap>,
+    pub gates: Res<'w, GateIdMap>,
+    pub sectors: Res<'w, SectorIdMap>,
+    pub ships: Res<'w, ShipIdMap>,
+    pub stations: Res<'w, StationIdMap>,
 }
 
 pub type AsteroidIdMap = EntityIdMap<PersistentAsteroidId, AsteroidEntity>;

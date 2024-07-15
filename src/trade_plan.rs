@@ -4,15 +4,15 @@ use crate::components::{BuyOrders, InSector, Inventory, Sector, SellOrders, Trad
 use crate::game_data::ItemId;
 use crate::pathfinding;
 use crate::ship_ai::{TaskInsideQueue, TaskQueue};
-use crate::utils::{ExchangeWareData, SectorEntity};
+use crate::utils::{ExchangeWareData, SectorEntity, TypedEntity};
 
 pub struct TradePlan {
     pub item_id: ItemId,
     pub amount: u32,
     pub profit: u32,
-    pub seller: Entity,
+    pub seller: TypedEntity,
     pub seller_sector: SectorEntity,
-    pub buyer: Entity,
+    pub buyer: TypedEntity,
     pub buyer_sector: SectorEntity,
 }
 
@@ -55,9 +55,9 @@ impl TradePlan {
                                 item_id: *item_id,
                                 amount,
                                 profit,
-                                seller,
+                                seller: TypedEntity::AnyWithInventory(seller),
                                 seller_sector: seller_sector.get(),
-                                buyer,
+                                buyer: TypedEntity::AnyWithInventory(buyer),
                                 buyer_sector: buyer_sector.get(),
                             });
                         }
@@ -102,9 +102,9 @@ impl TradePlan {
                             item_id: *item_id,
                             amount,
                             profit,
-                            seller,
+                            seller: TypedEntity::AnyWithInventory(seller),
                             seller_sector: seller_sector.get(),
-                            buyer,
+                            buyer: TypedEntity::AnyWithInventory(buyer),
                             buyer_sector: buyer_sector.get(),
                         });
                     }
@@ -155,7 +155,7 @@ impl TradePlan {
         queue: &mut TaskQueue,
     ) {
         if self.seller_sector != self.buyer_sector {
-            let seller_pos = all_transforms.get(self.seller).unwrap().translation;
+            let seller_pos = all_transforms.get(self.seller.into()).unwrap().translation;
             let path = pathfinding::find_path(
                 all_sectors,
                 all_transforms,

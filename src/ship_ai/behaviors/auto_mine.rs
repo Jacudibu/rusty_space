@@ -94,7 +94,7 @@ pub fn handle_idle_ships(
                                 .try_to_reserve(ship_inventory.capacity - used_inventory_space);
 
                             queue.push_back(TaskInsideQueue::MoveToEntity {
-                                target: closest_asteroid.into(),
+                                target: closest_asteroid.entity.into(),
                                 stop_at_target: true,
                             });
                             queue.push_back(TaskInsideQueue::MineAsteroid {
@@ -138,8 +138,9 @@ pub fn handle_idle_ships(
                         return;
                     };
 
-                    let [mut this_inventory, mut buyer_inventory] =
-                        inventories.get_many_mut([ship_entity, plan.buyer]).unwrap();
+                    let [mut this_inventory, mut buyer_inventory] = inventories
+                        .get_many_mut([ship_entity, plan.buyer.into()])
+                        .unwrap();
 
                     this_inventory.create_order(plan.item_id, TradeIntent::Sell, plan.amount);
                     buyer_inventory.create_order(plan.item_id, TradeIntent::Buy, plan.amount);

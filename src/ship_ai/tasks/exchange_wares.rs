@@ -5,16 +5,16 @@ use crate::ship_ai::task_queue::TaskQueue;
 use crate::ship_ai::task_result::TaskResult;
 use crate::ship_ai::tasks::send_completion_events;
 use crate::ship_ai::{tasks, MoveToEntity};
-use crate::utils::TradeIntent;
 use crate::utils::{CurrentSimulationTimestamp, SimulationTime};
 use crate::utils::{ExchangeWareData, SimulationTimestamp};
+use crate::utils::{TradeIntent, TypedEntity};
 use bevy::prelude::{error, Commands, Component, Entity, EventReader, EventWriter, Query, Res};
 use std::sync::{Arc, Mutex};
 
 #[derive(Component)]
 pub struct ExchangeWares {
     pub finishes_at: SimulationTimestamp,
-    pub target: Entity,
+    pub target: TypedEntity,
     pub data: ExchangeWareData,
 }
 
@@ -33,7 +33,7 @@ impl ExchangeWares {
         all_storages: &mut Query<&mut Inventory>,
         event_writer: &mut EventWriter<InventoryUpdateForProductionEvent>,
     ) -> TaskResult {
-        match all_storages.get_many_mut([this_entity, self.target]) {
+        match all_storages.get_many_mut([this_entity, self.target.into()]) {
             Ok([mut this_inv, mut other_inv]) => {
                 match self.data {
                     ExchangeWareData::Buy(item_id, amount) => {
@@ -46,12 +46,12 @@ impl ExchangeWares {
                     }
                 }
                 event_writer.send(InventoryUpdateForProductionEvent::new(this_entity));
-                event_writer.send(InventoryUpdateForProductionEvent::new(self.target));
+                event_writer.send(InventoryUpdateForProductionEvent::new(self.target.into()));
                 TaskResult::Finished
             }
             Err(e) => {
                 error!(
-                    "Failed to execute ware exchange between {this_entity} and {}: {:?}",
+                    "Failed to execute ware exchange between {this_entity} and {:?}: {:?}",
                     self.target, e
                 );
                 TaskResult::Aborted

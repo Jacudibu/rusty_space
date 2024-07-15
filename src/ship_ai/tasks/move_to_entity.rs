@@ -5,7 +5,7 @@ use crate::ship_ai::task_queue::TaskQueue;
 use crate::ship_ai::task_result::TaskResult;
 use crate::ship_ai::tasks;
 use crate::ship_ai::tasks::send_completion_events;
-use crate::utils::SimulationTime;
+use crate::utils::{SimulationTime, TypedEntity};
 use bevy::log::error;
 use bevy::prelude::{
     warn, Commands, Component, Entity, EulerRot, EventReader, EventWriter, Query, Res, Time,
@@ -15,7 +15,7 @@ use std::sync::{Arc, Mutex};
 
 #[derive(Component)]
 pub struct MoveToEntity {
-    pub target: Entity,
+    pub target: TypedEntity,
     pub stop_at_target: bool,
 }
 
@@ -28,9 +28,9 @@ impl MoveToEntity {
         velocity: &mut ShipVelocity,
         time: &Time,
     ) -> TaskResult {
-        let Ok(target_transform) = all_transforms.get(self.target) else {
+        let Ok(target_transform) = all_transforms.get(self.target.into()) else {
             warn!(
-                "Didn't find target transform for {}, aborting MoveToEntity task.",
+                "Didn't find target transform for {:?}, aborting MoveToEntity task.",
                 self.target
             );
             return TaskResult::Aborted;

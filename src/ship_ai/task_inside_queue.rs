@@ -1,20 +1,19 @@
 use bevy::ecs::system::EntityCommands;
-use bevy::prelude::Entity;
 
 use crate::ship_ai::tasks;
 use crate::utils::{
-    AsteroidEntity, CurrentSimulationTimestamp, ExchangeWareData, SimulationTimestamp,
+    AsteroidEntity, CurrentSimulationTimestamp, ExchangeWareData, SimulationTimestamp, TypedEntity,
 };
 use crate::utils::{GateEntity, SectorEntity};
 
 /// Defines a Task inside the [TaskQueue]. New task components can be created from these.
 pub enum TaskInsideQueue {
     ExchangeWares {
-        target: Entity,
+        target: TypedEntity,
         data: ExchangeWareData,
     },
     MoveToEntity {
-        target: Entity,
+        target: TypedEntity,
         stop_at_target: bool,
     },
     UseGate {
