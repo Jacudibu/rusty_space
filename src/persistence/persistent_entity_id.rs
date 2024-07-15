@@ -1,5 +1,7 @@
 use crate::components::{Asteroid, Gate, Ship, Station};
 use bevy::prelude::Component;
+use hexx::Hex;
+use serde::{Deserialize, Serialize};
 use std::fmt;
 use std::fmt::{Debug, Display, Formatter};
 use std::hash::{Hash, Hasher};
@@ -8,11 +10,65 @@ use std::sync::atomic::{AtomicU32, Ordering};
 
 /// A unique ID that's the same between session and across different clients in multiplayer sessions.
 /// (Sectors are just represented as Hex coordinates)
+#[derive(Serialize, Deserialize)]
 pub enum PersistentEntityId {
     Asteroid(PersistentAsteroidId),
     Gate(PersistentGateId),
     Ship(PersistentShipId),
     Station(PersistentStationId),
+    Sector(Hex),
+}
+
+impl From<PersistentAsteroidId> for PersistentEntityId {
+    fn from(value: PersistentAsteroidId) -> Self {
+        Self::Asteroid(value)
+    }
+}
+
+impl From<&PersistentAsteroidId> for PersistentEntityId {
+    fn from(value: &PersistentAsteroidId) -> Self {
+        Self::Asteroid(*value)
+    }
+}
+
+impl From<PersistentGateId> for PersistentEntityId {
+    fn from(value: PersistentGateId) -> Self {
+        Self::Gate(value)
+    }
+}
+impl From<&PersistentGateId> for PersistentEntityId {
+    fn from(value: &PersistentGateId) -> Self {
+        Self::Gate(*value)
+    }
+}
+
+impl From<PersistentShipId> for PersistentEntityId {
+    fn from(value: PersistentShipId) -> Self {
+        Self::Ship(value)
+    }
+}
+impl From<&PersistentShipId> for PersistentEntityId {
+    fn from(value: &PersistentShipId) -> Self {
+        Self::Ship(*value)
+    }
+}
+
+impl From<PersistentStationId> for PersistentEntityId {
+    fn from(value: PersistentStationId) -> Self {
+        Self::Station(value)
+    }
+}
+
+impl From<&PersistentStationId> for PersistentEntityId {
+    fn from(value: &PersistentStationId) -> Self {
+        Self::Station(*value)
+    }
+}
+
+impl From<Hex> for PersistentEntityId {
+    fn from(value: Hex) -> Self {
+        Self::Sector(value)
+    }
 }
 
 pub type PersistentAsteroidId = TypedPersistentEntityId<Asteroid>;
@@ -20,6 +76,7 @@ pub type PersistentGateId = TypedPersistentEntityId<Gate>;
 pub type PersistentShipId = TypedPersistentEntityId<Ship>;
 pub type PersistentStationId = TypedPersistentEntityId<Station>;
 
+#[derive(Serialize, Deserialize)]
 pub struct TypedPersistentEntityId<T: Component>(u32, PhantomData<T>);
 
 static NEXT_ASTEROID_ID: AtomicU32 = AtomicU32::new(0);

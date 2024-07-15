@@ -947,6 +947,7 @@ dependencies = [
  "hexx",
  "iyes_perf_ui",
  "rand",
+ "serde",
 ]
 
 [[package]]

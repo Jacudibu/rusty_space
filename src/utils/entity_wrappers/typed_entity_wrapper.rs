@@ -24,6 +24,11 @@ impl<T: Component> From<Entity> for TypedEntityWrapper<T> {
         Self(value, PhantomData)
     }
 }
+impl<T: Component> From<&Entity> for TypedEntityWrapper<T> {
+    fn from(value: &Entity) -> Self {
+        Self(*value, PhantomData)
+    }
+}
 
 impl<T: Component> From<TypedEntityWrapper<T>> for Entity {
     fn from(value: TypedEntityWrapper<T>) -> Self {

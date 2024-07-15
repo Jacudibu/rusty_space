@@ -1,7 +1,10 @@
 use crate::persistence::persistent_entity_id::{
     PersistentAsteroidId, PersistentGateId, PersistentShipId, PersistentStationId,
 };
-use crate::utils::{AsteroidEntity, GateEntity, SectorEntity, ShipEntity, StationEntity};
+use crate::persistence::PersistentEntityId;
+use crate::utils::{
+    AsteroidEntity, GateEntity, SectorEntity, ShipEntity, StationEntity, TypedEntity,
+};
 use bevy::ecs::system::SystemParam;
 use bevy::prelude::{Res, Resource};
 use bevy::utils::HashMap;
@@ -15,6 +18,30 @@ pub struct AllEntityIdMaps<'w> {
     pub sectors: Res<'w, SectorIdMap>,
     pub ships: Res<'w, ShipIdMap>,
     pub stations: Res<'w, StationIdMap>,
+}
+
+impl<'w> AllEntityIdMaps<'w> {
+    /// # Panics
+    /// Panics if no id is found for the given entity
+    pub fn get_typed_id_unchecked(&self, typed_entity: &TypedEntity) -> PersistentEntityId {
+        match typed_entity {
+            TypedEntity::Asteroid(asteroid) => self.asteroids.entity_to_id[asteroid].into(),
+            TypedEntity::Gate(gate) => self.gates.entity_to_id[gate].into(),
+            TypedEntity::Sector(sector) => self.sectors.entity_to_id[sector].into(),
+            TypedEntity::Ship(ship) => self.ships.entity_to_id[ship].into(),
+            TypedEntity::Station(station) => self.stations.entity_to_id[station].into(),
+            TypedEntity::AnyWithInventory(entity_with_inventory) => {
+                if let Some(id) = self.ships.get_id(&entity_with_inventory.into()) {
+                    return id.into();
+                }
+                if let Some(id) = self.stations.get_id(&entity_with_inventory.into()) {
+                    return id.into();
+                }
+
+                panic!()
+            }
+        }
+    }
 }
 
 pub type AsteroidIdMap = EntityIdMap<PersistentAsteroidId, AsteroidEntity>;

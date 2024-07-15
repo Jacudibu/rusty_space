@@ -1,4 +1,4 @@
-use crate::components::{Sector, Station};
+use crate::components::{Inventory, Sector};
 use crate::game_data::ItemId;
 use crate::persistence::persistent_entity_id::{
     PersistentAsteroidId, PersistentEntityId, PersistentGateId,
@@ -8,9 +8,11 @@ use crate::physics::ShipVelocity;
 use crate::ship_ai::{TaskInsideQueue, TaskQueue};
 use crate::utils::{AsteroidEntityWithTimestamp, ExchangeWareData};
 use bevy::math::{EulerRot, Vec2};
-use bevy::prelude::{Query, Transform};
+use bevy::prelude::{Name, Query, Transform};
 use hexx::Hex;
+use serde::{Deserialize, Serialize};
 
+#[derive(Serialize, Deserialize)]
 pub enum ExchangeWareSaveData {
     Buy(ItemId, u32),
     Sell(ItemId, u32),
@@ -25,6 +27,7 @@ impl From<&ExchangeWareData> for ExchangeWareSaveData {
     }
 }
 
+#[derive(Serialize, Deserialize)]
 pub enum TaskSaveData {
     ExchangeWares {
         target: PersistentEntityId,
@@ -48,14 +51,14 @@ impl TaskSaveData {
     pub fn from(task: &TaskInsideQueue, all_entity_id_maps: &AllEntityIdMaps) -> Self {
         match task {
             TaskInsideQueue::ExchangeWares { target, data } => Self::ExchangeWares {
-                target: todo!(),
+                target: all_entity_id_maps.get_typed_id_unchecked(target),
                 data: data.into(),
             },
             TaskInsideQueue::MoveToEntity {
                 target,
                 stop_at_target,
             } => Self::MoveToEntity {
-                target: todo!(),
+                target: all_entity_id_maps.get_typed_id_unchecked(target),
                 stop_at_target: *stop_at_target,
             },
             TaskInsideQueue::UseGate {
@@ -73,20 +76,47 @@ impl TaskSaveData {
     }
 }
 
+#[derive(Serialize, Deserialize)]
+pub struct InventorySaveData {
+    items: Vec<(ItemId, u32)>,
+}
+
+impl From<&Inventory> for InventorySaveData {
+    fn from(value: &Inventory) -> Self {
+        Self {
+            items: value
+                .inventory()
+                .iter()
+                .map(|(id, element)| (*id, element.currently_available))
+                .collect(),
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize)]
 pub struct ShipSaveData {
+    name: String,
     position: Vec2,
     forward_velocity: f32,
     rotation: f32,
     angular_velocity: f32,
     task_queue: Vec<TaskSaveData>,
+    inventory: InventorySaveData,
 }
 
 impl ShipSaveData {
     pub fn from(
-        (transform, task_queue, velocity): (&Transform, &TaskQueue, &ShipVelocity),
+        (name, transform, task_queue, velocity, inventory): (
+            &Name,
+            &Transform,
+            &TaskQueue,
+            &ShipVelocity,
+            &Inventory,
+        ),
         all_entity_id_maps: &AllEntityIdMaps,
     ) -> Self {
         Self {
+            name: name.to_string(),
             position: transform.translation.truncate(),
             forward_velocity: velocity.forward,
             rotation: transform.rotation.to_euler(EulerRot::XYZ).2,
@@ -96,11 +126,13 @@ impl ShipSaveData {
                 .iter()
                 .map(|x| TaskSaveData::from(x, all_entity_id_maps))
                 .collect(),
+            inventory: InventorySaveData::from(inventory),
         }
     }
 }
 
 pub struct StationSaveData {
+    name: String,
     position: Vec2,
 }
 
@@ -142,26 +174,22 @@ pub struct GateSaveData {
     to_position: Vec2,
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct UniverseSaveData {
     //sectors: Vec<SectorSaveData>,
     ships: Vec<ShipSaveData>,
 }
 
 pub fn save(
-    sectors: Query<&Sector>,
-    ships: Query<(&Transform, &TaskQueue, &ShipVelocity)>,
+    ships: Query<(&Name, &Transform, &TaskQueue, &ShipVelocity, &Inventory)>,
     all_entity_id_maps: AllEntityIdMaps,
 ) {
-    // let sector_save_data = sectors
-    //     .iter()
-    //     .map(|query_content| SectorSaveData::from(query_content, &all_entity_id_maps);
-
     let ship_save_data = ships
         .iter()
         .map(|query_content| ShipSaveData::from(query_content, &all_entity_id_maps))
         .collect();
 
-    let result = UniverseSaveData {
+    let save_data = UniverseSaveData {
         ships: ship_save_data,
     };
 }
