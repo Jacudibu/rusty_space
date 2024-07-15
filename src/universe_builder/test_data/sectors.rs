@@ -5,7 +5,7 @@ use bevy::math::Vec2;
 
 pub fn create_test_data() -> SectorSpawnData {
     let asteroids = SectorAsteroidData {
-        forward_velocity: Vec2::splat(2.0),
+        average_velocity: Vec2::splat(2.0),
     };
 
     let mut sectors = SectorSpawnData::default();

@@ -4,7 +4,7 @@ use bevy::prelude::{Component, FloatExt, Transform, Vec3};
 
 #[derive(Component)]
 pub struct Asteroid {
-    ore_max: u32,
+    pub ore_max: u32,
     pub ore: u32,
     pub remaining_after_reservations: u32,
     pub state: AsteroidState,

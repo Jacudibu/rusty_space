@@ -25,7 +25,7 @@ pub struct Sector {
 #[derive(Copy, Clone)]
 pub struct SectorAsteroidData {
     // All asteroids within a Sector behave the same, or maybe later on a range.
-    pub forward_velocity: Vec2,
+    pub average_velocity: Vec2,
 }
 
 #[derive(Eq, PartialEq, Hash, Copy, Clone)]
