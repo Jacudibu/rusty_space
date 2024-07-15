@@ -22,7 +22,7 @@ pub struct AllEntityIdMaps<'w> {
 
 impl<'w> AllEntityIdMaps<'w> {
     /// # Panics
-    /// Panics if no id is found for the given entity
+    /// If no id is found for the given entity
     pub fn get_typed_id_unchecked(&self, typed_entity: &TypedEntity) -> PersistentEntityId {
         match typed_entity {
             TypedEntity::Asteroid(asteroid) => self.asteroids.entity_to_id[asteroid].into(),

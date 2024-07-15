@@ -1,4 +1,6 @@
-#[derive(Copy, Clone)]
+use serde::{Deserialize, Serialize};
+
+#[derive(Copy, Clone, Serialize, Deserialize)]
 pub struct PriceRange {
     pub min: u32,
     pub max: u32,
