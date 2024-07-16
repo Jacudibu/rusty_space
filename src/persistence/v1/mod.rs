@@ -29,7 +29,7 @@ pub struct UniverseSaveData {
 
 /// For as long as there is no "public test build", save data is not guaranteed to be compatible with older/newer versions of the game.
 #[allow(clippy::type_complexity)] // Haha, like, uh, yeah. No.
-pub fn save(
+pub fn parse_session_data_into_universe_save_data(
     asteroids: Query<(&Asteroid, &Transform, &ConstantVelocity)>,
     gates: Query<(&Gate, &InSector, &Transform)>,
     sectors: Query<&Sector>,
@@ -53,7 +53,7 @@ pub fn save(
         Option<&SellOrders>,
     )>,
     all_entity_id_maps: AllEntityIdMaps,
-) {
+) -> UniverseSaveData {
     let gate_pairs =
         GatePairSaveData::extract_from_sector_query(&sectors, &gates, &all_entity_id_maps);
 
@@ -72,10 +72,38 @@ pub fn save(
         .map(|query_content| StationSaveData::from(query_content, &all_entity_id_maps))
         .collect();
 
-    let save_data = UniverseSaveData {
+    UniverseSaveData {
         gate_pairs,
         sectors,
         ships,
         stations,
-    };
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::universe_builder::{LocalHexPosition, UniverseBuilder};
+    use bevy::ecs::system::RunSystemOnce;
+    use bevy::prelude::Vec2;
+    use hexx::Hex;
+
+    const CENTER: Hex = Hex::new(0, 0);
+    const RIGHT: Hex = Hex::new(1, 0);
+
+    #[test]
+    fn test_serializing() {
+        let mut universe_builder = UniverseBuilder::default();
+        universe_builder.sectors.add(CENTER);
+        universe_builder.sectors.add(RIGHT);
+        universe_builder.gates.add(
+            LocalHexPosition::new(CENTER, Vec2::ZERO),
+            LocalHexPosition::new(RIGHT, Vec2::ZERO),
+        );
+
+        let mut app = universe_builder.build_test_app();
+        let world = app.world_mut();
+
+        world.run_system_once(parse_session_data_into_universe_save_data);
+    }
 }

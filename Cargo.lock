@@ -948,6 +948,7 @@ dependencies = [
  "iyes_perf_ui",
  "rand",
  "serde",
+ "serde_json",
 ]
 
 [[package]]

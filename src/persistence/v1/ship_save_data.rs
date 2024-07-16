@@ -16,6 +16,7 @@ pub struct ShipSaveData {
     pub forward_velocity: f32,
     pub rotation: f32,
     pub angular_velocity: f32,
+    // TODO: behavior
     pub task_queue: Vec<TaskSaveData>,
     pub inventory: InventorySaveData,
 }

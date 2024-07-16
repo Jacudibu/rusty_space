@@ -33,7 +33,7 @@ impl GatePairSaveData {
                     return None;
                 }
 
-                // That should just never happen...
+                // And that should just never happen...
                 debug_assert!(from_sector.sector != to_sector.sector);
 
                 let from_hex = all_entity_id_maps.sectors.entity_to_id()[&from_sector.sector];

@@ -10,6 +10,7 @@ hexx = { version = "0.17.0", features = ["serde"] }
 iyes_perf_ui = "0.3.0"
 rand = "0.8.5"
 serde = { version = "1.0.204", features = ["derive"] }
+serde_json = "1.0.120"
 
 [patch.crates-io]
 hexx = { git = "https://github.com/ManevilleF/hexx.git", branch = "feat/bevy_0.14" }

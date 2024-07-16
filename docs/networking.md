@@ -1,7 +1,7 @@
 Multiplayer will be a big headache to get working.
 
 ### Non-Functional stuff.
-**Co-Op should be the main priority.** Thus, it's perfectly fine if combat feels a bit wonky for clients. Similarly, I'm not too worried about cheating or hiding data from specific clients. Players should be able to share the same faction, or to play as separate factions.
+If networking ends up getting implemented, **Co-Op should be the main priority.** Thus, it's perfectly fine if combat feels a bit wonky for clients. Similarly, I'm not too worried about cheating or hiding data from specific clients. Players should be able to share the same faction, or to play as separate factions. 
 
 ### Roadmap to Multiplayer
 First, we got to define a way on how to initially sync the game
