@@ -1,31 +1,7 @@
-use crate::game_data::ItemId;
-use crate::persistence::{
-    AllEntityIdMaps, PersistentAsteroidId, PersistentEntityId, PersistentGateId,
-};
+use crate::persistence::data::v1::*;
+use crate::persistence::AllEntityIdMaps;
 use crate::ship_ai::TaskInsideQueue;
 use crate::utils::ExchangeWareData;
-use hexx::Hex;
-use serde::{Deserialize, Serialize};
-
-#[derive(Serialize, Deserialize)]
-pub enum TaskSaveData {
-    ExchangeWares {
-        target: PersistentEntityId,
-        data: ExchangeWareSaveData,
-    },
-    MoveToEntity {
-        target: PersistentEntityId,
-        stop_at_target: bool,
-    },
-    UseGate {
-        enter_gate: PersistentGateId,
-        exit_sector: Hex,
-    },
-    MineAsteroid {
-        target: PersistentAsteroidId,
-        reserved: u32,
-    },
-}
 
 impl TaskSaveData {
     pub fn from(task: &TaskInsideQueue, all_entity_id_maps: &AllEntityIdMaps) -> Self {
@@ -54,12 +30,6 @@ impl TaskSaveData {
             },
         }
     }
-}
-
-#[derive(Serialize, Deserialize)]
-pub enum ExchangeWareSaveData {
-    Buy(ItemId, u32),
-    Sell(ItemId, u32),
 }
 
 impl From<&ExchangeWareData> for ExchangeWareSaveData {

@@ -1,11 +1,5 @@
 use crate::components::Inventory;
-use crate::game_data::ItemId;
-use serde::{Deserialize, Serialize};
-
-#[derive(Serialize, Deserialize)]
-pub struct InventorySaveData {
-    pub items: Vec<(ItemId, u32)>,
-}
+use crate::persistence::data::v1::*;
 
 impl From<&Inventory> for InventorySaveData {
     fn from(value: &Inventory) -> Self {

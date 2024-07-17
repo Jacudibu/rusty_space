@@ -1,23 +1,9 @@
 use crate::components::{Asteroid, Sector, SectorAsteroidData};
-use crate::persistence::{ComponentWithPersistentId, PersistentAsteroidId};
+use crate::persistence::data::v1::*;
+use crate::persistence::ComponentWithPersistentId;
 use crate::physics::ConstantVelocity;
-use crate::utils::SimulationTimestamp;
-use bevy::math::{EulerRot, Vec2};
+use bevy::math::EulerRot;
 use bevy::prelude::{Query, Transform};
-use hexx::Hex;
-use serde::{Deserialize, Serialize};
-
-#[derive(Serialize, Deserialize)]
-pub struct AsteroidSaveData {
-    pub id: PersistentAsteroidId,
-    pub ore_current: u32,
-    pub ore_max: u32,
-    pub position: Vec2,
-    pub rotation: f32,
-    pub velocity: Vec2,
-    pub angular_velocity: f32,
-    pub lifetime: SimulationTimestamp,
-}
 
 impl AsteroidSaveData {
     pub fn from(
@@ -36,25 +22,12 @@ impl AsteroidSaveData {
     }
 }
 
-#[derive(Serialize, Deserialize)]
-pub struct SectorAsteroidSaveData {
-    pub average_velocity: Vec2,
-}
-
 impl SectorAsteroidSaveData {
     pub fn from(data: SectorAsteroidData) -> Self {
         Self {
             average_velocity: data.average_velocity,
         }
     }
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct SectorSaveData {
-    pub coordinate: Hex,
-    pub asteroid_data: Option<SectorAsteroidSaveData>,
-    pub live_asteroids: Vec<AsteroidSaveData>,
-    pub respawning_asteroids: Vec<AsteroidSaveData>,
 }
 
 impl SectorSaveData {

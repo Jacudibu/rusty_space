@@ -1,25 +1,15 @@
 use crate::components::{
     BuyOrderData, BuyOrders, InSector, Inventory, SellOrderData, SellOrders, Station, TradeOrder,
 };
-use crate::game_data::{ItemId, ProductionModuleId, RecipeId, ShipyardModuleId};
-use crate::persistence::v1::inventory_save_data::InventorySaveData;
-use crate::persistence::{AllEntityIdMaps, ComponentWithPersistentId, PersistentStationId};
+use crate::game_data::{ItemId, ProductionModuleId, ShipyardModuleId};
+use crate::persistence::data::v1::*;
+use crate::persistence::{AllEntityIdMaps, ComponentWithPersistentId};
 use crate::production::{
     OngoingShipConstructionOrder, ProductionComponent, ProductionModule, ShipyardComponent,
     ShipyardModule,
 };
-use crate::session_data::ShipConfigId;
-use crate::utils::{PriceSetting, SimulationTimestamp};
 use bevy::core::Name;
-use bevy::math::Vec2;
 use bevy::prelude::Transform;
-use hexx::Hex;
-use serde::{Deserialize, Serialize};
-
-#[derive(Serialize, Deserialize)]
-pub struct ProductionSaveData {
-    pub modules: Vec<ProductionModuleSaveData>,
-}
 
 impl ProductionSaveData {
     pub fn from(production: &ProductionComponent) -> Self {
@@ -33,14 +23,6 @@ impl ProductionSaveData {
     }
 }
 
-#[derive(Serialize, Deserialize)]
-pub struct ProductionModuleSaveData {
-    pub module_id: ProductionModuleId,
-    pub amount: u32,
-    pub recipe: RecipeId,
-    pub finished_at: Option<SimulationTimestamp>,
-}
-
 impl ProductionModuleSaveData {
     pub fn from((id, module): (&ProductionModuleId, &ProductionModule)) -> Self {
         Self {
@@ -50,18 +32,6 @@ impl ProductionModuleSaveData {
             finished_at: module.current_run_finished_at,
         }
     }
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct ShipyardModuleSaveData {
-    pub module_id: ShipyardModuleId,
-    pub active: Vec<ActiveShipyardOrderSaveData>,
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct ActiveShipyardOrderSaveData {
-    pub finished_at: SimulationTimestamp,
-    pub ship_config: ShipConfigId,
 }
 
 impl ActiveShipyardOrderSaveData {
@@ -86,12 +56,6 @@ impl ShipyardModuleSaveData {
     }
 }
 
-#[derive(Serialize, Deserialize)]
-pub struct ShipyardSaveData {
-    queue: Vec<ShipConfigId>,
-    modules: Vec<ShipyardModuleSaveData>,
-}
-
 impl ShipyardSaveData {
     pub fn from(shipyard: &ShipyardComponent) -> Self {
         Self {
@@ -103,24 +67,6 @@ impl ShipyardSaveData {
                 .collect(),
         }
     }
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct StationSaveData {
-    pub id: PersistentStationId,
-    pub name: String,
-    pub sector: Hex,
-    pub position: Vec2,
-    pub inventory: InventorySaveData,
-    pub production_modules: Option<ProductionSaveData>,
-    pub shipyard_modules: Option<ShipyardSaveData>,
-    pub buy_orders: Option<SerializedBuyOrder>,
-    pub sell_orders: Option<SerializedSellOrder>,
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct SerializedBuyOrder {
-    pub orders: Vec<SerializedBuyOrderData>,
 }
 
 impl SerializedBuyOrder {
@@ -135,11 +81,6 @@ impl SerializedBuyOrder {
     }
 }
 
-#[derive(Serialize, Deserialize)]
-pub struct SerializedSellOrder {
-    pub orders: Vec<SerializedSellOrderData>,
-}
-
 impl SerializedSellOrder {
     pub fn from(orders: &SellOrders) -> Self {
         Self {
@@ -152,16 +93,6 @@ impl SerializedSellOrder {
     }
 }
 
-#[derive(Serialize, Deserialize)]
-pub struct SerializedBuyOrderData {
-    pub item_id: ItemId,
-    pub amount: u32,
-    pub price: u32,
-
-    pub buy_up_to: u32,
-    pub price_setting: PriceSetting,
-}
-
 impl SerializedBuyOrderData {
     pub fn from((id, data): (&ItemId, &BuyOrderData)) -> Self {
         Self {
@@ -172,16 +103,6 @@ impl SerializedBuyOrderData {
             buy_up_to: data.buy_up_to,
         }
     }
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct SerializedSellOrderData {
-    pub item_id: ItemId,
-    pub amount: u32,
-    pub price: u32,
-
-    pub keep_at_least: u32,
-    pub price_setting: PriceSetting,
 }
 
 impl SerializedSellOrderData {
