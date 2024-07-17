@@ -14,8 +14,13 @@ pub use {
 
 #[derive(Serialize, Deserialize)]
 pub struct UniverseSaveData {
-    pub gate_pairs: Vec<GatePairSaveData>,
-    pub sectors: Vec<SectorSaveData>,
-    pub ships: Vec<ShipSaveData>,
-    pub stations: Vec<StationSaveData>,
+    pub gate_pairs: SaveDataCollection<GatePairSaveData>,
+    pub sectors: SaveDataCollection<SectorSaveData>,
+    pub ships: SaveDataCollection<ShipSaveData>,
+    pub stations: SaveDataCollection<StationSaveData>,
+}
+
+#[derive(Default, Serialize, Deserialize)]
+pub struct SaveDataCollection<T> {
+    pub data: Vec<T>,
 }

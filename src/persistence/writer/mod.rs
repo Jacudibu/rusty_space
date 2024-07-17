@@ -2,6 +2,7 @@
 
 mod gates;
 mod inventory;
+mod save_data_collection;
 mod sectors;
 mod ships;
 mod stations;

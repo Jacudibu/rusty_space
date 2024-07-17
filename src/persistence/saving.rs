@@ -39,26 +39,21 @@ pub fn parse_session_data_into_universe_save_data(
     let gate_pairs =
         GatePairSaveData::extract_from_sector_query(&sectors, &gates, &all_entity_id_maps);
 
-    let sectors = sectors
-        .iter()
-        .map(|x| SectorSaveData::from(x, &asteroids))
-        .collect();
+    let sectors = sectors.iter().map(|x| SectorSaveData::from(x, &asteroids));
 
     let ships = ships
         .iter()
-        .map(|query_content| ShipSaveData::from(query_content, &all_entity_id_maps))
-        .collect();
+        .map(|query_content| ShipSaveData::from(query_content, &all_entity_id_maps));
 
     let stations = stations
         .iter()
-        .map(|query_content| StationSaveData::from(query_content, &all_entity_id_maps))
-        .collect();
+        .map(|query_content| StationSaveData::from(query_content, &all_entity_id_maps));
 
     UniverseSaveData {
-        gate_pairs,
-        sectors,
-        ships,
-        stations,
+        gate_pairs: gate_pairs.into(),
+        sectors: sectors.into(),
+        ships: ships.into(),
+        stations: stations.into(),
     }
 }
 
