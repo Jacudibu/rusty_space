@@ -16,7 +16,7 @@ pub struct AsteroidSaveData {
     pub lifetime: SimulationTimestamp,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Copy, Clone)]
 pub struct SectorAsteroidSaveData {
     pub average_velocity: Vec2,
 }

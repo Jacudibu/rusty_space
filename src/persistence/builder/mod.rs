@@ -2,3 +2,4 @@
 //! Can be used for hard-coded maps during debugging and tutorials or tests.
 
 mod gate;
+mod sector;

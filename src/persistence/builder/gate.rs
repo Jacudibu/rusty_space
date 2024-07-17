@@ -7,13 +7,14 @@ use crate::SpriteHandles;
 use bevy::prelude::{Commands, Query, Res};
 
 impl SaveDataCollection<GatePairSaveData> {
-    pub fn add(&mut self, from: LocalHexPosition, to: LocalHexPosition) {
+    pub fn add(&mut self, from: LocalHexPosition, to: LocalHexPosition) -> &mut GatePairSaveData {
         self.data.push(GatePairSaveData {
             from_id: PersistentGateId::next(),
             from_position: from,
             to_id: PersistentGateId::next(),
             to_position: to,
-        })
+        });
+        self.data.last_mut().unwrap()
     }
 
     pub fn spawn_all(
