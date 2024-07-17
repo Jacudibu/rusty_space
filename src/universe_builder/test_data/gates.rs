@@ -1,5 +1,5 @@
+use crate::persistence::local_hex_position::LocalHexPosition;
 use crate::universe_builder::gate_builder::GateSpawnData;
-use crate::universe_builder::local_hex_position::LocalHexPosition;
 use crate::universe_builder::test_data::coordinates::{BOTTOM_LEFT, CENTER, RIGHT, TOP_RIGHT};
 use bevy::prelude::Vec2;
 

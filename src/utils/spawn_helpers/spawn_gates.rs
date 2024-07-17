@@ -3,7 +3,9 @@ use bevy::prelude::{
     Commands, CubicBezier, CubicCurve, CubicGenerator, Query, SpriteBundle, Transform, Vec2, Vec3,
 };
 
-use crate::components::{Gate, GateConnectionComponent, Sector, SelectableEntity};
+use crate::components::{
+    Gate, GateConnectionComponent, GatePairInSector, Sector, SelectableEntity,
+};
 use crate::constants::{GATE_CONNECTION_LAYER, SHIP_LAYER};
 use crate::persistence::{GateIdMap, PersistentGateId};
 use crate::utils::GateEntity;
@@ -16,6 +18,31 @@ pub fn spawn_gate_pair(
     sector_query: &mut Query<&mut Sector>,
     sprites: &SpriteHandles,
     from_pos: SectorPosition,
+    to_pos: SectorPosition,
+) {
+    let from_id = PersistentGateId::next();
+    let to_id = PersistentGateId::next();
+
+    spawn_gate_pair_with_ids(
+        commands,
+        gate_id_map,
+        sector_query,
+        sprites,
+        from_id,
+        from_pos,
+        to_id,
+        to_pos,
+    )
+}
+
+pub fn spawn_gate_pair_with_ids(
+    commands: &mut Commands,
+    gate_id_map: &mut GateIdMap,
+    sector_query: &mut Query<&mut Sector>,
+    sprites: &SpriteHandles,
+    from_id: PersistentGateId,
+    from_pos: SectorPosition,
+    to_id: PersistentGateId,
     to_pos: SectorPosition,
 ) {
     let [mut from_sector, mut to_sector] = sector_query
@@ -32,6 +59,7 @@ pub fn spawn_gate_pair(
 
     let from_gate = spawn_gate(
         commands,
+        from_id,
         gate_id_map,
         sprites,
         &from_pos,
@@ -41,6 +69,7 @@ pub fn spawn_gate_pair(
     );
     let to_gate = spawn_gate(
         commands,
+        to_id,
         gate_id_map,
         sprites,
         &to_pos,
@@ -93,6 +122,7 @@ fn create_curve(a: Vec2, a_curve: Vec2, b_curve: Vec2, b: Vec2) -> CubicCurve<Ve
 
 fn spawn_gate(
     commands: &mut Commands,
+    id: PersistentGateId,
     gate_id_map: &mut GateIdMap,
     sprites: &SpriteHandles,
     pos: &SectorPosition,
@@ -101,7 +131,6 @@ fn spawn_gate(
     ship_curve: CubicCurve<Vec3>,
 ) -> GateEntity {
     let position = from.world_pos + pos.local_position;
-    let id = PersistentGateId::next();
     let entity = commands
         .spawn((
             Name::new(format!(

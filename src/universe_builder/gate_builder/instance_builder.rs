@@ -1,6 +1,6 @@
 use crate::components::Sector;
+use crate::persistence::local_hex_position::LocalHexPosition;
 use crate::persistence::{GateIdMap, SectorIdMap};
-use crate::universe_builder::local_hex_position::LocalHexPosition;
 use crate::utils::spawn_helpers::spawn_gate_pair;
 use crate::SpriteHandles;
 use bevy::prelude::{Commands, Query};

@@ -3,7 +3,7 @@ use crate::game_data::{
     PRODUCTION_MODULE_B_ID, PRODUCTION_MODULE_C_ID, RECIPE_A_ID, RECIPE_B_ID, RECIPE_C_ID,
     SHIPYARD_MODULE_ID,
 };
-use crate::universe_builder::local_hex_position::LocalHexPosition;
+use crate::persistence::local_hex_position::LocalHexPosition;
 use crate::universe_builder::station_builder::StationSpawnData;
 use crate::universe_builder::test_data::coordinates::{BOTTOM_LEFT, CENTER};
 use bevy::prelude::Vec2;

@@ -1,5 +1,5 @@
+use crate::persistence::local_hex_position::LocalHexPosition;
 use crate::ship_ai::BehaviorBuilder;
-use crate::universe_builder::local_hex_position::LocalHexPosition;
 use crate::universe_builder::ship_builder::instance_builder::ShipSpawnDataInstanceBuilder;
 use bevy::prelude::Resource;
 

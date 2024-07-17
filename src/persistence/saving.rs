@@ -36,8 +36,7 @@ pub fn parse_session_data_into_universe_save_data(
     )>,
     all_entity_id_maps: AllEntityIdMaps,
 ) -> UniverseSaveData {
-    let gate_pairs =
-        GatePairSaveData::extract_from_sector_query(&sectors, &gates, &all_entity_id_maps);
+    let gate_pairs = GatePairSaveData::extract_from_sector_query(&sectors, &gates);
 
     let sectors = sectors.iter().map(|x| SectorSaveData::from(x, &asteroids));
 

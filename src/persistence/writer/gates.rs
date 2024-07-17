@@ -2,13 +2,13 @@ use bevy::prelude::{Query, Transform};
 
 use crate::components::{Gate, InSector, Sector};
 use crate::persistence::data::v1::*;
-use crate::persistence::{AllEntityIdMaps, ComponentWithPersistentId};
+use crate::persistence::ComponentWithPersistentId;
+use crate::universe_builder::LocalHexPosition;
 
 impl GatePairSaveData {
     pub fn extract_from_sector_query(
         sectors: &Query<&Sector>,
         gates: &Query<(&Gate, &InSector, &Transform)>,
-        all_entity_id_maps: &AllEntityIdMaps,
     ) -> Vec<GatePairSaveData> {
         sectors
             .iter()
@@ -27,16 +27,15 @@ impl GatePairSaveData {
                 // And that should just never happen...
                 debug_assert!(from_sector.sector != to_sector.sector);
 
-                let from_hex = all_entity_id_maps.sectors.entity_to_id()[&from_sector.sector];
-                let to_hex = all_entity_id_maps.sectors.entity_to_id()[&to_sector.sector];
+                let [from_sector, to_sector] = sectors
+                    .get_many([from_sector.sector.into(), to_sector.sector.into()])
+                    .unwrap();
 
                 Some(GatePairSaveData {
                     from_id: from_gate.id(),
-                    from_sector: from_hex,
-                    from_position: from_transform.translation.truncate(),
+                    from_position: LocalHexPosition::from(from_sector, from_transform),
                     to_id: to_gate.id(),
-                    to_sector: to_hex,
-                    to_position: to_transform.translation.truncate(),
+                    to_position: LocalHexPosition::from(to_sector, to_transform),
                 })
             })
             .collect()

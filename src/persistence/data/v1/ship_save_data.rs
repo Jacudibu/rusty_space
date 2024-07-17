@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 pub struct ShipSaveData {
     pub id: PersistentShipId,
     pub name: String,
-    pub position: Vec2,
+    pub position: Vec2, // TODO: use LocalHexPosition
     pub forward_velocity: f32,
     pub rotation: f32,
     pub angular_velocity: f32,

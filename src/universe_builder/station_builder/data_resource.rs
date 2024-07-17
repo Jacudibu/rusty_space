@@ -1,4 +1,4 @@
-use crate::universe_builder::local_hex_position::LocalHexPosition;
+use crate::persistence::local_hex_position::LocalHexPosition;
 use crate::universe_builder::station_builder::instance_builder::StationSpawnDataInstanceBuilder;
 use bevy::prelude::Resource;
 

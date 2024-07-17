@@ -1,4 +1,4 @@
-//! This module allows writing data from the ECS to the latest UniverseData version.
+//! This module allows writing data from the ECS to the latest persistent data version.
 
 mod gates;
 mod inventory;

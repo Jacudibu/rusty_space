@@ -1,5 +1,5 @@
+use crate::persistence::local_hex_position::LocalHexPosition;
 use crate::universe_builder::gate_builder::instance_builder::GateSpawnDataInstanceBuilder;
-use crate::universe_builder::local_hex_position::LocalHexPosition;
 use bevy::prelude::Resource;
 
 #[derive(Resource, Default)]

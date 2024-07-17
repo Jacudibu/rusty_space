@@ -1,7 +1,7 @@
 use crate::components::Sector;
+use crate::persistence::local_hex_position::LocalHexPosition;
 use crate::persistence::{SectorIdMap, ShipIdMap};
 use crate::ship_ai::BehaviorBuilder;
-use crate::universe_builder::local_hex_position::LocalHexPosition;
 use crate::utils::spawn_helpers::spawn_ship;
 use crate::SpriteHandles;
 use bevy::prelude::{Commands, Query};
