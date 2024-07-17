@@ -1,6 +1,6 @@
 use crate::asteroids::SectorWasSpawnedEvent;
 use crate::map_layout::MapLayout;
-use crate::persistence::SectorIdMap;
+use crate::persistence::{AsteroidIdMap, SectorIdMap};
 use crate::universe_builder::sector_builder::data_resource::SectorSpawnData;
 use bevy::prelude::{Commands, EventWriter, Res};
 
@@ -11,6 +11,7 @@ pub fn spawn_all_sectors(
     mut sector_spawn_event: EventWriter<SectorWasSpawnedEvent>,
 ) {
     let mut entity_map = SectorIdMap::new();
+    let asteroid_map = AsteroidIdMap::new();
     for builder in &spawn_data.sectors {
         let entity = builder.build(
             &mut commands,
@@ -22,4 +23,5 @@ pub fn spawn_all_sectors(
 
     commands.remove_resource::<SectorSpawnData>();
     commands.insert_resource(entity_map);
+    commands.insert_resource(asteroid_map);
 }

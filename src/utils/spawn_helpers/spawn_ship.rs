@@ -1,5 +1,5 @@
 use crate::components::{Engine, Inventory, Sector, SelectableEntity, Ship};
-use crate::persistence::PersistentShipId;
+use crate::persistence::{PersistentShipId, ShipIdMap};
 use crate::physics::ShipVelocity;
 use crate::ship_ai::{BehaviorBuilder, TaskQueue};
 use crate::utils::{SectorEntity, ShipEntity};
@@ -17,6 +17,7 @@ pub fn spawn_ship(
     position: Vec2,
     rotation: f32,
     behavior: &BehaviorBuilder,
+    ship_id_map: &mut ShipIdMap,
 ) {
     let mut sector_data = sector_query.get_mut(sector.into()).unwrap();
 
@@ -41,6 +42,8 @@ pub fn spawn_ship(
             },
         ))
         .id();
+
+    ship_id_map.insert(ship_id, ShipEntity::from(entity));
 
     // TODO: There must be *some* way to build that component earlier and insert it at spawn time...?
     behavior.build_and_add_default_component(commands.entity(entity));

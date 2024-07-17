@@ -1,10 +1,11 @@
 use crate::asteroids::{helpers, SectorWasSpawnedEvent};
 use crate::components::Sector;
 use crate::map_layout::MapLayout;
+use crate::persistence::AsteroidIdMap;
 use crate::utils::{spawn_helpers, SimulationTime};
 use crate::{constants, SpriteHandles};
 use bevy::math::{ShapeSample, Vec2};
-use bevy::prelude::{Circle, Commands, EventReader, Query, Res};
+use bevy::prelude::{Circle, Commands, EventReader, Query, Res, ResMut};
 use rand::distributions::Distribution;
 use rand::prelude::StdRng;
 use rand::{Rng, SeedableRng};
@@ -15,6 +16,7 @@ const ROTATION_RANDOM_RANGE: Range<f32> = -0.001..0.001;
 
 pub fn spawn_asteroids_for_new_sector(
     mut commands: Commands,
+    mut asteroid_id_map: ResMut<AsteroidIdMap>,
     simulation_time: Res<SimulationTime>,
     sprites: Res<SpriteHandles>,
     mut sector_spawns: EventReader<SectorWasSpawnedEvent>,
@@ -55,6 +57,7 @@ pub fn spawn_asteroids_for_new_sector(
 
             spawn_helpers::spawn_asteroid(
                 &mut commands,
+                &mut asteroid_id_map,
                 &sprites,
                 "Asteroid".to_string(),
                 &mut sector,

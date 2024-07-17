@@ -3,6 +3,7 @@ use bevy::prelude::{Commands, EventWriter, Or, Query, Res, ResMut, Transform, Wi
 
 use crate::components::{BuyOrders, InSector, Inventory, Sector, SellOrders};
 use crate::game_data::GameData;
+use crate::persistence::ShipIdMap;
 use crate::production::production_kind::ProductionKind;
 use crate::production::shipyard_component::ShipyardComponent;
 use crate::production::state::GlobalProductionState;
@@ -17,6 +18,7 @@ pub fn check_if_production_is_finished_and_start_new_one(
     mut commands: Commands,
     sprites: Res<SpriteHandles>,
     mut sector_query: Query<&mut Sector>,
+    mut ship_id_map: ResMut<ShipIdMap>,
     simulation_time: Res<SimulationTime>,
     mut global_production_state: ResMut<GlobalProductionState>,
     game_data: Res<GameData>,
@@ -115,6 +117,7 @@ pub fn check_if_production_is_finished_and_start_new_one(
                     transform.translation.truncate(),
                     0.0,
                     &BehaviorBuilder::AutoTrade,
+                    &mut ship_id_map,
                 );
             }
         }

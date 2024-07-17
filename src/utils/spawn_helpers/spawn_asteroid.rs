@@ -1,5 +1,5 @@
 use crate::components::{Asteroid, AsteroidState, Sector, SelectableEntity};
-use crate::persistence::PersistentAsteroidId;
+use crate::persistence::{AsteroidIdMap, PersistentAsteroidId};
 use crate::physics::ConstantVelocity;
 use crate::ship_ai::AutoTradeBehavior;
 use crate::utils::{
@@ -13,6 +13,7 @@ use bevy::prelude::{default, Commands, SpriteBundle, Transform};
 #[allow(clippy::too_many_arguments)]
 pub fn spawn_asteroid(
     commands: &mut Commands,
+    asteroid_id_map: &mut AsteroidIdMap,
     sprites: &SpriteHandles,
     name: String,
     sector: &mut Sector,
@@ -52,6 +53,7 @@ pub fn spawn_asteroid(
         ))
         .id();
 
+    asteroid_id_map.insert(asteroid_id, AsteroidEntity::from(entity));
     sector.add_asteroid(
         commands,
         sector_entity,

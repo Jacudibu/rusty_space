@@ -1,8 +1,8 @@
 use crate::components::Sector;
 use crate::gizmos::SetupGateConnectionEvent;
-use crate::persistence::SectorIdMap;
+use crate::persistence::{GateIdMap, SectorIdMap};
 use crate::universe_builder::local_hex_position::LocalHexPosition;
-use crate::utils::spawn_helpers::spawn_gates;
+use crate::utils::spawn_helpers::spawn_gate_pair;
 use crate::SpriteHandles;
 use bevy::prelude::{Commands, EventWriter, Query};
 
@@ -18,13 +18,15 @@ impl GateSpawnDataInstanceBuilder {
         sprites: &SpriteHandles,
         sectors: &mut Query<&mut Sector>,
         sector_id_map_entity_map: &SectorIdMap,
+        gate_id_map: &mut GateIdMap,
         gate_connection_events: &mut EventWriter<SetupGateConnectionEvent>,
     ) {
         // TODO: SectorPosition is exclusively used for gate spawning, might be best to remove it
         // TODO: GateConnections could also be spawned in here, no event needed
 
-        spawn_gates(
+        spawn_gate_pair(
             commands,
+            gate_id_map,
             sectors,
             sprites,
             self.from.to_sector_position(sector_id_map_entity_map),

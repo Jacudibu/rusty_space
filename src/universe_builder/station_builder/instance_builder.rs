@@ -1,6 +1,6 @@
 use crate::components::Sector;
 use crate::game_data::{GameData, ItemId, ProductionModuleId, RecipeId, ShipyardModuleId};
-use crate::persistence::SectorIdMap;
+use crate::persistence::{SectorIdMap, StationIdMap};
 use crate::session_data::ShipConfigId;
 use crate::universe_builder::local_hex_position::LocalHexPosition;
 use crate::utils::spawn_helpers::{
@@ -70,6 +70,7 @@ impl StationSpawnDataInstanceBuilder {
         &self,
         commands: &mut Commands,
         sectors: &mut Query<&mut Sector>,
+        station_id_map: &mut StationIdMap,
         sprites: &SpriteHandles,
         sector_id_map: &SectorIdMap,
         game_data: &GameData,
@@ -104,6 +105,7 @@ impl StationSpawnDataInstanceBuilder {
         spawn_station(
             commands,
             sectors,
+            station_id_map,
             sprites,
             &self.name,
             self.position.position,

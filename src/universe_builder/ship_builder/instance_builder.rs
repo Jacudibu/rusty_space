@@ -1,5 +1,5 @@
 use crate::components::Sector;
-use crate::persistence::SectorIdMap;
+use crate::persistence::{SectorIdMap, ShipIdMap};
 use crate::ship_ai::BehaviorBuilder;
 use crate::universe_builder::local_hex_position::LocalHexPosition;
 use crate::utils::spawn_helpers::spawn_ship;
@@ -34,6 +34,7 @@ impl ShipSpawnDataInstanceBuilder {
         sectors: &mut Query<&mut Sector>,
         sprites: &SpriteHandles,
         sector_id_map: &SectorIdMap,
+        ship_id_map: &mut ShipIdMap,
     ) {
         let sector_entity = sector_id_map.id_to_entity()[&self.position.sector];
         spawn_ship(
@@ -45,6 +46,7 @@ impl ShipSpawnDataInstanceBuilder {
             self.position.position,
             self.rotation,
             &self.behavior,
+            ship_id_map,
         )
     }
 }

@@ -3,12 +3,14 @@ use bevy::prelude::{Commands, EventWriter, Query, SpriteBundle, Transform};
 
 use crate::components::{Sector, SelectableEntity};
 use crate::gizmos::SetupGateConnectionEvent;
+use crate::persistence::GateIdMap;
 use crate::utils::GateEntity;
 use crate::utils::SectorPosition;
 use crate::{constants, SpriteHandles};
 
-pub fn spawn_gates(
+pub fn spawn_gate_pair(
     commands: &mut Commands,
+    gate_id_map: &mut GateIdMap,
     sector_query: &mut Query<&mut Sector>,
     sprites: &SpriteHandles,
     from_pos: SectorPosition,
@@ -19,8 +21,22 @@ pub fn spawn_gates(
         .get_many_mut([from_pos.sector.into(), to_pos.sector.into()])
         .unwrap();
 
-    let from_gate = spawn_gate(commands, sprites, &from_pos, &mut from_sector, &to_sector);
-    let to_gate = spawn_gate(commands, sprites, &to_pos, &mut to_sector, &from_sector);
+    let from_gate = spawn_gate(
+        commands,
+        gate_id_map,
+        sprites,
+        &from_pos,
+        &mut from_sector,
+        &to_sector,
+    );
+    let to_gate = spawn_gate(
+        commands,
+        gate_id_map,
+        sprites,
+        &to_pos,
+        &mut to_sector,
+        &from_sector,
+    );
 
     from_sector.add_gate(commands, from_pos.sector, from_gate, to_pos.sector, to_gate);
     to_sector.add_gate(commands, to_pos.sector, to_gate, from_pos.sector, from_gate);
@@ -33,6 +49,7 @@ pub fn spawn_gates(
 
 fn spawn_gate(
     commands: &mut Commands,
+    gate_id_map: &mut GateIdMap,
     sprites: &SpriteHandles,
     pos: &SectorPosition,
     from: &mut Sector,

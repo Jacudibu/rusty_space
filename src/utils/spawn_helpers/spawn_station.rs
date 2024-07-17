@@ -1,6 +1,6 @@
 use crate::components::{BuyOrders, Inventory, Sector, SelectableEntity, SellOrders, Station};
 use crate::game_data::{ItemDefinition, ProductionModuleId, RecipeId, SHIPYARD_MODULE_ID};
-use crate::persistence::PersistentStationId;
+use crate::persistence::{PersistentStationId, StationIdMap};
 use crate::production::{ProductionComponent, ProductionModule, ShipyardComponent, ShipyardModule};
 use crate::session_data::DEBUG_SHIP_CONFIG;
 use crate::utils::{SectorEntity, StationEntity};
@@ -8,7 +8,7 @@ use crate::{constants, SpriteHandles};
 use bevy::color::Color;
 use bevy::core::Name;
 use bevy::math::Vec2;
-use bevy::prelude::{default, Commands, Query, Sprite, SpriteBundle, Transform};
+use bevy::prelude::{default, Commands, Entity, Query, Sprite, SpriteBundle, Transform};
 use bevy::utils::HashMap;
 
 pub struct MockStationProductionArgs {
@@ -56,6 +56,7 @@ impl MockStationProductionArgElement {
 pub fn spawn_station(
     commands: &mut Commands,
     sector_query: &mut Query<&mut Sector>,
+    station_id_map: &mut StationIdMap,
     sprites: &SpriteHandles,
     name: &str,
     pos: Vec2,
@@ -146,5 +147,6 @@ pub fn spawn_station(
         });
     }
 
+    station_id_map.insert(station_id, StationEntity::from(entity));
     sector.add_station(commands, sector_entity, StationEntity::from(entity));
 }
