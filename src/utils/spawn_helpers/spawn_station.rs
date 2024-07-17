@@ -1,5 +1,6 @@
 use crate::components::{BuyOrders, Inventory, Sector, SelectableEntity, SellOrders, Station};
 use crate::game_data::{ItemDefinition, ProductionModuleId, RecipeId, SHIPYARD_MODULE_ID};
+use crate::persistence::PersistentStationId;
 use crate::production::{ProductionComponent, ProductionModule, ShipyardComponent, ShipyardModule};
 use crate::session_data::DEBUG_SHIP_CONFIG;
 use crate::utils::{SectorEntity, StationEntity};
@@ -100,11 +101,12 @@ pub fn spawn_station(
         ))
         .id();
 
+    let station_id = PersistentStationId::next();
     let entity = commands
         .spawn((
             Name::new(name.to_string()),
             SelectableEntity::Station,
-            Station,
+            Station::new(station_id),
             SpriteBundle {
                 texture: sprites.station.clone(),
                 transform: Transform::from_xyz(pos.x, pos.y, constants::STATION_LAYER),

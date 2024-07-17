@@ -1,13 +1,21 @@
 use crate::constants;
+use crate::persistence::{ComponentWithPersistentId, PersistentAsteroidId};
 use crate::utils::{Milliseconds, SimulationTimestamp};
 use bevy::prelude::{Component, FloatExt, Transform, Vec3};
 
 #[derive(Component)]
 pub struct Asteroid {
+    id: PersistentAsteroidId,
     pub ore_max: u32,
     pub ore: u32,
     pub remaining_after_reservations: u32,
     pub state: AsteroidState,
+}
+
+impl ComponentWithPersistentId<Asteroid> for Asteroid {
+    fn id(&self) -> PersistentAsteroidId {
+        self.id
+    }
 }
 
 pub enum AsteroidState {
@@ -49,8 +57,9 @@ impl AsteroidState {
 }
 
 impl Asteroid {
-    pub fn new(ore: u32, state: AsteroidState) -> Self {
+    pub fn new(id: PersistentAsteroidId, ore: u32, state: AsteroidState) -> Self {
         Self {
+            id,
             ore,
             ore_max: ore,
             remaining_after_reservations: ore,

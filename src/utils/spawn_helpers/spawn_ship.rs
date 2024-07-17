@@ -1,4 +1,5 @@
 use crate::components::{Engine, Inventory, Sector, SelectableEntity, Ship};
+use crate::persistence::PersistentShipId;
 use crate::physics::ShipVelocity;
 use crate::ship_ai::{BehaviorBuilder, TaskQueue};
 use crate::utils::{SectorEntity, ShipEntity};
@@ -19,10 +20,11 @@ pub fn spawn_ship(
 ) {
     let mut sector_data = sector_query.get_mut(sector.into()).unwrap();
 
+    let ship_id = PersistentShipId::next();
     let entity = commands
         .spawn((
             Name::new(name),
-            Ship,
+            Ship::new(ship_id),
             SelectableEntity::Ship,
             Engine::default(),
             ShipVelocity::default(),

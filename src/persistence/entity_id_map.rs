@@ -112,8 +112,8 @@ mod tests {
 
     #[test]
     fn inserting_getting_data() {
-        let id1 = PersistentGateId::default();
-        let id2 = PersistentGateId::default();
+        let id1 = PersistentGateId::next();
+        let id2 = PersistentGateId::next();
 
         let entity1 = GateEntity::from(Entity::from_raw(1));
         let entity2 = GateEntity::from(Entity::from_raw(2));

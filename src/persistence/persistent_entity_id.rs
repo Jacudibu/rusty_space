@@ -79,9 +79,13 @@ pub type PersistentStationId = TypedPersistentEntityId<Station>;
 #[derive(Serialize, Deserialize)]
 pub struct TypedPersistentEntityId<T: Component>(u32, PhantomData<T>);
 
+pub trait ComponentWithPersistentId<T: Component> {
+    fn id(&self) -> TypedPersistentEntityId<T>;
+}
+
 static NEXT_ASTEROID_ID: AtomicU32 = AtomicU32::new(0);
-impl Default for TypedPersistentEntityId<Asteroid> {
-    fn default() -> Self {
+impl TypedPersistentEntityId<Asteroid> {
+    pub fn next() -> Self {
         Self(
             NEXT_ASTEROID_ID.fetch_add(1, Ordering::Relaxed),
             PhantomData,
@@ -90,22 +94,22 @@ impl Default for TypedPersistentEntityId<Asteroid> {
 }
 
 static NEXT_GATE_ID: AtomicU32 = AtomicU32::new(0);
-impl Default for TypedPersistentEntityId<Gate> {
-    fn default() -> Self {
+impl TypedPersistentEntityId<Gate> {
+    pub fn next() -> Self {
         Self(NEXT_GATE_ID.fetch_add(1, Ordering::Relaxed), PhantomData)
     }
 }
 
 static NEXT_SHIP_ID: AtomicU32 = AtomicU32::new(0);
-impl Default for TypedPersistentEntityId<Ship> {
-    fn default() -> Self {
+impl TypedPersistentEntityId<Ship> {
+    pub fn next() -> Self {
         Self(NEXT_SHIP_ID.fetch_add(1, Ordering::Relaxed), PhantomData)
     }
 }
 
 static NEXT_STATION_ID: AtomicU32 = AtomicU32::new(0);
-impl Default for TypedPersistentEntityId<Station> {
-    fn default() -> Self {
+impl TypedPersistentEntityId<Station> {
+    pub fn next() -> Self {
         Self(NEXT_STATION_ID.fetch_add(1, Ordering::Relaxed), PhantomData)
     }
 }

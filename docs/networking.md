@@ -5,7 +5,8 @@ If networking ends up getting implemented, **Co-Op should be the main priority.*
 
 ### Roadmap to Multiplayer
 First, we got to define a way on how to initially sync the game
-1. Saving and Loading Games
+1. Saving and Loading Game
+   - This includes assigning unique IDs to every relevant entity which are valid across sessions
 
 Next up, we need to get our clients connected with each other. This can happen either in a lobby or directly during gameplay. The latter is probably a little more annoying to set up.
 2. Add an option to host a game

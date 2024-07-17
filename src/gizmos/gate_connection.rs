@@ -6,6 +6,7 @@ use bevy::prelude::{
 
 use crate::components::Gate;
 use crate::constants::{GATE_CONNECTION_LAYER, SHIP_LAYER};
+use crate::persistence::PersistentGateId;
 use crate::utils::GateEntity;
 
 #[derive(Component)]
@@ -48,12 +49,15 @@ pub fn on_setup_gate_connection(
                 .collect(),
         });
 
-        commands.entity(event.from.into()).insert(Gate {
-            transit_curve: ship_curve,
-        });
-        commands.entity(event.to.into()).insert(Gate {
-            transit_curve: ship_curve_inverted,
-        });
+        let from_id = PersistentGateId::next();
+        commands
+            .entity(event.from.into())
+            .insert(Gate::new(from_id, ship_curve));
+
+        let to_id = PersistentGateId::next();
+        commands
+            .entity(event.to.into())
+            .insert(Gate::new(to_id, ship_curve_inverted));
     }
 }
 
