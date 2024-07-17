@@ -1,7 +1,7 @@
 use crate::components::{Inventory, Ship};
 use crate::persistence::v1::inventory_save_data::InventorySaveData;
 use crate::persistence::v1::task_save_data::TaskSaveData;
-use crate::persistence::AllEntityIdMaps;
+use crate::persistence::{AllEntityIdMaps, ComponentWithPersistentId, PersistentShipId};
 use crate::physics::ShipVelocity;
 use crate::ship_ai::TaskQueue;
 use bevy::core::Name;
@@ -11,6 +11,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
 pub struct ShipSaveData {
+    pub id: PersistentShipId,
     pub name: String,
     pub position: Vec2,
     pub forward_velocity: f32,
@@ -34,6 +35,7 @@ impl ShipSaveData {
         all_entity_id_maps: &AllEntityIdMaps,
     ) -> Self {
         Self {
+            id: ship.id(),
             name: name.to_string(),
             position: transform.translation.truncate(),
             forward_velocity: velocity.forward,

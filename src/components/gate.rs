@@ -10,12 +10,14 @@ pub struct Gate {
 }
 
 impl ComponentWithPersistentId<Gate> for Gate {
+    #[inline]
     fn id(&self) -> TypedPersistentEntityId<Gate> {
         self.id
     }
 }
 
 impl Gate {
+    #[inline]
     pub fn new(id: PersistentGateId, transit_curve: CubicCurve<Vec3>) -> Self {
         Self { id, transit_curve }
     }

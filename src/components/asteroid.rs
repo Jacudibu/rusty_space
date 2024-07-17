@@ -13,6 +13,7 @@ pub struct Asteroid {
 }
 
 impl ComponentWithPersistentId<Asteroid> for Asteroid {
+    #[inline]
     fn id(&self) -> PersistentAsteroidId {
         self.id
     }

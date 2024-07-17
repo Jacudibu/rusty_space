@@ -1,4 +1,5 @@
 use crate::components::{Asteroid, Sector, SectorAsteroidData};
+use crate::persistence::{ComponentWithPersistentId, PersistentAsteroidId};
 use crate::physics::ConstantVelocity;
 use crate::utils::SimulationTimestamp;
 use bevy::math::{EulerRot, Vec2};
@@ -8,6 +9,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
 pub struct AsteroidSaveData {
+    pub id: PersistentAsteroidId,
     pub ore_current: u32,
     pub ore_max: u32,
     pub position: Vec2,
@@ -22,6 +24,7 @@ impl AsteroidSaveData {
         (asteroid, transform, velocity): (&Asteroid, &Transform, &ConstantVelocity),
     ) -> Self {
         Self {
+            id: asteroid.id(),
             ore_current: asteroid.ore,
             ore_max: asteroid.ore_max,
             position: transform.translation.truncate(),

@@ -3,7 +3,7 @@ use crate::components::{
 };
 use crate::game_data::{ItemId, ProductionModuleId, RecipeId, ShipyardModuleId};
 use crate::persistence::v1::inventory_save_data::InventorySaveData;
-use crate::persistence::AllEntityIdMaps;
+use crate::persistence::{AllEntityIdMaps, ComponentWithPersistentId, PersistentStationId};
 use crate::production::{
     OngoingShipConstructionOrder, ProductionComponent, ProductionModule, ShipyardComponent,
     ShipyardModule,
@@ -107,6 +107,7 @@ impl ShipyardSaveData {
 
 #[derive(Serialize, Deserialize)]
 pub struct StationSaveData {
+    pub id: PersistentStationId,
     pub name: String,
     pub sector: Hex,
     pub position: Vec2,
@@ -222,6 +223,7 @@ impl StationSaveData {
         all_entity_id_maps: &AllEntityIdMaps,
     ) -> Self {
         Self {
+            id: station.id(),
             name: name.to_string(),
             sector: all_entity_id_maps.sectors.entity_to_id()[&in_sector.sector],
             position: transform.translation.truncate(),

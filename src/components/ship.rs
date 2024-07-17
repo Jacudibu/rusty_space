@@ -8,12 +8,14 @@ pub struct Ship {
 }
 
 impl Ship {
+    #[inline]
     pub fn new(id: PersistentShipId) -> Self {
         Self { id }
     }
 }
 
 impl ComponentWithPersistentId<Ship> for Ship {
+    #[inline]
     fn id(&self) -> PersistentShipId {
         self.id
     }
