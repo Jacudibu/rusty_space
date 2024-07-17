@@ -8,7 +8,7 @@ use crate::{constants, SpriteHandles};
 use bevy::color::Color;
 use bevy::core::Name;
 use bevy::math::Vec2;
-use bevy::prelude::{default, Commands, Entity, Query, Sprite, SpriteBundle, Transform};
+use bevy::prelude::{default, Commands, Query, Sprite, SpriteBundle, Transform};
 use bevy::utils::HashMap;
 
 pub struct MockStationProductionArgs {

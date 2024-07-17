@@ -13,7 +13,6 @@ mod test_helpers {
     use super::*;
     use crate::asteroids::SectorWasSpawnedEvent;
     use crate::game_data::GameData;
-    use crate::gizmos::SetupGateConnectionEvent;
     use crate::map_layout::MapLayout;
     use crate::universe_builder::plugin::UniverseBuilderPlugin;
     use crate::SpriteHandles;
@@ -25,7 +24,6 @@ mod test_helpers {
             app.init_resource::<MapLayout>();
             app.init_resource::<SpriteHandles>();
             app.add_event::<SectorWasSpawnedEvent>();
-            app.add_event::<SetupGateConnectionEvent>();
             app.insert_resource(self.sectors);
             app.insert_resource(self.gates);
             app.insert_resource(self.ships);

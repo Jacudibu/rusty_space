@@ -1,9 +1,11 @@
 use bevy::core::Name;
-use bevy::prelude::{Commands, EventWriter, Query, SpriteBundle, Transform};
+use bevy::prelude::{
+    Commands, CubicBezier, CubicCurve, CubicGenerator, Query, SpriteBundle, Transform, Vec2, Vec3,
+};
 
-use crate::components::{Sector, SelectableEntity};
-use crate::gizmos::SetupGateConnectionEvent;
-use crate::persistence::GateIdMap;
+use crate::components::{Gate, GateConnectionComponent, Sector, SelectableEntity};
+use crate::constants::{GATE_CONNECTION_LAYER, SHIP_LAYER};
+use crate::persistence::{GateIdMap, PersistentGateId};
 use crate::utils::GateEntity;
 use crate::utils::SectorPosition;
 use crate::{constants, SpriteHandles};
@@ -15,11 +17,18 @@ pub fn spawn_gate_pair(
     sprites: &SpriteHandles,
     from_pos: SectorPosition,
     to_pos: SectorPosition,
-    gate_connection_events: &mut EventWriter<SetupGateConnectionEvent>,
 ) {
     let [mut from_sector, mut to_sector] = sector_query
         .get_many_mut([from_pos.sector.into(), to_pos.sector.into()])
         .unwrap();
+
+    let (from_curve, to_curve) = setup_connection(
+        commands,
+        &from_sector,
+        from_pos.local_position,
+        &to_sector,
+        to_pos.local_position,
+    );
 
     let from_gate = spawn_gate(
         commands,
@@ -28,6 +37,7 @@ pub fn spawn_gate_pair(
         &from_pos,
         &mut from_sector,
         &to_sector,
+        from_curve,
     );
     let to_gate = spawn_gate(
         commands,
@@ -36,15 +46,49 @@ pub fn spawn_gate_pair(
         &to_pos,
         &mut to_sector,
         &from_sector,
+        to_curve,
     );
 
     from_sector.add_gate(commands, from_pos.sector, from_gate, to_pos.sector, to_gate);
     to_sector.add_gate(commands, to_pos.sector, to_gate, from_pos.sector, from_gate);
+}
 
-    gate_connection_events.send(SetupGateConnectionEvent {
-        from: from_gate,
-        to: to_gate,
+fn setup_connection(
+    commands: &mut Commands,
+    from_sector: &Sector,
+    from_pos: Vec2,
+    to_sector: &Sector,
+    to_pos: Vec2,
+) -> (CubicCurve<Vec3>, CubicCurve<Vec3>) {
+    let a = from_sector.world_pos + from_pos;
+    let b = to_sector.world_pos + to_pos;
+    let difference = a - b;
+    let diff_rot = Vec2::new(-difference.y, difference.x) * 0.075;
+
+    let a_curve = a - difference * 0.40 + diff_rot;
+    let b_curve = b + difference * 0.40 - diff_rot;
+
+    let ship_curve = create_curve(a, a_curve, b_curve, b);
+    let ship_curve_inverted = create_curve(b, b_curve, a_curve, a);
+
+    commands.spawn(GateConnectionComponent {
+        render_positions: ship_curve
+            .iter_positions(20)
+            .map(|x| x.truncate().extend(GATE_CONNECTION_LAYER))
+            .collect(),
     });
+
+    (ship_curve, ship_curve_inverted)
+}
+
+fn create_curve(a: Vec2, a_curve: Vec2, b_curve: Vec2, b: Vec2) -> CubicCurve<Vec3> {
+    CubicBezier::new([[
+        a.extend(SHIP_LAYER),
+        a_curve.extend(SHIP_LAYER),
+        b_curve.extend(SHIP_LAYER),
+        b.extend(SHIP_LAYER),
+    ]])
+    .to_curve()
 }
 
 fn spawn_gate(
@@ -54,14 +98,17 @@ fn spawn_gate(
     pos: &SectorPosition,
     from: &mut Sector,
     to: &Sector,
+    ship_curve: CubicCurve<Vec3>,
 ) -> GateEntity {
     let position = from.world_pos + pos.local_position;
+    let id = PersistentGateId::next();
     let entity = commands
         .spawn((
             Name::new(format!(
                 "Gate [{},{}] -> [{},{}]",
                 from.coordinate.x, from.coordinate.y, to.coordinate.x, to.coordinate.y
             )),
+            Gate::new(id, ship_curve),
             SelectableEntity::Gate,
             SpriteBundle {
                 transform: Transform::from_translation(position.extend(constants::GATE_LAYER)),
@@ -71,5 +118,6 @@ fn spawn_gate(
         ))
         .id();
 
+    gate_id_map.insert(id, GateEntity::from(entity));
     GateEntity::from(entity)
 }

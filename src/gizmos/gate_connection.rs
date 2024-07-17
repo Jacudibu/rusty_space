@@ -1,75 +1,9 @@
-use bevy::math::Vec2;
-use bevy::prelude::{
-    Commands, Component, CubicBezier, CubicCurve, CubicGenerator, Event, EventReader,
-    GizmoConfigGroup, Gizmos, GlobalTransform, Query, Reflect, Vec3,
-};
+use bevy::prelude::{GizmoConfigGroup, Gizmos, Query, Reflect};
 
-use crate::components::Gate;
-use crate::constants::{GATE_CONNECTION_LAYER, SHIP_LAYER};
-use crate::persistence::PersistentGateId;
-use crate::utils::GateEntity;
-
-#[derive(Component)]
-pub struct GateConnectionComponent {
-    pub render_positions: Vec<Vec3>,
-}
+use crate::components::GateConnectionComponent;
 
 #[derive(Default, Reflect, GizmoConfigGroup)]
 pub struct GateConnectionGizmos;
-
-#[derive(Event)]
-pub struct SetupGateConnectionEvent {
-    pub from: GateEntity,
-    pub to: GateEntity,
-}
-
-pub fn on_setup_gate_connection(
-    mut commands: Commands,
-    mut events: EventReader<SetupGateConnectionEvent>,
-    transforms: Query<&GlobalTransform>,
-) {
-    for event in events.read() {
-        let a = transforms.get(event.from.into()).unwrap();
-        let a = a.translation().truncate();
-        let b = transforms.get(event.to.into()).unwrap();
-        let b = b.translation().truncate();
-        let difference = a - b;
-        let diff_rot = Vec2::new(-difference.y, difference.x) * 0.075;
-
-        let a_curve = a - difference * 0.40 + diff_rot;
-        let b_curve = b + difference * 0.40 - diff_rot;
-
-        let ship_curve = create_curve(a, a_curve, b_curve, b);
-        let ship_curve_inverted = create_curve(b, b_curve, a_curve, a);
-
-        commands.spawn(GateConnectionComponent {
-            render_positions: ship_curve
-                .iter_positions(20)
-                .map(|x| x.truncate().extend(GATE_CONNECTION_LAYER))
-                .collect(),
-        });
-
-        let from_id = PersistentGateId::next();
-        commands
-            .entity(event.from.into())
-            .insert(Gate::new(from_id, ship_curve));
-
-        let to_id = PersistentGateId::next();
-        commands
-            .entity(event.to.into())
-            .insert(Gate::new(to_id, ship_curve_inverted));
-    }
-}
-
-fn create_curve(a: Vec2, a_curve: Vec2, b_curve: Vec2, b: Vec2) -> CubicCurve<Vec3> {
-    CubicBezier::new([[
-        a.extend(SHIP_LAYER),
-        a_curve.extend(SHIP_LAYER),
-        b_curve.extend(SHIP_LAYER),
-        b.extend(SHIP_LAYER),
-    ]])
-    .to_curve()
-}
 
 pub fn draw_gate_connections(
     mut gizmos: Gizmos<GateConnectionGizmos>,
