@@ -1,8 +1,8 @@
 use crate::game_data::{ItemId, ProductionModuleId, RecipeId, ShipyardModuleId};
 use crate::persistence::data::v1::inventory_save_data::InventorySaveData;
+use crate::persistence::local_hex_position::LocalHexPosition;
 use crate::persistence::PersistentStationId;
 use crate::session_data::ShipConfigId;
-use crate::universe_builder::LocalHexPosition;
 use crate::utils::{PriceSetting, SimulationTimestamp};
 use serde::{Deserialize, Serialize};
 
@@ -64,7 +64,6 @@ pub struct SerializedSellOrder {
 pub struct SerializedBuyOrderData {
     pub item_id: ItemId,
     pub amount: u32,
-    pub price: u32,
 
     pub buy_up_to: u32,
     pub price_setting: PriceSetting,
@@ -74,7 +73,6 @@ pub struct SerializedBuyOrderData {
 pub struct SerializedSellOrderData {
     pub item_id: ItemId,
     pub amount: u32,
-    pub price: u32,
 
     pub keep_at_least: u32,
     pub price_setting: PriceSetting,

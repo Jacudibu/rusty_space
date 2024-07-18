@@ -112,9 +112,8 @@ fn reconstruct_path(
 mod test {
     use crate::components::Sector;
     use crate::pathfinding::find_path;
-    use crate::persistence::SectorIdMap;
-    use crate::universe_builder::LocalHexPosition;
-    use crate::universe_builder::UniverseBuilder;
+    use crate::persistence::local_hex_position::LocalHexPosition;
+    use crate::persistence::{SectorIdMap, UniverseSaveData};
     use bevy::ecs::system::RunSystemOnce;
     use bevy::prelude::{Query, Res, Transform, Vec2, Vec3};
     use hexx::Hex;
@@ -129,15 +128,15 @@ mod test {
 
     #[test]
     fn find_path_to_neighbor() {
-        let mut universe_builder = UniverseBuilder::default();
-        universe_builder.sectors.add(CENTER);
-        universe_builder.sectors.add(RIGHT);
-        universe_builder.gates.add(
+        let mut universe = UniverseSaveData::default();
+        universe.sectors.add(CENTER);
+        universe.sectors.add(RIGHT);
+        universe.gate_pairs.add(
             LocalHexPosition::new(CENTER, Vec2::ZERO),
             LocalHexPosition::new(RIGHT, Vec2::ZERO),
         );
 
-        let mut app = universe_builder.build_test_app();
+        let mut app = universe.build_test_app();
         let world = app.world_mut();
 
         world.run_system_once(
@@ -161,20 +160,20 @@ mod test {
 
     #[test]
     fn find_path_through_single_sector() {
-        let mut universe_builder = UniverseBuilder::default();
-        universe_builder.sectors.add(LEFT);
-        universe_builder.sectors.add(CENTER);
-        universe_builder.sectors.add(RIGHT);
-        universe_builder.gates.add(
+        let mut universe = UniverseSaveData::default();
+        universe.sectors.add(LEFT);
+        universe.sectors.add(CENTER);
+        universe.sectors.add(RIGHT);
+        universe.gate_pairs.add(
             LocalHexPosition::new(LEFT, Vec2::NEG_X),
             LocalHexPosition::new(CENTER, Vec2::NEG_X),
         );
-        universe_builder.gates.add(
+        universe.gate_pairs.add(
             LocalHexPosition::new(CENTER, Vec2::X),
             LocalHexPosition::new(RIGHT, Vec2::X),
         );
 
-        let mut app = universe_builder.build_test_app();
+        let mut app = universe.build_test_app();
         let world = app.world_mut();
 
         world.run_system_once(
@@ -199,30 +198,30 @@ mod test {
 
     #[test]
     fn find_path_through_multiple_sectors() {
-        let mut universe_builder = UniverseBuilder::default();
-        universe_builder.sectors.add(LEFT);
-        universe_builder.sectors.add(LEFT2);
-        universe_builder.sectors.add(CENTER);
-        universe_builder.sectors.add(RIGHT);
-        universe_builder.sectors.add(RIGHT2);
-        universe_builder.gates.add(
+        let mut universe = UniverseSaveData::default();
+        universe.sectors.add(LEFT);
+        universe.sectors.add(LEFT2);
+        universe.sectors.add(CENTER);
+        universe.sectors.add(RIGHT);
+        universe.sectors.add(RIGHT2);
+        universe.gate_pairs.add(
             LocalHexPosition::new(LEFT2, Vec2::X),
             LocalHexPosition::new(LEFT, Vec2::NEG_X),
         );
-        universe_builder.gates.add(
+        universe.gate_pairs.add(
             LocalHexPosition::new(LEFT, Vec2::X),
             LocalHexPosition::new(CENTER, Vec2::NEG_X),
         );
-        universe_builder.gates.add(
+        universe.gate_pairs.add(
             LocalHexPosition::new(CENTER, Vec2::X),
             LocalHexPosition::new(RIGHT, Vec2::NEG_X),
         );
-        universe_builder.gates.add(
+        universe.gate_pairs.add(
             LocalHexPosition::new(RIGHT, Vec2::X),
             LocalHexPosition::new(RIGHT2, Vec2::NEG_X),
         );
 
-        let mut app = universe_builder.build_test_app();
+        let mut app = universe.build_test_app();
         let world = app.world_mut();
 
         world.run_system_once(
@@ -249,45 +248,45 @@ mod test {
 
     #[test]
     fn find_path_through_multiple_sectors_with_multiple_routes_returns_shortest_path() {
-        let mut universe_builder = UniverseBuilder::default();
-        universe_builder.sectors.add(LEFT);
-        universe_builder.sectors.add(LEFT2);
-        universe_builder.sectors.add(CENTER_LEFT_TOP);
-        universe_builder.sectors.add(CENTER);
-        universe_builder.sectors.add(CENTER_RIGHT_TOP);
-        universe_builder.sectors.add(RIGHT);
-        universe_builder.sectors.add(RIGHT2);
-        universe_builder.gates.add(
+        let mut universe = UniverseSaveData::default();
+        universe.sectors.add(LEFT);
+        universe.sectors.add(LEFT2);
+        universe.sectors.add(CENTER_LEFT_TOP);
+        universe.sectors.add(CENTER);
+        universe.sectors.add(CENTER_RIGHT_TOP);
+        universe.sectors.add(RIGHT);
+        universe.sectors.add(RIGHT2);
+        universe.gate_pairs.add(
             LocalHexPosition::new(LEFT2, Vec2::X),
             LocalHexPosition::new(LEFT, Vec2::NEG_X),
         );
-        universe_builder.gates.add(
+        universe.gate_pairs.add(
             LocalHexPosition::new(LEFT, Vec2::X),
             LocalHexPosition::new(CENTER, Vec2::NEG_X),
         );
-        universe_builder.gates.add(
+        universe.gate_pairs.add(
             LocalHexPosition::new(CENTER, Vec2::X),
             LocalHexPosition::new(RIGHT, Vec2::NEG_X),
         );
-        universe_builder.gates.add(
+        universe.gate_pairs.add(
             LocalHexPosition::new(RIGHT, Vec2::X),
             LocalHexPosition::new(RIGHT2, Vec2::NEG_X),
         );
 
-        universe_builder.gates.add(
+        universe.gate_pairs.add(
             LocalHexPosition::new(LEFT, Vec2::X),
             LocalHexPosition::new(CENTER_LEFT_TOP, Vec2::NEG_X),
         );
-        universe_builder.gates.add(
+        universe.gate_pairs.add(
             LocalHexPosition::new(CENTER_LEFT_TOP, Vec2::X),
             LocalHexPosition::new(CENTER_RIGHT_TOP, Vec2::NEG_X),
         );
-        universe_builder.gates.add(
+        universe.gate_pairs.add(
             LocalHexPosition::new(CENTER_RIGHT_TOP, Vec2::X),
             LocalHexPosition::new(RIGHT, Vec2::NEG_X),
         );
 
-        let mut app = universe_builder.build_test_app();
+        let mut app = universe.build_test_app();
         let world = app.world_mut();
 
         world.run_system_once(

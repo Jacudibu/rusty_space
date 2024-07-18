@@ -5,8 +5,8 @@ mod sectors;
 mod ships;
 mod stations;
 
-pub struct TestUniversePlugin;
-impl Plugin for TestUniversePlugin {
+pub struct TestUniverseDataPlugin;
+impl Plugin for TestUniverseDataPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(sectors::create_test_data());
         app.insert_resource(gates::create_test_data());

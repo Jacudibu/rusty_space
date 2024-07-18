@@ -1,56 +1,13 @@
 use crate::components::{BuyOrders, Inventory, Sector, SelectableEntity, SellOrders, Station};
-use crate::game_data::{ItemDefinition, ProductionModuleId, RecipeId, SHIPYARD_MODULE_ID};
+use crate::game_data::ItemDefinition;
 use crate::persistence::{PersistentStationId, StationIdMap};
-use crate::production::{ProductionComponent, ProductionModule, ShipyardComponent, ShipyardModule};
-use crate::session_data::DEBUG_SHIP_CONFIG;
+use crate::production::{ProductionComponent, ShipyardComponent};
 use crate::utils::{SectorEntity, StationEntity};
 use crate::{constants, SpriteHandles};
 use bevy::color::Color;
 use bevy::core::Name;
 use bevy::math::Vec2;
 use bevy::prelude::{default, Commands, Query, Sprite, SpriteBundle, Transform};
-use bevy::utils::HashMap;
-
-pub struct MockStationProductionArgs {
-    modules: Vec<MockStationProductionArgElement>,
-}
-
-impl MockStationProductionArgs {
-    pub fn new(modules: Vec<MockStationProductionArgElement>) -> Self {
-        Self { modules }
-    }
-
-    pub fn parse(self) -> ProductionComponent {
-        ProductionComponent {
-            modules: HashMap::from_iter(self.modules.iter().map(|x| {
-                (
-                    x.module_id,
-                    ProductionModule {
-                        recipe: x.recipe,
-                        amount: x.amount,
-                        current_run_finished_at: None,
-                    },
-                )
-            })),
-        }
-    }
-}
-
-pub struct MockStationProductionArgElement {
-    module_id: ProductionModuleId,
-    recipe: RecipeId,
-    amount: u32,
-}
-
-impl MockStationProductionArgElement {
-    pub fn new(module_id: ProductionModuleId, recipe: RecipeId, amount: u32) -> Self {
-        Self {
-            module_id,
-            recipe,
-            amount,
-        }
-    }
-}
 
 #[allow(clippy::too_many_arguments)] // It's hopeless... :')
 pub fn spawn_station(

@@ -4,12 +4,12 @@ use crate::components::{
 };
 use crate::game_data::{ItemId, ProductionModuleId, ShipyardModuleId};
 use crate::persistence::data::v1::*;
-use crate::persistence::{AllEntityIdMaps, ComponentWithPersistentId};
+use crate::persistence::local_hex_position::LocalHexPosition;
+use crate::persistence::ComponentWithPersistentId;
 use crate::production::{
     OngoingShipConstructionOrder, ProductionComponent, ProductionModule, ShipyardComponent,
     ShipyardModule,
 };
-use crate::universe_builder::LocalHexPosition;
 use bevy::core::Name;
 use bevy::prelude::{Query, Transform};
 
@@ -100,7 +100,6 @@ impl SerializedBuyOrderData {
     pub fn from((id, data): (&ItemId, &BuyOrderData)) -> Self {
         Self {
             item_id: *id,
-            price: data.price,
             amount: data.amount,
             price_setting: data.price_setting.clone(),
             buy_up_to: data.buy_up_to,
@@ -112,7 +111,6 @@ impl SerializedSellOrderData {
     pub fn from((id, data): (&ItemId, &SellOrderData)) -> Self {
         Self {
             item_id: *id,
-            price: data.price,
             amount: data.amount,
             price_setting: data.price_setting.clone(),
             keep_at_least: data.keep_at_least,

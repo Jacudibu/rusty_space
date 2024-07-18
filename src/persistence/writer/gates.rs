@@ -2,8 +2,8 @@ use bevy::prelude::{Query, Transform};
 
 use crate::components::{Gate, InSector, Sector};
 use crate::persistence::data::v1::*;
+use crate::persistence::local_hex_position::LocalHexPosition;
 use crate::persistence::ComponentWithPersistentId;
-use crate::universe_builder::LocalHexPosition;
 
 impl GatePairSaveData {
     pub fn extract_from_sector_query(

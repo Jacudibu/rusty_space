@@ -1,9 +1,9 @@
 use crate::components::{InSector, Inventory, Sector, Ship};
 use crate::persistence::data::v1::*;
+use crate::persistence::local_hex_position::LocalHexPosition;
 use crate::persistence::{AllEntityIdMaps, ComponentWithPersistentId};
 use crate::physics::ShipVelocity;
 use crate::ship_ai::{AutoMineBehavior, AutoTradeBehavior, TaskQueue};
-use crate::universe_builder::LocalHexPosition;
 use bevy::core::Name;
 use bevy::math::EulerRot;
 use bevy::prelude::{Query, Transform};

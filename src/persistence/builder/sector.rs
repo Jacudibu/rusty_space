@@ -53,6 +53,11 @@ impl SectorSaveData {
             &mut args.sector_spawn_event,
         )
     }
+
+    pub fn with_asteroid_data(&mut self, asteroids: SectorAsteroidSaveData) -> &mut Self {
+        self.asteroid_data = Some(asteroids);
+        self
+    }
 }
 
 impl From<SectorAsteroidSaveData> for SectorAsteroidData {

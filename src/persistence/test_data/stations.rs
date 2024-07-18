@@ -4,12 +4,12 @@ use crate::game_data::{
     SHIPYARD_MODULE_ID,
 };
 use crate::persistence::local_hex_position::LocalHexPosition;
-use crate::universe_builder::station_builder::StationSpawnData;
-use crate::universe_builder::test_data::coordinates::{BOTTOM_LEFT, CENTER};
+use crate::persistence::test_data::coordinates::{BOTTOM_LEFT, CENTER};
+use crate::persistence::{SaveDataCollection, StationSaveData};
 use bevy::prelude::Vec2;
 
-pub fn create_test_data() -> StationSpawnData {
-    let mut result = StationSpawnData::default();
+pub fn create_test_data() -> SaveDataCollection<StationSaveData> {
+    let mut result = SaveDataCollection::<StationSaveData>::default();
 
     result
         .add(

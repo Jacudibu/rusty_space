@@ -61,8 +61,9 @@ pub fn parse_session_data_into_universe_save_data(
 
 #[cfg(test)]
 mod tests {
+    use crate::persistence::local_hex_position::LocalHexPosition;
     use crate::persistence::saving::parse_session_data_into_universe_save_data;
-    use crate::universe_builder::{LocalHexPosition, UniverseBuilder};
+    use crate::persistence::UniverseSaveData;
     use bevy::ecs::system::RunSystemOnce;
     use bevy::prelude::Vec2;
     use hexx::Hex;
@@ -72,17 +73,19 @@ mod tests {
 
     #[test]
     fn test_serializing() {
-        let mut universe_builder = UniverseBuilder::default();
-        universe_builder.sectors.add(CENTER);
-        universe_builder.sectors.add(RIGHT);
-        universe_builder.gates.add(
+        let mut universe = UniverseSaveData::default();
+        universe.sectors.add(CENTER);
+        universe.sectors.add(RIGHT);
+        universe.gate_pairs.add(
             LocalHexPosition::new(CENTER, Vec2::ZERO),
             LocalHexPosition::new(RIGHT, Vec2::ZERO),
         );
 
-        let mut app = universe_builder.build_test_app();
+        let mut app = universe.build_test_app();
         let world = app.world_mut();
 
         world.run_system_once(parse_session_data_into_universe_save_data);
+
+        todo!("Compare spawned universe with save data contents")
     }
 }

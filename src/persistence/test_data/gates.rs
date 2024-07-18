@@ -1,10 +1,10 @@
 use crate::persistence::local_hex_position::LocalHexPosition;
-use crate::universe_builder::gate_builder::GateSpawnData;
-use crate::universe_builder::test_data::coordinates::{BOTTOM_LEFT, CENTER, RIGHT, TOP_RIGHT};
+use crate::persistence::test_data::coordinates::{BOTTOM_LEFT, CENTER, RIGHT, TOP_RIGHT};
+use crate::persistence::{GatePairSaveData, SaveDataCollection};
 use bevy::prelude::Vec2;
 
-pub fn create_test_data() -> GateSpawnData {
-    let mut result = GateSpawnData::default();
+pub fn create_test_data() -> SaveDataCollection<GatePairSaveData> {
+    let mut result = SaveDataCollection::<GatePairSaveData>::default();
     result.add(
         LocalHexPosition::new(CENTER, Vec2::new(250.0, 0.0)),
         LocalHexPosition::new(RIGHT, Vec2::new(-250.0, 0.0)),

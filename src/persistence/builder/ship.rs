@@ -1,9 +1,9 @@
 use crate::components::Sector;
 use crate::persistence::data::v1::*;
+use crate::persistence::local_hex_position::LocalHexPosition;
 use crate::persistence::{PersistentShipId, SectorIdMap, ShipIdMap};
 use crate::ship_ai::BehaviorBuilder;
-use crate::universe_builder::LocalHexPosition;
-use crate::utils::{spawn_helpers, SimulationTimestamp};
+use crate::utils::spawn_helpers;
 use crate::SpriteHandles;
 use bevy::ecs::system::SystemParam;
 use bevy::prelude::{Commands, Query, Res};
@@ -34,17 +34,16 @@ impl SaveData {
         position: LocalHexPosition,
         rotation: f32,
         name: String,
+        behavior: ShipBehaviorSaveData,
     ) -> &mut ShipSaveData {
         self.data.push(ShipSaveData {
             id: PersistentShipId::next(),
             name,
             position,
             rotation,
+            behavior,
             forward_velocity: 0.0,
             angular_velocity: 0.0,
-            behavior: ShipBehaviorSaveData::AutoTrade {
-                next_idle_update: SimulationTimestamp::MIN,
-            },
             task_queue: Vec::new(), // TODO
             inventory: InventorySaveData { items: Vec::new() },
         });

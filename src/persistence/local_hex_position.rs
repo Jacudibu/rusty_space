@@ -1,5 +1,5 @@
 use crate::components::{InSector, Sector};
-use crate::persistence::{AllEntityIdMaps, SectorIdMap};
+use crate::persistence::SectorIdMap;
 use crate::utils::SectorPosition;
 use bevy::math::Vec2;
 use bevy::prelude::{Query, Transform};

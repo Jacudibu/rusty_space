@@ -90,8 +90,8 @@ impl From<CurrentSimulationTimestamp> for SimulationTimestamp {
     }
 }
 
-#[cfg(test)]
 impl From<Milliseconds> for SimulationTimestamp {
+    /// Can be used in universe creation to spread out initial idle checks across multiple frames
     fn from(value: Milliseconds) -> Self {
         Self(value)
     }

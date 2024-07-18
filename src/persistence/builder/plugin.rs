@@ -3,9 +3,9 @@ use crate::persistence::builder::{gate, sector, ship, station};
 use bevy::app::{App, Plugin, Startup};
 use bevy::prelude::IntoSystemConfigs;
 
-pub struct UniverseSaveDataLoadingPlugin;
+pub struct UniverseSaveDataLoadingOnStartupPlugin;
 
-impl Plugin for UniverseSaveDataLoadingPlugin {
+impl Plugin for UniverseSaveDataLoadingOnStartupPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Startup,

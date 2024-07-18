@@ -1,16 +1,13 @@
 //! This Module provides builder methods for the latest persistent data version.
 //! Can be used for hard-coded maps during debugging and tutorials or tests.
 
-use bevy::app::{App, Plugin};
-use bevy::prelude::IntoSystemConfigs;
-
 mod gate;
 mod plugin;
 mod sector;
 mod ship;
 mod station;
 
-pub use plugin::UniverseSaveDataLoadingPlugin;
+pub use plugin::UniverseSaveDataLoadingOnStartupPlugin;
 
 #[cfg(test)]
 mod test_helpers {
@@ -29,6 +26,12 @@ mod test_helpers {
             app.init_resource::<SpriteHandles>();
             app.add_event::<SectorWasSpawnedEvent>();
             app.insert_resource(GameData::mock_data());
+            app.insert_resource(self.sectors);
+            app.insert_resource(self.gate_pairs);
+            app.insert_resource(self.stations);
+            app.insert_resource(self.ships);
+
+            app.add_plugins(UniverseSaveDataLoadingOnStartupPlugin);
             app.finish();
             app.update();
 

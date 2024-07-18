@@ -1,5 +1,5 @@
+use crate::persistence::local_hex_position::LocalHexPosition;
 use crate::persistence::PersistentGateId;
-use crate::universe_builder::LocalHexPosition;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]

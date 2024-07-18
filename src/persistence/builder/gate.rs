@@ -1,7 +1,7 @@
 use crate::components::Sector;
 use crate::persistence::data::v1::*;
+use crate::persistence::local_hex_position::LocalHexPosition;
 use crate::persistence::{GateIdMap, PersistentGateId, SectorIdMap};
-use crate::universe_builder::LocalHexPosition;
 use crate::utils::spawn_helpers::spawn_gate_pair_with_ids;
 use crate::SpriteHandles;
 use bevy::ecs::system::SystemParam;

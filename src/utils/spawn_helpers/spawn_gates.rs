@@ -3,9 +3,7 @@ use bevy::prelude::{
     Commands, CubicBezier, CubicCurve, CubicGenerator, Query, SpriteBundle, Transform, Vec2, Vec3,
 };
 
-use crate::components::{
-    Gate, GateConnectionComponent, GatePairInSector, Sector, SelectableEntity,
-};
+use crate::components::{Gate, GateConnectionComponent, Sector, SelectableEntity};
 use crate::constants::{GATE_CONNECTION_LAYER, SHIP_LAYER};
 use crate::persistence::{GateIdMap, PersistentGateId};
 use crate::utils::GateEntity;

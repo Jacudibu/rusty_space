@@ -13,7 +13,7 @@ pub use {
     station_save_data::*, task_save_data::*,
 };
 
-#[derive(Serialize, Deserialize)]
+#[derive(Default, Serialize, Deserialize)]
 pub struct UniverseSaveData {
     pub gate_pairs: SaveDataCollection<GatePairSaveData>,
     pub sectors: SaveDataCollection<SectorSaveData>,
@@ -21,7 +21,13 @@ pub struct UniverseSaveData {
     pub stations: SaveDataCollection<StationSaveData>,
 }
 
-#[derive(Default, Resource, Serialize, Deserialize)]
+#[derive(Resource, Serialize, Deserialize)]
 pub struct SaveDataCollection<T> {
     pub data: Vec<T>,
+}
+
+impl<T> Default for SaveDataCollection<T> {
+    fn default() -> Self {
+        Self { data: Vec::new() }
+    }
 }

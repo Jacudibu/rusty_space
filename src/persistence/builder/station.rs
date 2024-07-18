@@ -1,14 +1,16 @@
 use crate::components::Sector;
-use crate::game_data::{GameData, ItemDefinition, ProductionModuleId, ShipyardModuleId};
+use crate::game_data::{
+    GameData, ItemDefinition, ItemId, ProductionModuleId, RecipeId, ShipyardModuleId,
+};
 use crate::persistence::data::v1::*;
+use crate::persistence::local_hex_position::LocalHexPosition;
 use crate::persistence::{PersistentStationId, SectorIdMap, StationIdMap};
 use crate::production::{
     OngoingShipConstructionOrder, ProductionComponent, ProductionModule, ShipyardComponent,
     ShipyardModule,
 };
-use crate::universe_builder::LocalHexPosition;
-use crate::utils::spawn_helpers;
-use crate::SpriteHandles;
+use crate::utils::{spawn_helpers, PriceRange, PriceSetting};
+use crate::{constants, SpriteHandles};
 use bevy::ecs::system::SystemParam;
 use bevy::prelude::{Commands, Query, Res};
 use bevy::utils::hashbrown::HashMap;
@@ -53,6 +55,89 @@ impl StationSaveData {
             shipyard_modules: None,
             inventory: InventorySaveData { items: Vec::new() },
         }
+    }
+
+    pub fn with_buys(&mut self, buys: Vec<ItemId>) -> &mut Self {
+        if self.buy_orders.is_none() {
+            self.buy_orders = Some(SerializedBuyOrder { orders: Vec::new() })
+        }
+
+        if let Some(ref mut orders) = self.buy_orders {
+            orders
+                .orders
+                .extend(buys.into_iter().map(|x| SerializedBuyOrderData {
+                    item_id: x,
+                    // TODO: This requires way more data
+                    amount: constants::MOCK_STATION_INVENTORY_SIZE,
+                    buy_up_to: constants::MOCK_STATION_INVENTORY_SIZE,
+                    price_setting: PriceSetting::Dynamic(PriceRange::new(5, 100)),
+                }))
+        }
+
+        self
+    }
+
+    pub fn with_sells(&mut self, buys: Vec<ItemId>) -> &mut Self {
+        if self.sell_orders.is_none() {
+            self.sell_orders = Some(SerializedSellOrder { orders: Vec::new() })
+        }
+
+        if let Some(ref mut orders) = self.sell_orders {
+            orders
+                .orders
+                .extend(buys.into_iter().map(|x| SerializedSellOrderData {
+                    item_id: x,
+                    // TODO: This requires way more data
+                    amount: constants::MOCK_STATION_INVENTORY_SIZE,
+                    keep_at_least: 0,
+                    price_setting: PriceSetting::Dynamic(PriceRange::new(5, 100)),
+                }))
+        }
+
+        self
+    }
+
+    pub fn with_production(
+        &mut self,
+        amount: u32,
+        module_id: ProductionModuleId,
+        recipe: RecipeId,
+    ) -> &mut Self {
+        if self.production_modules.is_none() {
+            self.production_modules = Some(ProductionSaveData {
+                modules: Vec::new(),
+            });
+        }
+
+        if let Some(ref mut production) = self.production_modules {
+            production.modules.push(ProductionModuleSaveData {
+                amount,
+                module_id,
+                recipe,
+                finished_at: None,
+            });
+        }
+
+        self
+    }
+
+    pub fn with_shipyard(&mut self, amount: u32, module_id: ShipyardModuleId) -> &mut Self {
+        if self.shipyard_modules.is_none() {
+            self.shipyard_modules = Some(ShipyardSaveData {
+                modules: Vec::new(),
+                queue: Vec::new(),
+            })
+        }
+
+        if let Some(ref mut shipyard) = self.shipyard_modules {
+            shipyard.modules.push(ShipyardModuleSaveData {
+                amount,
+                module_id,
+                active: Vec::new(),
+            });
+        }
+
+        self
     }
 
     pub fn build(&self, args: &mut Args, station_id_map: &mut StationIdMap) {
