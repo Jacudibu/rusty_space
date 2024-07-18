@@ -10,7 +10,7 @@ use crate::production::state::GlobalProductionState;
 use crate::production::{InventoryUpdateForProductionEvent, ProductionComponent};
 use crate::session_data::SessionData;
 use crate::ship_ai::BehaviorBuilder;
-use crate::utils::{spawn_helpers, SimulationTime};
+use crate::utils::{spawn_helpers, SimulationTime, SimulationTimestamp};
 use crate::{utils, SpriteHandles};
 
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
@@ -116,7 +116,9 @@ pub fn check_if_production_is_finished_and_start_new_one(
                     in_sector.get(),
                     transform.translation.truncate(),
                     0.0,
-                    &BehaviorBuilder::AutoTrade,
+                    BehaviorBuilder::AutoTrade {
+                        next_idle_update: SimulationTimestamp::MIN,
+                    },
                     &mut ship_id_map,
                 );
             }

@@ -1,5 +1,6 @@
 use crate::components::{
-    BuyOrderData, BuyOrders, InSector, Inventory, SellOrderData, SellOrders, Station, TradeOrder,
+    BuyOrderData, BuyOrders, InSector, Inventory, Sector, SellOrderData, SellOrders, Station,
+    TradeOrder,
 };
 use crate::game_data::{ItemId, ProductionModuleId, ShipyardModuleId};
 use crate::persistence::data::v1::*;
@@ -8,8 +9,9 @@ use crate::production::{
     OngoingShipConstructionOrder, ProductionComponent, ProductionModule, ShipyardComponent,
     ShipyardModule,
 };
+use crate::universe_builder::LocalHexPosition;
 use bevy::core::Name;
-use bevy::prelude::Transform;
+use bevy::prelude::{Query, Transform};
 
 impl ProductionSaveData {
     pub fn from(production: &ProductionComponent) -> Self {
@@ -47,6 +49,7 @@ impl ShipyardModuleSaveData {
     pub fn from((id, module): (&ShipyardModuleId, &ShipyardModule)) -> Self {
         Self {
             module_id: *id,
+            amount: module.amount,
             active: module
                 .active
                 .iter()
@@ -141,13 +144,12 @@ impl StationSaveData {
             Option<&BuyOrders>,
             Option<&SellOrders>,
         ),
-        all_entity_id_maps: &AllEntityIdMaps,
+        sectors: &Query<&Sector>,
     ) -> Self {
         Self {
             id: station.id(),
             name: name.to_string(),
-            sector: all_entity_id_maps.sectors.entity_to_id()[&in_sector.sector],
-            position: transform.translation.truncate(),
+            position: LocalHexPosition::from_in_sector(in_sector, &transform, sectors),
             inventory: InventorySaveData::from(inventory),
             buy_orders: buy_orders.map(SerializedBuyOrder::from),
             sell_orders: sell_orders.map(SerializedSellOrder::from),

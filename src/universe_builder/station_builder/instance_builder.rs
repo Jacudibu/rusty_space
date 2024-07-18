@@ -102,19 +102,19 @@ impl StationSpawnDataInstanceBuilder {
             Some(true)
         };
 
-        spawn_station(
-            commands,
-            sectors,
-            station_id_map,
-            sprites,
-            &self.name,
-            self.position.position,
-            *sector_entity,
-            buys,
-            sells,
-            production,
-            shipyard,
-        )
+        // spawn_station(
+        //     commands,
+        //     sectors,
+        //     station_id_map,
+        //     sprites,
+        //     &self.name,
+        //     self.position.position,
+        //     *sector_entity,
+        //     buys,
+        //     sells,
+        //     production,
+        //     shipyard,
+        // )
     }
 }
 

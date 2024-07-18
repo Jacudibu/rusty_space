@@ -1,7 +1,3 @@
-use bevy::math::Vec3;
-use bevy::prelude::{error, Commands, Component, Entity, Query, Res, Transform};
-use std::cmp::Ordering;
-
 use crate::components::{Asteroid, BuyOrders, InSector, Inventory, Sector};
 use crate::pathfinding;
 use crate::persistence::SectorIdMap;
@@ -9,9 +5,13 @@ use crate::ship_ai::ship_is_idle_filter::ShipIsIdleFilter;
 use crate::ship_ai::{TaskInsideQueue, TaskQueue};
 use crate::trade_plan::TradePlan;
 use crate::utils::{AsteroidEntityWithTimestamp, SimulationTime, SimulationTimestamp, TradeIntent};
+use bevy::math::Vec3;
+use bevy::prelude::{error, Commands, Component, Entity, Query, Res, Transform};
+use serde::{Deserialize, Serialize};
+use std::cmp::Ordering;
 
-#[derive(Eq, PartialEq)]
-enum AutoMineState {
+#[derive(Eq, PartialEq, Serialize, Deserialize, Copy, Clone)]
+pub enum AutoMineState {
     Mining,
     Trading,
 }
@@ -19,7 +19,7 @@ enum AutoMineState {
 #[derive(Component)]
 pub struct AutoMineBehavior {
     pub next_idle_update: SimulationTimestamp,
-    state: AutoMineState,
+    pub state: AutoMineState,
 }
 
 impl Default for AutoMineBehavior {

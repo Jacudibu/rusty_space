@@ -5,7 +5,7 @@ use crate::persistence::data::v1::*;
 use crate::persistence::AllEntityIdMaps;
 use crate::physics::{ConstantVelocity, ShipVelocity};
 use crate::production::{ProductionComponent, ShipyardComponent};
-use crate::ship_ai::TaskQueue;
+use crate::ship_ai::{AutoMineBehavior, AutoTradeBehavior, TaskQueue};
 use bevy::core::Name;
 use bevy::prelude::{Query, Transform};
 
@@ -18,10 +18,13 @@ pub fn parse_session_data_into_universe_save_data(
     ships: Query<(
         &Ship,
         &Name,
+        &InSector,
         &Transform,
         &TaskQueue,
         &ShipVelocity,
         &Inventory,
+        Option<&AutoTradeBehavior>,
+        Option<&AutoMineBehavior>,
     )>,
     stations: Query<(
         &Station,
@@ -38,15 +41,15 @@ pub fn parse_session_data_into_universe_save_data(
 ) -> UniverseSaveData {
     let gate_pairs = GatePairSaveData::extract_from_sector_query(&sectors, &gates);
 
-    let sectors = sectors.iter().map(|x| SectorSaveData::from(x, &asteroids));
+    let stations = stations
+        .iter()
+        .map(|query_content| StationSaveData::from(query_content, &sectors));
 
     let ships = ships
         .iter()
-        .map(|query_content| ShipSaveData::from(query_content, &all_entity_id_maps));
+        .map(|query_content| ShipSaveData::from(query_content, &sectors, &all_entity_id_maps));
 
-    let stations = stations
-        .iter()
-        .map(|query_content| StationSaveData::from(query_content, &all_entity_id_maps));
+    let sectors = sectors.iter().map(|x| SectorSaveData::from(x, &asteroids));
 
     UniverseSaveData {
         gate_pairs: gate_pairs.into(),

@@ -45,7 +45,7 @@ impl ShipSpawnDataInstanceBuilder {
             sector_entity,
             self.position.position,
             self.rotation,
-            &self.behavior,
+            self.behavior,
             ship_id_map,
         )
     }

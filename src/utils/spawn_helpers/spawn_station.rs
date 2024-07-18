@@ -63,8 +63,8 @@ pub fn spawn_station(
     sector_entity: SectorEntity,
     buys: Vec<&ItemDefinition>,
     sells: Vec<&ItemDefinition>,
-    production: Option<MockStationProductionArgs>,
-    shipyard: Option<bool>,
+    production: Option<ProductionComponent>,
+    shipyard: Option<ShipyardComponent>,
 ) {
     let mut sector = sector_query.get_mut(sector_entity.into()).unwrap();
 
@@ -131,20 +131,11 @@ pub fn spawn_station(
     }
 
     if let Some(production) = production {
-        commands.entity(entity).insert(production.parse());
+        commands.entity(entity).insert(production);
     }
 
-    if shipyard.is_some() {
-        commands.entity(entity).insert(ShipyardComponent {
-            modules: HashMap::from([(
-                SHIPYARD_MODULE_ID,
-                ShipyardModule {
-                    active: Vec::new(),
-                    amount: 2,
-                },
-            )]),
-            queue: vec![DEBUG_SHIP_CONFIG; 100],
-        });
+    if let Some(shipyard) = shipyard {
+        commands.entity(entity).insert(shipyard);
     }
 
     station_id_map.insert(station_id, StationEntity::from(entity));
