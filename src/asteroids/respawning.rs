@@ -1,19 +1,19 @@
 use crate::asteroids::fading::FadingAsteroidsIn;
 use crate::asteroids::helpers;
 use crate::components::{Asteroid, Sector};
-use crate::constants;
 use crate::map_layout::MapLayout;
 use crate::physics::ConstantVelocity;
+use crate::simulation_transform::SimulationTransform;
 use crate::utils::SimulationTime;
 use bevy::math::Vec2;
-use bevy::prelude::{Query, Res, ResMut, Transform, Visibility};
+use bevy::prelude::{Query, Res, ResMut, Visibility};
 
 pub fn respawn_asteroids(
     mut fading_asteroids: ResMut<FadingAsteroidsIn>,
     mut sector: Query<&mut Sector>,
     mut asteroid_query: Query<(
         &mut Asteroid,
-        &mut Transform,
+        &mut SimulationTransform,
         &mut Visibility,
         &ConstantVelocity,
     )>,
@@ -34,22 +34,19 @@ pub fn respawn_asteroids(
                 .get_mut(asteroid_entity.entity.into())
                 .unwrap();
 
-            let velocity = velocity.velocity.truncate();
-
             let local_respawn_position = calculate_asteroid_respawn_position(
                 map_layout.hex_edge_vertices,
-                transform.translation.truncate() - sector.world_pos,
-                velocity,
+                transform.translation - sector.world_pos,
+                velocity.velocity,
             );
 
             let extra_millis = helpers::calculate_milliseconds_until_asteroid_leaves_hexagon(
                 map_layout.hex_edge_vertices,
                 local_respawn_position,
-                velocity,
+                velocity.velocity,
             );
             *visibility = Visibility::Inherited;
-            transform.translation =
-                (local_respawn_position + sector.world_pos).extend(constants::ASTEROID_LAYER);
+            transform.translation = local_respawn_position + sector.world_pos;
             asteroid_entity.timestamp.add_milliseconds(extra_millis);
             asteroid.state.toggle_and_add_milliseconds(extra_millis);
             asteroid.reset(&mut transform);

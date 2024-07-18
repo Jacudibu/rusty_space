@@ -1,7 +1,8 @@
 use crate::constants;
 use crate::persistence::{ComponentWithPersistentId, PersistentAsteroidId};
+use crate::simulation_transform::SimulationTransform;
 use crate::utils::{Milliseconds, SimulationTimestamp};
-use bevy::prelude::{Component, FloatExt, Transform, Vec3};
+use bevy::prelude::{Component, FloatExt};
 
 #[derive(Component)]
 pub struct Asteroid {
@@ -68,7 +69,7 @@ impl Asteroid {
         }
     }
 
-    pub fn reset(&mut self, transform: &mut Transform) {
+    pub fn reset(&mut self, transform: &mut SimulationTransform) {
         self.ore = self.ore_max;
         self.remaining_after_reservations = self.ore_max;
         transform.scale = self.scale_depending_on_current_ore_volume();
@@ -83,11 +84,11 @@ impl Asteroid {
         amount
     }
 
-    pub fn scale_depending_on_current_ore_volume(&self) -> Vec3 {
+    pub fn scale_depending_on_current_ore_volume(&self) -> f32 {
         const MIN: f32 = 0.3;
         const MAX: f32 = 1.5;
         let t = self.ore as f32 / constants::ASTEROID_ORE_RANGE.end as f32;
 
-        Vec3::splat(MIN.lerp(MAX, t))
+        MIN.lerp(MAX, t)
     }
 }

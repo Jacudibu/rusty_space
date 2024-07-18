@@ -11,7 +11,7 @@ pub struct AsteroidSaveData {
     pub ore_current: u32,
     pub ore_max: u32,
     pub position: Vec2,
-    pub rotation: f32,
+    pub rotation_degrees: f32,
     pub velocity: Vec2,
     pub angular_velocity: f32,
     pub lifetime: SimulationTimestamp,

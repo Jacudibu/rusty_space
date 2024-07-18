@@ -1,9 +1,9 @@
 use crate::asteroids::SectorWasSpawnedEvent;
 use crate::components::{Sector, SectorAsteroidData};
+use crate::simulation_transform::SimulationTransform;
 use crate::utils::SectorEntity;
 use bevy::core::Name;
-use bevy::math::Vec3;
-use bevy::prelude::{Commands, EventWriter, SpatialBundle, Transform};
+use bevy::prelude::{Commands, EventWriter, Vec2};
 use hexx::{Hex, HexLayout};
 
 pub fn spawn_sector(
@@ -15,17 +15,15 @@ pub fn spawn_sector(
 ) -> SectorEntity {
     let position = layout.hex_to_world_pos(coordinate);
 
+    let simulation_transform =
+        SimulationTransform::from_translation(Vec2::new(position.x, position.y));
+
     let entity = commands
         .spawn((
             Name::new(format!("[{},{}]", coordinate.x, coordinate.y)),
             Sector::new(coordinate, position, asteroids),
-            SpatialBundle {
-                transform: Transform {
-                    translation: Vec3::new(position.x, position.y, 0.0),
-                    ..Default::default()
-                },
-                ..Default::default()
-            },
+            simulation_transform.as_transform(0.0),
+            simulation_transform,
         ))
         .id();
 

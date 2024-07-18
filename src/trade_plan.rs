@@ -1,9 +1,10 @@
-use bevy::prelude::{Entity, Query, Transform};
+use bevy::prelude::{Entity, Query};
 
 use crate::components::{BuyOrders, InSector, Inventory, Sector, SellOrders, TradeOrder};
 use crate::game_data::ItemId;
 use crate::pathfinding;
 use crate::ship_ai::{TaskInsideQueue, TaskQueue};
+use crate::simulation_transform::SimulationTransform;
 use crate::utils::{ExchangeWareData, SectorEntity, TypedEntity};
 
 pub struct TradePlan {
@@ -118,7 +119,7 @@ impl TradePlan {
     pub fn create_tasks_for_purchase(
         &self,
         all_sectors: &Query<&Sector>,
-        all_transforms: &Query<&Transform>,
+        all_transforms: &Query<&SimulationTransform>,
         ship_entity: Entity,
         ship_sector: &InSector,
         queue: &mut TaskQueue,
@@ -151,7 +152,7 @@ impl TradePlan {
     pub fn create_tasks_for_sale(
         &self,
         all_sectors: &Query<&Sector>,
-        all_transforms: &Query<&Transform>,
+        all_transforms: &Query<&SimulationTransform>,
         queue: &mut TaskQueue,
     ) {
         if self.seller_sector != self.buyer_sector {

@@ -3,10 +3,10 @@ use crate::pathfinding;
 use crate::persistence::SectorIdMap;
 use crate::ship_ai::ship_is_idle_filter::ShipIsIdleFilter;
 use crate::ship_ai::{TaskInsideQueue, TaskQueue};
+use crate::simulation_transform::SimulationTransform;
 use crate::trade_plan::TradePlan;
 use crate::utils::{AsteroidEntityWithTimestamp, SimulationTime, SimulationTimestamp, TradeIntent};
-use bevy::math::Vec3;
-use bevy::prelude::{error, Commands, Component, Entity, Query, Res, Transform};
+use bevy::prelude::{error, Commands, Component, Entity, Query, Res, Vec2};
 use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
 
@@ -41,7 +41,7 @@ pub fn handle_idle_ships(
     mut inventories: Query<&mut Inventory>,
     all_sectors: Query<&Sector>,
     mut all_asteroids: Query<&mut Asteroid>,
-    all_transforms: Query<&Transform>,
+    all_transforms: Query<&SimulationTransform>,
     sector_id_map: Res<SectorIdMap>,
 ) {
     let now = simulation_time.now();
@@ -154,8 +154,8 @@ pub fn handle_idle_ships(
 }
 
 fn compare_asteroid_distances(
-    all_transforms: &Query<&Transform>,
-    ship_pos: Vec3,
+    all_transforms: &Query<&SimulationTransform>,
+    ship_pos: Vec2,
     a: &AsteroidEntityWithTimestamp,
     b: &AsteroidEntityWithTimestamp,
 ) -> Ordering {

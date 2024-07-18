@@ -10,8 +10,9 @@ use crate::production::{
     OngoingShipConstructionOrder, ProductionComponent, ProductionModule, ShipyardComponent,
     ShipyardModule,
 };
+use crate::simulation_transform::SimulationTransform;
 use bevy::core::Name;
-use bevy::prelude::{Query, Transform};
+use bevy::prelude::Query;
 
 impl ProductionSaveData {
     pub fn from(production: &ProductionComponent) -> Self {
@@ -135,7 +136,7 @@ impl StationSaveData {
             &Station,
             &Name,
             &InSector,
-            &Transform,
+            &SimulationTransform,
             &Inventory,
             Option<&ProductionComponent>,
             Option<&ShipyardComponent>,

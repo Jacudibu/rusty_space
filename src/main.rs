@@ -54,6 +54,7 @@ fn main() {
     .add_plugins(asteroids::AsteroidPlugin)
     .add_plugins(camera::CameraControllerPlugin)
     .add_plugins(diagnostics::DiagnosticsPlugin)
+    .add_plugins(simulation_transform::SimulationTransformPlugin)
     .add_plugins(persistence::test_universe::TestUniverseDataPlugin)
     .add_plugins(persistence::UniverseSaveDataLoadingOnStartupPlugin)
     .add_plugins(physics::PhysicsPlugin)

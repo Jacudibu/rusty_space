@@ -1,8 +1,9 @@
 use crate::components::{InSector, Sector};
 use crate::persistence::SectorIdMap;
+use crate::simulation_transform::SimulationTransform;
 use crate::utils::SectorPosition;
 use bevy::math::Vec2;
-use bevy::prelude::{Query, Transform};
+use bevy::prelude::Query;
 use hexx::Hex;
 use serde::{Deserialize, Serialize};
 
@@ -20,23 +21,23 @@ impl LocalHexPosition {
     }
 
     #[inline]
-    pub fn from(sector: &Sector, transform: &Transform) -> Self {
+    pub fn from(sector: &Sector, transform: &SimulationTransform) -> Self {
         Self {
             sector: sector.coordinate,
-            position: transform.translation.truncate() - sector.world_pos,
+            position: transform.translation - sector.world_pos,
         }
     }
 
     #[inline]
     pub fn from_in_sector(
         in_sector: &InSector,
-        transform: &Transform,
+        transform: &SimulationTransform,
         sectors: &Query<&Sector>,
     ) -> Self {
         let sector = sectors.get(in_sector.sector.into()).unwrap();
         Self {
             sector: sector.coordinate,
-            position: transform.translation.truncate() - sector.world_pos,
+            position: transform.translation - sector.world_pos,
         }
     }
 

@@ -5,11 +5,11 @@ use crate::ship_ai::task_queue::TaskQueue;
 use crate::ship_ai::task_result::TaskResult;
 use crate::ship_ai::tasks;
 use crate::ship_ai::tasks::send_completion_events;
+use crate::simulation_transform::SimulationTransform;
 use crate::utils::{SimulationTime, TypedEntity};
 use bevy::log::error;
 use bevy::prelude::{
-    warn, Commands, Component, Entity, EulerRot, EventReader, EventWriter, Query, Res, Time,
-    Transform, With,
+    warn, Commands, Component, Entity, EventReader, EventWriter, Query, Res, Time, With,
 };
 use std::sync::{Arc, Mutex};
 
@@ -23,7 +23,7 @@ impl MoveToEntity {
     fn run(
         &self,
         this_entity: Entity,
-        all_transforms: &Query<&Transform>,
+        all_transforms: &Query<&SimulationTransform>,
         engine: &Engine,
         velocity: &mut ShipVelocity,
         time: &Time,
@@ -36,10 +36,9 @@ impl MoveToEntity {
             return TaskResult::Aborted;
         };
         let entity_transform = all_transforms.get(this_entity).unwrap();
-        let delta =
-            target_transform.translation.truncate() - entity_transform.translation.truncate();
+        let delta = target_transform.translation - entity_transform.translation;
 
-        let (_, _, own_rotation) = entity_transform.rotation.to_euler(EulerRot::XYZ);
+        let own_rotation = entity_transform.rotation.as_radians();
         let own_rotation = own_rotation + std::f32::consts::FRAC_PI_2;
 
         let target = delta.y.atan2(delta.x);
@@ -96,7 +95,7 @@ impl MoveToEntity {
         event_writer: EventWriter<TaskFinishedEvent<Self>>,
         time: Res<Time>,
         mut ships: Query<(Entity, &Self, &Engine, &mut ShipVelocity)>,
-        all_transforms: Query<&Transform>,
+        all_transforms: Query<&SimulationTransform>,
     ) {
         let task_completions = Arc::new(Mutex::new(Vec::<TaskFinishedEvent<Self>>::new()));
 

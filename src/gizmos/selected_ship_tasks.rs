@@ -33,8 +33,8 @@ pub fn draw_selected_ship_task(
                 }
                 TaskInsideQueue::UseGate { enter_gate, .. } => {
                     let gate = all_gates.get(enter_gate.into()).unwrap();
-                    gizmos.linestrip(gate.transit_curve.iter_positions(10), GIZMO_COLOR);
-                    current_position = gate.transit_curve.position(1.0);
+                    gizmos.linestrip_2d(gate.transit_curve.iter_positions(10), GIZMO_COLOR);
+                    current_position = gate.transit_curve.position(1.0).extend(0.0);
                 }
                 TaskInsideQueue::MineAsteroid { target, .. } => {
                     let asteroid_pos = all_transforms.get(target.into()).unwrap().translation;

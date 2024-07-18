@@ -4,9 +4,9 @@ use crate::persistence::local_hex_position::LocalHexPosition;
 use crate::persistence::{AllEntityIdMaps, ComponentWithPersistentId};
 use crate::physics::ShipVelocity;
 use crate::ship_ai::{AutoMineBehavior, AutoTradeBehavior, TaskQueue};
+use crate::simulation_transform::SimulationTransform;
 use bevy::core::Name;
-use bevy::math::EulerRot;
-use bevy::prelude::{Query, Transform};
+use bevy::prelude::Query;
 
 impl ShipSaveData {
     pub fn from(
@@ -14,7 +14,7 @@ impl ShipSaveData {
             &Ship,
             &Name,
             &InSector,
-            &Transform,
+            &SimulationTransform,
             &TaskQueue,
             &ShipVelocity,
             &Inventory,
@@ -29,7 +29,7 @@ impl ShipSaveData {
             name: name.to_string(),
             position: LocalHexPosition::from_in_sector(in_sector, transform, sectors),
             forward_velocity: velocity.forward,
-            rotation: transform.rotation.to_euler(EulerRot::XYZ).2,
+            rotation_degrees: transform.rotation.as_degrees(),
             angular_velocity: velocity.angular,
             behavior: ShipBehaviorSaveData::from(auto_trade, auto_mine),
             task_queue: task_queue
