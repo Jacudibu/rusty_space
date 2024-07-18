@@ -14,6 +14,7 @@ pub use {
 };
 
 #[derive(Default, Serialize, Deserialize)]
+#[cfg_attr(test, derive(Clone, Debug, PartialEq))]
 pub struct UniverseSaveData {
     pub gate_pairs: SaveDataCollection<GatePairSaveData>,
     pub sectors: SaveDataCollection<SectorSaveData>,
@@ -22,6 +23,7 @@ pub struct UniverseSaveData {
 }
 
 #[derive(Resource, Serialize, Deserialize)]
+#[cfg_attr(test, derive(Clone, Debug, PartialEq))]
 pub struct SaveDataCollection<T> {
     pub data: Vec<T>,
 }

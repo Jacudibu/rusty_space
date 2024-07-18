@@ -11,6 +11,7 @@ use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
 
 #[derive(Eq, PartialEq, Serialize, Deserialize, Copy, Clone)]
+#[cfg_attr(test, derive(Debug))]
 pub enum AutoMineState {
     Mining,
     Trading,

@@ -7,11 +7,13 @@ use crate::utils::{PriceSetting, SimulationTimestamp};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone)]
+#[cfg_attr(test, derive(Debug, PartialEq))]
 pub struct ProductionSaveData {
     pub modules: Vec<ProductionModuleSaveData>,
 }
 
 #[derive(Serialize, Deserialize, Copy, Clone)]
+#[cfg_attr(test, derive(Debug, PartialEq))]
 pub struct ProductionModuleSaveData {
     pub module_id: ProductionModuleId,
     pub amount: u32,
@@ -20,6 +22,7 @@ pub struct ProductionModuleSaveData {
 }
 
 #[derive(Serialize, Deserialize, Clone)]
+#[cfg_attr(test, derive(Debug, PartialEq))]
 pub struct ShipyardModuleSaveData {
     pub module_id: ShipyardModuleId,
     pub amount: u32,
@@ -27,18 +30,21 @@ pub struct ShipyardModuleSaveData {
 }
 
 #[derive(Serialize, Deserialize, Clone)]
+#[cfg_attr(test, derive(Debug, PartialEq))]
 pub struct ActiveShipyardOrderSaveData {
     pub finished_at: SimulationTimestamp,
     pub ship_config: ShipConfigId,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
+#[cfg_attr(test, derive(Debug, PartialEq))]
 pub struct ShipyardSaveData {
     pub queue: Vec<ShipConfigId>,
     pub modules: Vec<ShipyardModuleSaveData>,
 }
 
 #[derive(Serialize, Deserialize)]
+#[cfg_attr(test, derive(Clone, Debug, PartialEq))]
 pub struct StationSaveData {
     pub id: PersistentStationId,
     pub name: String,
@@ -51,16 +57,19 @@ pub struct StationSaveData {
 }
 
 #[derive(Serialize, Deserialize, Clone)]
+#[cfg_attr(test, derive(Debug, PartialEq))]
 pub struct SerializedBuyOrder {
     pub orders: Vec<SerializedBuyOrderData>,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
+#[cfg_attr(test, derive(Debug, PartialEq))]
 pub struct SerializedSellOrder {
     pub orders: Vec<SerializedSellOrderData>,
 }
 
 #[derive(Serialize, Deserialize, Copy, Clone)]
+#[cfg_attr(test, derive(Debug, PartialEq))]
 pub struct SerializedBuyOrderData {
     pub item_id: ItemId,
     pub amount: u32,
@@ -70,6 +79,7 @@ pub struct SerializedBuyOrderData {
 }
 
 #[derive(Serialize, Deserialize, Copy, Clone)]
+#[cfg_attr(test, derive(Debug, PartialEq))]
 pub struct SerializedSellOrderData {
     pub item_id: ItemId,
     pub amount: u32,

@@ -11,6 +11,7 @@ use std::sync::atomic::{AtomicU32, Ordering};
 /// A unique ID that's the same between session and across different clients in multiplayer sessions.
 /// (Sectors are just represented as Hex coordinates)
 #[derive(Serialize, Deserialize)]
+#[cfg_attr(test, derive(Clone, Debug, PartialEq))]
 pub enum PersistentEntityId {
     Asteroid(PersistentAsteroidId),
     Gate(PersistentGateId),

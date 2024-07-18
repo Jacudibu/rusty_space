@@ -5,6 +5,7 @@ use hexx::Hex;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
+#[cfg_attr(test, derive(Clone, Debug, PartialEq))]
 pub struct AsteroidSaveData {
     pub id: PersistentAsteroidId,
     pub ore_current: u32,
@@ -17,11 +18,13 @@ pub struct AsteroidSaveData {
 }
 
 #[derive(Serialize, Deserialize, Copy, Clone)]
+#[cfg_attr(test, derive(Debug, PartialEq))]
 pub struct SectorAsteroidSaveData {
     pub average_velocity: Vec2,
 }
 
 #[derive(Serialize, Deserialize)]
+#[cfg_attr(test, derive(Clone, Debug, PartialEq))]
 pub struct SectorSaveData {
     pub coordinate: Hex,
     pub asteroid_data: Option<SectorAsteroidSaveData>,

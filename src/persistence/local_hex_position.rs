@@ -7,6 +7,7 @@ use hexx::Hex;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
+#[cfg_attr(test, derive(Clone, Debug, PartialEq))]
 pub struct LocalHexPosition {
     pub sector: Hex,
     pub position: Vec2,

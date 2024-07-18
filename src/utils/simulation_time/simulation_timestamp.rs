@@ -54,6 +54,7 @@ impl CurrentSimulationTimestamp {
 
 /// Represents a specific Timestamp in Milliseconds since session start.
 #[derive(Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(test, derive(Debug))]
 pub struct SimulationTimestamp(Milliseconds);
 
 impl SimulationTimestamp {

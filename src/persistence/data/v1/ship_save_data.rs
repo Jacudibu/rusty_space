@@ -7,6 +7,7 @@ use crate::utils::SimulationTimestamp;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
+#[cfg_attr(test, derive(Clone, Debug, PartialEq))]
 pub struct ShipSaveData {
     pub id: PersistentShipId,
     pub name: String,
@@ -20,6 +21,7 @@ pub struct ShipSaveData {
 }
 
 #[derive(Serialize, Deserialize, Copy, Clone)]
+#[cfg_attr(test, derive(Debug, PartialEq))]
 pub enum ShipBehaviorSaveData {
     AutoTrade {
         next_idle_update: SimulationTimestamp,

@@ -2,6 +2,7 @@ use crate::utils::PriceRange;
 use serde::{Deserialize, Serialize};
 
 #[derive(Copy, Clone, Serialize, Deserialize)]
+#[cfg_attr(test, derive(Debug, PartialEq))]
 pub enum PriceSetting {
     Dynamic(PriceRange),
 }

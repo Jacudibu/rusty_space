@@ -4,6 +4,7 @@ use hexx::Hex;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
+#[cfg_attr(test, derive(Clone, Debug, PartialEq))]
 pub enum TaskSaveData {
     ExchangeWares {
         target: PersistentEntityId,
@@ -24,6 +25,7 @@ pub enum TaskSaveData {
 }
 
 #[derive(Serialize, Deserialize)]
+#[cfg_attr(test, derive(Clone, Debug, PartialEq))]
 pub enum ExchangeWareSaveData {
     Buy(ItemId, u32),
     Sell(ItemId, u32),
