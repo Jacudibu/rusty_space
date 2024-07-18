@@ -1,3 +1,4 @@
+use bevy::prelude::Resource;
 use serde::{Deserialize, Serialize};
 
 mod gate_save_data;
@@ -20,7 +21,7 @@ pub struct UniverseSaveData {
     pub stations: SaveDataCollection<StationSaveData>,
 }
 
-#[derive(Default, Serialize, Deserialize)]
+#[derive(Default, Resource, Serialize, Deserialize)]
 pub struct SaveDataCollection<T> {
     pub data: Vec<T>,
 }

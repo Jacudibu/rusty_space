@@ -16,7 +16,7 @@ pub fn spawn_ship(
     sector: SectorEntity,
     position: Vec2,
     rotation: f32,
-    behavior: BehaviorBuilder,
+    behavior: &BehaviorBuilder,
     ship_id_map: &mut ShipIdMap,
 ) {
     let mut sector_data = sector_query.get_mut(sector.into()).unwrap();

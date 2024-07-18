@@ -75,32 +75,32 @@ impl StationSpawnDataInstanceBuilder {
         sector_id_map: &SectorIdMap,
         game_data: &GameData,
     ) {
-        let sector_entity = sector_id_map.get_entity(&self.position.sector).unwrap();
-
-        // TODO: Dynamically create those depending on production
-        //         Manual overrides will come later, and shouldn't be a priority here for now
-        let buys = self.buys.iter().map(|x| &game_data.items[x]).collect();
-        let sells = self.sells.iter().map(|x| &game_data.items[x]).collect();
-
-        let production = if self.production_modules.is_empty() {
-            None
-        } else {
-            // TODO: Skip MockProductionArgs once test_universe has been replaced
-            Some(MockStationProductionArgs::new(
-                self.production_modules
-                    .iter()
-                    .map(|x| {
-                        MockStationProductionArgElement::new(x.module_id, x.active_recipe, x.amount)
-                    })
-                    .collect(),
-            ))
-        };
-        let shipyard = if self.shipyard_modules.is_empty() {
-            None
-        } else {
-            // TODO: ??? This should definitely be more than a boolean now. Fix once test_universe has been replaced
-            Some(true)
-        };
+        // let sector_entity = sector_id_map.get_entity(&self.position.sector).unwrap();
+        //
+        // // TODO: Dynamically create those depending on production
+        // //         Manual overrides will come later, and shouldn't be a priority here for now
+        // let buys = self.buys.iter().map(|x| &game_data.items[x]).collect();
+        // let sells = self.sells.iter().map(|x| &game_data.items[x]).collect();
+        //
+        // let production = if self.production_modules.is_empty() {
+        //     None
+        // } else {
+        //     // TODO: Skip MockProductionArgs once test_universe has been replaced
+        //     Some(MockStationProductionArgs::new(
+        //         self.production_modules
+        //             .iter()
+        //             .map(|x| {
+        //                 MockStationProductionArgElement::new(x.module_id, x.active_recipe, x.amount)
+        //             })
+        //             .collect(),
+        //     ))
+        // };
+        // let shipyard = if self.shipyard_modules.is_empty() {
+        //     None
+        // } else {
+        //     // TODO: ??? This should definitely be more than a boolean now. Fix once test_universe has been replaced
+        //     Some(true)
+        // };
 
         // spawn_station(
         //     commands,

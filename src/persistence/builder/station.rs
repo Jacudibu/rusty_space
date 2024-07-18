@@ -9,36 +9,35 @@ use crate::production::{
 use crate::universe_builder::LocalHexPosition;
 use crate::utils::spawn_helpers;
 use crate::SpriteHandles;
+use bevy::ecs::system::SystemParam;
 use bevy::prelude::{Commands, Query, Res};
 use bevy::utils::hashbrown::HashMap;
 
-impl SaveDataCollection<StationSaveData> {
+#[derive(SystemParam)]
+pub struct Args<'w, 's> {
+    commands: Commands<'w, 's>,
+    sprites: Res<'w, SpriteHandles>,
+    sectors: Query<'w, 's, &'static mut Sector>,
+    sector_id_map: Res<'w, SectorIdMap>,
+    game_data: Res<'w, GameData>,
+}
+
+type SaveData = SaveDataCollection<StationSaveData>;
+
+pub fn spawn_all(data: Res<SaveData>, mut args: Args) {
+    let mut station_id_map = StationIdMap::new();
+    for builder in &data.data {
+        builder.build(&mut args, &mut station_id_map);
+    }
+
+    args.commands.remove_resource::<SaveData>();
+    args.commands.insert_resource(station_id_map);
+}
+
+impl SaveData {
     pub fn add(&mut self, position: LocalHexPosition, name: String) -> &mut StationSaveData {
         self.data.push(StationSaveData::new(position, name));
         self.data.last_mut().unwrap()
-    }
-
-    pub fn spawn_all(
-        &self,
-        mut commands: Commands,
-        mut sectors: Query<&mut Sector>,
-        sprites: Res<SpriteHandles>,
-        sector_id_map: Res<SectorIdMap>,
-        game_data: Res<GameData>,
-    ) {
-        let mut station_id_map = StationIdMap::new();
-        for builder in &self.data {
-            builder.build(
-                &mut commands,
-                &mut sectors,
-                &mut station_id_map,
-                &sprites,
-                &sector_id_map,
-                &game_data,
-            );
-        }
-
-        commands.insert_resource(station_id_map);
     }
 }
 
@@ -56,35 +55,30 @@ impl StationSaveData {
         }
     }
 
-    pub fn build(
-        &self,
-        commands: &mut Commands,
-        sectors: &mut Query<&mut Sector>,
-        station_id_map: &mut StationIdMap,
-        sprites: &SpriteHandles,
-        sector_id_map: &SectorIdMap,
-        game_data: &GameData,
-    ) {
-        let sector_entity = sector_id_map.get_entity(&self.position.sector).unwrap();
+    pub fn build(&self, args: &mut Args, station_id_map: &mut StationIdMap) {
+        let sector_entity = args
+            .sector_id_map
+            .get_entity(&self.position.sector)
+            .unwrap();
 
         // TODO: All custom trade data is lost right now
         let buys = self
             .buy_orders
             .clone()
-            .map_or_else(Vec::new, |x| x.parse(game_data));
+            .map_or_else(Vec::new, |x| x.parse(&args.game_data));
         let sells = self
             .sell_orders
             .clone()
-            .map_or_else(Vec::new, |x| x.parse(game_data));
+            .map_or_else(Vec::new, |x| x.parse(&args.game_data));
 
         let production = self.production_modules.clone().map(|x| x.parse());
         let shipyard = self.shipyard_modules.clone().map(|x| x.parse());
 
         spawn_helpers::spawn_station(
-            commands,
-            sectors,
+            &mut args.commands,
+            &mut args.sectors,
             station_id_map,
-            sprites,
+            &args.sprites,
             &self.name,
             self.position.position,
             *sector_entity,

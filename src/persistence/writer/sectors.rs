@@ -23,7 +23,7 @@ impl AsteroidSaveData {
 }
 
 impl SectorAsteroidSaveData {
-    pub fn from(data: SectorAsteroidData) -> Self {
+    pub fn from(data: &SectorAsteroidData) -> Self {
         Self {
             average_velocity: data.average_velocity,
         }
@@ -51,7 +51,10 @@ impl SectorSaveData {
 
         Self {
             coordinate: sector.coordinate,
-            asteroid_data: sector.asteroid_data.map(SectorAsteroidSaveData::from),
+            asteroid_data: sector
+                .asteroid_data
+                .as_ref()
+                .map(SectorAsteroidSaveData::from),
             live_asteroids,
             respawning_asteroids,
         }

@@ -16,7 +16,7 @@ impl GateSpawnDataInstanceBuilder {
         commands: &mut Commands,
         sprites: &SpriteHandles,
         sectors: &mut Query<&mut Sector>,
-        sector_id_map_entity_map: &SectorIdMap,
+        sector_id_map: &SectorIdMap,
         gate_id_map: &mut GateIdMap,
     ) {
         // TODO: SectorPosition is exclusively used for gate spawning, might be best to remove it
@@ -27,8 +27,8 @@ impl GateSpawnDataInstanceBuilder {
             gate_id_map,
             sectors,
             sprites,
-            self.from.to_sector_position(sector_id_map_entity_map),
-            self.to.to_sector_position(sector_id_map_entity_map),
+            self.from.to_sector_position(sector_id_map),
+            self.to.to_sector_position(sector_id_map),
         )
     }
 }

@@ -116,7 +116,7 @@ pub fn check_if_production_is_finished_and_start_new_one(
                     in_sector.get(),
                     transform.translation.truncate(),
                     0.0,
-                    BehaviorBuilder::AutoTrade {
+                    &BehaviorBuilder::AutoTrade {
                         next_idle_update: SimulationTimestamp::MIN,
                     },
                     &mut ship_id_map,

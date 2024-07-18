@@ -5,9 +5,30 @@ use crate::ship_ai::BehaviorBuilder;
 use crate::universe_builder::LocalHexPosition;
 use crate::utils::{spawn_helpers, SimulationTimestamp};
 use crate::SpriteHandles;
+use bevy::ecs::system::SystemParam;
 use bevy::prelude::{Commands, Query, Res};
 
-impl SaveDataCollection<ShipSaveData> {
+type SaveData = SaveDataCollection<ShipSaveData>;
+
+#[derive(SystemParam)]
+pub struct Args<'w, 's> {
+    commands: Commands<'w, 's>,
+    sprites: Res<'w, SpriteHandles>,
+    sectors: Query<'w, 's, &'static mut Sector>,
+    sector_id_map: Res<'w, SectorIdMap>,
+}
+
+pub fn spawn_all(data: Res<SaveData>, mut args: Args) {
+    let mut ship_id_map = ShipIdMap::new();
+    for builder in &data.data {
+        builder.build(&mut args, &mut ship_id_map);
+    }
+
+    args.commands.remove_resource::<SaveData>();
+    args.commands.insert_resource(ship_id_map);
+}
+
+impl SaveData {
     pub fn add(
         &mut self,
         position: LocalHexPosition,
@@ -24,53 +45,25 @@ impl SaveDataCollection<ShipSaveData> {
             behavior: ShipBehaviorSaveData::AutoTrade {
                 next_idle_update: SimulationTimestamp::MIN,
             },
-            task_queue: Vec::new(),
+            task_queue: Vec::new(), // TODO
             inventory: InventorySaveData { items: Vec::new() },
         });
         self.data.last_mut().unwrap()
     }
-
-    pub fn spawn_all(
-        &self,
-        mut commands: Commands,
-        mut sectors: Query<&mut Sector>,
-        sprites: Res<SpriteHandles>,
-        sector_id_map: Res<SectorIdMap>,
-    ) {
-        let mut ship_id_map = ShipIdMap::new();
-        for builder in &self.data {
-            builder.build(
-                &mut commands,
-                &mut sectors,
-                &sprites,
-                &sector_id_map,
-                &mut ship_id_map,
-            );
-        }
-
-        commands.insert_resource(ship_id_map);
-    }
 }
 
 impl ShipSaveData {
-    pub fn build(
-        &self,
-        commands: &mut Commands,
-        sectors: &mut Query<&mut Sector>,
-        sprites: &SpriteHandles,
-        sector_id_map: &SectorIdMap,
-        ship_id_map: &mut ShipIdMap,
-    ) {
-        let sector_entity = sector_id_map.id_to_entity()[&self.position.sector];
+    pub fn build(&self, args: &mut Args, ship_id_map: &mut ShipIdMap) {
+        let sector_entity = args.sector_id_map.id_to_entity()[&self.position.sector];
         spawn_helpers::spawn_ship(
-            commands,
-            sprites,
+            &mut args.commands,
+            &args.sprites,
             self.name.clone(),
-            sectors,
+            &mut args.sectors,
             sector_entity,
             self.position.position,
             self.rotation,
-            BehaviorBuilder::from(self.behavior.clone()),
+            &BehaviorBuilder::from(self.behavior),
             ship_id_map,
         );
     }

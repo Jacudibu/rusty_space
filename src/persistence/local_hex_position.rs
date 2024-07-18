@@ -40,9 +40,9 @@ impl LocalHexPosition {
     }
 
     #[inline]
-    pub fn to_sector_position(&self, sector_id_map_entity_map: &SectorIdMap) -> SectorPosition {
+    pub fn to_sector_position(&self, sector_id_map: &SectorIdMap) -> SectorPosition {
         SectorPosition {
-            sector: sector_id_map_entity_map.id_to_entity()[&self.sector],
+            sector: sector_id_map.id_to_entity()[&self.sector],
             local_position: self.position,
         }
     }

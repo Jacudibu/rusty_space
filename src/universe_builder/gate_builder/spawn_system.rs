@@ -9,7 +9,7 @@ pub fn spawn_all_gates(
     spawn_data: Res<GateSpawnData>,
     sprites: Res<SpriteHandles>,
     mut sectors: Query<&mut Sector>,
-    sector_id_map_entity_map: Res<SectorIdMap>,
+    sector_id_map: Res<SectorIdMap>,
 ) {
     let mut gate_id_map = GateIdMap::new();
     for builder in &spawn_data.gates {
@@ -17,7 +17,7 @@ pub fn spawn_all_gates(
             &mut commands,
             &sprites,
             &mut sectors,
-            &sector_id_map_entity_map,
+            &sector_id_map,
             &mut gate_id_map,
         );
     }

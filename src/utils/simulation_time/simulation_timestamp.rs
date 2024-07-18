@@ -90,6 +90,13 @@ impl From<CurrentSimulationTimestamp> for SimulationTimestamp {
     }
 }
 
+#[cfg(test)]
+impl From<Milliseconds> for SimulationTimestamp {
+    fn from(value: Milliseconds) -> Self {
+        Self(value)
+    }
+}
+
 impl Ord for SimulationTimestamp {
     fn cmp(&self, other: &Self) -> Ordering {
         self.0.cmp(&other.0)
