@@ -4,9 +4,10 @@ use bevy::asset::AssetServer;
 use bevy::core::Name;
 use bevy::prelude::{
     App, Camera2dBundle, Commands, Handle, Image, ImagePlugin, PluginGroup, Res, Resource, Startup,
-    Window, WindowPlugin,
+    Time, Window, WindowPlugin,
 };
 use bevy::render::camera::ScalingMode;
+use bevy::time::Fixed;
 use bevy::DefaultPlugins;
 use bevy_egui::EguiPlugin;
 
@@ -26,6 +27,7 @@ mod physics;
 mod production;
 mod session_data;
 mod ship_ai;
+mod simulation_transform;
 mod trade_plan;
 mod utils;
 
@@ -55,6 +57,7 @@ fn main() {
     .add_plugins(persistence::test_universe::TestUniverseDataPlugin)
     .add_plugins(persistence::UniverseSaveDataLoadingOnStartupPlugin)
     .add_plugins(physics::PhysicsPlugin)
+    .insert_resource(Time::<Fixed>::from_hz(10.0))
     .insert_resource(GameData::mock_data())
     .insert_resource(SessionData::mock_data())
     .add_systems(Startup, initialize_data);
