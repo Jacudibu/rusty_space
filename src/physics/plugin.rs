@@ -1,14 +1,13 @@
 use crate::components::InSector;
 use crate::physics::constant_velocity::ConstantVelocity;
 use crate::physics::ShipVelocity;
-use bevy::app::PostUpdate;
-use bevy::prelude::{App, Plugin, Query, Res, Time, Transform, With};
+use bevy::prelude::{App, FixedPostUpdate, Plugin, Query, Res, Time, Transform, With};
 
 /// Beautifully simplified fake physics.
 pub struct PhysicsPlugin;
 impl Plugin for PhysicsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(PostUpdate, (move_ships, move_constant_stuff));
+        app.add_systems(FixedPostUpdate, (move_ships, move_constant_stuff));
     }
 }
 

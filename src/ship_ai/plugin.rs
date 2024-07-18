@@ -2,7 +2,7 @@ use crate::ship_ai::behaviors;
 use crate::ship_ai::task_finished_event::TaskFinishedEvent;
 use crate::ship_ai::tasks::{ExchangeWares, MineAsteroid, MoveToEntity, UseGate};
 use bevy::app::App;
-use bevy::prelude::{on_event, IntoSystemConfigs, Plugin, PostUpdate, Update};
+use bevy::prelude::{on_event, FixedPostUpdate, FixedUpdate, IntoSystemConfigs, Plugin};
 
 pub struct ShipAiPlugin;
 impl Plugin for ShipAiPlugin {
@@ -13,7 +13,7 @@ impl Plugin for ShipAiPlugin {
         app.add_event::<TaskFinishedEvent<UseGate>>();
         app.add_event::<TaskFinishedEvent<MineAsteroid>>();
         app.add_systems(
-            Update,
+            FixedUpdate,
             (
                 behaviors::auto_trade::handle_idle_ships,
                 behaviors::auto_mine::handle_idle_ships,
@@ -28,7 +28,7 @@ impl Plugin for ShipAiPlugin {
             ),
         );
         app.add_systems(
-            PostUpdate,
+            FixedPostUpdate,
             (ExchangeWares::on_task_creation, UseGate::on_task_creation),
         );
     }
