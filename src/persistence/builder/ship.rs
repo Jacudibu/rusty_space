@@ -40,7 +40,7 @@ impl SaveData {
             id: PersistentShipId::next(),
             name,
             position,
-            rotation,
+            rotation_degrees: rotation,
             behavior,
             forward_velocity: 0.0,
             angular_velocity: 0.0,
@@ -62,7 +62,7 @@ impl ShipSaveData {
             &mut args.sectors,
             sector_entity,
             self.position.position,
-            self.rotation,
+            self.rotation_degrees,
             &BehaviorBuilder::from(self.behavior),
             ship_id_map,
         );

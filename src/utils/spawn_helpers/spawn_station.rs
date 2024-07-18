@@ -2,12 +2,13 @@ use crate::components::{BuyOrders, Inventory, Sector, SelectableEntity, SellOrde
 use crate::game_data::ItemDefinition;
 use crate::persistence::{PersistentStationId, StationIdMap};
 use crate::production::{ProductionComponent, ShipyardComponent};
+use crate::simulation_transform::SimulationTransform;
 use crate::utils::{SectorEntity, StationEntity};
 use crate::{constants, SpriteHandles};
 use bevy::color::Color;
 use bevy::core::Name;
 use bevy::math::Vec2;
-use bevy::prelude::{default, Commands, Query, Sprite, SpriteBundle, Transform};
+use bevy::prelude::{default, Commands, Query, Sprite, SpriteBundle};
 
 #[allow(clippy::too_many_arguments)] // It's hopeless... :')
 pub fn spawn_station(
@@ -17,7 +18,7 @@ pub fn spawn_station(
     sprites: &SpriteHandles,
     id: PersistentStationId,
     name: &str,
-    pos: Vec2,
+    local_pos: Vec2,
     sector_entity: SectorEntity,
     buys: Vec<&ItemDefinition>,
     sells: Vec<&ItemDefinition>,
@@ -25,8 +26,6 @@ pub fn spawn_station(
     shipyard: Option<ShipyardComponent>,
 ) {
     let mut sector = sector_query.get_mut(sector_entity.into()).unwrap();
-
-    let pos = pos + sector.world_pos;
 
     let icon_sprite = match sells.first() {
         None => {
@@ -45,12 +44,14 @@ pub fn spawn_station(
         },
     };
 
+    let simulation_transform = SimulationTransform::from_translation(local_pos + sector.world_pos);
+
     let _icon_entity = commands
         .spawn((
             Name::new(format!("{name} (Icon)")),
             SpriteBundle {
                 texture: icon_sprite,
-                transform: Transform::from_translation(pos.extend(constants::STATION_ICON_LAYER)),
+                transform: simulation_transform.as_transform(constants::STATION_ICON_LAYER),
                 sprite: Sprite {
                     color: Color::linear_rgb(0.0, 0.0, 0.0),
                     ..default()
@@ -67,7 +68,7 @@ pub fn spawn_station(
             Station::new(id),
             SpriteBundle {
                 texture: sprites.station.clone(),
-                transform: Transform::from_xyz(pos.x, pos.y, constants::STATION_LAYER),
+                transform: simulation_transform.as_transform(constants::STATION_LAYER),
                 ..default()
             },
             Inventory::new_with_content(
@@ -77,6 +78,7 @@ pub fn spawn_station(
                     .map(|x| (x.id, constants::MOCK_STATION_INVENTORY_SIZE))
                     .collect(),
             ),
+            simulation_transform,
         ))
         .id();
 

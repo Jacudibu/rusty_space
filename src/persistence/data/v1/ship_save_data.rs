@@ -13,7 +13,7 @@ pub struct ShipSaveData {
     pub name: String,
     pub position: LocalHexPosition,
     pub forward_velocity: f32,
-    pub rotation: f32,
+    pub rotation_degrees: f32,
     pub angular_velocity: f32,
     pub behavior: ShipBehaviorSaveData,
     pub task_queue: Vec<TaskSaveData>,

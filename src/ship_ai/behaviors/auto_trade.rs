@@ -1,8 +1,9 @@
-use bevy::prelude::{Commands, Component, Entity, Query, Res, Transform};
+use bevy::prelude::{Commands, Component, Entity, Query, Res};
 
 use crate::components::{BuyOrders, InSector, Inventory, Sector, SellOrders, TradeOrder};
 use crate::ship_ai::ship_is_idle_filter::ShipIsIdleFilter;
 use crate::ship_ai::TaskQueue;
+use crate::simulation_transform::SimulationTransform;
 use crate::trade_plan::TradePlan;
 use crate::utils::{SimulationTime, SimulationTimestamp, TradeIntent, TypedEntity};
 
@@ -28,7 +29,7 @@ pub fn handle_idle_ships(
     mut sell_orders: Query<(Entity, &mut SellOrders, &InSector)>,
     mut inventories: Query<&mut Inventory>,
     all_sectors: Query<&Sector>,
-    all_transforms: Query<&Transform>,
+    all_transforms: Query<&SimulationTransform>,
 ) {
     let now = simulation_time.now();
 

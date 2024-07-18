@@ -1,7 +1,7 @@
 use std::sync::{Arc, Mutex};
 
 use bevy::prelude::{
-    error, Commands, Component, Entity, EventReader, EventWriter, Query, Res, Time, Transform, With,
+    error, Commands, Component, Entity, EventReader, EventWriter, Query, Res, Time, With,
 };
 
 use crate::components::{Gate, InSector, Sector};
@@ -12,6 +12,7 @@ use crate::ship_ai::task_queue::TaskQueue;
 use crate::ship_ai::task_result::TaskResult;
 use crate::ship_ai::tasks::send_completion_events;
 use crate::ship_ai::{tasks, MoveToEntity};
+use crate::simulation_transform::SimulationTransform;
 use crate::utils::{interpolation, ShipEntity, SimulationTime};
 use crate::utils::{GateEntity, SectorEntity};
 
@@ -26,7 +27,7 @@ impl UseGate {
     fn run(
         &mut self,
         delta_travel: f32,
-        transform: &mut Transform,
+        transform: &mut SimulationTransform,
         transit_curve_query: &Query<&Gate>,
     ) -> TaskResult {
         self.progress += delta_travel;
@@ -44,7 +45,7 @@ impl UseGate {
     pub fn run_tasks(
         event_writer: EventWriter<TaskFinishedEvent<Self>>,
         time: Res<Time>,
-        mut ships: Query<(Entity, &mut Self, &mut Transform)>,
+        mut ships: Query<(Entity, &mut Self, &mut SimulationTransform)>,
         transit_curve_query: Query<&Gate>,
     ) {
         let task_completions = Arc::new(Mutex::new(Vec::<TaskFinishedEvent<Self>>::new()));

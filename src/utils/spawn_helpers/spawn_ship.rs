@@ -2,11 +2,12 @@ use crate::components::{Engine, Inventory, Sector, SelectableEntity, Ship};
 use crate::persistence::{PersistentShipId, ShipIdMap};
 use crate::physics::ShipVelocity;
 use crate::ship_ai::{BehaviorBuilder, TaskQueue};
+use crate::simulation_transform::SimulationTransform;
 use crate::utils::{SectorEntity, ShipEntity};
 use crate::{constants, SpriteHandles};
 use bevy::core::Name;
-use bevy::math::{Quat, Vec2};
-use bevy::prelude::{default, Commands, Query, SpriteBundle, Transform};
+use bevy::math::Vec2;
+use bevy::prelude::{default, Commands, Query, Rot2, SpriteBundle};
 
 pub fn spawn_ship(
     commands: &mut Commands,
@@ -22,6 +23,12 @@ pub fn spawn_ship(
 ) {
     let mut sector_data = sector_query.get_mut(sector.into()).unwrap();
 
+    let simulation_transform = SimulationTransform::new(
+        sector_data.world_pos + position,
+        Rot2::radians(rotation),
+        1.0,
+    );
+
     let entity = commands
         .spawn((
             Name::new(name),
@@ -33,13 +40,10 @@ pub fn spawn_ship(
             TaskQueue::new(),
             SpriteBundle {
                 texture: sprites.ship.clone(),
-                transform: Transform {
-                    rotation: Quat::from_rotation_z(rotation),
-                    translation: (sector_data.world_pos + position).extend(constants::SHIP_LAYER),
-                    ..default()
-                },
+                transform: simulation_transform.as_transform(constants::SHIP_LAYER),
                 ..default()
             },
+            simulation_transform,
         ))
         .id();
 

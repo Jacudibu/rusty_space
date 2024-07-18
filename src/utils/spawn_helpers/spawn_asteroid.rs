@@ -2,13 +2,14 @@ use crate::components::{Asteroid, AsteroidState, Sector, SelectableEntity};
 use crate::persistence::{AsteroidIdMap, PersistentAsteroidId};
 use crate::physics::ConstantVelocity;
 use crate::ship_ai::AutoTradeBehavior;
+use crate::simulation_transform::SimulationTransform;
 use crate::utils::{
     AsteroidEntity, AsteroidEntityWithTimestamp, SectorEntity, SimulationTimestamp,
 };
 use crate::{constants, SpriteHandles};
 use bevy::core::Name;
-use bevy::math::{Quat, Vec2};
-use bevy::prelude::{default, Commands, SpriteBundle, Transform};
+use bevy::math::Vec2;
+use bevy::prelude::{default, Commands, Rot2, SpriteBundle};
 
 #[allow(clippy::too_many_arguments)]
 pub fn spawn_asteroid(
@@ -31,6 +32,12 @@ pub fn spawn_asteroid(
         AsteroidState::Spawned { until: despawn_at },
     );
 
+    let simulation_transform = SimulationTransform::new(
+        sector.world_pos + local_position,
+        Rot2::radians(sprite_rotation * std::f32::consts::PI * 1000.0),
+        asteroid.scale_depending_on_current_ore_volume(),
+    );
+
     let entity = commands
         .spawn((
             Name::new(name),
@@ -39,16 +46,10 @@ pub fn spawn_asteroid(
             ConstantVelocity::new(velocity, sprite_rotation),
             SpriteBundle {
                 texture: sprites.asteroid.clone(),
-                transform: Transform {
-                    rotation: Quat::from_rotation_z(
-                        sprite_rotation * std::f32::consts::PI * 1000.0,
-                    ),
-                    translation: (sector.world_pos + local_position)
-                        .extend(constants::ASTEROID_LAYER),
-                    scale: asteroid.scale_depending_on_current_ore_volume(),
-                },
+                transform: simulation_transform.as_transform(constants::ASTEROID_LAYER),
                 ..default()
             },
+            simulation_transform,
             asteroid,
         ))
         .id();

@@ -2,20 +2,20 @@ use crate::components::{Asteroid, Sector, SectorAsteroidData};
 use crate::persistence::data::v1::*;
 use crate::persistence::ComponentWithPersistentId;
 use crate::physics::ConstantVelocity;
-use bevy::math::EulerRot;
-use bevy::prelude::{Query, Transform};
+use crate::simulation_transform::SimulationTransform;
+use bevy::prelude::Query;
 
 impl AsteroidSaveData {
     pub fn from(
-        (asteroid, transform, velocity): (&Asteroid, &Transform, &ConstantVelocity),
+        (asteroid, transform, velocity): (&Asteroid, &SimulationTransform, &ConstantVelocity),
     ) -> Self {
         Self {
             id: asteroid.id(),
             ore_current: asteroid.ore,
             ore_max: asteroid.ore_max,
-            position: transform.translation.truncate(),
-            rotation: transform.rotation.to_euler(EulerRot::XYZ).2,
-            velocity: velocity.velocity.truncate(),
+            position: transform.translation,
+            rotation_degrees: transform.rotation.as_degrees(),
+            velocity: velocity.velocity,
             angular_velocity: velocity.sprite_rotation,
             lifetime: asteroid.state.timestamp(),
         }
@@ -33,7 +33,7 @@ impl SectorAsteroidSaveData {
 impl SectorSaveData {
     pub fn from(
         sector: &Sector,
-        asteroids: &Query<(&Asteroid, &Transform, &ConstantVelocity)>,
+        asteroids: &Query<(&Asteroid, &SimulationTransform, &ConstantVelocity)>,
     ) -> Self {
         let live_asteroids = sector
             .asteroids

@@ -1,17 +1,17 @@
 use crate::components::Sector;
 use crate::pathfinding::search_node::{SearchNode, GATE_COST};
 use crate::pathfinding::PathElement;
+use crate::simulation_transform::SimulationTransform;
 use crate::utils::SectorEntity;
-use bevy::math::Vec3;
-use bevy::prelude::{Query, Transform};
+use bevy::prelude::{Query, Vec2};
 use bevy::utils::HashMap;
 use std::collections::BinaryHeap;
 
 pub fn a_star(
     sectors: &Query<&Sector>,
-    gate_positions: &Query<&Transform>,
+    gate_positions: &Query<&SimulationTransform>,
     from: SectorEntity,
-    from_position: Vec3,
+    from_position: Vec2,
     to: SectorEntity,
 ) -> Option<Vec<PathElement>> {
     let mut open = BinaryHeap::new();
@@ -72,9 +72,9 @@ pub fn a_star(
 
 fn cost(
     sectors: &Query<&Sector>,
-    gate_positions: &Query<&Transform>,
+    gate_positions: &Query<&SimulationTransform>,
     from_sector: SectorEntity,
-    from_pos_in_sector: Vec3,
+    from_pos_in_sector: Vec2,
     to: SectorEntity,
 ) -> Option<u32> {
     if from_sector == to {
@@ -114,8 +114,9 @@ mod test {
     use crate::pathfinding::find_path;
     use crate::persistence::local_hex_position::LocalHexPosition;
     use crate::persistence::{SectorIdMap, UniverseSaveData};
+    use crate::simulation_transform::SimulationTransform;
     use bevy::ecs::system::RunSystemOnce;
-    use bevy::prelude::{Query, Res, Transform, Vec2, Vec3};
+    use bevy::prelude::{Query, Res, Vec2};
     use hexx::Hex;
 
     const LEFT2: Hex = Hex::new(-2, 0);
@@ -141,13 +142,13 @@ mod test {
 
         world.run_system_once(
             |sectors: Query<&Sector>,
-             transforms: Query<&Transform>,
+             transforms: Query<&SimulationTransform>,
              sector_id_map: Res<SectorIdMap>| {
                 let result = find_path(
                     &sectors,
                     &transforms,
                     sector_id_map.id_to_entity()[&CENTER],
-                    Vec3::ZERO,
+                    Vec2::ZERO,
                     sector_id_map.id_to_entity()[&RIGHT],
                 )
                 .unwrap();
@@ -178,13 +179,13 @@ mod test {
 
         world.run_system_once(
             |sectors: Query<&Sector>,
-             transforms: Query<&Transform>,
+             transforms: Query<&SimulationTransform>,
              sector_id_map: Res<SectorIdMap>| {
                 let result = find_path(
                     &sectors,
                     &transforms,
                     sector_id_map.id_to_entity()[&LEFT],
-                    Vec3::ZERO,
+                    Vec2::ZERO,
                     sector_id_map.id_to_entity()[&RIGHT],
                 )
                 .unwrap();
@@ -226,13 +227,13 @@ mod test {
 
         world.run_system_once(
             |sectors: Query<&Sector>,
-             transforms: Query<&Transform>,
+             transforms: Query<&SimulationTransform>,
              sector_id_map: Res<SectorIdMap>| {
                 let result = find_path(
                     &sectors,
                     &transforms,
                     sector_id_map.id_to_entity()[&LEFT2],
-                    Vec3::ZERO,
+                    Vec2::ZERO,
                     sector_id_map.id_to_entity()[&RIGHT2],
                 )
                 .unwrap();
@@ -291,13 +292,13 @@ mod test {
 
         world.run_system_once(
             |sectors: Query<&Sector>,
-             transforms: Query<&Transform>,
+             transforms: Query<&SimulationTransform>,
              sector_id_map: Res<SectorIdMap>| {
                 let result = find_path(
                     &sectors,
                     &transforms,
                     sector_id_map.id_to_entity()[&LEFT2],
-                    Vec3::ZERO,
+                    Vec2::ZERO,
                     sector_id_map.id_to_entity()[&RIGHT2],
                 )
                 .unwrap();

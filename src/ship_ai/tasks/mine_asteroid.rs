@@ -5,13 +5,12 @@ use crate::ship_ai::task_finished_event::TaskFinishedEvent;
 use crate::ship_ai::task_queue::TaskQueue;
 use crate::ship_ai::tasks;
 use crate::ship_ai::tasks::send_completion_events;
+use crate::simulation_transform::SimulationTransform;
 use crate::utils::{
     AsteroidEntity, CurrentSimulationTimestamp, Milliseconds, SimulationTime, SimulationTimestamp,
 };
 use bevy::log::error;
-use bevy::prelude::{
-    Commands, Component, Entity, EventReader, EventWriter, Query, Res, Transform, With,
-};
+use bevy::prelude::{Commands, Component, Entity, EventReader, EventWriter, Query, Res, With};
 use std::sync::{Arc, Mutex};
 
 pub const TIME_BETWEEN_MINING_UPDATES: Milliseconds = 1000;
@@ -45,7 +44,7 @@ impl MineAsteroid {
         &mut self,
         inventory: &mut Inventory,
         now: CurrentSimulationTimestamp,
-        all_asteroids: &Query<(&mut Asteroid, &mut Transform)>,
+        all_asteroids: &Query<(&mut Asteroid, &mut SimulationTransform)>,
     ) -> TaskResult {
         if now.has_not_passed(self.next_update) {
             return TaskResult::Skip;
@@ -69,7 +68,10 @@ impl MineAsteroid {
         }
     }
 
-    fn did_target_despawn(&self, all_asteroids: &Query<(&mut Asteroid, &mut Transform)>) -> bool {
+    fn did_target_despawn(
+        &self,
+        all_asteroids: &Query<(&mut Asteroid, &mut SimulationTransform)>,
+    ) -> bool {
         all_asteroids
             .get(self.target.into())
             .unwrap()
@@ -82,7 +84,7 @@ impl MineAsteroid {
         event_writer: EventWriter<TaskFinishedEvent<Self>>,
         simulation_time: Res<SimulationTime>,
         mut ships: Query<(Entity, &mut Self, &mut Inventory)>,
-        mut all_asteroids: Query<(&mut Asteroid, &mut Transform)>,
+        mut all_asteroids: Query<(&mut Asteroid, &mut SimulationTransform)>,
         mut asteroid_was_fully_mined_event: EventWriter<AsteroidWasFullyMinedEvent>,
     ) {
         let task_completions = Arc::new(Mutex::new(Vec::<TaskFinishedEvent<Self>>::new()));

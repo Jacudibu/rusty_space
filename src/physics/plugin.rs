@@ -1,7 +1,8 @@
 use crate::components::InSector;
 use crate::physics::constant_velocity::ConstantVelocity;
 use crate::physics::ShipVelocity;
-use bevy::prelude::{App, FixedPostUpdate, Plugin, Query, Res, Time, Transform, With};
+use crate::simulation_transform::SimulationTransform;
+use bevy::prelude::{App, FixedPostUpdate, Plugin, Query, Res, Time, With};
 
 /// Beautifully simplified fake physics.
 pub struct PhysicsPlugin;
@@ -11,18 +12,26 @@ impl Plugin for PhysicsPlugin {
     }
 }
 
-fn move_ships(time: Res<Time>, mut ships: Query<(&mut Transform, &ShipVelocity), With<InSector>>) {
+fn move_ships(
+    time: Res<Time>,
+    mut ships: Query<(&mut SimulationTransform, &ShipVelocity), With<InSector>>,
+) {
     ships.par_iter_mut().for_each(|(mut transform, velocity)| {
-        transform.rotate_z(velocity.angular * time.delta_seconds());
+        transform.copy_old_values();
 
-        let forward = transform.up();
+        transform.rotate(velocity.angular * time.delta_seconds());
+
+        let forward = transform.forward();
         transform.translation += forward * velocity.forward * time.delta_seconds();
     });
 }
 
-fn move_constant_stuff(time: Res<Time>, mut items: Query<(&mut Transform, &ConstantVelocity)>) {
+fn move_constant_stuff(
+    time: Res<Time>,
+    mut items: Query<(&mut SimulationTransform, &ConstantVelocity)>,
+) {
     items.par_iter_mut().for_each(|(mut transform, velocity)| {
-        transform.rotate_z(velocity.sprite_rotation * time.delta_seconds());
+        transform.rotate(velocity.sprite_rotation * time.delta_seconds());
         transform.translation += velocity.velocity * time.delta_seconds();
     });
 }

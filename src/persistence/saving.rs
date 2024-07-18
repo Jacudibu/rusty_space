@@ -6,8 +6,9 @@ use crate::persistence::AllEntityIdMaps;
 use crate::physics::{ConstantVelocity, ShipVelocity};
 use crate::production::{ProductionComponent, ShipyardComponent};
 use crate::ship_ai::{AutoMineBehavior, AutoTradeBehavior, TaskQueue};
+use crate::simulation_transform::SimulationTransform;
 use bevy::core::Name;
-use bevy::prelude::{Commands, Query, Transform};
+use bevy::prelude::{Commands, Query};
 
 /// Stores all relevant entities in SaveDataCollection Resources.
 /// Ideally, later on this should be completely decoupled from the main loop, maybe start an async
@@ -19,14 +20,14 @@ use bevy::prelude::{Commands, Query, Transform};
 #[allow(clippy::type_complexity)] // Haha, like, uh, yeah. No.
 pub fn parse_session_data_into_universe_save_data(
     mut commands: Commands,
-    asteroids: Query<(&Asteroid, &Transform, &ConstantVelocity)>,
-    gates: Query<(&Gate, &InSector, &Transform)>,
+    asteroids: Query<(&Asteroid, &SimulationTransform, &ConstantVelocity)>,
+    gates: Query<(&Gate, &InSector, &SimulationTransform)>,
     sectors: Query<&Sector>,
     ships: Query<(
         &Ship,
         &Name,
         &InSector,
-        &Transform,
+        &SimulationTransform,
         &TaskQueue,
         &ShipVelocity,
         &Inventory,
@@ -37,7 +38,7 @@ pub fn parse_session_data_into_universe_save_data(
         &Station,
         &Name,
         &InSector,
-        &Transform,
+        &SimulationTransform,
         &Inventory,
         Option<&ProductionComponent>,
         Option<&ShipyardComponent>,
