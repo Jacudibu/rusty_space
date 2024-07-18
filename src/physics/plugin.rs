@@ -17,8 +17,6 @@ fn move_ships(
     mut ships: Query<(&mut SimulationTransform, &ShipVelocity), With<InSector>>,
 ) {
     ships.par_iter_mut().for_each(|(mut transform, velocity)| {
-        transform.copy_old_values();
-
         transform.rotate(velocity.angular * time.delta_seconds());
 
         let forward = transform.forward();

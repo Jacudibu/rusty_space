@@ -1,7 +1,7 @@
 use bevy::app::{App, FixedPreUpdate};
 use bevy::math::VectorSpace;
 use bevy::prelude::{
-    Changed, Component, Fixed, Plugin, Query, Res, Rot2, Time, Transform, Update, Vec2,
+    Component, DetectChanges, Fixed, Mut, Plugin, Query, Res, Rot2, Time, Transform, Update, Vec2,
 };
 use hexx::{Quat, Vec3};
 
@@ -10,9 +10,10 @@ pub struct SimulationTransform {
     pub translation: Vec2,
     pub rotation: Rot2,
     pub scale: f32,
-    pub last_translation: Vec2,
-    pub last_rotation: Rot2,
-    pub last_scale: f32,
+    last_translation: Vec2,
+    last_rotation: Rot2,
+    last_scale: f32,
+    did_change: bool,
 }
 
 /// Interpolates the transforms used for the visual representation to their respective simulation values.
@@ -24,13 +25,13 @@ impl Plugin for SimulationTransformPlugin {
     }
 }
 
-fn copy_old_transform_values(mut transforms: Query<&mut SimulationTransform>) {
-    transforms
-        .par_iter_mut()
-        .for_each(|mut x| x.copy_old_values());
+fn copy_old_transform_values(mut transforms: Query<Mut<SimulationTransform>>) {
+    transforms.par_iter_mut().for_each(|mut x| {
+        let did_change = x.is_changed();
+        x.copy_old_values(did_change);
+    });
 }
 
-// TODO: is there any way to use Changed<SimulationTransform> specifically for fixed update changes?
 fn interpolate_transforms(
     time: Res<Time<Fixed>>,
     mut all_ships: Query<(&SimulationTransform, &mut Transform)>,
@@ -39,6 +40,10 @@ fn interpolate_transforms(
     all_ships
         .par_iter_mut()
         .for_each(|(simulation_transform, mut transform)| {
+            if !simulation_transform.did_change {
+                return;
+            }
+
             let interpolated_position = simulation_transform
                 .last_translation
                 .lerp(simulation_transform.translation, overstep_fraction);
@@ -72,6 +77,7 @@ impl SimulationTransform {
             last_rotation: Rot2::IDENTITY,
             scale: 1.0,
             last_scale: 1.0,
+            did_change: false,
         }
     }
 
@@ -83,13 +89,17 @@ impl SimulationTransform {
             last_translation: translation,
             last_rotation: rotation,
             last_scale: scale,
+            did_change: false,
         }
     }
 
-    pub fn copy_old_values(&mut self) {
-        self.last_translation = self.translation;
-        self.last_rotation = self.rotation;
-        self.last_scale = self.scale;
+    fn copy_old_values(&mut self, did_change: bool) {
+        if did_change {
+            self.last_translation = self.translation;
+            self.last_rotation = self.rotation;
+            self.last_scale = self.scale;
+        }
+        self.did_change = did_change
     }
 
     pub fn rotate(&mut self, amount: f32) {
