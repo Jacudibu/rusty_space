@@ -1,4 +1,4 @@
-use crate::persistence::test_data::coordinates::{BOTTOM_LEFT, CENTER, RIGHT, TOP_RIGHT};
+use crate::persistence::test_universe::coordinates::{BOTTOM_LEFT, CENTER, RIGHT, TOP_RIGHT};
 use crate::persistence::{SaveDataCollection, SectorAsteroidSaveData, SectorSaveData};
 use bevy::math::Vec2;
 

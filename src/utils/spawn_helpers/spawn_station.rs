@@ -15,6 +15,7 @@ pub fn spawn_station(
     sector_query: &mut Query<&mut Sector>,
     station_id_map: &mut StationIdMap,
     sprites: &SpriteHandles,
+    id: PersistentStationId,
     name: &str,
     pos: Vec2,
     sector_entity: SectorEntity,
@@ -59,12 +60,11 @@ pub fn spawn_station(
         ))
         .id();
 
-    let station_id = PersistentStationId::next();
     let entity = commands
         .spawn((
             Name::new(name.to_string()),
             SelectableEntity::Station,
-            Station::new(station_id),
+            Station::new(id),
             SpriteBundle {
                 texture: sprites.station.clone(),
                 transform: Transform::from_xyz(pos.x, pos.y, constants::STATION_LAYER),
@@ -95,6 +95,6 @@ pub fn spawn_station(
         commands.entity(entity).insert(shipyard);
     }
 
-    station_id_map.insert(station_id, StationEntity::from(entity));
+    station_id_map.insert(id, StationEntity::from(entity));
     sector.add_station(commands, sector_entity, StationEntity::from(entity));
 }

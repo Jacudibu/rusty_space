@@ -57,6 +57,7 @@ impl ShipSaveData {
         spawn_helpers::spawn_ship(
             &mut args.commands,
             &args.sprites,
+            self.id,
             self.name.clone(),
             &mut args.sectors,
             sector_entity,

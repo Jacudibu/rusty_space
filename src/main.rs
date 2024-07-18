@@ -52,7 +52,7 @@ fn main() {
     .add_plugins(asteroids::AsteroidPlugin)
     .add_plugins(camera::CameraControllerPlugin)
     .add_plugins(diagnostics::DiagnosticsPlugin)
-    .add_plugins(persistence::test_data::TestUniverseDataPlugin)
+    .add_plugins(persistence::test_universe::TestUniverseDataPlugin)
     .add_plugins(persistence::UniverseSaveDataLoadingOnStartupPlugin)
     .add_plugins(physics::PhysicsPlugin)
     .insert_resource(GameData::mock_data())

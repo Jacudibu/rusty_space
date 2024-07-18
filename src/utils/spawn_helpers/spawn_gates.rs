@@ -15,29 +15,6 @@ pub fn spawn_gate_pair(
     gate_id_map: &mut GateIdMap,
     sector_query: &mut Query<&mut Sector>,
     sprites: &SpriteHandles,
-    from_pos: SectorPosition,
-    to_pos: SectorPosition,
-) {
-    let from_id = PersistentGateId::next();
-    let to_id = PersistentGateId::next();
-
-    spawn_gate_pair_with_ids(
-        commands,
-        gate_id_map,
-        sector_query,
-        sprites,
-        from_id,
-        from_pos,
-        to_id,
-        to_pos,
-    )
-}
-
-pub fn spawn_gate_pair_with_ids(
-    commands: &mut Commands,
-    gate_id_map: &mut GateIdMap,
-    sector_query: &mut Query<&mut Sector>,
-    sprites: &SpriteHandles,
     from_id: PersistentGateId,
     from_pos: SectorPosition,
     to_id: PersistentGateId,

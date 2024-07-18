@@ -2,7 +2,7 @@ use crate::components::Sector;
 use crate::persistence::data::v1::*;
 use crate::persistence::local_hex_position::LocalHexPosition;
 use crate::persistence::{GateIdMap, PersistentGateId, SectorIdMap};
-use crate::utils::spawn_helpers::spawn_gate_pair_with_ids;
+use crate::utils::spawn_helpers::spawn_gate_pair;
 use crate::SpriteHandles;
 use bevy::ecs::system::SystemParam;
 use bevy::prelude::{Commands, Query, Res};
@@ -43,7 +43,7 @@ impl GatePairSaveData {
     pub fn build(&self, args: &mut Args, gate_id_map: &mut GateIdMap) {
         // TODO: SectorPosition is exclusively used for gate spawning, might be best to remove it
 
-        spawn_gate_pair_with_ids(
+        spawn_gate_pair(
             &mut args.commands,
             gate_id_map,
             &mut args.sectors,

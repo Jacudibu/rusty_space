@@ -3,7 +3,7 @@ use bevy::prelude::{Commands, EventWriter, Or, Query, Res, ResMut, Transform, Wi
 
 use crate::components::{BuyOrders, InSector, Inventory, Sector, SellOrders};
 use crate::game_data::GameData;
-use crate::persistence::ShipIdMap;
+use crate::persistence::{PersistentShipId, ShipIdMap};
 use crate::production::production_kind::ProductionKind;
 use crate::production::shipyard_component::ShipyardComponent;
 use crate::production::state::GlobalProductionState;
@@ -111,6 +111,7 @@ pub fn check_if_production_is_finished_and_start_new_one(
                 spawn_helpers::spawn_ship(
                     &mut commands,
                     &sprites,
+                    PersistentShipId::next(),
                     definition.name.clone(),
                     &mut sector_query,
                     in_sector.get(),

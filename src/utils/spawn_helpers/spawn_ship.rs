@@ -11,6 +11,7 @@ use bevy::prelude::{default, Commands, Query, SpriteBundle, Transform};
 pub fn spawn_ship(
     commands: &mut Commands,
     sprites: &SpriteHandles,
+    id: PersistentShipId,
     name: String,
     sector_query: &mut Query<&mut Sector>,
     sector: SectorEntity,
@@ -21,11 +22,10 @@ pub fn spawn_ship(
 ) {
     let mut sector_data = sector_query.get_mut(sector.into()).unwrap();
 
-    let ship_id = PersistentShipId::next();
     let entity = commands
         .spawn((
             Name::new(name),
-            Ship::new(ship_id),
+            Ship::new(id),
             SelectableEntity::Ship,
             Engine::default(),
             ShipVelocity::default(),
@@ -43,9 +43,7 @@ pub fn spawn_ship(
         ))
         .id();
 
-    ship_id_map.insert(ship_id, ShipEntity::from(entity));
-
-    // TODO: There must be *some* way to build that component earlier and insert it at spawn time...?
+    ship_id_map.insert(id, ShipEntity::from(entity));
     behavior.build_and_add_default_component(commands.entity(entity));
 
     sector_data.add_ship(commands, sector, ShipEntity::from(entity));

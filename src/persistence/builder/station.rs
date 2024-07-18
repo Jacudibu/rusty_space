@@ -164,6 +164,7 @@ impl StationSaveData {
             &mut args.sectors,
             station_id_map,
             &args.sprites,
+            self.id,
             &self.name,
             self.position.position,
             *sector_entity,

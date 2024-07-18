@@ -1,13 +1,12 @@
 //! This Module provides builder methods for the latest persistent data version.
 //! Can be used for hard-coded maps during debugging and tutorials or tests.
 
-mod gate;
-mod plugin;
-mod sector;
-mod ship;
-mod station;
+pub mod gate;
+pub mod sector;
+pub mod ship;
+pub mod station;
 
-pub use plugin::UniverseSaveDataLoadingOnStartupPlugin;
+pub use crate::persistence::loading_plugin::UniverseSaveDataLoadingOnStartupPlugin;
 
 #[cfg(test)]
 mod test_helpers {

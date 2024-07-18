@@ -1,5 +1,5 @@
 use crate::persistence::local_hex_position::LocalHexPosition;
-use crate::persistence::test_data::coordinates::{BOTTOM_LEFT, CENTER, RIGHT, TOP_RIGHT};
+use crate::persistence::test_universe::coordinates::{BOTTOM_LEFT, CENTER, RIGHT, TOP_RIGHT};
 use crate::persistence::{GatePairSaveData, SaveDataCollection};
 use bevy::prelude::Vec2;
 
