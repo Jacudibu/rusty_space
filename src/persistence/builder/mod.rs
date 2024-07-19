@@ -11,10 +11,10 @@ pub use crate::persistence::loading_plugin::UniverseSaveDataLoadingOnStartupPlug
 #[cfg(test)]
 mod test_helpers {
     use super::*;
-    use crate::asteroids::SectorWasSpawnedEvent;
     use crate::game_data::GameData;
     use crate::map_layout::MapLayout;
     use crate::persistence::data::v1::UniverseSaveData;
+    use crate::simulation::asteroids::SectorWasSpawnedEvent;
     use crate::SpriteHandles;
     use bevy::prelude::*;
 

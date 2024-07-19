@@ -1,5 +1,5 @@
 use crate::persistence::PersistentAsteroidId;
-use crate::utils::SimulationTimestamp;
+use crate::simulation::prelude::SimulationTimestamp;
 use bevy::math::Vec2;
 use hexx::Hex;
 use serde::{Deserialize, Serialize};

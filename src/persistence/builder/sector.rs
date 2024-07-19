@@ -1,8 +1,8 @@
-use crate::asteroids::SectorWasSpawnedEvent;
 use crate::components::SectorAsteroidData;
 use crate::map_layout::MapLayout;
 use crate::persistence::data::v1::{SaveDataCollection, SectorAsteroidSaveData, SectorSaveData};
 use crate::persistence::{AsteroidIdMap, SectorIdMap};
+use crate::simulation::asteroids::SectorWasSpawnedEvent;
 use crate::utils::{spawn_helpers, SectorEntity};
 use bevy::ecs::system::SystemParam;
 use bevy::prelude::{Commands, EventWriter, Res};

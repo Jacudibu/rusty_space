@@ -4,14 +4,11 @@ use bevy::asset::AssetServer;
 use bevy::core::Name;
 use bevy::prelude::{
     App, Camera2dBundle, Commands, Handle, Image, ImagePlugin, PluginGroup, Res, Resource, Startup,
-    Time, Window, WindowPlugin,
+    Window, WindowPlugin,
 };
 use bevy::render::camera::ScalingMode;
-use bevy::time::Fixed;
 use bevy::DefaultPlugins;
 use bevy_egui::EguiPlugin;
-
-mod asteroids;
 mod camera;
 mod components;
 mod constants;
@@ -23,11 +20,8 @@ mod gui;
 mod map_layout;
 mod pathfinding;
 mod persistence;
-mod physics;
-mod production;
 mod session_data;
-mod ship_ai;
-mod simulation_transform;
+mod simulation;
 mod trade_plan;
 mod utils;
 
@@ -45,20 +39,14 @@ fn main() {
             .set(ImagePlugin::default_nearest()),
     )
     .add_plugins(EguiPlugin)
-    .add_plugins(production::ProductionPlugin)
     .add_plugins(entity_selection::EntitySelectionPlugin)
-    .add_plugins(ship_ai::ShipAiPlugin)
-    .add_plugins(utils::SimulationTimePlugin)
     .add_plugins(gizmos::GizmoPlugin)
     .add_plugins(gui::GUIPlugin)
-    .add_plugins(asteroids::AsteroidPlugin)
     .add_plugins(camera::CameraControllerPlugin)
     .add_plugins(diagnostics::DiagnosticsPlugin)
-    .add_plugins(simulation_transform::SimulationTransformPlugin)
     .add_plugins(persistence::test_universe::TestUniverseDataPlugin)
     .add_plugins(persistence::UniverseSaveDataLoadingOnStartupPlugin)
-    .add_plugins(physics::PhysicsPlugin)
-    .insert_resource(Time::<Fixed>::from_hz(10.0))
+    .add_plugins(simulation::plugin::SimulationPlugin)
     .insert_resource(GameData::mock_data())
     .insert_resource(SessionData::mock_data())
     .add_systems(Startup, initialize_data);

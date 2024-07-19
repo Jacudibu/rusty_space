@@ -1,7 +1,7 @@
 use crate::constants;
 use crate::persistence::{ComponentWithPersistentId, PersistentAsteroidId};
-use crate::simulation_transform::SimulationTransform;
-use crate::utils::{Milliseconds, SimulationTimestamp};
+use crate::simulation::prelude::{Milliseconds, SimulationTimestamp};
+use crate::simulation::transform::SimulationTransform;
 use bevy::prelude::{Component, FloatExt};
 
 #[derive(Component)]

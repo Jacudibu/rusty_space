@@ -6,11 +6,11 @@ use crate::game_data::{ItemId, ProductionModuleId, ShipyardModuleId};
 use crate::persistence::data::v1::*;
 use crate::persistence::local_hex_position::LocalHexPosition;
 use crate::persistence::ComponentWithPersistentId;
-use crate::production::{
+use crate::simulation::production::{
     OngoingShipConstructionOrder, ProductionComponent, ProductionModule, ShipyardComponent,
     ShipyardModule,
 };
-use crate::simulation_transform::SimulationTransform;
+use crate::simulation::transform::simulation_transform::SimulationTransform;
 use bevy::core::Name;
 use bevy::prelude::Query;
 

@@ -1,11 +1,10 @@
 use crate::components::{Asteroid, AsteroidState, Sector, SelectableEntity};
 use crate::persistence::{AsteroidIdMap, PersistentAsteroidId};
-use crate::physics::ConstantVelocity;
-use crate::ship_ai::AutoTradeBehavior;
-use crate::simulation_transform::SimulationTransform;
-use crate::utils::{
-    AsteroidEntity, AsteroidEntityWithTimestamp, SectorEntity, SimulationTimestamp,
-};
+use crate::simulation::physics::ConstantVelocity;
+use crate::simulation::prelude::SimulationTimestamp;
+use crate::simulation::ship_ai::AutoTradeBehavior;
+use crate::simulation::transform::simulation_transform::SimulationTransform;
+use crate::utils::{AsteroidEntity, AsteroidEntityWithTimestamp, SectorEntity};
 use crate::{constants, SpriteHandles};
 use bevy::core::Name;
 use bevy::math::Vec2;

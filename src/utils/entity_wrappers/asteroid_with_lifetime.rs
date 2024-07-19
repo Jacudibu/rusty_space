@@ -1,4 +1,5 @@
-use crate::utils::{AsteroidEntity, SimulationTimestamp};
+use crate::simulation::prelude::SimulationTimestamp;
+use crate::utils::AsteroidEntity;
 use bevy::prelude::Entity;
 use std::cmp::Ordering;
 

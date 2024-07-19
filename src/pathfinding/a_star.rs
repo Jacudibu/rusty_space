@@ -1,7 +1,7 @@
 use crate::components::Sector;
 use crate::pathfinding::search_node::{SearchNode, GATE_COST};
 use crate::pathfinding::PathElement;
-use crate::simulation_transform::SimulationTransform;
+use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::utils::SectorEntity;
 use bevy::prelude::{Query, Vec2};
 use bevy::utils::HashMap;
@@ -114,7 +114,7 @@ mod test {
     use crate::pathfinding::find_path;
     use crate::persistence::local_hex_position::LocalHexPosition;
     use crate::persistence::{SectorIdMap, UniverseSaveData};
-    use crate::simulation_transform::SimulationTransform;
+    use crate::simulation::transform::simulation_transform::SimulationTransform;
     use bevy::ecs::system::RunSystemOnce;
     use bevy::prelude::{Query, Res, Vec2};
     use hexx::Hex;

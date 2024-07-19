@@ -1,8 +1,8 @@
 use crate::components::{BuyOrders, Inventory, Sector, SelectableEntity, SellOrders, Station};
 use crate::game_data::ItemDefinition;
 use crate::persistence::{PersistentStationId, StationIdMap};
-use crate::production::{ProductionComponent, ShipyardComponent};
-use crate::simulation_transform::SimulationTransform;
+use crate::simulation::production::{ProductionComponent, ShipyardComponent};
+use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::utils::{SectorEntity, StationEntity};
 use crate::{constants, SpriteHandles};
 use bevy::color::Color;

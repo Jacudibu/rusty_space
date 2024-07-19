@@ -1,8 +1,8 @@
 use crate::components::{Engine, Inventory, Sector, SelectableEntity, Ship};
 use crate::persistence::{PersistentShipId, ShipIdMap};
-use crate::physics::ShipVelocity;
-use crate::ship_ai::{BehaviorBuilder, TaskQueue};
-use crate::simulation_transform::SimulationTransform;
+use crate::simulation::physics::ShipVelocity;
+use crate::simulation::ship_ai::{BehaviorBuilder, TaskQueue};
+use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::utils::{SectorEntity, ShipEntity};
 use crate::{constants, SpriteHandles};
 use bevy::core::Name;

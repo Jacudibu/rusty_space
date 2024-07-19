@@ -4,7 +4,7 @@ use crate::components::{Gate, InSector, Sector};
 use crate::persistence::data::v1::*;
 use crate::persistence::local_hex_position::LocalHexPosition;
 use crate::persistence::ComponentWithPersistentId;
-use crate::simulation_transform::SimulationTransform;
+use crate::simulation::transform::simulation_transform::SimulationTransform;
 
 impl GatePairSaveData {
     pub fn extract_from_sector_query(

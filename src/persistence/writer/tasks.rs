@@ -1,6 +1,6 @@
 use crate::persistence::data::v1::*;
 use crate::persistence::AllEntityIdMaps;
-use crate::ship_ai::TaskInsideQueue;
+use crate::simulation::ship_ai::TaskInsideQueue;
 use crate::utils::ExchangeWareData;
 
 impl TaskSaveData {

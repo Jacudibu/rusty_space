@@ -2,7 +2,7 @@ use crate::components::{SelectableEntity, RADIUS_CURSOR};
 use crate::entity_selection::mouse_interaction::{LastMouseInteraction, MouseInteraction};
 use crate::entity_selection::{MouseCursor, Selected, DOUBLE_CLICK_TIME};
 use crate::gui::MouseCursorOverUiState;
-use crate::physics;
+use crate::simulation::physics;
 use bevy::input::mouse::MouseButtonInput;
 use bevy::input::ButtonState;
 use bevy::prelude::{

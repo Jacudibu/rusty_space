@@ -1,6 +1,6 @@
 use crate::components::Gate;
 use crate::entity_selection::Selected;
-use crate::ship_ai::{TaskInsideQueue, TaskQueue};
+use crate::simulation::ship_ai::{TaskInsideQueue, TaskQueue};
 use bevy::prelude::{
     GizmoConfigGroup, GizmoConfigStore, Gizmos, Query, Reflect, ResMut, Srgba, Transform, With,
 };
