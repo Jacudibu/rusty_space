@@ -55,6 +55,7 @@ impl TaskInsideQueue {
             } => {
                 entity_commands.insert(tasks::UseGate {
                     progress: 0.0,
+                    traversal_state: Default::default(),
                     exit_sector: *exit_sector,
                     enter_gate: *enter_gate,
                 });
