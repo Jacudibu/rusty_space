@@ -3,7 +3,8 @@ use crate::persistence::data::v1::inventory_save_data::InventorySaveData;
 use crate::persistence::local_hex_position::LocalHexPosition;
 use crate::persistence::PersistentStationId;
 use crate::session_data::ShipConfigId;
-use crate::utils::{PriceSetting, SimulationTimestamp};
+use crate::simulation::prelude::SimulationTimestamp;
+use crate::utils::PriceSetting;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone)]

@@ -1,5 +1,5 @@
 use crate::pathfinding::PathElement;
-use crate::ship_ai::{TaskInsideQueue, TaskQueue};
+use crate::simulation::ship_ai::{TaskInsideQueue, TaskQueue};
 
 pub fn create_tasks_to_follow_path(queue: &mut TaskQueue, path: Vec<PathElement>) {
     for x in path {

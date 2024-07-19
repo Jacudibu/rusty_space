@@ -2,8 +2,8 @@ use crate::constants;
 use crate::persistence::local_hex_position::LocalHexPosition;
 use crate::persistence::test_universe::coordinates::CENTER;
 use crate::persistence::{SaveDataCollection, ShipBehaviorSaveData, ShipSaveData};
-use crate::ship_ai::AutoMineState;
-use crate::utils::{Milliseconds, SimulationTimestamp};
+use crate::simulation::prelude::{Milliseconds, SimulationTimestamp};
+use crate::simulation::ship_ai::AutoMineState;
 use hexx::Vec2;
 
 pub fn create_test_data() -> SaveDataCollection<ShipSaveData> {

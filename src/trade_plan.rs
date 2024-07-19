@@ -3,8 +3,8 @@ use bevy::prelude::{Entity, Query};
 use crate::components::{BuyOrders, InSector, Inventory, Sector, SellOrders, TradeOrder};
 use crate::game_data::ItemId;
 use crate::pathfinding;
-use crate::ship_ai::{TaskInsideQueue, TaskQueue};
-use crate::simulation_transform::SimulationTransform;
+use crate::simulation::ship_ai::{TaskInsideQueue, TaskQueue};
+use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::utils::{ExchangeWareData, SectorEntity, TypedEntity};
 
 pub struct TradePlan {

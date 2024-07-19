@@ -1,5 +1,5 @@
 use crate::game_data::ItemRecipeElement;
-use crate::utils::Milliseconds;
+use crate::simulation::prelude::Milliseconds;
 
 pub type ShipConfigId = u32;
 

@@ -5,7 +5,7 @@ use crate::game_data::{
 use crate::persistence::data::v1::*;
 use crate::persistence::local_hex_position::LocalHexPosition;
 use crate::persistence::{PersistentStationId, SectorIdMap, StationIdMap};
-use crate::production::{
+use crate::simulation::production::{
     OngoingShipConstructionOrder, ProductionComponent, ProductionModule, ShipyardComponent,
     ShipyardModule,
 };

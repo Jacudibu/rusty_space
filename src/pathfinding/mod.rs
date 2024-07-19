@@ -7,7 +7,7 @@ use crate::components::Sector;
 use crate::utils::SectorEntity;
 use bevy::prelude::{Query, Vec2};
 
-use crate::simulation_transform::SimulationTransform;
+use crate::simulation::transform::simulation_transform::SimulationTransform;
 pub use {create_tasks_following_path::create_tasks_to_follow_path, path_element::PathElement};
 
 /// Returns the fastest gate-path between `from` and `to`.   

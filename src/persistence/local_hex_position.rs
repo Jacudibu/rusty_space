@@ -1,6 +1,6 @@
 use crate::components::{InSector, Sector};
 use crate::persistence::SectorIdMap;
-use crate::simulation_transform::SimulationTransform;
+use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::utils::SectorPosition;
 use bevy::math::Vec2;
 use bevy::prelude::Query;

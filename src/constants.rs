@@ -1,4 +1,4 @@
-use crate::utils::Milliseconds;
+use crate::simulation::prelude::Milliseconds;
 use std::ops::Range;
 
 pub const TRADE_SHIP_COUNT: u32 = 200000;
@@ -9,6 +9,8 @@ pub const MOCK_STATION_INVENTORY_SIZE: u32 = 39000000;
 pub const SECONDS_TO_TRAVEL_THROUGH_GATE: f32 = 2.0;
 
 pub const ASTEROID_ORE_RANGE: Range<u32> = 200..500;
+
+pub const TICKS_PER_SECOND: f64 = 10.0;
 
 pub const SHIP_LAYER: f32 = 10.0;
 pub const STATION_LAYER: f32 = 5.0;

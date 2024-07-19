@@ -13,13 +13,13 @@ use crate::components::{
 use crate::entity_selection::{MouseCursor, Selected};
 use crate::game_data::GameData;
 use crate::map_layout::MapLayout;
-use crate::physics::ShipVelocity;
-use crate::production::{ProductionComponent, ShipyardComponent};
 use crate::session_data::SessionData;
-use crate::ship_ai::TaskInsideQueue;
-use crate::ship_ai::TaskQueue;
+use crate::simulation::physics::ShipVelocity;
+use crate::simulation::prelude::SimulationTime;
+use crate::simulation::production::{ProductionComponent, ShipyardComponent};
+use crate::simulation::ship_ai::TaskInsideQueue;
+use crate::simulation::ship_ai::TaskQueue;
 use crate::utils::ExchangeWareData;
-use crate::utils::SimulationTime;
 use crate::SpriteHandles;
 
 pub struct GUIPlugin;

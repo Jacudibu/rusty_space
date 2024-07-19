@@ -4,7 +4,7 @@ use bevy::prelude::{Commands, CubicBezier, CubicCurve, CubicGenerator, Query, Sp
 use crate::components::{Gate, GateConnectionComponent, Sector, SelectableEntity};
 use crate::constants::GATE_CONNECTION_LAYER;
 use crate::persistence::{GateIdMap, PersistentGateId};
-use crate::simulation_transform::SimulationTransform;
+use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::utils::GateEntity;
 use crate::utils::SectorPosition;
 use crate::{constants, SpriteHandles};

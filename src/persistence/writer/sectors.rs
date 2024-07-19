@@ -1,8 +1,8 @@
 use crate::components::{Asteroid, Sector, SectorAsteroidData};
 use crate::persistence::data::v1::*;
 use crate::persistence::ComponentWithPersistentId;
-use crate::physics::ConstantVelocity;
-use crate::simulation_transform::SimulationTransform;
+use crate::simulation::physics::ConstantVelocity;
+use crate::simulation::transform::simulation_transform::SimulationTransform;
 use bevy::prelude::Query;
 
 impl AsteroidSaveData {

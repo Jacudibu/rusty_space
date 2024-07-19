@@ -1,5 +1,5 @@
 use crate::game_data::ItemId;
-use crate::utils::Milliseconds;
+use crate::simulation::prelude::Milliseconds;
 
 pub type RecipeId = u32;
 

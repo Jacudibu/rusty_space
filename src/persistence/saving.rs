@@ -3,10 +3,10 @@ use crate::components::{
 };
 use crate::persistence::data::v1::*;
 use crate::persistence::AllEntityIdMaps;
-use crate::physics::{ConstantVelocity, ShipVelocity};
-use crate::production::{ProductionComponent, ShipyardComponent};
-use crate::ship_ai::{AutoMineBehavior, AutoTradeBehavior, TaskQueue};
-use crate::simulation_transform::SimulationTransform;
+use crate::simulation::physics::{ConstantVelocity, ShipVelocity};
+use crate::simulation::production::{ProductionComponent, ShipyardComponent};
+use crate::simulation::ship_ai::{AutoMineBehavior, AutoTradeBehavior, TaskQueue};
+use crate::simulation::transform::simulation_transform::SimulationTransform;
 use bevy::core::Name;
 use bevy::prelude::{Commands, Query};
 
@@ -73,7 +73,7 @@ mod tests {
         GatePairSaveData, SaveDataCollection, SectorSaveData, ShipBehaviorSaveData, ShipSaveData,
         StationSaveData, UniverseSaveData,
     };
-    use crate::utils::SimulationTimestamp;
+    use crate::simulation::prelude::SimulationTimestamp;
     use bevy::ecs::system::RunSystemOnce;
     use bevy::prelude::Vec2;
     use hexx::Hex;

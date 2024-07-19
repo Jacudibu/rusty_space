@@ -1,6 +1,6 @@
-use crate::asteroids::SectorWasSpawnedEvent;
 use crate::components::{Sector, SectorAsteroidData};
-use crate::simulation_transform::SimulationTransform;
+use crate::simulation::asteroids::SectorWasSpawnedEvent;
+use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::utils::SectorEntity;
 use bevy::core::Name;
 use bevy::prelude::{Commands, EventWriter, Vec2};
