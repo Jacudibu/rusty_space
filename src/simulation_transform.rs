@@ -1,8 +1,9 @@
+use crate::utils::SimulationTime;
 use bevy::app::{App, FixedPreUpdate};
 use bevy::math::VectorSpace;
 use bevy::prelude::{
-    Component, DetectChanges, Dir2, Fixed, Mut, Plugin, Query, Res, Rot2, Time, Transform, Update,
-    Vec2,
+    Component, DetectChanges, Dir2, Fixed, Local, Mut, Plugin, Query, Res, Rot2, Time, Transform,
+    Update, Vec2, ViewVisibility,
 };
 use hexx::{Quat, Vec3};
 
@@ -33,42 +34,40 @@ fn copy_old_transform_values(mut transforms: Query<Mut<SimulationTransform>>) {
     });
 }
 
-// TODO: We could filter to only do this for stuff that's currently on-screen or close to it
-//       Maybe try updating Transforms when physics are run, then filter based on ViewVisibility
 fn interpolate_transforms(
     time: Res<Time<Fixed>>,
-    mut all_ships: Query<(&SimulationTransform, &mut Transform)>,
+    simulation_time: Res<SimulationTime>,
+    mut all_ships: Query<(&SimulationTransform, &mut Transform, &ViewVisibility)>,
+    mut update_all_next_frame: Local<bool>,
 ) {
+    let update_all = *update_all_next_frame && !simulation_time.is_changed();
+    if simulation_time.is_changed() {
+        *update_all_next_frame = true;
+    }
+
     let overstep_fraction = time.overstep_fraction();
-    all_ships
-        .par_iter_mut()
-        .for_each(|(simulation_transform, mut transform)| {
-            if !simulation_transform.did_change {
-                return;
-            }
 
-            let interpolated_position = simulation_transform
-                .last_translation
-                .lerp(simulation_transform.translation, overstep_fraction);
-            transform.translation.x = interpolated_position.x;
-            transform.translation.y = interpolated_position.y;
+    if update_all {
+        all_ships
+            .par_iter_mut()
+            .for_each(|(simulation_transform, mut transform, _)| {
+                if !simulation_transform.did_change {
+                    return;
+                }
 
-            let rotation = simulation_transform
-                .last_rotation
-                .nlerp(simulation_transform.rotation, overstep_fraction);
+                simulation_transform.update_transform(&mut transform, overstep_fraction);
+            });
+    } else {
+        all_ships
+            .par_iter_mut()
+            .for_each(|(simulation_transform, mut transform, visibility)| {
+                if !visibility.get() || !simulation_transform.did_change {
+                    return;
+                }
 
-            let theta = rotation.as_radians();
-            let half_theta = theta * 0.5;
-            transform.rotation.w = half_theta.cos();
-            transform.rotation.z = half_theta.sin();
-
-            let scale = simulation_transform
-                .last_scale
-                .lerp(simulation_transform.scale, overstep_fraction);
-            transform.scale.x = scale;
-            transform.scale.y = scale;
-            transform.scale.z = scale;
-        });
+                simulation_transform.update_transform(&mut transform, overstep_fraction);
+            });
+    }
 }
 
 impl SimulationTransform {
@@ -96,6 +95,7 @@ impl SimulationTransform {
         }
     }
 
+    #[inline]
     fn copy_old_values(&mut self, did_change: bool) {
         if did_change {
             self.last_translation = self.translation;
@@ -106,26 +106,51 @@ impl SimulationTransform {
     }
 
     /// Rotate this transform counterclockwise by the given value in radians.
+    #[inline]
     pub fn rotate(&mut self, radians: f32) {
         self.rotation *= Rot2::radians(radians);
     }
 
     /// Returns the current forward direction, depending on the current rotation.
+    #[inline]
     pub fn forward(&self) -> Dir2 {
         self.rotation * Dir2::Y
     }
 
+    #[inline]
     pub fn set_translation_and_skip_interpolation(&mut self, translation: Vec2) {
         self.translation = translation;
         self.last_translation = translation;
     }
 
     /// Crate a 3D Transform based on self, with the z position set to the provided z_layer.
+    #[inline]
     pub fn as_transform(&self, z_layer: f32) -> Transform {
         Transform {
             translation: self.translation.extend(z_layer),
             rotation: Quat::from_rotation_z(self.rotation.as_radians()),
             scale: Vec3::splat(self.scale),
         }
+    }
+
+    #[inline]
+    fn update_transform(&self, transform: &mut Transform, overstep_fraction: f32) {
+        let interpolated_position = self
+            .last_translation
+            .lerp(self.translation, overstep_fraction);
+        transform.translation.x = interpolated_position.x;
+        transform.translation.y = interpolated_position.y;
+
+        let rotation = self.last_rotation.nlerp(self.rotation, overstep_fraction);
+
+        let theta = rotation.as_radians();
+        let half_theta = theta * 0.5;
+        transform.rotation.w = half_theta.cos();
+        transform.rotation.z = half_theta.sin();
+
+        let scale = self.last_scale.lerp(self.scale, overstep_fraction);
+        transform.scale.x = scale;
+        transform.scale.y = scale;
+        transform.scale.z = scale;
     }
 }
