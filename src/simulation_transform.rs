@@ -32,6 +32,8 @@ fn copy_old_transform_values(mut transforms: Query<Mut<SimulationTransform>>) {
     });
 }
 
+// TODO: We could filter to only do this for stuff that's currently on-screen or close to it
+//       Maybe try updating Transforms when physics are run, then filter based on ViewVisibility
 fn interpolate_transforms(
     time: Res<Time<Fixed>>,
     mut all_ships: Query<(&SimulationTransform, &mut Transform)>,

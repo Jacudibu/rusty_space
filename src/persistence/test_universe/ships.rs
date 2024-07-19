@@ -16,7 +16,7 @@ pub fn create_test_data() -> SaveDataCollection<ShipSaveData> {
             rotation_factor * (i as f32),
             format!("Trade Ship {i}"),
             ShipBehaviorSaveData::AutoTrade {
-                next_idle_update: SimulationTimestamp::from(i as Milliseconds),
+                next_idle_update: SimulationTimestamp::from(i as Milliseconds % 1000),
             },
         );
     }
@@ -28,7 +28,7 @@ pub fn create_test_data() -> SaveDataCollection<ShipSaveData> {
             rotation_factor * (i as f32),
             format!("Mining Ship {i}"),
             ShipBehaviorSaveData::AutoMine {
-                next_idle_update: SimulationTimestamp::from(i as Milliseconds),
+                next_idle_update: SimulationTimestamp::from(i as Milliseconds % 1000),
                 state: AutoMineState::Mining,
             },
         );
