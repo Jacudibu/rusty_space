@@ -1,7 +1,8 @@
 use bevy::app::{App, FixedPreUpdate};
 use bevy::math::VectorSpace;
 use bevy::prelude::{
-    Component, DetectChanges, Fixed, Mut, Plugin, Query, Res, Rot2, Time, Transform, Update, Vec2,
+    Component, DetectChanges, Dir2, Fixed, Mut, Plugin, Query, Res, Rot2, Time, Transform, Update,
+    Vec2,
 };
 use hexx::{Quat, Vec3};
 
@@ -104,14 +105,22 @@ impl SimulationTransform {
         self.did_change = did_change
     }
 
-    pub fn rotate(&mut self, amount: f32) {
-        self.rotation *= Rot2::radians(amount);
+    /// Rotate this transform counterclockwise by the given value in radians.
+    pub fn rotate(&mut self, radians: f32) {
+        self.rotation *= Rot2::radians(radians);
     }
 
-    pub fn forward(&self) -> Vec2 {
-        self.rotation * Vec2::Y
+    /// Returns the current forward direction, depending on the current rotation.
+    pub fn forward(&self) -> Dir2 {
+        self.rotation * Dir2::Y
     }
 
+    pub fn set_translation_and_skip_interpolation(&mut self, translation: Vec2) {
+        self.translation = translation;
+        self.last_translation = translation;
+    }
+
+    /// Crate a 3D Transform based on self, with the z position set to the provided z_layer.
     pub fn as_transform(&self, z_layer: f32) -> Transform {
         Transform {
             translation: self.translation.extend(z_layer),

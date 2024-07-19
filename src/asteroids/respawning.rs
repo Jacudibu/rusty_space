@@ -46,7 +46,8 @@ pub fn respawn_asteroids(
                 velocity.velocity,
             );
             *visibility = Visibility::Inherited;
-            transform.translation = local_respawn_position + sector.world_pos;
+            transform
+                .set_translation_and_skip_interpolation(local_respawn_position + sector.world_pos);
             asteroid_entity.timestamp.add_milliseconds(extra_millis);
             asteroid.state.toggle_and_add_milliseconds(extra_millis);
             asteroid.reset(&mut transform);
