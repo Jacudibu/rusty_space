@@ -1,7 +1,11 @@
 use crate::simulation::prelude::Milliseconds;
 use std::ops::Range;
 
+#[cfg(debug_assertions)]
+pub const TRADE_SHIP_COUNT: u32 = 20;
+#[cfg(not(debug_assertions))]
 pub const TRADE_SHIP_COUNT: u32 = 200000;
+
 pub const MINING_SHIP_COUNT: u32 = 20;
 pub const ASTEROID_COUNT: usize = 400;
 
