@@ -4,7 +4,7 @@ use crate::simulation::asteroids::SectorWasSpawnedEvent;
 use crate::simulation::asteroids::{despawning, fading, respawning, spawning};
 use crate::states::SimulationState;
 use bevy::app::{App, Plugin};
-use bevy::prelude::{in_state, on_event, FixedUpdate, IntoSystemConfigs};
+use bevy::prelude::{in_state, on_event, FixedUpdate, IntoSystemConfigs, Update};
 
 /// ### General Idea
 /// Every Sector may have asteroids inside it, defined by its [SectorAsteroidData].
@@ -32,10 +32,13 @@ impl Plugin for AsteroidPlugin {
                     despawning::on_asteroid_was_fully_mined
                         .run_if(on_event::<AsteroidWasFullyMinedEvent>()),
                     respawning::respawn_asteroids,
-                    fading::fade_asteroids_out,
-                    fading::fade_asteroids_in,
                     //draw_asteroid_debug_gizmos,
                 )
+                    .run_if(in_state(SimulationState::Running)),
+            )
+            .add_systems(
+                Update,
+                (fading::fade_asteroids_out, fading::fade_asteroids_in)
                     .run_if(in_state(SimulationState::Running)),
             );
     }
