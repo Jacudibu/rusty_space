@@ -1,6 +1,10 @@
 use crate::constants;
 use crate::simulation::{asteroids, physics, production, ship_ai, time, transform};
-use bevy::prelude::{App, Plugin, Time};
+use crate::states::{ApplicationState, SimulationState};
+use bevy::prelude::{
+    in_state, App, ButtonInput, IntoSystemConfigs, KeyCode, NextState, Plugin, Res, ResMut, State,
+    Time, Update,
+};
 use bevy::time::Fixed;
 
 pub struct SimulationPlugin;
@@ -15,5 +19,22 @@ impl Plugin for SimulationPlugin {
             time::SimulationTimePlugin,
             transform::SimulationTransformPlugin,
         ));
+        app.add_systems(
+            Update,
+            toggle_pause.run_if(in_state(ApplicationState::InGame)),
+        );
+    }
+}
+
+pub fn toggle_pause(
+    input: Res<ButtonInput<KeyCode>>,
+    current_state: Res<State<SimulationState>>,
+    mut next_state: ResMut<NextState<SimulationState>>,
+) {
+    if input.just_pressed(KeyCode::Space) {
+        next_state.set(match current_state.get() {
+            SimulationState::Running => SimulationState::Paused,
+            SimulationState::Paused => SimulationState::Running,
+        });
     }
 }

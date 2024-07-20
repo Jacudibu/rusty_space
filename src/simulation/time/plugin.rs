@@ -1,12 +1,18 @@
 use crate::simulation::prelude::SimulationTime;
-use bevy::prelude::{App, FixedFirst, IntoSystemConfigs, Plugin, Res, ResMut, Time};
+use crate::states::SimulationState;
+use bevy::prelude::{in_state, App, FixedFirst, IntoSystemConfigs, Plugin, Res, ResMut, Time};
 use bevy::time::Fixed;
 
 pub struct SimulationTimePlugin;
 impl Plugin for SimulationTimePlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(SimulationTime::default());
-        app.add_systems(FixedFirst, update.after(bevy::time::TimeSystem));
+        app.add_systems(
+            FixedFirst,
+            update
+                .after(bevy::time::TimeSystem)
+                .run_if(in_state(SimulationState::Running)),
+        );
     }
 }
 

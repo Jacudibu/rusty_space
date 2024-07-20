@@ -8,7 +8,6 @@ use bevy::prelude::{
 };
 use bevy::render::camera::ScalingMode;
 use bevy::DefaultPlugins;
-use bevy_egui::EguiPlugin;
 mod camera;
 mod components;
 mod constants;
@@ -22,6 +21,7 @@ mod pathfinding;
 mod persistence;
 mod session_data;
 mod simulation;
+mod states;
 mod trade_plan;
 mod utils;
 
@@ -38,15 +38,18 @@ fn main() {
             })
             .set(ImagePlugin::default_nearest()),
     )
-    .add_plugins(EguiPlugin)
-    .add_plugins(entity_selection::EntitySelectionPlugin)
-    .add_plugins(gizmos::GizmoPlugin)
-    .add_plugins(gui::GUIPlugin)
-    .add_plugins(camera::CameraControllerPlugin)
-    .add_plugins(diagnostics::DiagnosticsPlugin)
-    .add_plugins(persistence::test_universe::TestUniverseDataPlugin)
-    .add_plugins(persistence::UniverseSaveDataLoadingOnStartupPlugin)
-    .add_plugins(simulation::plugin::SimulationPlugin)
+    .add_plugins((
+        bevy_egui::EguiPlugin,
+        camera::CameraControllerPlugin,
+        diagnostics::DiagnosticsPlugin,
+        entity_selection::EntitySelectionPlugin,
+        gizmos::GizmoPlugin,
+        gui::GUIPlugin,
+        persistence::UniverseSaveDataLoadingOnStartupPlugin,
+        persistence::test_universe::TestUniverseDataPlugin,
+        simulation::plugin::SimulationPlugin,
+        states::StatePlugin,
+    ))
     .insert_resource(GameData::mock_data())
     .insert_resource(SessionData::mock_data())
     .add_systems(Startup, initialize_data);

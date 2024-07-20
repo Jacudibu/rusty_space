@@ -1,16 +1,24 @@
 use crate::simulation::prelude::SimulationTime;
 use crate::simulation::transform::simulation_transform::SimulationTransform;
+use crate::states::SimulationState;
 use bevy::app::{App, FixedPreUpdate, Plugin, Update};
 use bevy::prelude::{
-    DetectChanges, Fixed, Local, Mut, Query, Res, Time, Transform, ViewVisibility,
+    in_state, DetectChanges, Fixed, IntoSystemConfigs, Local, Mut, Query, Res, Time, Transform,
+    ViewVisibility,
 };
 
 /// Interpolates the transforms used for the visual representation to their respective simulation values.
 pub struct SimulationTransformPlugin;
 impl Plugin for SimulationTransformPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(FixedPreUpdate, copy_old_transform_values);
-        app.add_systems(Update, interpolate_transforms);
+        app.add_systems(
+            FixedPreUpdate,
+            copy_old_transform_values.run_if(in_state(SimulationState::Running)),
+        );
+        app.add_systems(
+            Update,
+            interpolate_transforms.run_if(in_state(SimulationState::Running)),
+        );
     }
 }
 

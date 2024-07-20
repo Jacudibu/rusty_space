@@ -2,8 +2,9 @@ use crate::simulation::production::state::GlobalProductionState;
 use crate::simulation::production::{
     inventory_update_event, production_runner, production_started_event,
 };
+use crate::states::SimulationState;
 use bevy::app::{App, Plugin};
-use bevy::prelude::FixedUpdate;
+use bevy::prelude::{in_state, FixedUpdate, IntoSystemConfigs};
 
 /// Handles everything production related.
 pub struct ProductionPlugin;
@@ -12,12 +13,14 @@ impl Plugin for ProductionPlugin {
         app.add_event::<production_started_event::ProductionStartedEvent>()
             .add_event::<inventory_update_event::InventoryUpdateForProductionEvent>()
             .insert_resource(GlobalProductionState::default())
-            .add_systems(FixedUpdate, (
-                production_runner::check_if_production_is_finished_and_start_new_one,
-                production_started_event::on_production_started,
-                inventory_update_event::handle_inventory_updates,
-            ))
-        // .
-        ;
+            .add_systems(
+                FixedUpdate,
+                (
+                    production_runner::check_if_production_is_finished_and_start_new_one,
+                    production_started_event::on_production_started,
+                    inventory_update_event::handle_inventory_updates,
+                )
+                    .run_if(in_state(SimulationState::Running)),
+            );
     }
 }

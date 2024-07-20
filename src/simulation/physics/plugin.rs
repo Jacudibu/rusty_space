@@ -2,13 +2,19 @@ use crate::components::InSector;
 use crate::simulation::physics::constant_velocity::ConstantVelocity;
 use crate::simulation::physics::ShipVelocity;
 use crate::simulation::transform::simulation_transform::SimulationTransform;
-use bevy::prelude::{App, FixedPostUpdate, Plugin, Query, Res, Time, With};
+use crate::states::SimulationState;
+use bevy::prelude::{
+    in_state, App, FixedPostUpdate, IntoSystemConfigs, Plugin, Query, Res, Time, With,
+};
 
 /// Beautifully simplified fake physics.
 pub struct PhysicsPlugin;
 impl Plugin for PhysicsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(FixedPostUpdate, (move_ships, move_constant_stuff));
+        app.add_systems(
+            FixedPostUpdate,
+            (move_ships, move_constant_stuff).run_if(in_state(SimulationState::Running)),
+        );
     }
 }
 
