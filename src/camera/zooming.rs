@@ -4,7 +4,7 @@ use bevy::input::mouse::MouseWheel;
 use bevy::input::ButtonInput;
 use bevy::math::VectorSpace;
 use bevy::prelude::{
-    Component, EventReader, KeyCode, OrthographicProjection, Query, Res, Time, With,
+    Component, EventReader, KeyCode, OrthographicProjection, Query, Real, Res, Time, With,
 };
 
 const MIN_ZOOM: f32 = 0.25;
@@ -13,7 +13,7 @@ const ZOOM_SLOWDOWN: f32 = 10.0;
 
 pub fn zoom_camera_with_buttons(
     keys: Res<ButtonInput<KeyCode>>,
-    time: Res<Time>,
+    time: Res<Time<Real>>,
     mut query: Query<&mut SmoothZooming, With<MainCamera>>,
 ) {
     let mut dir: f32 = 0.0;
@@ -46,7 +46,7 @@ pub fn zoom_camera_with_scroll_wheel(
 }
 
 pub fn animate_smooth_camera_zoom(
-    time: Res<Time>,
+    time: Res<Time<Real>>,
     mut query: Query<(&mut OrthographicProjection, &SmoothZooming), With<MainCamera>>,
 ) {
     let (mut projection, smooth_zoom) = query.get_single_mut().unwrap();

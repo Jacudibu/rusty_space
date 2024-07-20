@@ -3,7 +3,7 @@ use crate::simulation::{asteroids, physics, production, ship_ai, time, transform
 use crate::states::{ApplicationState, SimulationState};
 use bevy::prelude::{
     in_state, App, ButtonInput, IntoSystemConfigs, KeyCode, NextState, Plugin, Res, ResMut, State,
-    Time, Update,
+    Time, Update, Virtual,
 };
 use bevy::time::Fixed;
 
@@ -30,11 +30,18 @@ pub fn toggle_pause(
     input: Res<ButtonInput<KeyCode>>,
     current_state: Res<State<SimulationState>>,
     mut next_state: ResMut<NextState<SimulationState>>,
+    mut time: ResMut<Time<Virtual>>,
 ) {
     if input.just_pressed(KeyCode::Space) {
         next_state.set(match current_state.get() {
-            SimulationState::Running => SimulationState::Paused,
-            SimulationState::Paused => SimulationState::Running,
+            SimulationState::Running => {
+                time.pause();
+                SimulationState::Paused
+            }
+            SimulationState::Paused => {
+                time.unpause();
+                SimulationState::Running
+            }
         });
     }
 }
