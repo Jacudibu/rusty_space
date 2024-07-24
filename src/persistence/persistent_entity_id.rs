@@ -1,4 +1,4 @@
-use crate::components::{Asteroid, Gate, Ship, Station};
+use crate::components::{Asteroid, Gate, Planet, Ship, Station};
 use bevy::prelude::Component;
 use hexx::Hex;
 use serde::{Deserialize, Serialize};
@@ -7,7 +7,6 @@ use std::fmt::{Debug, Display, Formatter};
 use std::hash::{Hash, Hasher};
 use std::marker::PhantomData;
 use std::sync::atomic::{AtomicU32, Ordering};
-
 /// A unique ID that's the same between session and across different clients in multiplayer sessions.
 /// (Sectors are just represented as Hex coordinates)
 #[derive(Serialize, Deserialize)]
@@ -15,6 +14,7 @@ use std::sync::atomic::{AtomicU32, Ordering};
 pub enum PersistentEntityId {
     Asteroid(PersistentAsteroidId),
     Gate(PersistentGateId),
+    Planet(PersistentPlanetId),
     Ship(PersistentShipId),
     Station(PersistentStationId),
     Sector(Hex),
@@ -40,6 +40,17 @@ impl From<PersistentGateId> for PersistentEntityId {
 impl From<&PersistentGateId> for PersistentEntityId {
     fn from(value: &PersistentGateId) -> Self {
         Self::Gate(*value)
+    }
+}
+
+impl From<PersistentPlanetId> for PersistentEntityId {
+    fn from(value: PersistentPlanetId) -> Self {
+        Self::Planet(value)
+    }
+}
+impl From<&PersistentPlanetId> for PersistentEntityId {
+    fn from(value: &PersistentPlanetId) -> Self {
+        Self::Planet(*value)
     }
 }
 
@@ -74,6 +85,7 @@ impl From<Hex> for PersistentEntityId {
 
 pub type PersistentAsteroidId = TypedPersistentEntityId<Asteroid>;
 pub type PersistentGateId = TypedPersistentEntityId<Gate>;
+pub type PersistentPlanetId = TypedPersistentEntityId<Planet>;
 pub type PersistentShipId = TypedPersistentEntityId<Ship>;
 pub type PersistentStationId = TypedPersistentEntityId<Station>;
 
@@ -101,6 +113,13 @@ impl TypedPersistentEntityId<Gate> {
     }
 }
 
+static NEXT_PLANET_ID: AtomicU32 = AtomicU32::new(0);
+impl TypedPersistentEntityId<Planet> {
+    pub fn next() -> Self {
+        Self(NEXT_PLANET_ID.fetch_add(1, Ordering::Relaxed), PhantomData)
+    }
+}
+
 static NEXT_SHIP_ID: AtomicU32 = AtomicU32::new(0);
 impl TypedPersistentEntityId<Ship> {
     pub fn next() -> Self {
@@ -114,6 +133,7 @@ impl TypedPersistentEntityId<Station> {
         Self(NEXT_STATION_ID.fetch_add(1, Ordering::Relaxed), PhantomData)
     }
 }
+
 impl<T: Component> Copy for TypedPersistentEntityId<T> {}
 impl<T: Component> Clone for TypedPersistentEntityId<T> {
     fn clone(&self) -> Self {

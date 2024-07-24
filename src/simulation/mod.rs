@@ -1,5 +1,6 @@
 pub mod asteroids;
 pub mod physics;
+mod planets;
 pub mod plugin;
 pub mod prelude;
 pub mod production;

@@ -1,9 +1,10 @@
 use crate::persistence::persistent_entity_id::{
     PersistentAsteroidId, PersistentGateId, PersistentShipId, PersistentStationId,
 };
-use crate::persistence::PersistentEntityId;
+use crate::persistence::{PersistentEntityId, PersistentPlanetId};
 use crate::utils::{
-    AsteroidEntity, GateEntity, SectorEntity, ShipEntity, StationEntity, TypedEntity,
+    AsteroidEntity, GateEntity, PlanetEntity, SectorEntity, ShipEntity, StarEntity, StationEntity,
+    TypedEntity,
 };
 use bevy::ecs::system::SystemParam;
 use bevy::prelude::{Res, Resource};
@@ -15,8 +16,10 @@ use std::hash::Hash;
 pub struct AllEntityIdMaps<'w> {
     pub asteroids: Res<'w, AsteroidIdMap>,
     pub gates: Res<'w, GateIdMap>,
+    pub planets: Res<'w, PlanetIdMap>,
     pub sectors: Res<'w, SectorIdMap>,
     pub ships: Res<'w, ShipIdMap>,
+    pub stars: Res<'w, StarIdMap>,
     pub stations: Res<'w, StationIdMap>,
 }
 
@@ -27,8 +30,10 @@ impl<'w> AllEntityIdMaps<'w> {
         match typed_entity {
             TypedEntity::Asteroid(asteroid) => self.asteroids.entity_to_id[asteroid].into(),
             TypedEntity::Gate(gate) => self.gates.entity_to_id[gate].into(),
+            TypedEntity::Planet(planet) => self.planets.entity_to_id[planet].into(),
             TypedEntity::Sector(sector) => self.sectors.entity_to_id[sector].into(),
             TypedEntity::Ship(ship) => self.ships.entity_to_id[ship].into(),
+            TypedEntity::Star(star) => self.stars.entity_to_id[star].into(),
             TypedEntity::Station(station) => self.stations.entity_to_id[station].into(),
             TypedEntity::AnyWithInventory(entity_with_inventory) => {
                 if let Some(id) = self.ships.get_id(&entity_with_inventory.into()) {
@@ -46,9 +51,11 @@ impl<'w> AllEntityIdMaps<'w> {
 
 pub type AsteroidIdMap = EntityIdMap<PersistentAsteroidId, AsteroidEntity>;
 pub type GateIdMap = EntityIdMap<PersistentGateId, GateEntity>;
+pub type PlanetIdMap = EntityIdMap<PersistentPlanetId, PlanetEntity>;
 pub type ShipIdMap = EntityIdMap<PersistentShipId, ShipEntity>;
-pub type StationIdMap = EntityIdMap<PersistentStationId, StationEntity>;
 pub type SectorIdMap = EntityIdMap<Hex, SectorEntity>;
+pub type StarIdMap = EntityIdMap<PersistentStationId, StarEntity>;
+pub type StationIdMap = EntityIdMap<PersistentStationId, StationEntity>;
 
 /// A simple Bidirectional Map.
 ///

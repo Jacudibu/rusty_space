@@ -18,9 +18,10 @@ pub const TICKS_PER_SECOND: f64 = 10.0;
 
 pub const SHIP_LAYER: f32 = 10.0;
 pub const STATION_LAYER: f32 = 5.0;
-pub const STATION_ICON_LAYER: f32 = 6.0;
+pub const STATION_ICON_LAYER: f32 = STATION_LAYER + 1.0;
 pub const GATE_LAYER: f32 = 5.0;
 pub const ASTEROID_LAYER: f32 = 0.0;
+pub const PLANET_AND_STARS_LAYER: f32 = 5.0;
 
 /// Sadly linestrip depth seems to be ignored by 2D Cameras. Right now this constant purely exists to avoid magic numbers.
 pub const GATE_CONNECTION_LAYER: f32 = 0.0;

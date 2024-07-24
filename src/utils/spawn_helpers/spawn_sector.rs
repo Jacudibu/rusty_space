@@ -1,4 +1,4 @@
-use crate::components::{Sector, SectorAsteroidData};
+use crate::components::{Sector, SectorAsteroidData, SectorCore};
 use crate::simulation::asteroids::SectorWasSpawnedEvent;
 use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::utils::SectorEntity;
