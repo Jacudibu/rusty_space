@@ -15,7 +15,9 @@ pub fn on_selection_changed(
             *handle = match selectable {
                 SelectableEntity::Asteroid => sprite_handles.asteroid.clone(),
                 SelectableEntity::Gate => sprite_handles.gate.clone(),
+                SelectableEntity::Planet => sprite_handles.planet.clone(),
                 SelectableEntity::Ship => sprite_handles.ship.clone(),
+                SelectableEntity::Star => sprite_handles.planet.clone(),
                 SelectableEntity::Station => sprite_handles.station.clone(),
             }
         }
@@ -26,7 +28,9 @@ pub fn on_selection_changed(
             *handle = match selectable {
                 SelectableEntity::Asteroid => sprite_handles.asteroid_selected.clone(),
                 SelectableEntity::Gate => sprite_handles.gate_selected.clone(),
+                SelectableEntity::Planet => sprite_handles.planet_selected.clone(),
                 SelectableEntity::Ship => sprite_handles.ship_selected.clone(),
+                SelectableEntity::Star => sprite_handles.planet_selected.clone(),
                 SelectableEntity::Station => sprite_handles.station_selected.clone(),
             }
         }

@@ -1,4 +1,4 @@
-use crate::components::{ConstantOrbit, Planet, Sector};
+use crate::components::{ConstantOrbit, Planet, Sector, SelectableEntity};
 use crate::persistence::{PersistentPlanetId, PlanetIdMap};
 use crate::simulation::ship_ai::AutoTradeBehavior;
 use crate::simulation::transform::simulation_transform::SimulationTransform;
@@ -18,7 +18,6 @@ pub fn spawn_planet(
     sector_entity: SectorEntity,
     orbit_distance: f32,
     current_orbit_angle: f32,
-    velocity: f32,
     mass: u32,
 ) {
     let mut sector_data = sectors.get_mut(sector_entity.into()).unwrap();
@@ -26,12 +25,20 @@ pub fn spawn_planet(
     let planet_id = PersistentPlanetId::next();
     let planet = Planet::new(planet_id, mass);
 
-    // TODO: Figure out whether orbit should always be 0.0,
+    // TODO: Figure out whether the center of our orbit should always be 0.0,
     //      if yes, this should be deleted, if not, this should be persisted in sector
     let orbit_around = Vec2::ZERO;
 
     // TODO: calculate that from distance and angle
     let local_position = Vec2::ZERO;
+
+    // TODO: Grab that from the sector/star
+    let star_mass = 100.0;
+
+    // TODO: Instead of using a realistic gravitational constant, we can just adjust this value for our simulation until it "feels" right
+    const GRAVITATIONAL_CONSTANT: f32 = 6.67;
+
+    let velocity = ((GRAVITATIONAL_CONSTANT * star_mass) / orbit_distance).sqrt();
 
     let simulation_transform =
         SimulationTransform::new(sector_data.world_pos + local_position, Rot2::IDENTITY, 1.0);
@@ -39,7 +46,7 @@ pub fn spawn_planet(
     let entity = commands
         .spawn((
             Name::new(name),
-            // SelectableEntity::Planet,
+            SelectableEntity::Planet,
             AutoTradeBehavior::default(),
             ConstantOrbit::new(orbit_around, current_orbit_angle, orbit_distance, velocity),
             SpriteBundle {
