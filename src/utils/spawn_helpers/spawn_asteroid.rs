@@ -41,7 +41,6 @@ pub fn spawn_asteroid(
         .spawn((
             Name::new(name),
             SelectableEntity::Asteroid,
-            AutoTradeBehavior::default(),
             ConstantVelocity::new(velocity, sprite_rotation),
             SpriteBundle {
                 texture: sprites.asteroid.clone(),

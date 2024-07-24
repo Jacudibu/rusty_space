@@ -1,6 +1,7 @@
 use crate::components::InSector;
 use crate::utils::{
-    AsteroidEntityWithTimestamp, GateEntity, SectorEntity, ShipEntity, StationEntity,
+    AsteroidEntityWithTimestamp, GateEntity, PlanetEntity, SectorEntity, ShipEntity, StarEntity,
+    StationEntity,
 };
 use bevy::prelude::{Commands, Component, Entity, Vec2};
 use bevy::utils::{HashMap, HashSet};
@@ -14,12 +15,27 @@ pub struct Sector {
     pub world_pos: Vec2,
 
     pub gates: HashMap<SectorEntity, GatePairInSector>,
+    pub planets: HashSet<PlanetEntity>,
     pub ships: HashSet<ShipEntity>,
+    pub core: SectorCore,
     pub stations: HashSet<StationEntity>,
 
     pub asteroid_data: Option<SectorAsteroidData>,
     pub asteroids: BTreeSet<AsteroidEntityWithTimestamp>,
     pub asteroid_respawns: BinaryHeap<std::cmp::Reverse<AsteroidEntityWithTimestamp>>,
+}
+
+/// The main feature of a sector.
+pub enum SectorCore {
+    /// The sector is devoid of any natural objects
+    Void,
+
+    /// The sector features a star. Planets, Gates (?) and Stations (?) orbit around that.
+    Star(StarEntity),
+
+    // TODO: Just an idea - contemplate using this over asteroid_data and asteroids, since asteroids moving in orbit would be a headache
+    /// The sector features asteroids, idly floating through it.
+    Asteroids(SectorAsteroidData),
 }
 
 #[derive(Copy, Clone)]
@@ -42,16 +58,18 @@ impl Sector {
         Sector {
             coordinate,
             world_pos,
+            core: SectorCore::Void,
             asteroid_data: asteroids,
             asteroids: BTreeSet::new(),
             asteroid_respawns: BinaryHeap::new(),
             gates: HashMap::new(),
+            planets: HashSet::new(),
             ships: HashSet::new(),
             stations: HashSet::new(),
         }
     }
 
-    /// Adds asteroid to this sector and inserts the [InSector] component to it.
+    /// Adds the given asteroid to this sector and inserts the [InSector] component to it.
     pub fn add_asteroid(
         &mut self,
         commands: &mut Commands,
@@ -67,7 +85,18 @@ impl Sector {
         self.asteroids.insert(entity);
     }
 
-    /// Adds ship to this sector and inserts the [InSector] component to it.
+    /// Adds the given planet to this sector and inserts the [InSector] component to it.
+    pub fn add_planet(
+        &mut self,
+        commands: &mut Commands,
+        sector: SectorEntity,
+        entity: PlanetEntity,
+    ) {
+        self.planets.insert(entity);
+        self.in_sector(commands, sector, entity.into());
+    }
+
+    /// Adds the given ship to this sector and inserts the [InSector] component to it.
     pub fn add_ship(&mut self, commands: &mut Commands, sector: SectorEntity, entity: ShipEntity) {
         self.ships.insert(entity);
         self.in_sector(commands, sector, entity.into());

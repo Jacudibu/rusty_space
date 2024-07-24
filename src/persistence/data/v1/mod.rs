@@ -3,14 +3,15 @@ use serde::{Deserialize, Serialize};
 
 mod gate_save_data;
 mod inventory_save_data;
+mod planet_save_data;
 mod sector_save_data;
 mod ship_save_data;
 mod station_save_data;
 mod task_save_data;
 
 pub use {
-    gate_save_data::*, inventory_save_data::*, sector_save_data::*, ship_save_data::*,
-    station_save_data::*, task_save_data::*,
+    gate_save_data::*, inventory_save_data::*, planet_save_data::*, sector_save_data::*,
+    ship_save_data::*, station_save_data::*, task_save_data::*,
 };
 
 #[derive(Default, Serialize, Deserialize)]
@@ -18,6 +19,7 @@ pub use {
 pub struct UniverseSaveData {
     pub gate_pairs: SaveDataCollection<GatePairSaveData>,
     pub sectors: SaveDataCollection<SectorSaveData>,
+    pub planets: SaveDataCollection<PlanetSaveData>,
     pub ships: SaveDataCollection<ShipSaveData>,
     pub stations: SaveDataCollection<StationSaveData>,
 }
