@@ -57,8 +57,8 @@ impl PlanetSaveData {
             self.name.clone(),
             &mut args.sectors,
             sector_entity,
-            self.orbit.distance,
-            self.orbit.current_angle,
+            self.orbit.radius,
+            self.orbit.current_rotational_fraction,
             self.mass,
         )
     }

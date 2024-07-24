@@ -1,5 +1,5 @@
 use crate::constants;
-use crate::simulation::{asteroids, physics, production, ship_ai, time, transform};
+use crate::simulation::*;
 use crate::states::{ApplicationState, SimulationState};
 use bevy::prelude::{
     in_state, App, ButtonInput, IntoSystemConfigs, KeyCode, NextState, Plugin, Res, ResMut, State,
@@ -15,6 +15,7 @@ impl Plugin for SimulationPlugin {
             asteroids::AsteroidPlugin,
             physics::PhysicsPlugin,
             production::ProductionPlugin,
+            planets::PlanetPlugin,
             ship_ai::ShipAiPlugin,
             time::SimulationTimePlugin,
             transform::SimulationTransformPlugin,

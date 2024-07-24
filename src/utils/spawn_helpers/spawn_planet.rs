@@ -16,8 +16,8 @@ pub fn spawn_planet(
     name: String,
     sectors: &mut Query<&mut Sector>,
     sector_entity: SectorEntity,
-    orbit_distance: f32,
-    current_orbit_angle: f32,
+    orbit_radius: f32,
+    orbit_rotational_fraction: f32,
     mass: u32,
 ) {
     let mut sector_data = sectors.get_mut(sector_entity.into()).unwrap();
@@ -25,20 +25,16 @@ pub fn spawn_planet(
     let planet_id = PersistentPlanetId::next();
     let planet = Planet::new(planet_id, mass);
 
-    // TODO: Figure out whether the center of our orbit should always be 0.0,
-    //      if yes, this should be deleted, if not, this should be persisted in sector
-    let orbit_around = Vec2::ZERO;
-
     // TODO: calculate that from distance and angle
     let local_position = Vec2::ZERO;
 
-    // TODO: Grab that from the sector/star
+    // TODO: Grab that from the sector/star. And figure out what unit we wanna use.
     let star_mass = 100.0;
 
-    // TODO: Instead of using a realistic gravitational constant, we can just adjust this value for our simulation until it "feels" right
-    const GRAVITATIONAL_CONSTANT: f32 = 6.67;
+    // TODO: Instead of using a realistic gravitational constant, we can just adjust this value for our simulation until it "feels" right, that's why this value is bogus
+    const GRAVITATIONAL_CONSTANT: f32 = 0.00067;
 
-    let velocity = ((GRAVITATIONAL_CONSTANT * star_mass) / orbit_distance).sqrt();
+    let velocity = ((GRAVITATIONAL_CONSTANT * star_mass) / orbit_radius).sqrt();
 
     let simulation_transform =
         SimulationTransform::new(sector_data.world_pos + local_position, Rot2::IDENTITY, 1.0);
@@ -48,7 +44,7 @@ pub fn spawn_planet(
             Name::new(name),
             SelectableEntity::Planet,
             AutoTradeBehavior::default(),
-            ConstantOrbit::new(orbit_around, current_orbit_angle, orbit_distance, velocity),
+            ConstantOrbit::new(orbit_rotational_fraction, orbit_radius, velocity),
             SpriteBundle {
                 texture: sprites.planet.clone(),
                 transform: simulation_transform.as_transform(constants::PLANET_AND_STARS_LAYER),
