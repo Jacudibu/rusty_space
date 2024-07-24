@@ -32,7 +32,7 @@ fn copy_old_transform_values(mut transforms: Query<Mut<SimulationTransform>>) {
 fn interpolate_transforms(
     time: Res<Time<Fixed>>,
     simulation_time: Res<SimulationTime>,
-    mut all_ships: Query<(&SimulationTransform, &mut Transform, &ViewVisibility)>,
+    mut all_transforms: Query<(&SimulationTransform, &mut Transform, &ViewVisibility)>,
     mut update_all_next_frame: Local<bool>,
 ) {
     let update_all = *update_all_next_frame && !simulation_time.is_changed();
@@ -43,20 +43,20 @@ fn interpolate_transforms(
     let overstep_fraction = time.overstep_fraction();
 
     if update_all {
-        all_ships
+        all_transforms
             .par_iter_mut()
             .for_each(|(simulation_transform, mut transform, _)| {
                 simulation_transform.update_transform(&mut transform, overstep_fraction);
             });
     } else {
-        all_ships
-            .par_iter_mut()
-            .for_each(|(simulation_transform, mut transform, visibility)| {
+        all_transforms.par_iter_mut().for_each(
+            |(simulation_transform, mut transform, visibility)| {
                 if !visibility.get() {
                     return;
                 }
 
                 simulation_transform.update_transform(&mut transform, overstep_fraction);
-            });
+            },
+        );
     }
 }

@@ -15,6 +15,6 @@ pub struct PlanetSaveData {
 #[derive(Serialize, Deserialize)]
 #[cfg_attr(test, derive(Clone, Debug, PartialEq))]
 pub struct ConstantOrbitSaveData {
-    pub current_angle: f32,
-    pub distance: f32,
+    pub current_rotational_fraction: f32,
+    pub radius: f32,
 }

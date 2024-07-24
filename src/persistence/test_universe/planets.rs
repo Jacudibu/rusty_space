@@ -8,8 +8,28 @@ pub fn create_test_data() -> SaveDataCollection<PlanetSaveData> {
         coordinates::RIGHT,
         100,
         ConstantOrbitSaveData {
-            distance: 100.0,
-            current_angle: 0.0,
+            radius: 50.0,
+            current_rotational_fraction: 0.3,
+        },
+    );
+
+    result.add(
+        "Planet Beta".to_string(),
+        coordinates::RIGHT,
+        150,
+        ConstantOrbitSaveData {
+            radius: 200.0,
+            current_rotational_fraction: 0.7,
+        },
+    );
+
+    result.add(
+        "Planet Gamma".to_string(),
+        coordinates::RIGHT,
+        200,
+        ConstantOrbitSaveData {
+            radius: 400.0,
+            current_rotational_fraction: 0.0,
         },
     );
 
