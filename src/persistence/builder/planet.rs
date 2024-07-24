@@ -59,7 +59,6 @@ impl PlanetSaveData {
             sector_entity,
             self.orbit.distance,
             self.orbit.current_angle,
-            self.orbit.velocity,
             self.mass,
         )
     }

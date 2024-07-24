@@ -50,18 +50,22 @@ struct SelectableCount {
     pub gates: u32,
     pub stations: u32,
     pub ships: u32,
+    pub planets: u32,
+    pub stars: u32,
 }
 
 impl SelectableCount {
     pub fn total(&self) -> u32 {
-        self.stations + self.ships + self.gates + self.asteroids
+        self.stations + self.ships + self.gates + self.asteroids + self.stars + self.planets
     }
 
     pub fn add(mut self, selectable_entity: &SelectableEntity) -> Self {
         match selectable_entity {
             SelectableEntity::Asteroid => self.asteroids += 1,
             SelectableEntity::Gate => self.gates += 1,
+            SelectableEntity::Planet => self.planets += 1,
             SelectableEntity::Ship => self.ships += 1,
+            SelectableEntity::Star => self.stars += 1,
             SelectableEntity::Station => self.stations += 1,
         }
         self
@@ -72,7 +76,9 @@ impl SelectableCount {
 pub struct UiIcons {
     pub asteroid: SizedTexture,
     pub gate: SizedTexture,
+    pub planet: SizedTexture,
     pub ship: SizedTexture,
+    pub star: SizedTexture,
     pub station: SizedTexture,
 
     pub idle: SizedTexture,
@@ -86,7 +92,9 @@ impl UiIcons {
         match selectable {
             SelectableEntity::Asteroid => self.asteroid,
             SelectableEntity::Gate => self.gate,
+            SelectableEntity::Planet => self.planet,
             SelectableEntity::Ship => self.ship,
+            SelectableEntity::Star => self.star,
             SelectableEntity::Station => self.station,
         }
     }
@@ -124,7 +132,9 @@ pub fn initialize(
     let icons = UiIcons {
         asteroid: SizedTexture::new(contexts.add_image(sprites.asteroid.clone()), ICON_SIZE),
         gate: SizedTexture::new(contexts.add_image(sprites.gate.clone()), ICON_SIZE),
+        planet: SizedTexture::new(contexts.add_image(sprites.planet.clone()), ICON_SIZE),
         ship: SizedTexture::new(contexts.add_image(sprites.ship.clone()), ICON_SIZE),
+        star: SizedTexture::new(contexts.add_image(sprites.planet.clone()), ICON_SIZE),
         station: SizedTexture::new(contexts.add_image(sprites.station.clone()), ICON_SIZE),
         idle: SizedTexture::new(contexts.add_image(idle), ICON_SIZE),
         move_to: SizedTexture::new(contexts.add_image(move_to), ICON_SIZE),
@@ -179,6 +189,14 @@ pub fn list_selection_icons_and_counts(
                 if counts.stations > 0 {
                     ui.image(images.station);
                     ui.label(format!("x {}", counts.stations));
+                }
+                if counts.planets > 0 {
+                    ui.image(images.planet);
+                    ui.label(format!("x {}", counts.planets));
+                }
+                if counts.stars > 0 {
+                    ui.image(images.star);
+                    ui.label(format!("x {}", counts.stars));
                 }
                 if counts.ships > 0 {
                     ui.image(images.ship);
