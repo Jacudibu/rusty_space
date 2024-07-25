@@ -2,8 +2,8 @@ use crate::constants;
 use crate::simulation::*;
 use crate::states::{ApplicationState, SimulationState};
 use bevy::prelude::{
-    in_state, App, ButtonInput, IntoSystemConfigs, KeyCode, NextState, Plugin, Res, ResMut, State,
-    Time, Update, Virtual,
+    in_state, App, ButtonInput, FixedUpdate, IntoSystemConfigs, KeyCode, NextState, Plugin, Res,
+    ResMut, State, Time, Update, Virtual,
 };
 use bevy::time::Fixed;
 
@@ -23,6 +23,11 @@ impl Plugin for SimulationPlugin {
         app.add_systems(
             Update,
             toggle_pause.run_if(in_state(ApplicationState::InGame)),
+        );
+        app.add_systems(
+            Update, // TODO: Depending on our orbit velocity, this should be running in FixedUpdate or even less often and use SimulationTransform
+            moving_gate_connections::update_gate_connections
+                .run_if(in_state(SimulationState::Running)),
         );
     }
 }
