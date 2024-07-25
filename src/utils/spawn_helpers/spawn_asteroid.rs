@@ -1,8 +1,7 @@
-use crate::components::{Asteroid, AsteroidState, Sector, SelectableEntity};
+use crate::components::{Asteroid, AsteroidFeature, AsteroidState, SelectableEntity};
 use crate::persistence::{AsteroidIdMap, PersistentAsteroidId};
 use crate::simulation::physics::ConstantVelocity;
 use crate::simulation::prelude::SimulationTimestamp;
-use crate::simulation::ship_ai::AutoTradeBehavior;
 use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::utils::{AsteroidEntity, AsteroidEntityWithTimestamp, SectorEntity};
 use crate::{constants, SpriteHandles};
@@ -16,9 +15,9 @@ pub fn spawn_asteroid(
     asteroid_id_map: &mut AsteroidIdMap,
     sprites: &SpriteHandles,
     name: String,
-    sector: &mut Sector,
+    global_pos: Vec2,
+    asteroid_feature: &mut AsteroidFeature,
     sector_entity: SectorEntity,
-    local_position: Vec2,
     velocity: Vec2,
     ore_amount: u32,
     sprite_rotation: f32,
@@ -32,7 +31,7 @@ pub fn spawn_asteroid(
     );
 
     let simulation_transform = SimulationTransform::new(
-        sector.world_pos + local_position,
+        global_pos,
         Rot2::radians(sprite_rotation * std::f32::consts::PI * 1000.0),
         asteroid.scale_depending_on_current_ore_volume(),
     );
@@ -53,7 +52,7 @@ pub fn spawn_asteroid(
         .id();
 
     asteroid_id_map.insert(asteroid_id, AsteroidEntity::from(entity));
-    sector.add_asteroid(
+    asteroid_feature.add_asteroid(
         commands,
         sector_entity,
         AsteroidEntityWithTimestamp {

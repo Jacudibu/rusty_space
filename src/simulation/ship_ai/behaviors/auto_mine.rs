@@ -1,4 +1,4 @@
-use crate::components::{Asteroid, BuyOrders, InSector, Inventory, Sector};
+use crate::components::{Asteroid, BuyOrders, InSector, Inventory, Sector, SectorFeature};
 use crate::pathfinding;
 use crate::persistence::SectorIdMap;
 use crate::simulation::prelude::{SimulationTime, SimulationTimestamp};
@@ -70,10 +70,10 @@ pub fn handle_idle_ships(
                 AutoMineState::Mining => {
                     let sector = all_sectors.get(in_sector.sector.into()).unwrap();
                     let ship_pos = all_transforms.get(ship_entity).unwrap().translation;
-                    if let Some(_asteroid_data) = sector.asteroid_data {
+                    if let SectorFeature::Asteroids(feature) = &sector.feature {
                         // TODO: Also Test whether asteroid_data contains the requested asteroid type
 
-                        if let Some(closest_asteroid) = sector
+                        if let Some(closest_asteroid) = feature
                             .asteroids
                             .iter()
                             .filter(|x| max_asteroid_age.has_not_passed(&x.timestamp))
@@ -115,7 +115,7 @@ pub fn handle_idle_ships(
                         // TODO: Properly search for nearest sector with resources
                         let target_sector = all_sectors
                             .iter()
-                            .find(|x| x.asteroid_data.is_some())
+                            .find(|x| x.feature.is_asteroids())
                             .unwrap();
                         let path = pathfinding::find_path(
                             &all_sectors,

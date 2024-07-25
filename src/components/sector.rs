@@ -1,7 +1,6 @@
 use crate::components::InSector;
 use crate::utils::{
-    AsteroidEntityWithTimestamp, GateEntity, PlanetEntity, SectorEntity, ShipEntity, StarEntity,
-    StationEntity,
+    AsteroidEntityWithTimestamp, GateEntity, PlanetEntity, SectorEntity, ShipEntity, StationEntity,
 };
 use bevy::prelude::{Commands, Component, Entity, Vec2};
 use bevy::utils::{HashMap, HashSet};
@@ -19,10 +18,6 @@ pub struct Sector {
     pub ships: HashSet<ShipEntity>,
     pub feature: SectorFeature,
     pub stations: HashSet<StationEntity>,
-
-    pub asteroid_data: Option<SectorAsteroidData>,
-    pub asteroids: BTreeSet<AsteroidEntityWithTimestamp>,
-    pub asteroid_respawns: BinaryHeap<std::cmp::Reverse<AsteroidEntityWithTimestamp>>,
 }
 
 /// The main feature of a sector.
@@ -35,7 +30,49 @@ pub enum SectorFeature {
 
     // TODO: Just an idea - contemplate using this over asteroid_data and asteroids, since asteroids moving in orbit would be a headache
     /// The sector features asteroids, idly floating through it.
-    Asteroids(SectorAsteroidData),
+    Asteroids(AsteroidFeature),
+}
+
+impl SectorFeature {
+    pub fn is_asteroids(&self) -> bool {
+        match self {
+            SectorFeature::Void => false,
+            SectorFeature::Star => false,
+            SectorFeature::Asteroids(_) => true,
+        }
+    }
+}
+
+pub struct AsteroidFeature {
+    pub asteroid_data: SectorAsteroidData,
+    pub asteroids: BTreeSet<AsteroidEntityWithTimestamp>,
+    pub asteroid_respawns: BinaryHeap<std::cmp::Reverse<AsteroidEntityWithTimestamp>>,
+}
+
+impl AsteroidFeature {
+    pub fn new(asteroid_data: SectorAsteroidData) -> Self {
+        Self {
+            asteroid_data,
+            asteroids: BTreeSet::new(),
+            asteroid_respawns: BinaryHeap::new(),
+        }
+    }
+
+    /// Adds the given asteroid to this sector and inserts the [InSector] component to it.
+    pub fn add_asteroid(
+        &mut self,
+        commands: &mut Commands,
+        sector_entity: SectorEntity,
+        entity: AsteroidEntityWithTimestamp,
+    ) {
+        self.add_asteroid_in_place(entity);
+        Sector::in_sector(commands, sector_entity, entity.entity.into());
+    }
+
+    /// Adds asteroid to this sectors' asteroid set.
+    pub fn add_asteroid_in_place(&mut self, entity: AsteroidEntityWithTimestamp) {
+        self.asteroids.insert(entity);
+    }
 }
 
 #[derive(Copy, Clone)]
@@ -54,40 +91,16 @@ pub struct GatePairInSector {
 }
 
 impl Sector {
-    pub fn new(
-        coordinate: Hex,
-        world_pos: Vec2,
-        feature: SectorFeature,
-        asteroids: Option<SectorAsteroidData>,
-    ) -> Self {
+    pub fn new(coordinate: Hex, world_pos: Vec2, feature: SectorFeature) -> Self {
         Sector {
             coordinate,
             world_pos,
             feature,
-            asteroid_data: asteroids,
-            asteroids: BTreeSet::new(),
-            asteroid_respawns: BinaryHeap::new(),
             gates: HashMap::new(),
             planets: HashSet::new(),
             ships: HashSet::new(),
             stations: HashSet::new(),
         }
-    }
-
-    /// Adds the given asteroid to this sector and inserts the [InSector] component to it.
-    pub fn add_asteroid(
-        &mut self,
-        commands: &mut Commands,
-        sector: SectorEntity,
-        entity: AsteroidEntityWithTimestamp,
-    ) {
-        self.add_asteroid_in_place(entity);
-        self.in_sector(commands, sector, entity.entity.into());
-    }
-
-    /// Adds asteroid to this sectors' asteroid set.
-    pub fn add_asteroid_in_place(&mut self, entity: AsteroidEntityWithTimestamp) {
-        self.asteroids.insert(entity);
     }
 
     /// Adds the given planet to this sector and inserts the [InSector] component to it.
@@ -98,13 +111,13 @@ impl Sector {
         entity: PlanetEntity,
     ) {
         self.planets.insert(entity);
-        self.in_sector(commands, sector, entity.into());
+        Self::in_sector(commands, sector, entity.into());
     }
 
     /// Adds the given ship to this sector and inserts the [InSector] component to it.
     pub fn add_ship(&mut self, commands: &mut Commands, sector: SectorEntity, entity: ShipEntity) {
         self.ships.insert(entity);
-        self.in_sector(commands, sector, entity.into());
+        Self::in_sector(commands, sector, entity.into());
     }
 
     /// Removes ship from this sector whilst also deleting its [InSector] component.
@@ -122,7 +135,7 @@ impl Sector {
         entity: StationEntity,
     ) {
         self.stations.insert(entity);
-        self.in_sector(commands, sector, entity.into());
+        Self::in_sector(commands, sector, entity.into());
     }
 
     /// Adds the gate to this sector and inserts the [InSector] component to it.
@@ -141,11 +154,11 @@ impl Sector {
                 to: destination_gate,
             },
         );
-        self.in_sector(commands, this_sector, this_gate.into());
+        Self::in_sector(commands, this_sector, this_gate.into());
     }
 
     /// Adds the [InSector] component linking to `self` to the provided Entity.
-    fn in_sector(&self, commands: &mut Commands, sector_entity: SectorEntity, entity: Entity) {
+    fn in_sector(commands: &mut Commands, sector_entity: SectorEntity, entity: Entity) {
         commands.entity(entity).insert(InSector {
             sector: sector_entity,
         });

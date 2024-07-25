@@ -1,4 +1,4 @@
-use crate::components::Sector;
+use crate::components::{Sector, SectorFeature};
 use crate::map_layout::MapLayout;
 use crate::persistence::AsteroidIdMap;
 use crate::simulation::asteroids::{helpers, SectorWasSpawnedEvent};
@@ -28,7 +28,7 @@ pub fn spawn_asteroids_for_new_sector(
 
     for event in sector_spawns.read() {
         let mut sector = sectors.get_mut(event.sector.into()).unwrap();
-        let Some(asteroid_data) = sector.asteroid_data else {
+        let SectorFeature::Asteroids(_) = &sector.feature else {
             continue;
         };
 
@@ -40,14 +40,21 @@ pub fn spawn_asteroids_for_new_sector(
         let position_rng = StdRng::seed_from_u64(seed);
         let mut inner_rng = StdRng::seed_from_u64(seed);
 
+        let sector_world_pos = sector.world_pos;
+        let SectorFeature::Asteroids(asteroid_feature) = &mut sector.feature else {
+            panic!("This was already checked previously and should never happen.")
+        };
+
         for local_position in shape
             .interior_dist()
             .sample_iter(position_rng)
             .take(constants::ASTEROID_COUNT)
         {
             let velocity = Vec2::new(
-                asteroid_data.average_velocity.x * inner_rng.gen_range(VELOCITY_RANDOM_RANGE),
-                asteroid_data.average_velocity.y * inner_rng.gen_range(VELOCITY_RANDOM_RANGE),
+                asteroid_feature.asteroid_data.average_velocity.x
+                    * inner_rng.gen_range(VELOCITY_RANDOM_RANGE),
+                asteroid_feature.asteroid_data.average_velocity.y
+                    * inner_rng.gen_range(VELOCITY_RANDOM_RANGE),
             );
 
             let despawn_after = helpers::calculate_milliseconds_until_asteroid_leaves_hexagon(
@@ -61,9 +68,9 @@ pub fn spawn_asteroids_for_new_sector(
                 &mut asteroid_id_map,
                 &sprites,
                 "Asteroid".to_string(),
-                &mut sector,
+                sector_world_pos + local_position,
+                asteroid_feature,
                 event.sector,
-                local_position,
                 velocity,
                 inner_rng.gen_range(constants::ASTEROID_ORE_RANGE),
                 inner_rng.gen_range(ROTATION_RANDOM_RANGE),

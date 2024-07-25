@@ -1,5 +1,5 @@
 use crate::persistence::PersistentPlanetId;
-use bevy::prelude::{Component, Vec2};
+use bevy::prelude::Component;
 
 #[derive(Component)]
 pub struct Planet {
