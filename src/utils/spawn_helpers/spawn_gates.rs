@@ -12,6 +12,7 @@ use crate::utils::GateEntity;
 use crate::utils::SectorPosition;
 use crate::{constants, SpriteHandles};
 
+#[allow(clippy::too_many_arguments)]
 pub fn spawn_gate_pair(
     commands: &mut Commands,
     gate_id_map: &mut GateIdMap,
@@ -26,8 +27,7 @@ pub fn spawn_gate_pair(
         .get_many_mut([from_pos.sector.into(), to_pos.sector.into()])
         .unwrap();
 
-    let (from_curve, to_curve) = setup_connection(
-        commands,
+    let (from_curve, to_curve) = calculate_curves(
         &from_sector,
         from_pos.local_position,
         &to_sector,
@@ -42,7 +42,7 @@ pub fn spawn_gate_pair(
         &from_pos,
         &mut from_sector,
         &to_sector,
-        from_curve,
+        from_curve.clone(),
     );
     let to_gate = spawn_gate(
         commands,
@@ -55,12 +55,13 @@ pub fn spawn_gate_pair(
         to_curve,
     );
 
+    spawn_gate_connection(commands, from_curve, from_gate, to_gate);
+
     from_sector.add_gate(commands, from_pos.sector, from_gate, to_pos.sector, to_gate);
     to_sector.add_gate(commands, to_pos.sector, to_gate, from_pos.sector, from_gate);
 }
 
-fn setup_connection(
-    commands: &mut Commands,
+fn calculate_curves(
     from_sector: &Sector,
     from_pos: Vec2,
     to_sector: &Sector,
@@ -77,20 +78,30 @@ fn setup_connection(
     let ship_curve = create_curve(a, a_curve, b_curve, b);
     let ship_curve_inverted = create_curve(b, b_curve, a_curve, a);
 
+    (ship_curve, ship_curve_inverted)
+}
+
+fn spawn_gate_connection(
+    commands: &mut Commands,
+    ship_curve: CubicCurve<Vec2>,
+    from: GateEntity,
+    to: GateEntity,
+) {
     commands.spawn(GateConnectionComponent {
+        from,
+        to,
         render_positions: ship_curve
             .iter_positions(20)
             .map(|x| x.extend(GATE_CONNECTION_LAYER))
             .collect(),
     });
-
-    (ship_curve, ship_curve_inverted)
 }
 
 fn create_curve(a: Vec2, a_curve: Vec2, b_curve: Vec2, b: Vec2) -> CubicCurve<Vec2> {
     CubicBezier::new([[a, a_curve, b_curve, b]]).to_curve()
 }
 
+#[allow(clippy::too_many_arguments)]
 fn spawn_gate(
     commands: &mut Commands,
     id: PersistentGateId,
