@@ -1,5 +1,5 @@
 use crate::components::{ConstantOrbit, InSector, Sector};
-use crate::simulation::planets::orbit_directions::OrbitDirections;
+use crate::simulation::physics::orbit_directions::OrbitDirections;
 use crate::simulation::prelude::SimulationTransform;
 use bevy::prelude::{Fixed, Query, Res, Time};
 

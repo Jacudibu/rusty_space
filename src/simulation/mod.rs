@@ -1,7 +1,6 @@
 pub mod asteroids;
 mod moving_gate_connections;
 pub mod physics;
-mod planets;
 pub mod plugin;
 pub mod prelude;
 pub mod production;
