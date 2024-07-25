@@ -1,11 +1,11 @@
 use crate::components::{ConstantOrbit, InSector, Sector};
-use crate::simulation::planets::orbit_tables::OrbitTables;
+use crate::simulation::planets::orbit_directions::OrbitDirections;
 use crate::simulation::prelude::SimulationTransform;
 use bevy::prelude::{Fixed, Query, Res, Time};
 
 pub fn orbit_system(
     time: Res<Time<Fixed>>,
-    orbit_tables: Res<OrbitTables>,
+    orbit_tables: Res<OrbitDirections>,
     mut orbits: Query<(&mut ConstantOrbit, &mut SimulationTransform, &InSector)>,
     sectors: Query<&Sector>,
 ) {
