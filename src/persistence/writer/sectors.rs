@@ -1,4 +1,4 @@
-use crate::components::{Asteroid, AsteroidFeature, Sector, SectorFeature};
+use crate::components::{Asteroid, Sector, SectorAsteroidComponent, SectorFeature};
 use crate::persistence::data::v1::*;
 use crate::persistence::ComponentWithPersistentId;
 use crate::simulation::physics::ConstantVelocity;
@@ -24,7 +24,7 @@ impl AsteroidSaveData {
 
 impl SectorAsteroidFeatureSaveData {
     pub fn from(
-        feature: &AsteroidFeature,
+        feature: &SectorAsteroidComponent,
         asteroid_query: &Query<(&Asteroid, &SimulationTransform, &ConstantVelocity)>,
     ) -> Self {
         let live_asteroids = feature
@@ -51,13 +51,14 @@ impl SectorAsteroidFeatureSaveData {
 impl SectorFeatureSaveData {
     pub fn from(
         feature: &SectorFeature,
+        asteroid_component: Option<&SectorAsteroidComponent>,
         asteroid_query: &Query<(&Asteroid, &SimulationTransform, &ConstantVelocity)>,
     ) -> Self {
         match feature {
             SectorFeature::Void => SectorFeatureSaveData::Void,
             SectorFeature::Star => SectorFeatureSaveData::Star,
-            SectorFeature::Asteroids(feature) => SectorFeatureSaveData::Asteroids(
-                SectorAsteroidFeatureSaveData::from(feature, asteroid_query),
+            SectorFeature::AsteroidCloud => SectorFeatureSaveData::AsteroidCloud(
+                SectorAsteroidFeatureSaveData::from(asteroid_component.unwrap(), asteroid_query),
             ),
         }
     }
@@ -66,11 +67,16 @@ impl SectorFeatureSaveData {
 impl SectorSaveData {
     pub fn from(
         sector: &Sector,
+        asteroid_component: Option<&SectorAsteroidComponent>,
         asteroid_query: &Query<(&Asteroid, &SimulationTransform, &ConstantVelocity)>,
     ) -> Self {
         Self {
             coordinate: sector.coordinate,
-            feature: SectorFeatureSaveData::from(&sector.feature, asteroid_query),
+            feature: SectorFeatureSaveData::from(
+                &sector.feature,
+                asteroid_component,
+                asteroid_query,
+            ),
         }
     }
 }

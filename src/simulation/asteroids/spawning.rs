@@ -1,4 +1,4 @@
-use crate::components::{Sector, SectorFeature};
+use crate::components::{Sector, SectorAsteroidComponent};
 use crate::map_layout::MapLayout;
 use crate::persistence::AsteroidIdMap;
 use crate::simulation::asteroids::{helpers, SectorWasSpawnedEvent};
@@ -21,16 +21,13 @@ pub fn spawn_asteroids_for_new_sector(
     simulation_time: Res<SimulationTime>,
     sprites: Res<SpriteHandles>,
     mut sector_spawns: EventReader<SectorWasSpawnedEvent>,
-    mut sectors: Query<&mut Sector>,
+    mut sectors: Query<(&Sector, &mut SectorAsteroidComponent)>,
     map_layout: Res<MapLayout>,
 ) {
     let now = simulation_time.now();
 
     for event in sector_spawns.read() {
-        let mut sector = sectors.get_mut(event.sector.into()).unwrap();
-        let SectorFeature::Asteroids(_) = &sector.feature else {
-            continue;
-        };
+        let (sector, mut asteroid_component) = sectors.get_mut(event.sector.into()).unwrap();
 
         // Technically it isn't even really necessary to further randomize positions with randomized velocity,
         // This unnatural circle shape will break up once the asteroids moved across half of the sector size.
@@ -40,20 +37,15 @@ pub fn spawn_asteroids_for_new_sector(
         let position_rng = StdRng::seed_from_u64(seed);
         let mut inner_rng = StdRng::seed_from_u64(seed);
 
-        let sector_world_pos = sector.world_pos;
-        let SectorFeature::Asteroids(asteroid_feature) = &mut sector.feature else {
-            panic!("This was already checked previously and should never happen.")
-        };
-
         for local_position in shape
             .interior_dist()
             .sample_iter(position_rng)
             .take(constants::ASTEROID_COUNT)
         {
             let velocity = Vec2::new(
-                asteroid_feature.asteroid_data.average_velocity.x
+                asteroid_component.asteroid_data.average_velocity.x
                     * inner_rng.gen_range(VELOCITY_RANDOM_RANGE),
-                asteroid_feature.asteroid_data.average_velocity.y
+                asteroid_component.asteroid_data.average_velocity.y
                     * inner_rng.gen_range(VELOCITY_RANDOM_RANGE),
             );
 
@@ -68,8 +60,8 @@ pub fn spawn_asteroids_for_new_sector(
                 &mut asteroid_id_map,
                 &sprites,
                 "Asteroid".to_string(),
-                sector_world_pos + local_position,
-                asteroid_feature,
+                sector.world_pos + local_position,
+                &mut asteroid_component,
                 event.sector,
                 velocity,
                 inner_rng.gen_range(constants::ASTEROID_ORE_RANGE),

@@ -1,4 +1,6 @@
-use crate::components::{Asteroid, BuyOrders, InSector, Inventory, Sector, SectorFeature};
+use crate::components::{
+    Asteroid, BuyOrders, InSector, Inventory, Sector, SectorAsteroidComponent,
+};
 use crate::pathfinding;
 use crate::persistence::SectorIdMap;
 use crate::simulation::prelude::{SimulationTime, SimulationTimestamp};
@@ -40,6 +42,7 @@ pub fn handle_idle_ships(
     mut ships: Query<(Entity, &mut TaskQueue, &mut AutoMineBehavior, &InSector), ShipIsIdleFilter>,
     buy_orders: Query<(Entity, &mut BuyOrders, &InSector)>,
     mut inventories: Query<&mut Inventory>,
+    all_sectors_with_asteroids: Query<(&Sector, &SectorAsteroidComponent)>,
     all_sectors: Query<&Sector>,
     mut all_asteroids: Query<&mut Asteroid>,
     all_transforms: Query<&SimulationTransform>,
@@ -68,12 +71,13 @@ pub fn handle_idle_ships(
 
             match behavior.state {
                 AutoMineState::Mining => {
-                    let sector = all_sectors.get(in_sector.sector.into()).unwrap();
-                    let ship_pos = all_transforms.get(ship_entity).unwrap().translation;
-                    if let SectorFeature::Asteroids(feature) = &sector.feature {
-                        // TODO: Also Test whether asteroid_data contains the requested asteroid type
+                    if let Ok((_, asteroid_component)) =
+                        all_sectors_with_asteroids.get(in_sector.sector.into())
+                    {
+                        let ship_pos = all_transforms.get(ship_entity).unwrap().translation;
 
-                        if let Some(closest_asteroid) = feature
+                        // TODO: Also Test whether asteroid_data contains the requested asteroid type
+                        if let Some(closest_asteroid) = asteroid_component
                             .asteroids
                             .iter()
                             .filter(|x| max_asteroid_age.has_not_passed(&x.timestamp))
@@ -113,9 +117,12 @@ pub fn handle_idle_ships(
                     } else {
                         behavior.next_idle_update = now.add_milliseconds(2000);
                         // TODO: Properly search for nearest sector with resources
-                        let target_sector = all_sectors
+                        let (target_sector, _) = all_sectors_with_asteroids
                             .iter()
-                            .find(|x| x.feature.is_asteroids())
+                            .find(|(_, _asteroids)| {
+                                // TODO: Filter for the required asteroid types instead of just grabbing the first. :>
+                                true
+                            })
                             .unwrap();
                         let path = pathfinding::find_path(
                             &all_sectors,
