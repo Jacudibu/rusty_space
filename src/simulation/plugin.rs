@@ -15,7 +15,6 @@ impl Plugin for SimulationPlugin {
             asteroids::AsteroidPlugin,
             physics::PhysicsPlugin,
             production::ProductionPlugin,
-            planets::PlanetPlugin,
             ship_ai::ShipAiPlugin,
             time::SimulationTimePlugin,
             transform::SimulationTransformPlugin,
