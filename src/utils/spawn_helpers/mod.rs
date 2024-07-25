@@ -1,3 +1,4 @@
+mod helpers;
 mod spawn_asteroid;
 mod spawn_gates;
 mod spawn_planet;
