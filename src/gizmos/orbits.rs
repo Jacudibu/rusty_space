@@ -1,6 +1,4 @@
-use bevy::prelude::{
-    GizmoConfigGroup, GizmoConfigStore, Gizmos, Query, Reflect, Res, ResMut, With,
-};
+use bevy::prelude::{GizmoConfigGroup, GizmoConfigStore, Gizmos, Query, Reflect, ResMut, With};
 
 use crate::components::{ConstantOrbit, InSector, Sector};
 use crate::entity_selection::Selected;

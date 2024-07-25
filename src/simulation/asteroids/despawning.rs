@@ -1,4 +1,4 @@
-use crate::components::{Asteroid, InSector, Sector};
+use crate::components::{Asteroid, AsteroidFeature, InSector, Sector, SectorFeature};
 use crate::constants;
 use crate::simulation::asteroids::fading::FadingAsteroidsOut;
 use crate::simulation::prelude::{SimulationTime, SimulationTimestamp};
@@ -26,12 +26,16 @@ pub fn on_asteroid_was_fully_mined(
             timestamp: event.despawn_timer,
         };
 
+        let SectorFeature::Asteroids(feature) = &mut sector.feature else {
+            panic!();
+        };
+
         // Asteroid might have already started despawning naturally, so test if it was still inside.
-        if sector.asteroids.remove(&asteroid_entity) {
+        if feature.asteroids.remove(&asteroid_entity) {
             despawn_asteroid(
                 &mut fading_asteroids,
                 asteroid_entity,
-                &mut sector,
+                feature,
                 &mut asteroid,
             );
         }
@@ -41,7 +45,7 @@ pub fn on_asteroid_was_fully_mined(
 pub fn despawn_asteroid(
     fading_asteroids: &mut ResMut<FadingAsteroidsOut>,
     mut asteroid_entity: AsteroidEntityWithTimestamp,
-    sector: &mut Sector,
+    feature: &mut AsteroidFeature,
     asteroid: &mut Asteroid,
 ) {
     asteroid_entity
@@ -51,7 +55,7 @@ pub fn despawn_asteroid(
         .state
         .toggle_and_add_milliseconds(constants::ASTEROID_RESPAWN_TIME_MILLISECONDS);
     fading_asteroids.asteroids.insert(asteroid_entity.entity);
-    sector
+    feature
         .asteroid_respawns
         .push(std::cmp::Reverse(asteroid_entity));
 }
@@ -67,17 +71,21 @@ pub fn make_asteroids_disappear_when_they_leave_sector(
     let now = simulation_time.now();
 
     for mut sector in sector.iter_mut() {
-        while let Some(next) = sector.asteroids.first() {
+        let SectorFeature::Asteroids(feature) = &mut sector.feature else {
+            continue;
+        };
+
+        while let Some(next) = feature.asteroids.first() {
             if now.has_not_passed(next.timestamp) {
                 break;
             }
 
-            let asteroid_entity = sector.asteroids.pop_first().unwrap();
+            let asteroid_entity = feature.asteroids.pop_first().unwrap();
             let mut asteroid = asteroids.get_mut(asteroid_entity.entity.into()).unwrap();
             despawn_asteroid(
                 &mut fading_asteroids,
                 asteroid_entity,
-                &mut sector,
+                feature,
                 &mut asteroid,
             );
         }

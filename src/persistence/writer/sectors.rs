@@ -1,4 +1,4 @@
-use crate::components::{Asteroid, Sector, SectorAsteroidData, SectorFeature};
+use crate::components::{Asteroid, AsteroidFeature, Sector, SectorFeature};
 use crate::persistence::data::v1::*;
 use crate::persistence::ComponentWithPersistentId;
 use crate::simulation::physics::ConstantVelocity;
@@ -22,22 +22,43 @@ impl AsteroidSaveData {
     }
 }
 
-impl SectorAsteroidSaveData {
-    pub fn from(data: &SectorAsteroidData) -> Self {
+impl SectorAsteroidFeatureSaveData {
+    pub fn from(
+        feature: &AsteroidFeature,
+        asteroid_query: &Query<(&Asteroid, &SimulationTransform, &ConstantVelocity)>,
+    ) -> Self {
+        let live_asteroids = feature
+            .asteroids
+            .iter()
+            .map(|x| asteroid_query.get(x.entity.into()).unwrap())
+            .map(AsteroidSaveData::from)
+            .collect();
+        let respawning_asteroids = feature
+            .asteroid_respawns
+            .iter()
+            .map(|x| asteroid_query.get(x.0.entity.into()).unwrap())
+            .map(AsteroidSaveData::from)
+            .collect();
+
         Self {
-            average_velocity: data.average_velocity,
+            average_velocity: feature.asteroid_data.average_velocity,
+            live_asteroids,
+            respawning_asteroids,
         }
     }
 }
 
 impl SectorFeatureSaveData {
-    pub fn from(feature: &SectorFeature) -> Self {
+    pub fn from(
+        feature: &SectorFeature,
+        asteroid_query: &Query<(&Asteroid, &SimulationTransform, &ConstantVelocity)>,
+    ) -> Self {
         match feature {
             SectorFeature::Void => SectorFeatureSaveData::Void,
             SectorFeature::Star => SectorFeatureSaveData::Star,
-            SectorFeature::Asteroids(_) => {
-                todo!()
-            }
+            SectorFeature::Asteroids(feature) => SectorFeatureSaveData::Asteroids(
+                SectorAsteroidFeatureSaveData::from(feature, asteroid_query),
+            ),
         }
     }
 }
@@ -45,31 +66,11 @@ impl SectorFeatureSaveData {
 impl SectorSaveData {
     pub fn from(
         sector: &Sector,
-        asteroids: &Query<(&Asteroid, &SimulationTransform, &ConstantVelocity)>,
+        asteroid_query: &Query<(&Asteroid, &SimulationTransform, &ConstantVelocity)>,
     ) -> Self {
-        let live_asteroids = sector
-            .asteroids
-            .iter()
-            .map(|x| asteroids.get(x.entity.into()).unwrap())
-            .map(AsteroidSaveData::from)
-            .collect();
-
-        let respawning_asteroids = sector
-            .asteroid_respawns
-            .iter()
-            .map(|x| asteroids.get(x.0.entity.into()).unwrap())
-            .map(AsteroidSaveData::from)
-            .collect();
-
         Self {
             coordinate: sector.coordinate,
-            asteroid_data: sector
-                .asteroid_data
-                .as_ref()
-                .map(SectorAsteroidSaveData::from),
-            feature: SectorFeatureSaveData::from(&sector.feature),
-            live_asteroids,
-            respawning_asteroids,
+            feature: SectorFeatureSaveData::from(&sector.feature, asteroid_query),
         }
     }
 }

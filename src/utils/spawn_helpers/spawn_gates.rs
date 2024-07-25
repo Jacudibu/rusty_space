@@ -1,11 +1,10 @@
 use bevy::core::Name;
-use bevy::prelude::{Commands, CubicBezier, CubicCurve, CubicGenerator, Query, SpriteBundle, Vec2};
+use bevy::prelude::{Commands, CubicCurve, Query, SpriteBundle, Vec2};
 
 use crate::components::{
     ConstantOrbit, Gate, GateConnectionComponent, MovingGateConnection, Sector, SectorFeature,
     SelectableEntity,
 };
-use crate::constants::GATE_CONNECTION_LAYER;
 use crate::persistence::{GateIdMap, PersistentGateId};
 use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::utils::spawn_helpers::helpers;

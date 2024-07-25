@@ -17,17 +17,20 @@ pub struct AsteroidSaveData {
     pub lifetime: SimulationTimestamp,
 }
 
-#[derive(Serialize, Deserialize, Copy, Clone)]
-#[cfg_attr(test, derive(Debug, PartialEq))]
-pub struct SectorAsteroidSaveData {
+#[derive(Serialize, Deserialize)]
+#[cfg_attr(test, derive(Debug, PartialEq, Clone))]
+pub struct SectorAsteroidFeatureSaveData {
     pub average_velocity: Vec2,
+    pub live_asteroids: Vec<AsteroidSaveData>,
+    pub respawning_asteroids: Vec<AsteroidSaveData>,
 }
 
-#[derive(Serialize, Deserialize, Copy, Clone)]
-#[cfg_attr(test, derive(Debug, PartialEq))]
+#[derive(Serialize, Deserialize)]
+#[cfg_attr(test, derive(Debug, PartialEq, Clone))]
 pub enum SectorFeatureSaveData {
     Void,
     Star,
+    Asteroids(SectorAsteroidFeatureSaveData),
 }
 
 #[derive(Serialize, Deserialize)]
@@ -35,7 +38,4 @@ pub enum SectorFeatureSaveData {
 pub struct SectorSaveData {
     pub coordinate: Hex,
     pub feature: SectorFeatureSaveData,
-    pub asteroid_data: Option<SectorAsteroidSaveData>,
-    pub live_asteroids: Vec<AsteroidSaveData>,
-    pub respawning_asteroids: Vec<AsteroidSaveData>,
 }
