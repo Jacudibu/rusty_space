@@ -1,7 +1,7 @@
-use crate::components::SectorAsteroidData;
+use crate::components::{SectorAsteroidData, SectorFeature};
 use crate::map_layout::MapLayout;
 use crate::persistence::data::v1::{SaveDataCollection, SectorAsteroidSaveData, SectorSaveData};
-use crate::persistence::{AsteroidIdMap, SectorIdMap};
+use crate::persistence::{AsteroidIdMap, SectorFeatureSaveData, SectorIdMap};
 use crate::simulation::asteroids::SectorWasSpawnedEvent;
 use crate::utils::{spawn_helpers, SectorEntity};
 use bevy::ecs::system::SystemParam;
@@ -35,6 +35,7 @@ impl SaveData {
     pub fn add(&mut self, hex: Hex) -> &mut SectorSaveData {
         self.data.push(SectorSaveData {
             coordinate: hex,
+            feature: SectorFeatureSaveData::Void,
             asteroid_data: None,
             live_asteroids: Vec::new(),
             respawning_asteroids: Vec::new(),
@@ -49,9 +50,15 @@ impl SectorSaveData {
             &mut args.commands,
             &args.map_layout.hex_layout,
             self.coordinate,
+            self.feature.into(),
             self.asteroid_data.map(SectorAsteroidData::from),
             &mut args.sector_spawn_event,
         )
+    }
+
+    pub fn with_feature(&mut self, feature: SectorFeatureSaveData) -> &mut Self {
+        self.feature = feature;
+        self
     }
 
     pub fn with_asteroid_data(&mut self, asteroids: SectorAsteroidSaveData) -> &mut Self {
@@ -64,6 +71,15 @@ impl From<SectorAsteroidSaveData> for SectorAsteroidData {
     fn from(value: SectorAsteroidSaveData) -> Self {
         SectorAsteroidData {
             average_velocity: value.average_velocity,
+        }
+    }
+}
+
+impl From<SectorFeatureSaveData> for SectorFeature {
+    fn from(value: SectorFeatureSaveData) -> Self {
+        match value {
+            SectorFeatureSaveData::Void => SectorFeature::Void,
+            SectorFeatureSaveData::Star => SectorFeature::Star,
         }
     }
 }

@@ -23,10 +23,18 @@ pub struct SectorAsteroidSaveData {
     pub average_velocity: Vec2,
 }
 
+#[derive(Serialize, Deserialize, Copy, Clone)]
+#[cfg_attr(test, derive(Debug, PartialEq))]
+pub enum SectorFeatureSaveData {
+    Void,
+    Star,
+}
+
 #[derive(Serialize, Deserialize)]
 #[cfg_attr(test, derive(Clone, Debug, PartialEq))]
 pub struct SectorSaveData {
     pub coordinate: Hex,
+    pub feature: SectorFeatureSaveData,
     pub asteroid_data: Option<SectorAsteroidSaveData>,
     pub live_asteroids: Vec<AsteroidSaveData>,
     pub respawning_asteroids: Vec<AsteroidSaveData>,

@@ -17,7 +17,7 @@ pub struct Sector {
     pub gates: HashMap<SectorEntity, GatePairInSector>,
     pub planets: HashSet<PlanetEntity>,
     pub ships: HashSet<ShipEntity>,
-    pub core: SectorCore,
+    pub feature: SectorFeature,
     pub stations: HashSet<StationEntity>,
 
     pub asteroid_data: Option<SectorAsteroidData>,
@@ -26,12 +26,12 @@ pub struct Sector {
 }
 
 /// The main feature of a sector.
-pub enum SectorCore {
+pub enum SectorFeature {
     /// The sector is devoid of any natural objects
     Void,
 
     /// The sector features a star. Planets, Gates (?) and Stations (?) orbit around that.
-    Star(StarEntity),
+    Star,
 
     // TODO: Just an idea - contemplate using this over asteroid_data and asteroids, since asteroids moving in orbit would be a headache
     /// The sector features asteroids, idly floating through it.
@@ -54,11 +54,16 @@ pub struct GatePairInSector {
 }
 
 impl Sector {
-    pub fn new(coordinate: Hex, world_pos: Vec2, asteroids: Option<SectorAsteroidData>) -> Self {
+    pub fn new(
+        coordinate: Hex,
+        world_pos: Vec2,
+        feature: SectorFeature,
+        asteroids: Option<SectorAsteroidData>,
+    ) -> Self {
         Sector {
             coordinate,
             world_pos,
-            core: SectorCore::Void,
+            feature,
             asteroid_data: asteroids,
             asteroids: BTreeSet::new(),
             asteroid_respawns: BinaryHeap::new(),

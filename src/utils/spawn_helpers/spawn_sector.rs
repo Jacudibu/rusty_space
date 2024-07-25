@@ -1,4 +1,4 @@
-use crate::components::{Sector, SectorAsteroidData, SectorCore};
+use crate::components::{Sector, SectorAsteroidData, SectorFeature};
 use crate::simulation::asteroids::SectorWasSpawnedEvent;
 use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::utils::SectorEntity;
@@ -10,6 +10,7 @@ pub fn spawn_sector(
     commands: &mut Commands,
     layout: &HexLayout,
     coordinate: Hex,
+    feature: SectorFeature,
     asteroids: Option<SectorAsteroidData>,
     sector_spawn_event: &mut EventWriter<SectorWasSpawnedEvent>,
 ) -> SectorEntity {
@@ -21,7 +22,7 @@ pub fn spawn_sector(
     let entity = commands
         .spawn((
             Name::new(format!("[{},{}]", coordinate.x, coordinate.y)),
-            Sector::new(coordinate, position, asteroids),
+            Sector::new(coordinate, position, feature, asteroids),
             simulation_transform.as_transform(0.0),
             simulation_transform,
         ))
