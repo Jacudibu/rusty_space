@@ -125,7 +125,7 @@ fn spawn_gate(
                 helpers::calculate_orbit_velocity(radius, 100.0),
             ));
         }
-        SectorFeature::Asteroids(_) => {}
+        SectorFeature::AsteroidCloud => {}
     }
 
     let entity = entity_commands.id();

@@ -30,7 +30,7 @@ pub struct SectorAsteroidFeatureSaveData {
 pub enum SectorFeatureSaveData {
     Void,
     Star,
-    Asteroids(SectorAsteroidFeatureSaveData),
+    AsteroidCloud(SectorAsteroidFeatureSaveData),
 }
 
 #[derive(Serialize, Deserialize)]

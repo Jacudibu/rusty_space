@@ -1,4 +1,4 @@
-use crate::components::{AsteroidFeature, SectorAsteroidData, SectorFeature};
+use crate::components::{SectorAsteroidComponent, SectorAsteroidData, SectorFeature};
 use crate::map_layout::MapLayout;
 use crate::persistence::data::v1::{
     SaveDataCollection, SectorAsteroidFeatureSaveData, SectorSaveData,
@@ -49,7 +49,7 @@ impl SectorSaveData {
             &mut args.commands,
             &args.map_layout.hex_layout,
             self.coordinate,
-            (&self.feature).into(),
+            &self.feature,
             &mut args.sector_spawn_event,
         )
     }
@@ -82,8 +82,8 @@ impl From<&SectorFeatureSaveData> for SectorFeature {
         match value {
             SectorFeatureSaveData::Void => SectorFeature::Void,
             SectorFeatureSaveData::Star => SectorFeature::Star,
-            SectorFeatureSaveData::Asteroids(feature) => {
-                SectorFeature::Asteroids(AsteroidFeature {
+            SectorFeatureSaveData::AsteroidCloud(feature) => {
+                SectorFeature::AsteroidCloud(SectorAsteroidComponent {
                     asteroid_data: SectorAsteroidData {
                         average_velocity: feature.average_velocity,
                     },

@@ -1,4 +1,4 @@
-use crate::components::{Asteroid, AsteroidFeature, AsteroidState, SelectableEntity};
+use crate::components::{Asteroid, AsteroidState, SectorAsteroidComponent, SelectableEntity};
 use crate::persistence::{AsteroidIdMap, PersistentAsteroidId};
 use crate::simulation::physics::ConstantVelocity;
 use crate::simulation::prelude::SimulationTimestamp;
@@ -16,7 +16,7 @@ pub fn spawn_asteroid(
     sprites: &SpriteHandles,
     name: String,
     global_pos: Vec2,
-    asteroid_feature: &mut AsteroidFeature,
+    asteroid_feature: &mut SectorAsteroidComponent,
     sector_entity: SectorEntity,
     velocity: Vec2,
     ore_amount: u32,

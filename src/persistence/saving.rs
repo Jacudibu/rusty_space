@@ -1,5 +1,6 @@
 use crate::components::{
-    Asteroid, BuyOrders, Gate, InSector, Inventory, Sector, SellOrders, Ship, Station,
+    Asteroid, BuyOrders, Gate, InSector, Inventory, Sector, SectorAsteroidComponent, SellOrders,
+    Ship, Station,
 };
 use crate::persistence::data::v1::*;
 use crate::persistence::AllEntityIdMaps;
@@ -20,9 +21,10 @@ use bevy::prelude::{Commands, Query};
 #[allow(clippy::type_complexity)] // Haha, like, uh, yeah. No.
 pub fn parse_session_data_into_universe_save_data(
     mut commands: Commands,
+    all_sectors: Query<&Sector>,
     asteroids: Query<(&Asteroid, &SimulationTransform, &ConstantVelocity)>,
     gates: Query<(&Gate, &InSector, &SimulationTransform)>,
-    sectors: Query<&Sector>,
+    sectors_to_save: Query<(&Sector, Option<&SectorAsteroidComponent>)>,
     ships: Query<(
         &Ship,
         &Name,
@@ -47,17 +49,19 @@ pub fn parse_session_data_into_universe_save_data(
     )>,
     all_entity_id_maps: AllEntityIdMaps,
 ) {
-    let gate_pairs = GatePairSaveData::extract_from_sector_query(&sectors, &gates);
+    let gate_pairs = GatePairSaveData::extract_from_sector_query(&all_sectors, &gates);
 
     let stations = stations
         .iter()
-        .map(|query_content| StationSaveData::from(query_content, &sectors));
+        .map(|query_content| StationSaveData::from(query_content, &all_sectors));
 
     let ships = ships
         .iter()
-        .map(|query_content| ShipSaveData::from(query_content, &sectors, &all_entity_id_maps));
+        .map(|query_content| ShipSaveData::from(query_content, &all_sectors, &all_entity_id_maps));
 
-    let sectors = sectors.iter().map(|x| SectorSaveData::from(x, &asteroids));
+    let sectors = sectors_to_save
+        .iter()
+        .map(|x| SectorSaveData::from(x.0, x.1, &asteroids));
 
     commands.insert_resource(SaveDataCollection::<SectorSaveData>::from(sectors));
     commands.insert_resource(SaveDataCollection::<GatePairSaveData>::from(gate_pairs));

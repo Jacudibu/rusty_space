@@ -28,28 +28,34 @@ pub enum SectorFeature {
     /// The sector features a star. Planets, Gates (?) and Stations (?) orbit around that.
     Star,
 
-    // TODO: Just an idea - contemplate using this over asteroid_data and asteroids, since asteroids moving in orbit would be a headache
-    /// The sector features asteroids, idly floating through it.
-    Asteroids(AsteroidFeature),
+    /// The sector features asteroids, idly floating through it. The Entity also has a [`SectorAsteroidComponent`].
+    AsteroidCloud,
 }
 
 impl SectorFeature {
+    // TODO: Contemplate just using Eq if additional data is stored in extra components
     pub fn is_asteroids(&self) -> bool {
         match self {
             SectorFeature::Void => false,
             SectorFeature::Star => false,
-            SectorFeature::Asteroids(_) => true,
+            SectorFeature::AsteroidCloud => true,
         }
     }
 }
 
-pub struct AsteroidFeature {
+/// Marker Component for sectors featuring asteroid clouds.
+#[derive(Component)]
+pub struct SectorAsteroidComponent {
     pub asteroid_data: SectorAsteroidData,
     pub asteroids: BTreeSet<AsteroidEntityWithTimestamp>,
     pub asteroid_respawns: BinaryHeap<std::cmp::Reverse<AsteroidEntityWithTimestamp>>,
 }
 
-impl AsteroidFeature {
+/// Marker Component for sectors featuring stars and orbital mechanics.
+#[derive(Component)]
+pub struct SectorStarComponent {}
+
+impl SectorAsteroidComponent {
     pub fn new(asteroid_data: SectorAsteroidData) -> Self {
         Self {
             asteroid_data,

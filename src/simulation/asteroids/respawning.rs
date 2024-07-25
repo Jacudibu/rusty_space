@@ -1,4 +1,4 @@
-use crate::components::{Asteroid, Sector, SectorFeature};
+use crate::components::{Asteroid, Sector, SectorAsteroidComponent};
 use crate::map_layout::MapLayout;
 use crate::simulation::asteroids::fading::FadingAsteroidsIn;
 use crate::simulation::asteroids::helpers;
@@ -8,7 +8,7 @@ use bevy::prelude::{Query, Res, ResMut, Visibility};
 
 pub fn respawn_asteroids(
     mut fading_asteroids: ResMut<FadingAsteroidsIn>,
-    mut sector: Query<&mut Sector>,
+    mut sector: Query<(&Sector, &mut SectorAsteroidComponent)>,
     mut asteroid_query: Query<(
         &mut Asteroid,
         &mut SimulationTransform,
@@ -20,18 +20,13 @@ pub fn respawn_asteroids(
 ) {
     let now = simulation_time.now();
 
-    for mut sector in sector.iter_mut() {
-        let sector_world_pos = sector.world_pos;
-        let SectorFeature::Asteroids(feature) = &mut sector.feature else {
-            continue;
-        };
-
-        while let Some(next) = feature.asteroid_respawns.peek() {
+    for (sector, mut asteroid_component) in sector.iter_mut() {
+        while let Some(next) = asteroid_component.asteroid_respawns.peek() {
             if now.has_not_passed(next.0.timestamp) {
                 break;
             }
 
-            let mut asteroid_entity = feature.asteroid_respawns.pop().unwrap().0;
+            let mut asteroid_entity = asteroid_component.asteroid_respawns.pop().unwrap().0;
 
             let (mut asteroid, mut transform, mut visibility, velocity) = asteroid_query
                 .get_mut(asteroid_entity.entity.into())
@@ -39,7 +34,7 @@ pub fn respawn_asteroids(
 
             let local_respawn_position = calculate_asteroid_respawn_position(
                 map_layout.hex_edge_vertices,
-                transform.translation - sector_world_pos,
+                transform.translation - sector.world_pos,
                 velocity.velocity,
             );
 
@@ -50,12 +45,12 @@ pub fn respawn_asteroids(
             );
             *visibility = Visibility::Inherited;
             transform
-                .set_translation_and_skip_interpolation(local_respawn_position + sector_world_pos);
+                .set_translation_and_skip_interpolation(local_respawn_position + sector.world_pos);
             asteroid_entity.timestamp.add_milliseconds(extra_millis);
             asteroid.state.toggle_and_add_milliseconds(extra_millis);
             asteroid.reset(&mut transform);
             fading_asteroids.asteroids.insert(asteroid_entity.entity);
-            feature.asteroids.insert(asteroid_entity);
+            asteroid_component.asteroids.insert(asteroid_entity);
         }
     }
 }

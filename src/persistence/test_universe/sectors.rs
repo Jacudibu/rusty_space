@@ -12,7 +12,7 @@ pub fn create_test_data() -> SaveDataCollection<SectorSaveData> {
     sectors.add(RIGHT).with_feature(SectorFeatureSaveData::Star);
     sectors
         .add(TOP_RIGHT)
-        .with_feature(SectorFeatureSaveData::Asteroids(asteroid_data));
+        .with_feature(SectorFeatureSaveData::AsteroidCloud(asteroid_data));
     sectors.add(BOTTOM_LEFT);
 
     sectors
