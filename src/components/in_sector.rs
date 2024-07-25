@@ -1,5 +1,5 @@
 use crate::utils::SectorEntity;
-use bevy::prelude::Component;
+use bevy::prelude::{Component, Entity};
 
 /// Component for entities inside sectors.
 ///
@@ -25,5 +25,11 @@ impl PartialEq<SectorEntity> for InSector {
 impl PartialEq<SectorEntity> for &InSector {
     fn eq(&self, other: &SectorEntity) -> bool {
         &self.sector == other
+    }
+}
+
+impl From<&InSector> for Entity {
+    fn from(value: &InSector) -> Self {
+        value.sector.into()
     }
 }
