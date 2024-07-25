@@ -18,7 +18,7 @@ fn init(mut commands: Commands) {
         PerfUiRoot::default(),
         PerfUiEntryFPS {
             #[cfg(debug_assertions)]
-            label: "FPS [DEBUG]".into(),
+            label: "FPS [RUNNING IN DEBUG]".into(),
             ..Default::default()
         },
         PerfUiEntryFPSWorst::default(),

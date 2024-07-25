@@ -16,14 +16,14 @@ use crate::{constants, SpriteHandles};
 pub fn spawn_gate_pair(
     commands: &mut Commands,
     gate_id_map: &mut GateIdMap,
-    sector_query: &mut Query<(&mut Sector, Has<SectorStarComponent>)>,
+    sector_query: &mut Query<(&mut Sector, Option<&SectorStarComponent>)>,
     sprites: &SpriteHandles,
     from_id: PersistentGateId,
     from_pos: SectorPosition,
     to_id: PersistentGateId,
     to_pos: SectorPosition,
 ) {
-    let [(mut from_sector, from_has_star), (mut to_sector, to_has_star)] = sector_query
+    let [(mut from_sector, from_star), (mut to_sector, to_star)] = sector_query
         .get_many_mut([from_pos.sector.into(), to_pos.sector.into()])
         .unwrap();
 
@@ -43,7 +43,7 @@ pub fn spawn_gate_pair(
         &mut from_sector,
         &to_sector,
         from_curve.clone(),
-        from_has_star,
+        from_star,
     );
     let to_gate = spawn_gate(
         commands,
@@ -54,7 +54,7 @@ pub fn spawn_gate_pair(
         &mut to_sector,
         &from_sector,
         to_curve,
-        to_has_star,
+        to_star,
     );
 
     spawn_gate_connection(
@@ -62,7 +62,7 @@ pub fn spawn_gate_pair(
         &from_curve,
         from_gate,
         to_gate,
-        from_has_star || to_has_star,
+        from_star.is_some() || to_star.is_some(),
     );
 
     from_sector.add_gate(commands, from_pos.sector, from_gate, to_pos.sector, to_gate);
@@ -93,7 +93,7 @@ fn spawn_gate(
     from: &mut Sector,
     to: &Sector,
     ship_curve: CubicCurve<Vec2>,
-    has_orbital_mechanics: bool,
+    star: Option<&SectorStarComponent>,
 ) -> GateEntity {
     let simulation_transform =
         SimulationTransform::from_translation(from.world_pos + pos.local_position);
@@ -112,13 +112,12 @@ fn spawn_gate(
         simulation_transform,
     ));
 
-    if has_orbital_mechanics {
-        // TODO!
+    if let Some(star) = star {
         let radius = pos.local_position.length();
         entity_commands.insert(ConstantOrbit::new(
             pos.local_position.to_angle(),
             radius,
-            helpers::calculate_orbit_velocity(radius, 100.0),
+            helpers::calculate_orbit_velocity(radius, star.mass),
         ));
     }
 
