@@ -1,4 +1,4 @@
-use crate::components::Sector;
+use crate::components::{Sector, SectorStarComponent};
 use crate::persistence::data::v1::*;
 use crate::persistence::{PersistentPlanetId, PlanetIdMap, SectorIdMap};
 use crate::utils::spawn_helpers;
@@ -11,7 +11,7 @@ use hexx::Hex;
 pub struct Args<'w, 's> {
     commands: Commands<'w, 's>,
     sprites: Res<'w, SpriteHandles>,
-    sectors: Query<'w, 's, &'static mut Sector>,
+    sectors: Query<'w, 's, (&'static mut Sector, &'static SectorStarComponent)>,
     sector_id_map: Res<'w, SectorIdMap>,
 }
 

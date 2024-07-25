@@ -5,13 +5,13 @@ use crate::persistence::{GateIdMap, PersistentGateId, SectorIdMap};
 use crate::utils::spawn_helpers::spawn_gate_pair;
 use crate::SpriteHandles;
 use bevy::ecs::system::SystemParam;
-use bevy::prelude::{Commands, Has, Query, Res};
+use bevy::prelude::{Commands, Query, Res};
 
 #[derive(SystemParam)]
 pub struct Args<'w, 's> {
     commands: Commands<'w, 's>,
     sprites: Res<'w, SpriteHandles>,
-    sectors: Query<'w, 's, (&'static mut Sector, Has<SectorStarComponent>)>,
+    sectors: Query<'w, 's, (&'static mut Sector, Option<&'static SectorStarComponent>)>,
     sector_id_map: Res<'w, SectorIdMap>,
 }
 
