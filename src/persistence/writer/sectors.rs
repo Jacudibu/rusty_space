@@ -25,16 +25,16 @@ impl AsteroidSaveData {
 
 impl SectorAsteroidSaveData {
     pub fn from(
-        feature: &SectorAsteroidComponent,
+        asteroid_component: &SectorAsteroidComponent,
         asteroid_query: &Query<(&Asteroid, &SimulationTransform, &ConstantVelocity)>,
     ) -> Self {
-        let live_asteroids = feature
+        let live_asteroids = asteroid_component
             .asteroids
             .iter()
             .map(|x| asteroid_query.get(x.entity.into()).unwrap())
             .map(AsteroidSaveData::from)
             .collect();
-        let respawning_asteroids = feature
+        let respawning_asteroids = asteroid_component
             .asteroid_respawns
             .iter()
             .map(|x| asteroid_query.get(x.0.entity.into()).unwrap())
@@ -42,7 +42,7 @@ impl SectorAsteroidSaveData {
             .collect();
 
         Self {
-            average_velocity: feature.asteroid_data.average_velocity,
+            average_velocity: asteroid_component.average_velocity,
             live_asteroids,
             respawning_asteroids,
         }

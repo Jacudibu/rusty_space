@@ -1,4 +1,3 @@
-use crate::components::SectorAsteroidData;
 use crate::map_layout::MapLayout;
 use crate::persistence::data::v1::{SaveDataCollection, SectorAsteroidSaveData, SectorSaveData};
 use crate::persistence::{AsteroidIdMap, SectorFeatureSaveData, SectorIdMap, SectorStarSaveData};
@@ -68,14 +67,6 @@ impl SectorAsteroidSaveData {
             average_velocity,
             live_asteroids: Vec::new(),
             respawning_asteroids: Vec::new(),
-        }
-    }
-}
-
-impl From<&SectorAsteroidSaveData> for SectorAsteroidData {
-    fn from(value: &SectorAsteroidSaveData) -> Self {
-        SectorAsteroidData {
-            average_velocity: value.average_velocity,
         }
     }
 }

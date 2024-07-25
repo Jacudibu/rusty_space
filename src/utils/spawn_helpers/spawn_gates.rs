@@ -1,5 +1,5 @@
 use bevy::core::Name;
-use bevy::prelude::{Commands, CubicCurve, Has, Query, SpriteBundle, Vec2};
+use bevy::prelude::{Commands, CubicCurve, Query, SpriteBundle, Vec2};
 
 use crate::components::{
     ConstantOrbit, Gate, GateConnectionComponent, MovingGateConnection, Sector,

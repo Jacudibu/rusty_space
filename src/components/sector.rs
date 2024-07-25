@@ -22,7 +22,7 @@ pub struct Sector {
 /// Marker Component for sectors featuring asteroid clouds.
 #[derive(Component)]
 pub struct SectorAsteroidComponent {
-    pub asteroid_data: SectorAsteroidData,
+    pub average_velocity: Vec2,
     pub asteroids: BTreeSet<AsteroidEntityWithTimestamp>,
     pub asteroid_respawns: BinaryHeap<std::cmp::Reverse<AsteroidEntityWithTimestamp>>,
 }
@@ -34,9 +34,9 @@ pub struct SectorStarComponent {
 }
 
 impl SectorAsteroidComponent {
-    pub fn new(asteroid_data: SectorAsteroidData) -> Self {
+    pub fn new(average_velocity: Vec2) -> Self {
         Self {
-            asteroid_data,
+            average_velocity,
             asteroids: BTreeSet::new(),
             asteroid_respawns: BinaryHeap::new(),
         }
@@ -57,12 +57,6 @@ impl SectorAsteroidComponent {
     pub fn add_asteroid_in_place(&mut self, entity: AsteroidEntityWithTimestamp) {
         self.asteroids.insert(entity);
     }
-}
-
-#[derive(Copy, Clone)]
-pub struct SectorAsteroidData {
-    // All asteroids within a Sector behave the same, or maybe later on a range.
-    pub average_velocity: Vec2,
 }
 
 #[derive(Eq, PartialEq, Hash, Copy, Clone)]
