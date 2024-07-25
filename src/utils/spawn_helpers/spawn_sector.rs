@@ -1,4 +1,4 @@
-use crate::components::{Sector, SectorAsteroidComponent, SectorAsteroidData, SectorStarComponent};
+use crate::components::{Sector, SectorAsteroidComponent, SectorStarComponent};
 use crate::persistence::SectorFeatureSaveData;
 use crate::simulation::asteroids::SectorWasSpawnedEvent;
 use crate::simulation::transform::simulation_transform::SimulationTransform;
@@ -32,9 +32,9 @@ pub fn spawn_sector(
     if let Some(asteroids) = &features.asteroids {
         entity_commands.insert(SectorAsteroidComponent {
             // TODO
+            average_velocity: asteroids.average_velocity,
             asteroids: Default::default(),
             asteroid_respawns: Default::default(),
-            asteroid_data: SectorAsteroidData::from(asteroids),
         });
     }
 

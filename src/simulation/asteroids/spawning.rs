@@ -45,10 +45,8 @@ pub fn spawn_asteroids_for_new_sector(
             .take(constants::ASTEROID_COUNT)
         {
             let velocity = Vec2::new(
-                asteroid_component.asteroid_data.average_velocity.x
-                    * inner_rng.gen_range(VELOCITY_RANDOM_RANGE),
-                asteroid_component.asteroid_data.average_velocity.y
-                    * inner_rng.gen_range(VELOCITY_RANDOM_RANGE),
+                asteroid_component.average_velocity.x * inner_rng.gen_range(VELOCITY_RANDOM_RANGE),
+                asteroid_component.average_velocity.y * inner_rng.gen_range(VELOCITY_RANDOM_RANGE),
             );
 
             let despawn_after = helpers::calculate_milliseconds_until_asteroid_leaves_hexagon(
