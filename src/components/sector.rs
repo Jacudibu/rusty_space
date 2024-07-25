@@ -16,31 +16,7 @@ pub struct Sector {
     pub gates: HashMap<SectorEntity, GatePairInSector>,
     pub planets: HashSet<PlanetEntity>,
     pub ships: HashSet<ShipEntity>,
-    pub feature: SectorFeature,
     pub stations: HashSet<StationEntity>,
-}
-
-/// The main feature of a sector.
-pub enum SectorFeature {
-    /// The sector is devoid of any natural objects
-    Void,
-
-    /// The sector features a star. Planets, Gates (?) and Stations (?) orbit around that.
-    Star,
-
-    /// The sector features asteroids, idly floating through it. The Entity also has a [`SectorAsteroidComponent`].
-    AsteroidCloud,
-}
-
-impl SectorFeature {
-    // TODO: Contemplate just using Eq if additional data is stored in extra components
-    pub fn is_asteroids(&self) -> bool {
-        match self {
-            SectorFeature::Void => false,
-            SectorFeature::Star => false,
-            SectorFeature::AsteroidCloud => true,
-        }
-    }
 }
 
 /// Marker Component for sectors featuring asteroid clouds.
@@ -53,7 +29,9 @@ pub struct SectorAsteroidComponent {
 
 /// Marker Component for sectors featuring stars and orbital mechanics.
 #[derive(Component)]
-pub struct SectorStarComponent {}
+pub struct SectorStarComponent {
+    pub mass: u32,
+}
 
 impl SectorAsteroidComponent {
     pub fn new(asteroid_data: SectorAsteroidData) -> Self {
@@ -97,11 +75,10 @@ pub struct GatePairInSector {
 }
 
 impl Sector {
-    pub fn new(coordinate: Hex, world_pos: Vec2, feature: SectorFeature) -> Self {
+    pub fn new(coordinate: Hex, world_pos: Vec2) -> Self {
         Sector {
             coordinate,
             world_pos,
-            feature,
             gates: HashMap::new(),
             planets: HashSet::new(),
             ships: HashSet::new(),

@@ -27,7 +27,9 @@ pub fn spawn_asteroids_for_new_sector(
     let now = simulation_time.now();
 
     for event in sector_spawns.read() {
-        let (sector, mut asteroid_component) = sectors.get_mut(event.sector.into()).unwrap();
+        let Ok((sector, mut asteroid_component)) = sectors.get_mut(event.sector.into()) else {
+            continue;
+        };
 
         // Technically it isn't even really necessary to further randomize positions with randomized velocity,
         // This unnatural circle shape will break up once the asteroids moved across half of the sector size.
