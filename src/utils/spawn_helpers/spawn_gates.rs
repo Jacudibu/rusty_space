@@ -2,7 +2,8 @@ use bevy::core::Name;
 use bevy::prelude::{Commands, CubicBezier, CubicCurve, CubicGenerator, Query, SpriteBundle, Vec2};
 
 use crate::components::{
-    ConstantOrbit, Gate, GateConnectionComponent, Sector, SectorFeature, SelectableEntity,
+    ConstantOrbit, Gate, GateConnectionComponent, MovingGateConnection, Sector, SectorFeature,
+    SelectableEntity,
 };
 use crate::constants::GATE_CONNECTION_LAYER;
 use crate::persistence::{GateIdMap, PersistentGateId};
@@ -27,7 +28,7 @@ pub fn spawn_gate_pair(
         .get_many_mut([from_pos.sector.into(), to_pos.sector.into()])
         .unwrap();
 
-    let (from_curve, to_curve) = calculate_curves(
+    let (from_curve, to_curve) = GateConnectionComponent::calculate_curves_from_local_positions(
         &from_sector,
         from_pos.local_position,
         &to_sector,
@@ -55,50 +56,35 @@ pub fn spawn_gate_pair(
         to_curve,
     );
 
-    spawn_gate_connection(commands, from_curve, from_gate, to_gate);
+    spawn_gate_connection(
+        commands,
+        &from_curve,
+        &from_sector,
+        &to_sector,
+        from_gate,
+        to_gate,
+    );
 
     from_sector.add_gate(commands, from_pos.sector, from_gate, to_pos.sector, to_gate);
     to_sector.add_gate(commands, to_pos.sector, to_gate, from_pos.sector, from_gate);
 }
 
-fn calculate_curves(
-    from_sector: &Sector,
-    from_pos: Vec2,
-    to_sector: &Sector,
-    to_pos: Vec2,
-) -> (CubicCurve<Vec2>, CubicCurve<Vec2>) {
-    let a = from_sector.world_pos + from_pos;
-    let b = to_sector.world_pos + to_pos;
-    let difference = a - b;
-    let diff_rot = Vec2::new(-difference.y, difference.x) * 0.075;
-
-    let a_curve = a - difference * 0.40 + diff_rot;
-    let b_curve = b + difference * 0.40 - diff_rot;
-
-    let ship_curve = create_curve(a, a_curve, b_curve, b);
-    let ship_curve_inverted = create_curve(b, b_curve, a_curve, a);
-
-    (ship_curve, ship_curve_inverted)
-}
-
 fn spawn_gate_connection(
     commands: &mut Commands,
-    ship_curve: CubicCurve<Vec2>,
+    from_to_curve: &CubicCurve<Vec2>,
+    from_sector: &Sector,
+    to_sector: &Sector,
     from: GateEntity,
     to: GateEntity,
 ) {
-    commands.spawn(GateConnectionComponent {
-        from,
-        to,
-        render_positions: ship_curve
-            .iter_positions(20)
-            .map(|x| x.extend(GATE_CONNECTION_LAYER))
-            .collect(),
-    });
-}
+    let mut entity_commands = commands.spawn(GateConnectionComponent::new(from, to, from_to_curve));
 
-fn create_curve(a: Vec2, a_curve: Vec2, b_curve: Vec2, b: Vec2) -> CubicCurve<Vec2> {
-    CubicBezier::new([[a, a_curve, b_curve, b]]).to_curve()
+    match (&from_sector.feature, &to_sector.feature) {
+        (SectorFeature::Star, _) | (_, SectorFeature::Star) => {
+            entity_commands.insert(MovingGateConnection);
+        }
+        (_, _) => {}
+    }
 }
 
 #[allow(clippy::too_many_arguments)]
