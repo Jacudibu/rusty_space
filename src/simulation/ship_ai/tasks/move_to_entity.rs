@@ -76,7 +76,7 @@ impl MoveToEntity {
             velocity.accelerate(engine, time.delta_seconds());
         }
 
-        if distance < 5.0 {
+        if distance < 10.0 {
             if self.stop_at_target {
                 if velocity.forward < 0.3 {
                     velocity.force_stop();
