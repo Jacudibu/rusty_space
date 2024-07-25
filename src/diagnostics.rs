@@ -16,7 +16,11 @@ impl Plugin for DiagnosticsPlugin {
 fn init(mut commands: Commands) {
     commands.spawn((
         PerfUiRoot::default(),
-        PerfUiEntryFPS::default(),
+        PerfUiEntryFPS {
+            #[cfg(debug_assertions)]
+            label: "FPS [DEBUG]".into(),
+            ..Default::default()
+        },
         PerfUiEntryFPSWorst::default(),
         PerfUiEntryFrameTime::default(),
         PerfUiEntryFrameTimeWorst::default(),
