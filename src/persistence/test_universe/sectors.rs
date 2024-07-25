@@ -1,18 +1,22 @@
 use crate::persistence::test_universe::coordinates::{BOTTOM_LEFT, CENTER, RIGHT, TOP_RIGHT};
 use crate::persistence::{
-    SaveDataCollection, SectorAsteroidFeatureSaveData, SectorFeatureSaveData, SectorSaveData,
+    SaveDataCollection, SectorAsteroidSaveData, SectorSaveData, SectorStarSaveData,
 };
 use bevy::math::Vec2;
 
 pub fn create_test_data() -> SaveDataCollection<SectorSaveData> {
-    let asteroid_data = SectorAsteroidFeatureSaveData::new(Vec2::splat(2.0));
-
     let mut sectors = SaveDataCollection::<SectorSaveData>::default();
     sectors.add(CENTER);
-    sectors.add(RIGHT).with_feature(SectorFeatureSaveData::Star);
+    sectors
+        .add(RIGHT)
+        .with_star(SectorStarSaveData { mass: 100 });
     sectors
         .add(TOP_RIGHT)
-        .with_feature(SectorFeatureSaveData::AsteroidCloud(asteroid_data));
+        .with_asteroids(SectorAsteroidSaveData {
+            average_velocity: Vec2::splat(2.0),
+            respawning_asteroids: Vec::new(),
+            live_asteroids: Vec::new(),
+        });
     sectors.add(BOTTOM_LEFT);
 
     sectors

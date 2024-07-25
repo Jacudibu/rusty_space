@@ -1,8 +1,8 @@
 use crate::components::{
-    Asteroid, BuyOrders, Gate, InSector, Inventory, Sector, SectorAsteroidComponent, SellOrders,
-    Ship, Station,
+    Asteroid, BuyOrders, Gate, InSector, Inventory, Sector, SellOrders, Ship, Station,
 };
 use crate::persistence::data::v1::*;
+use crate::persistence::writer::sectors::SectorSaveDataQuery;
 use crate::persistence::AllEntityIdMaps;
 use crate::simulation::physics::{ConstantVelocity, ShipVelocity};
 use crate::simulation::production::{ProductionComponent, ShipyardComponent};
@@ -18,13 +18,14 @@ use bevy::prelude::{Commands, Query};
 /// For as long as there is no "public test build", save data is not guaranteed to be compatible
 /// with older/newer versions of the game - implementing and maintaining versioning for rapidly
 /// changing data structures is way too much work.
-#[allow(clippy::type_complexity)] // Haha, like, uh, yeah. No.
+#[allow(clippy::type_complexity)]
+#[allow(clippy::too_many_arguments)] // Haha, like, uh, yeah. No.
 pub fn parse_session_data_into_universe_save_data(
     mut commands: Commands,
     all_sectors: Query<&Sector>,
     asteroids: Query<(&Asteroid, &SimulationTransform, &ConstantVelocity)>,
     gates: Query<(&Gate, &InSector, &SimulationTransform)>,
-    sectors_to_save: Query<(&Sector, Option<&SectorAsteroidComponent>)>,
+    sectors_to_save: Query<SectorSaveDataQuery>,
     ships: Query<(
         &Ship,
         &Name,
@@ -61,7 +62,7 @@ pub fn parse_session_data_into_universe_save_data(
 
     let sectors = sectors_to_save
         .iter()
-        .map(|x| SectorSaveData::from(x.0, x.1, &asteroids));
+        .map(|x| SectorSaveData::from(x, &asteroids));
 
     commands.insert_resource(SaveDataCollection::<SectorSaveData>::from(sectors));
     commands.insert_resource(SaveDataCollection::<GatePairSaveData>::from(gate_pairs));
@@ -124,6 +125,7 @@ mod tests {
             ships: world
                 .remove_resource::<SaveDataCollection<ShipSaveData>>()
                 .unwrap(),
+            planets: todo!(),
         };
 
         assert_eq!(

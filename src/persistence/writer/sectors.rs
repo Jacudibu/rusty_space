@@ -1,8 +1,9 @@
-use crate::components::{Asteroid, Sector, SectorAsteroidComponent, SectorFeature};
+use crate::components::{Asteroid, Sector, SectorAsteroidComponent, SectorStarComponent};
 use crate::persistence::data::v1::*;
 use crate::persistence::ComponentWithPersistentId;
 use crate::simulation::physics::ConstantVelocity;
 use crate::simulation::transform::simulation_transform::SimulationTransform;
+use bevy::ecs::query::QueryData;
 use bevy::prelude::Query;
 
 impl AsteroidSaveData {
@@ -22,7 +23,7 @@ impl AsteroidSaveData {
     }
 }
 
-impl SectorAsteroidFeatureSaveData {
+impl SectorAsteroidSaveData {
     pub fn from(
         feature: &SectorAsteroidComponent,
         asteroid_query: &Query<(&Asteroid, &SimulationTransform, &ConstantVelocity)>,
@@ -50,33 +51,33 @@ impl SectorAsteroidFeatureSaveData {
 
 impl SectorFeatureSaveData {
     pub fn from(
-        feature: &SectorFeature,
-        asteroid_component: Option<&SectorAsteroidComponent>,
+        data: SectorSaveDataQueryItem,
         asteroid_query: &Query<(&Asteroid, &SimulationTransform, &ConstantVelocity)>,
     ) -> Self {
-        match feature {
-            SectorFeature::Void => SectorFeatureSaveData::Void,
-            SectorFeature::Star => SectorFeatureSaveData::Star,
-            SectorFeature::AsteroidCloud => SectorFeatureSaveData::AsteroidCloud(
-                SectorAsteroidFeatureSaveData::from(asteroid_component.unwrap(), asteroid_query),
-            ),
+        SectorFeatureSaveData {
+            star: data.star.map(|x| SectorStarSaveData { mass: x.mass }),
+            asteroids: data
+                .asteroids
+                .map(|x| SectorAsteroidSaveData::from(x, asteroid_query)),
         }
     }
 }
 
+#[derive(QueryData)]
+pub struct SectorSaveDataQuery {
+    sector: &'static Sector,
+    star: Option<&'static SectorStarComponent>,
+    asteroids: Option<&'static SectorAsteroidComponent>,
+}
+
 impl SectorSaveData {
     pub fn from(
-        sector: &Sector,
-        asteroid_component: Option<&SectorAsteroidComponent>,
+        data: SectorSaveDataQueryItem,
         asteroid_query: &Query<(&Asteroid, &SimulationTransform, &ConstantVelocity)>,
     ) -> Self {
         Self {
-            coordinate: sector.coordinate,
-            feature: SectorFeatureSaveData::from(
-                &sector.feature,
-                asteroid_component,
-                asteroid_query,
-            ),
+            coordinate: data.sector.coordinate,
+            features: SectorFeatureSaveData::from(data, asteroid_query),
         }
     }
 }

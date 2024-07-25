@@ -1,9 +1,7 @@
-use crate::components::{SectorAsteroidComponent, SectorAsteroidData, SectorFeature};
+use crate::components::SectorAsteroidData;
 use crate::map_layout::MapLayout;
-use crate::persistence::data::v1::{
-    SaveDataCollection, SectorAsteroidFeatureSaveData, SectorSaveData,
-};
-use crate::persistence::{AsteroidIdMap, SectorFeatureSaveData, SectorIdMap};
+use crate::persistence::data::v1::{SaveDataCollection, SectorAsteroidSaveData, SectorSaveData};
+use crate::persistence::{AsteroidIdMap, SectorFeatureSaveData, SectorIdMap, SectorStarSaveData};
 use crate::simulation::asteroids::SectorWasSpawnedEvent;
 use crate::utils::{spawn_helpers, SectorEntity};
 use bevy::ecs::system::SystemParam;
@@ -37,7 +35,7 @@ impl SaveData {
     pub fn add(&mut self, hex: Hex) -> &mut SectorSaveData {
         self.data.push(SectorSaveData {
             coordinate: hex,
-            feature: SectorFeatureSaveData::Void,
+            features: SectorFeatureSaveData::default(),
         });
         self.data.last_mut().unwrap()
     }
@@ -49,17 +47,22 @@ impl SectorSaveData {
             &mut args.commands,
             &args.map_layout.hex_layout,
             self.coordinate,
-            &self.feature,
+            &self.features,
             &mut args.sector_spawn_event,
         )
     }
 
-    pub fn with_feature(&mut self, feature: SectorFeatureSaveData) -> &mut Self {
-        self.feature = feature;
+    pub fn with_star(&mut self, data: SectorStarSaveData) -> &mut Self {
+        self.features.star = Some(data);
+        self
+    }
+
+    pub fn with_asteroids(&mut self, data: SectorAsteroidSaveData) -> &mut Self {
+        self.features.asteroids = Some(data);
         self
     }
 }
-impl SectorAsteroidFeatureSaveData {
+impl SectorAsteroidSaveData {
     pub fn new(average_velocity: Vec2) -> Self {
         Self {
             average_velocity,
@@ -69,29 +72,10 @@ impl SectorAsteroidFeatureSaveData {
     }
 }
 
-impl From<SectorAsteroidFeatureSaveData> for SectorAsteroidData {
-    fn from(value: SectorAsteroidFeatureSaveData) -> Self {
+impl From<&SectorAsteroidSaveData> for SectorAsteroidData {
+    fn from(value: &SectorAsteroidSaveData) -> Self {
         SectorAsteroidData {
             average_velocity: value.average_velocity,
-        }
-    }
-}
-
-impl From<&SectorFeatureSaveData> for SectorFeature {
-    fn from(value: &SectorFeatureSaveData) -> Self {
-        match value {
-            SectorFeatureSaveData::Void => SectorFeature::Void,
-            SectorFeatureSaveData::Star => SectorFeature::Star,
-            SectorFeatureSaveData::AsteroidCloud(feature) => {
-                SectorFeature::AsteroidCloud(SectorAsteroidComponent {
-                    asteroid_data: SectorAsteroidData {
-                        average_velocity: feature.average_velocity,
-                    },
-                    // TODO
-                    asteroids: Default::default(),
-                    asteroid_respawns: Default::default(),
-                })
-            }
         }
     }
 }
