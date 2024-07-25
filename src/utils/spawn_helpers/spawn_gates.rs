@@ -1,10 +1,13 @@
 use bevy::core::Name;
 use bevy::prelude::{Commands, CubicBezier, CubicCurve, CubicGenerator, Query, SpriteBundle, Vec2};
 
-use crate::components::{Gate, GateConnectionComponent, Sector, SelectableEntity};
+use crate::components::{
+    ConstantOrbit, Gate, GateConnectionComponent, Sector, SectorFeature, SelectableEntity,
+};
 use crate::constants::GATE_CONNECTION_LAYER;
 use crate::persistence::{GateIdMap, PersistentGateId};
 use crate::simulation::transform::simulation_transform::SimulationTransform;
+use crate::utils::spawn_helpers::helpers;
 use crate::utils::GateEntity;
 use crate::utils::SectorPosition;
 use crate::{constants, SpriteHandles};
@@ -100,22 +103,36 @@ fn spawn_gate(
 ) -> GateEntity {
     let simulation_transform =
         SimulationTransform::from_translation(from.world_pos + pos.local_position);
-    let entity = commands
-        .spawn((
-            Name::new(format!(
-                "Gate [{},{}] -> [{},{}]",
-                from.coordinate.x, from.coordinate.y, to.coordinate.x, to.coordinate.y
-            )),
-            Gate::new(id, ship_curve),
-            SelectableEntity::Gate,
-            SpriteBundle {
-                transform: simulation_transform.as_transform(constants::GATE_LAYER),
-                texture: sprites.gate.clone(),
-                ..Default::default()
-            },
-            simulation_transform,
-        ))
-        .id();
+    let mut entity_commands = commands.spawn((
+        Name::new(format!(
+            "Gate [{},{}] -> [{},{}]",
+            from.coordinate.x, from.coordinate.y, to.coordinate.x, to.coordinate.y
+        )),
+        Gate::new(id, ship_curve),
+        SelectableEntity::Gate,
+        SpriteBundle {
+            transform: simulation_transform.as_transform(constants::GATE_LAYER),
+            texture: sprites.gate.clone(),
+            ..Default::default()
+        },
+        simulation_transform,
+    ));
+
+    match from.feature {
+        SectorFeature::Void => {}
+        SectorFeature::Star => {
+            // TODO!
+            let radius = pos.local_position.length();
+            entity_commands.insert(ConstantOrbit::new(
+                pos.local_position.to_angle(),
+                radius,
+                helpers::calculate_orbit_velocity(radius, 100.0),
+            ));
+        }
+        SectorFeature::Asteroids(_) => {}
+    }
+
+    let entity = entity_commands.id();
 
     gate_id_map.insert(id, GateEntity::from(entity));
     GateEntity::from(entity)

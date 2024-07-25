@@ -1,4 +1,4 @@
-use crate::components::{Asteroid, Sector, SectorAsteroidData};
+use crate::components::{Asteroid, Sector, SectorAsteroidData, SectorFeature};
 use crate::persistence::data::v1::*;
 use crate::persistence::ComponentWithPersistentId;
 use crate::simulation::physics::ConstantVelocity;
@@ -30,6 +30,18 @@ impl SectorAsteroidSaveData {
     }
 }
 
+impl SectorFeatureSaveData {
+    pub fn from(feature: &SectorFeature) -> Self {
+        match feature {
+            SectorFeature::Void => SectorFeatureSaveData::Void,
+            SectorFeature::Star => SectorFeatureSaveData::Star,
+            SectorFeature::Asteroids(_) => {
+                todo!()
+            }
+        }
+    }
+}
+
 impl SectorSaveData {
     pub fn from(
         sector: &Sector,
@@ -55,6 +67,7 @@ impl SectorSaveData {
                 .asteroid_data
                 .as_ref()
                 .map(SectorAsteroidSaveData::from),
+            feature: SectorFeatureSaveData::from(&sector.feature),
             live_asteroids,
             respawning_asteroids,
         }

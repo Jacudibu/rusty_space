@@ -2,6 +2,7 @@ use crate::components::{ConstantOrbit, Planet, Sector, SelectableEntity};
 use crate::persistence::{PersistentPlanetId, PlanetIdMap};
 use crate::simulation::ship_ai::AutoTradeBehavior;
 use crate::simulation::transform::simulation_transform::SimulationTransform;
+use crate::utils::spawn_helpers::helpers;
 use crate::utils::{PlanetEntity, SectorEntity};
 use crate::{constants, SpriteHandles};
 use bevy::core::Name;
@@ -31,10 +32,7 @@ pub fn spawn_planet(
     // TODO: Grab that from the sector/star. And figure out what unit we wanna use.
     let star_mass = 100.0;
 
-    // TODO: Instead of using a realistic gravitational constant, we can just adjust this value for our simulation until it "feels" right, that's why this value is bogus
-    const GRAVITATIONAL_CONSTANT: f32 = 0.00067;
-
-    let velocity = ((GRAVITATIONAL_CONSTANT * star_mass) / orbit_radius).sqrt();
+    let velocity = helpers::calculate_orbit_velocity(orbit_radius, star_mass);
 
     let simulation_transform =
         SimulationTransform::new(sector_data.world_pos + local_position, Rot2::IDENTITY, 1.0);
