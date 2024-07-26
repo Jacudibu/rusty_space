@@ -3,7 +3,6 @@ mod constant_orbit;
 mod engine;
 mod gate;
 mod gate_connection;
-mod in_sector;
 mod inventory;
 mod planet;
 mod sector;
@@ -14,7 +13,7 @@ mod station;
 mod trade;
 
 pub use {
-    asteroid::*, constant_orbit::*, engine::Engine, gate::*, gate_connection::*, in_sector::*,
+    asteroid::*, constant_orbit::*, engine::Engine, gate::*, gate_connection::*,
     inventory::Inventory, planet::*, sector::*, selectable_entity::*, ship::*, star::*, station::*,
     trade::*,
 };
