@@ -1,7 +1,6 @@
 use bevy::app::{App, Plugin};
 mod coordinates;
 mod gates;
-mod planets;
 mod sectors;
 mod ships;
 mod stations;
@@ -13,6 +12,5 @@ impl Plugin for TestUniverseDataPlugin {
         app.insert_resource(gates::create_test_data());
         app.insert_resource(stations::create_test_data());
         app.insert_resource(ships::create_test_data());
-        app.insert_resource(planets::create_test_data());
     }
 }

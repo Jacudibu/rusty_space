@@ -1,5 +1,5 @@
 use crate::components::InSector;
-use crate::utils::{GateEntity, PlanetEntity, SectorEntity, ShipEntity, StationEntity};
+use crate::utils::{GateEntity, SectorEntity, ShipEntity, StationEntity};
 use bevy::math::Vec2;
 use bevy::prelude::{Commands, Component};
 use bevy::utils::{HashMap, HashSet};
@@ -12,7 +12,6 @@ pub struct Sector {
     pub world_pos: Vec2,
 
     pub gates: HashMap<SectorEntity, GatePairInSector>,
-    pub planets: HashSet<PlanetEntity>,
     pub ships: HashSet<ShipEntity>,
     pub stations: HashSet<StationEntity>,
 }
@@ -32,21 +31,9 @@ impl Sector {
             coordinate,
             world_pos,
             gates: HashMap::new(),
-            planets: HashSet::new(),
             ships: HashSet::new(),
             stations: HashSet::new(),
         }
-    }
-
-    /// Adds the given planet to this sector and inserts the [InSector] component to it.
-    pub fn add_planet(
-        &mut self,
-        commands: &mut Commands,
-        sector: SectorEntity,
-        entity: PlanetEntity,
-    ) {
-        self.planets.insert(entity);
-        InSector::add_component(commands, sector, entity.into());
     }
 
     /// Adds the given ship to this sector and inserts the [InSector] component to it.

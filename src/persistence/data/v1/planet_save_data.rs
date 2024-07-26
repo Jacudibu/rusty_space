@@ -1,14 +1,12 @@
 use crate::persistence::PersistentPlanetId;
 use crate::utils::EarthMass;
-use hexx::Hex;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
 #[cfg_attr(test, derive(Clone, Debug, PartialEq))]
-pub struct PlanetSaveData {
+pub struct SectorPlanetSaveData {
     pub id: PersistentPlanetId,
     pub name: String,
-    pub sector: Hex,
     pub mass: EarthMass,
     pub orbit: ConstantOrbitSaveData,
 }

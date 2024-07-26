@@ -1,4 +1,4 @@
-use crate::persistence::PersistentAsteroidId;
+use crate::persistence::{PersistentAsteroidId, SectorPlanetSaveData};
 use crate::simulation::prelude::SimulationTimestamp;
 use crate::utils::SolarMass;
 use bevy::math::Vec2;
@@ -37,6 +37,7 @@ pub struct SectorStarSaveData {
 pub struct SectorFeatureSaveData {
     pub star: Option<SectorStarSaveData>,
     pub asteroids: Option<SectorAsteroidSaveData>,
+    pub planets: Option<Vec<SectorPlanetSaveData>>,
 }
 
 #[derive(Serialize, Deserialize)]

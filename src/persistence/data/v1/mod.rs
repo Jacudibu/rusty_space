@@ -19,7 +19,6 @@ pub use {
 pub struct UniverseSaveData {
     pub gate_pairs: SaveDataCollection<GatePairSaveData>,
     pub sectors: SaveDataCollection<SectorSaveData>,
-    pub planets: SaveDataCollection<PlanetSaveData>,
     pub ships: SaveDataCollection<ShipSaveData>,
     pub stations: SaveDataCollection<StationSaveData>,
 }

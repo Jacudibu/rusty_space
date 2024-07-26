@@ -1,6 +1,9 @@
 use crate::map_layout::MapLayout;
 use crate::persistence::data::v1::{SaveDataCollection, SectorAsteroidSaveData, SectorSaveData};
-use crate::persistence::{AsteroidIdMap, SectorFeatureSaveData, SectorIdMap, SectorStarSaveData};
+use crate::persistence::{
+    AsteroidIdMap, PlanetIdMap, SectorFeatureSaveData, SectorIdMap, SectorPlanetSaveData,
+    SectorStarSaveData,
+};
 use crate::simulation::asteroids::SectorWasSpawnedEvent;
 use crate::utils::{spawn_helpers, SectorEntity};
 use crate::SpriteHandles;
@@ -20,14 +23,16 @@ type SaveData = SaveDataCollection<SectorSaveData>;
 
 pub fn spawn_all(data: Res<SaveData>, mut args: Args) {
     let mut sector_id_map = SectorIdMap::new();
+    let mut planet_id_map = PlanetIdMap::new();
     for builder in &data.data {
         let coordinate = builder.coordinate;
-        let entity = builder.build(&mut args);
+        let entity = builder.build(&mut args, &mut planet_id_map);
         sector_id_map.insert(coordinate, entity);
     }
 
     args.commands.remove_resource::<SaveData>();
     args.commands.insert_resource(sector_id_map);
+    args.commands.insert_resource(planet_id_map);
     let asteroid_map = AsteroidIdMap::new();
     args.commands.insert_resource(asteroid_map);
 }
@@ -43,7 +48,7 @@ impl SaveData {
 }
 
 impl SectorSaveData {
-    pub fn build(&self, args: &mut Args) -> SectorEntity {
+    pub fn build(&self, args: &mut Args, planet_id_map: &mut PlanetIdMap) -> SectorEntity {
         spawn_helpers::spawn_sector(
             &mut args.commands,
             &args.map_layout.hex_layout,
@@ -51,6 +56,7 @@ impl SectorSaveData {
             &self.features,
             &mut args.sector_spawn_event,
             &args.sprites,
+            planet_id_map,
         )
     }
 
@@ -63,7 +69,17 @@ impl SectorSaveData {
         self.features.asteroids = Some(data);
         self
     }
+
+    pub fn with_planet(&mut self, data: SectorPlanetSaveData) -> &mut Self {
+        if let Some(ref mut planets) = &mut self.features.planets {
+            planets.push(data);
+        } else {
+            self.features.planets = Some(vec![data]);
+        }
+        self
+    }
 }
+
 impl SectorAsteroidSaveData {
     pub fn new(average_velocity: Vec2) -> Self {
         Self {
