@@ -1,11 +1,9 @@
 use crate::components::InSector;
-use crate::utils::{
-    AsteroidEntityWithTimestamp, GateEntity, PlanetEntity, SectorEntity, ShipEntity, StationEntity,
-};
-use bevy::prelude::{Commands, Component, Entity, Vec2};
+use crate::utils::{GateEntity, PlanetEntity, SectorEntity, ShipEntity, StationEntity};
+use bevy::math::Vec2;
+use bevy::prelude::{Commands, Component, Entity};
 use bevy::utils::{HashMap, HashSet};
 use hexx::Hex;
-use std::collections::{BTreeSet, BinaryHeap};
 
 /// Marker Component for Sectors
 #[derive(Component)]
@@ -17,46 +15,6 @@ pub struct Sector {
     pub planets: HashSet<PlanetEntity>,
     pub ships: HashSet<ShipEntity>,
     pub stations: HashSet<StationEntity>,
-}
-
-/// Marker Component for sectors featuring asteroid clouds.
-#[derive(Component)]
-pub struct SectorAsteroidComponent {
-    pub average_velocity: Vec2,
-    pub asteroids: BTreeSet<AsteroidEntityWithTimestamp>,
-    pub asteroid_respawns: BinaryHeap<std::cmp::Reverse<AsteroidEntityWithTimestamp>>,
-}
-
-/// Marker Component for sectors featuring stars and orbital mechanics.
-#[derive(Component)]
-pub struct SectorStarComponent {
-    pub mass: u32,
-}
-
-impl SectorAsteroidComponent {
-    pub fn new(average_velocity: Vec2) -> Self {
-        Self {
-            average_velocity,
-            asteroids: BTreeSet::new(),
-            asteroid_respawns: BinaryHeap::new(),
-        }
-    }
-
-    /// Adds the given asteroid to this sector and inserts the [InSector] component to it.
-    pub fn add_asteroid(
-        &mut self,
-        commands: &mut Commands,
-        sector_entity: SectorEntity,
-        entity: AsteroidEntityWithTimestamp,
-    ) {
-        self.add_asteroid_in_place(entity);
-        Sector::in_sector(commands, sector_entity, entity.entity.into());
-    }
-
-    /// Adds asteroid to this sectors' asteroid set.
-    pub fn add_asteroid_in_place(&mut self, entity: AsteroidEntityWithTimestamp) {
-        self.asteroids.insert(entity);
-    }
 }
 
 #[derive(Eq, PartialEq, Hash, Copy, Clone)]
@@ -135,7 +93,7 @@ impl Sector {
     }
 
     /// Adds the [InSector] component linking to `self` to the provided Entity.
-    fn in_sector(commands: &mut Commands, sector_entity: SectorEntity, entity: Entity) {
+    pub fn in_sector(commands: &mut Commands, sector_entity: SectorEntity, entity: Entity) {
         commands.entity(entity).insert(InSector {
             sector: sector_entity,
         });
