@@ -1,5 +1,5 @@
 use crate::components::{
-    Asteroid, BuyOrders, Gate, InSector, Inventory, Sector, SellOrders, Ship, Station,
+    Asteroid, BuyOrders, Gate, InSector, Inventory, Sector, SellOrders, Ship, Star, Station,
 };
 use crate::persistence::data::v1::*;
 use crate::persistence::writer::sectors::SectorSaveDataQuery;
@@ -20,9 +20,11 @@ use bevy::prelude::{Commands, Query};
 /// changing data structures is way too much work.
 #[allow(clippy::type_complexity)]
 #[allow(clippy::too_many_arguments)] // Haha, like, uh, yeah. No.
+#[allow(unused)] // That's gonna fix itself as soon as we actually load stuff from disk
 pub fn parse_session_data_into_universe_save_data(
     mut commands: Commands,
     all_sectors: Query<&Sector>,
+    stars: Query<&Star>,
     asteroids: Query<(&Asteroid, &SimulationTransform, &ConstantVelocity)>,
     gates: Query<(&Gate, &InSector, &SimulationTransform)>,
     sectors_to_save: Query<SectorSaveDataQuery>,
@@ -62,7 +64,7 @@ pub fn parse_session_data_into_universe_save_data(
 
     let sectors = sectors_to_save
         .iter()
-        .map(|x| SectorSaveData::from(x, &asteroids));
+        .map(|x| SectorSaveData::from(x, &asteroids, &stars));
 
     commands.insert_resource(SaveDataCollection::<SectorSaveData>::from(sectors));
     commands.insert_resource(SaveDataCollection::<GatePairSaveData>::from(gate_pairs));

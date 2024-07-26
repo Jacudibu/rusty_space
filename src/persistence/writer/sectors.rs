@@ -1,4 +1,4 @@
-use crate::components::{Asteroid, Sector, SectorAsteroidComponent, SectorStarComponent};
+use crate::components::{Asteroid, Sector, SectorAsteroidComponent, SectorStarComponent, Star};
 use crate::persistence::data::v1::*;
 use crate::persistence::ComponentWithPersistentId;
 use crate::simulation::physics::ConstantVelocity;
@@ -53,9 +53,12 @@ impl SectorFeatureSaveData {
     pub fn from(
         data: SectorSaveDataQueryItem,
         asteroid_query: &Query<(&Asteroid, &SimulationTransform, &ConstantVelocity)>,
+        star_query: &Query<&Star>,
     ) -> Self {
         SectorFeatureSaveData {
-            star: data.star.map(|x| SectorStarSaveData { mass: x.mass }),
+            star: data.star.map(|x| SectorStarSaveData {
+                mass: star_query.get(x.entity.into()).unwrap().mass,
+            }),
             asteroids: data
                 .asteroids
                 .map(|x| SectorAsteroidSaveData::from(x, asteroid_query)),
@@ -74,10 +77,11 @@ impl SectorSaveData {
     pub fn from(
         data: SectorSaveDataQueryItem,
         asteroid_query: &Query<(&Asteroid, &SimulationTransform, &ConstantVelocity)>,
+        star_query: &Query<&Star>,
     ) -> Self {
         Self {
             coordinate: data.sector.coordinate,
-            features: SectorFeatureSaveData::from(data, asteroid_query),
+            features: SectorFeatureSaveData::from(data, asteroid_query, star_query),
         }
     }
 }

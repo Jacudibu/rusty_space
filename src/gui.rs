@@ -134,7 +134,7 @@ pub fn initialize(
         gate: SizedTexture::new(contexts.add_image(sprites.gate.clone()), ICON_SIZE),
         planet: SizedTexture::new(contexts.add_image(sprites.planet.clone()), ICON_SIZE),
         ship: SizedTexture::new(contexts.add_image(sprites.ship.clone()), ICON_SIZE),
-        star: SizedTexture::new(contexts.add_image(sprites.planet.clone()), ICON_SIZE),
+        star: SizedTexture::new(contexts.add_image(sprites.star.clone()), ICON_SIZE),
         station: SizedTexture::new(contexts.add_image(sprites.station.clone()), ICON_SIZE),
         idle: SizedTexture::new(contexts.add_image(idle), ICON_SIZE),
         move_to: SizedTexture::new(contexts.add_image(move_to), ICON_SIZE),
