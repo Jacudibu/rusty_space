@@ -1,9 +1,10 @@
 use crate::components::{
     InSector, Sector, SectorAsteroidComponent, SectorStarComponent, SelectableEntity,
 };
-use crate::persistence::SectorFeatureSaveData;
+use crate::persistence::{PlanetIdMap, SectorFeatureSaveData};
 use crate::simulation::asteroids::SectorWasSpawnedEvent;
 use crate::simulation::transform::simulation_transform::SimulationTransform;
+use crate::utils::spawn_helpers::spawn_planet::spawn_planet;
 use crate::utils::{SectorEntity, StarEntity};
 use crate::{components, constants, SpriteHandles};
 use bevy::core::Name;
@@ -18,6 +19,7 @@ pub fn spawn_sector(
     features: &SectorFeatureSaveData, // Create a feature list if we ever want to spawn sectors from something else than save data, but for now that's enough
     sector_spawn_event: &mut EventWriter<SectorWasSpawnedEvent>,
     sprites: &SpriteHandles,
+    planet_id_map: &mut PlanetIdMap,
 ) -> SectorEntity {
     let position = layout.hex_to_world_pos(coordinate);
 
@@ -43,7 +45,9 @@ pub fn spawn_sector(
     let sector_entity = entity_commands.id();
     let sector = SectorEntity::from(sector_entity);
 
+    let mut gravitation_well_mass = None;
     if let Some(star) = &features.star {
+        gravitation_well_mass = Some(star.mass);
         let simulation_transform = SimulationTransform::from_translation(position);
 
         let star_entity = commands
@@ -64,6 +68,27 @@ pub fn spawn_sector(
         commands.entity(sector_entity).insert(SectorStarComponent {
             entity: StarEntity::from(star_entity),
         });
+    }
+
+    if let Some(planets) = &features.planets {
+        let mut component = components::SectorPlanets {
+            planets: Default::default(),
+        };
+
+        for planet in planets {
+            spawn_planet(
+                commands,
+                &mut component,
+                planet_id_map,
+                sprites,
+                planet,
+                position,
+                sector,
+                gravitation_well_mass,
+            );
+        }
+
+        commands.entity(sector_entity).insert(component);
     }
 
     sector_spawn_event.send(SectorWasSpawnedEvent { sector });

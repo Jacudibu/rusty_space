@@ -1,49 +1,49 @@
-use crate::components::{
-    ConstantOrbit, Planet, Sector, SectorStarComponent, SelectableEntity, Star,
-};
-use crate::persistence::{PersistentPlanetId, PlanetIdMap};
+use crate::components::{ConstantOrbit, Planet, SelectableEntity};
+use crate::persistence::{PlanetIdMap, SectorPlanetSaveData};
 use crate::simulation::ship_ai::AutoTradeBehavior;
 use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::utils::spawn_helpers::helpers;
-use crate::utils::{EarthMass, PlanetEntity, SectorEntity};
-use crate::{constants, SpriteHandles};
+use crate::utils::{PlanetEntity, SectorEntity, SolarMass};
+use crate::{components, constants, SpriteHandles};
 use bevy::core::Name;
 use bevy::math::Vec2;
-use bevy::prelude::{default, Commands, Query, Rot2, SpriteBundle};
+use bevy::prelude::{default, Commands, Rot2, SpriteBundle};
 
 #[allow(clippy::too_many_arguments)]
 pub fn spawn_planet(
     commands: &mut Commands,
+    sector_planet_component: &mut components::SectorPlanets,
     planet_id_map: &mut PlanetIdMap,
     sprites: &SpriteHandles,
-    name: String,
-    sectors: &mut Query<(&mut Sector, &SectorStarComponent)>,
-    stars: &Query<&Star>,
+    planet_data: &SectorPlanetSaveData,
+    sector_pos: Vec2,
     sector_entity: SectorEntity,
-    orbit_radius: f32,
-    orbit_rotational_fraction: f32,
-    mass: EarthMass,
+    orbit_mass: Option<SolarMass>,
 ) {
-    let (mut sector_data, star_component) = sectors.get_mut(sector_entity.into()).unwrap();
-    let star = stars.get(star_component.entity.into()).unwrap();
+    let planet = Planet::new(planet_data.id, planet_data.mass);
 
-    let planet_id = PersistentPlanetId::next();
-    let planet = Planet::new(planet_id, mass);
-
-    // TODO: calculate that from distance and angle
+    // TODO: use the stuff in physics to calculate the initial position here
     let local_position = Vec2::ZERO;
 
-    let velocity = helpers::calculate_orbit_velocity(orbit_radius, star.mass);
+    let velocity = if let Some(orbit_mass) = orbit_mass {
+        helpers::calculate_orbit_velocity(planet_data.orbit.radius, orbit_mass)
+    } else {
+        0.0
+    };
 
     let simulation_transform =
-        SimulationTransform::new(sector_data.world_pos + local_position, Rot2::IDENTITY, 1.0);
+        SimulationTransform::new(sector_pos + local_position, Rot2::IDENTITY, 1.0);
 
     let entity = commands
         .spawn((
-            Name::new(name),
+            Name::new(planet_data.name.clone()),
             SelectableEntity::Planet,
             AutoTradeBehavior::default(),
-            ConstantOrbit::new(orbit_rotational_fraction, orbit_radius, velocity),
+            ConstantOrbit::new(
+                planet_data.orbit.current_rotational_fraction,
+                planet_data.orbit.radius,
+                velocity,
+            ),
             SpriteBundle {
                 texture: sprites.planet.clone(),
                 transform: simulation_transform.as_transform(constants::PLANET_AND_STARS_LAYER),
@@ -55,6 +55,6 @@ pub fn spawn_planet(
         .id();
 
     let planet_entity = PlanetEntity::from(entity);
-    planet_id_map.insert(planet_id, planet_entity);
-    sector_data.add_planet(commands, sector_entity, planet_entity);
+    planet_id_map.insert(planet_data.id, planet_entity);
+    sector_planet_component.add_planet(commands, sector_entity, planet_entity);
 }

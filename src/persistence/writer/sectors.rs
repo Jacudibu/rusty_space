@@ -62,6 +62,7 @@ impl SectorFeatureSaveData {
             asteroids: data
                 .asteroids
                 .map(|x| SectorAsteroidSaveData::from(x, asteroid_query)),
+            planets: todo!(),
         }
     }
 }

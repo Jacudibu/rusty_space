@@ -28,7 +28,6 @@ mod test_helpers {
             app.insert_resource(GameData::mock_data());
             app.insert_resource(self.sectors);
             app.insert_resource(self.gate_pairs);
-            app.insert_resource(self.planets);
             app.insert_resource(self.stations);
             app.insert_resource(self.ships);
 
