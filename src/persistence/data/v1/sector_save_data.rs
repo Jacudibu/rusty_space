@@ -1,5 +1,6 @@
 use crate::persistence::PersistentAsteroidId;
 use crate::simulation::prelude::SimulationTimestamp;
+use crate::utils::SolarMass;
 use bevy::math::Vec2;
 use hexx::Hex;
 use serde::{Deserialize, Serialize};
@@ -28,7 +29,7 @@ pub struct SectorAsteroidSaveData {
 #[derive(Serialize, Deserialize)]
 #[cfg_attr(test, derive(Debug, PartialEq, Clone))]
 pub struct SectorStarSaveData {
-    pub mass: u32,
+    pub mass: SolarMass,
 }
 
 #[derive(Serialize, Deserialize, Default)]

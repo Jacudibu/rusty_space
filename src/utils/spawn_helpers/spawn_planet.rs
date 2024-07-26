@@ -3,7 +3,7 @@ use crate::persistence::{PersistentPlanetId, PlanetIdMap};
 use crate::simulation::ship_ai::AutoTradeBehavior;
 use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::utils::spawn_helpers::helpers;
-use crate::utils::{PlanetEntity, SectorEntity};
+use crate::utils::{EarthMass, PlanetEntity, SectorEntity};
 use crate::{constants, SpriteHandles};
 use bevy::core::Name;
 use bevy::math::Vec2;
@@ -19,7 +19,7 @@ pub fn spawn_planet(
     sector_entity: SectorEntity,
     orbit_radius: f32,
     orbit_rotational_fraction: f32,
-    mass: u32,
+    mass: EarthMass,
 ) {
     let (mut sector_data, star_data) = sectors.get_mut(sector_entity.into()).unwrap();
 

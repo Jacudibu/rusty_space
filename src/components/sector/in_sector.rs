@@ -1,5 +1,5 @@
 use crate::utils::SectorEntity;
-use bevy::prelude::{Component, Entity};
+use bevy::prelude::{Commands, Component, Entity};
 
 /// Component for entities inside sectors.
 ///
@@ -13,6 +13,13 @@ pub struct InSector {
 impl InSector {
     pub fn get(&self) -> SectorEntity {
         self.sector
+    }
+
+    /// Adds an [`InSector`] component to `entity`, which links to the provided `sector_entity`.
+    pub fn add_component(commands: &mut Commands, sector_entity: SectorEntity, entity: Entity) {
+        commands.entity(entity).insert(InSector {
+            sector: sector_entity,
+        });
     }
 }
 

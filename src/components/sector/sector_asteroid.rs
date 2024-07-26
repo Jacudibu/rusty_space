@@ -1,4 +1,4 @@
-use crate::components::Sector;
+use crate::components::InSector;
 use crate::utils::{AsteroidEntityWithTimestamp, SectorEntity};
 use bevy::math::Vec2;
 use bevy::prelude::{Commands, Component};
@@ -29,7 +29,7 @@ impl SectorAsteroidComponent {
         entity: AsteroidEntityWithTimestamp,
     ) {
         self.add_asteroid_in_place(entity);
-        Sector::in_sector(commands, sector_entity, entity.entity.into());
+        InSector::add_component(commands, sector_entity, entity.entity.into());
     }
 
     /// Adds asteroid to this sectors' asteroid set.

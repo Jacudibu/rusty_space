@@ -1,3 +1,4 @@
+mod celestial_mass;
 mod entity_wrappers;
 mod exchange_ware_data;
 pub mod interpolation;
@@ -10,6 +11,7 @@ mod trade_intent;
 mod transaction;
 mod update_orders;
 
+pub use celestial_mass::*;
 pub use entity_wrappers::*;
 pub use exchange_ware_data::*;
 pub use price_range::*;
