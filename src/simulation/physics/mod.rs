@@ -1,4 +1,4 @@
-mod constant_velocity;
+pub mod constant_velocity;
 mod orbit_directions;
 mod orbit_system;
 mod overlap;

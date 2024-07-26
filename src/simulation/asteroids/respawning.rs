@@ -35,13 +35,13 @@ pub fn respawn_asteroids(
             let local_respawn_position = calculate_asteroid_respawn_position(
                 map_layout.hex_edge_vertices,
                 transform.translation - sector.world_pos,
-                velocity.velocity,
+                velocity.velocity(),
             );
 
             let extra_millis = helpers::calculate_milliseconds_until_asteroid_leaves_hexagon(
                 map_layout.hex_edge_vertices,
                 local_respawn_position,
-                velocity.velocity,
+                velocity.velocity(),
             );
             *visibility = Visibility::Inherited;
             transform

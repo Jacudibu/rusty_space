@@ -16,8 +16,8 @@ impl AsteroidSaveData {
             ore_max: asteroid.ore_max,
             position: transform.translation,
             rotation_degrees: transform.rotation.as_degrees(),
-            velocity: velocity.velocity,
-            angular_velocity: velocity.sprite_rotation,
+            velocity: velocity.velocity(),
+            angular_velocity: velocity.sprite_rotation(),
             lifetime: asteroid.state.timestamp(),
         }
     }
