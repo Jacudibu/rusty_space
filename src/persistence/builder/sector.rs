@@ -3,6 +3,7 @@ use crate::persistence::data::v1::{SaveDataCollection, SectorAsteroidSaveData, S
 use crate::persistence::{AsteroidIdMap, SectorFeatureSaveData, SectorIdMap, SectorStarSaveData};
 use crate::simulation::asteroids::SectorWasSpawnedEvent;
 use crate::utils::{spawn_helpers, SectorEntity};
+use crate::SpriteHandles;
 use bevy::ecs::system::SystemParam;
 use bevy::prelude::{Commands, EventWriter, Res, Vec2};
 use hexx::Hex;
@@ -10,6 +11,7 @@ use hexx::Hex;
 #[derive(SystemParam)]
 pub struct Args<'w, 's> {
     commands: Commands<'w, 's>,
+    sprites: Res<'w, SpriteHandles>,
     map_layout: Res<'w, MapLayout>,
     sector_spawn_event: EventWriter<'w, SectorWasSpawnedEvent>,
 }
@@ -48,6 +50,7 @@ impl SectorSaveData {
             self.coordinate,
             &self.features,
             &mut args.sector_spawn_event,
+            &args.sprites,
         )
     }
 

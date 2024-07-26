@@ -1,4 +1,6 @@
-use crate::components::{ConstantOrbit, Planet, Sector, SectorStarComponent, SelectableEntity};
+use crate::components::{
+    ConstantOrbit, Planet, Sector, SectorStarComponent, SelectableEntity, Star,
+};
 use crate::persistence::{PersistentPlanetId, PlanetIdMap};
 use crate::simulation::ship_ai::AutoTradeBehavior;
 use crate::simulation::transform::simulation_transform::SimulationTransform;
@@ -16,12 +18,14 @@ pub fn spawn_planet(
     sprites: &SpriteHandles,
     name: String,
     sectors: &mut Query<(&mut Sector, &SectorStarComponent)>,
+    stars: &Query<&Star>,
     sector_entity: SectorEntity,
     orbit_radius: f32,
     orbit_rotational_fraction: f32,
     mass: EarthMass,
 ) {
-    let (mut sector_data, star_data) = sectors.get_mut(sector_entity.into()).unwrap();
+    let (mut sector_data, star_component) = sectors.get_mut(sector_entity.into()).unwrap();
+    let star = stars.get(star_component.entity.into()).unwrap();
 
     let planet_id = PersistentPlanetId::next();
     let planet = Planet::new(planet_id, mass);
@@ -29,7 +33,7 @@ pub fn spawn_planet(
     // TODO: calculate that from distance and angle
     let local_position = Vec2::ZERO;
 
-    let velocity = helpers::calculate_orbit_velocity(orbit_radius, star_data.mass);
+    let velocity = helpers::calculate_orbit_velocity(orbit_radius, star.mass);
 
     let simulation_transform =
         SimulationTransform::new(sector_data.world_pos + local_position, Rot2::IDENTITY, 1.0);

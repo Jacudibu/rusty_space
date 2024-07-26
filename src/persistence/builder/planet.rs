@@ -1,4 +1,4 @@
-use crate::components::{Sector, SectorStarComponent};
+use crate::components::{Sector, SectorStarComponent, Star};
 use crate::persistence::data::v1::*;
 use crate::persistence::{PersistentPlanetId, PlanetIdMap, SectorIdMap};
 use crate::utils::{spawn_helpers, EarthMass};
@@ -12,6 +12,7 @@ pub struct Args<'w, 's> {
     commands: Commands<'w, 's>,
     sprites: Res<'w, SpriteHandles>,
     sectors: Query<'w, 's, (&'static mut Sector, &'static SectorStarComponent)>,
+    stars: Query<'w, 's, &'static Star>,
     sector_id_map: Res<'w, SectorIdMap>,
 }
 
@@ -56,6 +57,7 @@ impl PlanetSaveData {
             &args.sprites,
             self.name.clone(),
             &mut args.sectors,
+            &args.stars,
             sector_entity,
             self.orbit.radius,
             self.orbit.current_rotational_fraction,

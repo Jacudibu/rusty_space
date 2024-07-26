@@ -3,7 +3,7 @@ use bevy::prelude::{Commands, CubicCurve, Query, SpriteBundle, Vec2};
 
 use crate::components::{
     ConstantOrbit, Gate, GateConnectionComponent, MovingGateConnection, Sector,
-    SectorStarComponent, SelectableEntity,
+    SectorStarComponent, SelectableEntity, Star,
 };
 use crate::persistence::{GateIdMap, PersistentGateId};
 use crate::simulation::transform::simulation_transform::SimulationTransform;
@@ -16,14 +16,15 @@ use crate::{constants, SpriteHandles};
 pub fn spawn_gate_pair(
     commands: &mut Commands,
     gate_id_map: &mut GateIdMap,
-    sector_query: &mut Query<(&mut Sector, Option<&SectorStarComponent>)>,
+    sectors: &mut Query<(&mut Sector, Option<&SectorStarComponent>)>,
+    stars: &Query<&Star>,
     sprites: &SpriteHandles,
     from_id: PersistentGateId,
     from_pos: SectorPosition,
     to_id: PersistentGateId,
     to_pos: SectorPosition,
 ) {
-    let [(mut from_sector, from_star), (mut to_sector, to_star)] = sector_query
+    let [(mut from_sector, from_star), (mut to_sector, to_star)] = sectors
         .get_many_mut([from_pos.sector.into(), to_pos.sector.into()])
         .unwrap();
 
@@ -43,7 +44,7 @@ pub fn spawn_gate_pair(
         &mut from_sector,
         &to_sector,
         from_curve.clone(),
-        from_star,
+        from_star.map(|x| stars.get(x.entity.into()).unwrap()),
     );
     let to_gate = spawn_gate(
         commands,
@@ -54,7 +55,7 @@ pub fn spawn_gate_pair(
         &mut to_sector,
         &from_sector,
         to_curve,
-        to_star,
+        to_star.map(|x| stars.get(x.entity.into()).unwrap()),
     );
 
     spawn_gate_connection(
@@ -93,7 +94,7 @@ fn spawn_gate(
     from: &mut Sector,
     to: &Sector,
     ship_curve: CubicCurve<Vec2>,
-    star: Option<&SectorStarComponent>,
+    star: Option<&Star>,
 ) -> GateEntity {
     let simulation_transform =
         SimulationTransform::from_translation(from.world_pos + pos.local_position);
