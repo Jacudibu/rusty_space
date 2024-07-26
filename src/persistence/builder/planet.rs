@@ -1,7 +1,7 @@
 use crate::components::{Sector, SectorStarComponent};
 use crate::persistence::data::v1::*;
 use crate::persistence::{PersistentPlanetId, PlanetIdMap, SectorIdMap};
-use crate::utils::spawn_helpers;
+use crate::utils::{spawn_helpers, EarthMass};
 use crate::SpriteHandles;
 use bevy::ecs::system::SystemParam;
 use bevy::prelude::{Commands, Query, Res};
@@ -32,7 +32,7 @@ impl SaveData {
         &mut self,
         name: String,
         sector: Hex,
-        mass: u32,
+        mass: EarthMass,
         orbit: ConstantOrbitSaveData,
     ) -> &mut PlanetSaveData {
         self.data.push(PlanetSaveData {

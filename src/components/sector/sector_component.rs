@@ -1,7 +1,7 @@
 use crate::components::InSector;
 use crate::utils::{GateEntity, PlanetEntity, SectorEntity, ShipEntity, StationEntity};
 use bevy::math::Vec2;
-use bevy::prelude::{Commands, Component, Entity};
+use bevy::prelude::{Commands, Component};
 use bevy::utils::{HashMap, HashSet};
 use hexx::Hex;
 
@@ -46,13 +46,13 @@ impl Sector {
         entity: PlanetEntity,
     ) {
         self.planets.insert(entity);
-        Self::in_sector(commands, sector, entity.into());
+        InSector::add_component(commands, sector, entity.into());
     }
 
     /// Adds the given ship to this sector and inserts the [InSector] component to it.
     pub fn add_ship(&mut self, commands: &mut Commands, sector: SectorEntity, entity: ShipEntity) {
         self.ships.insert(entity);
-        Self::in_sector(commands, sector, entity.into());
+        InSector::add_component(commands, sector, entity.into());
     }
 
     /// Removes ship from this sector whilst also deleting its [InSector] component.
@@ -70,7 +70,7 @@ impl Sector {
         entity: StationEntity,
     ) {
         self.stations.insert(entity);
-        Self::in_sector(commands, sector, entity.into());
+        InSector::add_component(commands, sector, entity.into());
     }
 
     /// Adds the gate to this sector and inserts the [InSector] component to it.
@@ -89,13 +89,6 @@ impl Sector {
                 to: destination_gate,
             },
         );
-        Self::in_sector(commands, this_sector, this_gate.into());
-    }
-
-    /// Adds the [InSector] component linking to `self` to the provided Entity.
-    pub fn in_sector(commands: &mut Commands, sector_entity: SectorEntity, entity: Entity) {
-        commands.entity(entity).insert(InSector {
-            sector: sector_entity,
-        });
+        InSector::add_component(commands, this_sector, this_gate.into());
     }
 }

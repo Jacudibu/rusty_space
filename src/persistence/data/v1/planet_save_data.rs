@@ -1,4 +1,5 @@
 use crate::persistence::PersistentPlanetId;
+use crate::utils::EarthMass;
 use hexx::Hex;
 use serde::{Deserialize, Serialize};
 
@@ -8,7 +9,7 @@ pub struct PlanetSaveData {
     pub id: PersistentPlanetId,
     pub name: String,
     pub sector: Hex,
-    pub mass: u32,
+    pub mass: EarthMass,
     pub orbit: ConstantOrbitSaveData,
 }
 

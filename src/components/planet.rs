@@ -1,16 +1,16 @@
 use crate::persistence::PersistentPlanetId;
+use crate::utils::EarthMass;
 use bevy::prelude::Component;
 
 #[derive(Component)]
 pub struct Planet {
     pub id: PersistentPlanetId,
-    // TODO: Earth masses? Maybe earth mass / 10000 to avoid floating numbers?
-    pub mass: u32,
+    pub mass: EarthMass,
 }
 
 impl Planet {
     #[inline]
-    pub fn new(id: PersistentPlanetId, mass: u32) -> Self {
+    pub fn new(id: PersistentPlanetId, mass: EarthMass) -> Self {
         Self { id, mass }
     }
 }

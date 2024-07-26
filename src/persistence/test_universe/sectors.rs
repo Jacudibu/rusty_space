@@ -2,14 +2,15 @@ use crate::persistence::test_universe::coordinates::{BOTTOM_LEFT, CENTER, RIGHT,
 use crate::persistence::{
     SaveDataCollection, SectorAsteroidSaveData, SectorSaveData, SectorStarSaveData,
 };
+use crate::utils::SolarMass;
 use bevy::math::Vec2;
 
 pub fn create_test_data() -> SaveDataCollection<SectorSaveData> {
     let mut sectors = SaveDataCollection::<SectorSaveData>::default();
     sectors.add(CENTER);
-    sectors
-        .add(RIGHT)
-        .with_star(SectorStarSaveData { mass: 100 });
+    sectors.add(RIGHT).with_star(SectorStarSaveData {
+        mass: SolarMass::from_solar_mass(1, 0),
+    });
     sectors
         .add(TOP_RIGHT)
         .with_asteroids(SectorAsteroidSaveData {
