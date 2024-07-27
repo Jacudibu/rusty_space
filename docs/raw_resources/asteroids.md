@@ -4,7 +4,7 @@
 asteroid inside them. Asteroids float through the sector, spawning at one edge and moving slowly to the other, at which
 point they despawn and respawn after a set interval. Fully mining an asteroid will also make it despawn, although it
 will respawn at the same time and position it would have done if it wasn't harvested. This means the total amount of
-asteroids / minerals available per sector is limited, which should become noticeable during the late-mid game.*
+asteroids / minerals available per sector is limited, which should become noticeable during the late-mid game, where sectors might be immediately cleared of any asteroids starting to float through them.*
 
 Scientifically, Asteroids can be classified into 3 overarching Types: C, M and S. Would be fun if we could have all
 three of them to some degree.

@@ -1,5 +1,5 @@
 # Gas Giants
-*Gas Giants consist of multiple layers. The outer layer can easily be harvested just by ships equipped with a modified vacuum cleaner, whereas the middle layer can still be harvested by ships but at less efficiency. Reaching the lower layers requires some construction work. Through these, players can unlock almost infinite yields of the dense gases down there... as long as they invest the necessary resources to extract them.*
+*Gas Giants consist of multiple layers. The outer layer can easily be harvested just by ships equipped with a modified vacuum cleaner, whereas the middle layer can still be harvested by ships but at less efficiency. Speed is the key here, as only a couple ships can interact with the same planet simultaneously - forming a visible queue in case there are too many ships waiting. Reaching the lower layers requires some construction work. Through these, players can unlock almost infinite yields of the dense gases down there... as long as they invest the necessary resources to extract them.*
 
 As with everything in this folder, this is just a collection of ideas to pick from when actually designing the economy.
 
