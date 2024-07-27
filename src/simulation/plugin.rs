@@ -1,4 +1,5 @@
 use crate::constants;
+use crate::simulation::precomputed_orbit_directions::PrecomputedOrbitDirections;
 use crate::simulation::*;
 use crate::states::{ApplicationState, SimulationState};
 use bevy::prelude::{
@@ -10,6 +11,7 @@ use bevy::time::Fixed;
 pub struct SimulationPlugin;
 impl Plugin for SimulationPlugin {
     fn build(&self, app: &mut App) {
+        app.init_resource::<PrecomputedOrbitDirections>();
         app.insert_resource(Time::<Fixed>::from_hz(constants::TICKS_PER_SECOND));
         app.add_plugins((
             asteroids::AsteroidPlugin,

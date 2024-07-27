@@ -127,7 +127,6 @@ mod tests {
             ships: world
                 .remove_resource::<SaveDataCollection<ShipSaveData>>()
                 .unwrap(),
-            planets: todo!(),
         };
 
         assert_eq!(

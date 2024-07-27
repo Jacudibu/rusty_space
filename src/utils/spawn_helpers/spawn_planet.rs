@@ -1,5 +1,6 @@
 use crate::components::{ConstantOrbit, Planet, SelectableEntity};
 use crate::persistence::{PlanetIdMap, SectorPlanetSaveData};
+use crate::simulation::precomputed_orbit_directions::PrecomputedOrbitDirections;
 use crate::simulation::ship_ai::AutoTradeBehavior;
 use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::utils::spawn_helpers::helpers;
@@ -19,11 +20,14 @@ pub fn spawn_planet(
     sector_pos: Vec2,
     sector_entity: SectorEntity,
     orbit_mass: Option<SolarMass>,
+    orbit_directions: &PrecomputedOrbitDirections,
 ) {
     let planet = Planet::new(planet_data.id, planet_data.mass);
 
-    // TODO: use the stuff in physics to calculate the initial position here
-    let local_position = Vec2::ZERO;
+    let local_position = orbit_directions.orbit_position_at(
+        planet_data.orbit.radius,
+        planet_data.orbit.current_rotational_fraction,
+    );
 
     let velocity = if let Some(orbit_mass) = orbit_mass {
         helpers::calculate_orbit_velocity(planet_data.orbit.radius, orbit_mass)

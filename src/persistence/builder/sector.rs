@@ -5,6 +5,7 @@ use crate::persistence::{
     SectorStarSaveData,
 };
 use crate::simulation::asteroids::SectorWasSpawnedEvent;
+use crate::simulation::precomputed_orbit_directions::PrecomputedOrbitDirections;
 use crate::utils::{spawn_helpers, SectorEntity};
 use crate::SpriteHandles;
 use bevy::ecs::system::SystemParam;
@@ -16,6 +17,7 @@ pub struct Args<'w, 's> {
     commands: Commands<'w, 's>,
     sprites: Res<'w, SpriteHandles>,
     map_layout: Res<'w, MapLayout>,
+    orbit_directions: Res<'w, PrecomputedOrbitDirections>,
     sector_spawn_event: EventWriter<'w, SectorWasSpawnedEvent>,
 }
 
@@ -57,6 +59,7 @@ impl SectorSaveData {
             &mut args.sector_spawn_event,
             &args.sprites,
             planet_id_map,
+            &args.orbit_directions,
         )
     }
 

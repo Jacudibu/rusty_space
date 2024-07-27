@@ -7,11 +7,11 @@ const AMOUNT: usize = 360;
 
 /// Contains [`AMOUNT`] precomputed values pointing at the outline of a uniform sphere, allowing us to skip computing these values multiple times per frame.
 #[derive(Resource)]
-pub struct OrbitDirections {
+pub struct PrecomputedOrbitDirections {
     directions: [Dir2; AMOUNT],
 }
 
-impl Default for OrbitDirections {
+impl Default for PrecomputedOrbitDirections {
     fn default() -> Self {
         let mut result = Self {
             directions: [Dir2::Y; AMOUNT],
@@ -30,7 +30,7 @@ impl Default for OrbitDirections {
     }
 }
 
-impl OrbitDirections {
+impl PrecomputedOrbitDirections {
     pub fn orbit_position_at(&self, orbit_radius: f32, fraction: f32) -> Vec2 {
         let index = (fraction * AMOUNT as f32) as usize % AMOUNT;
         let t = fraction * AMOUNT as f32 - index as f32;
