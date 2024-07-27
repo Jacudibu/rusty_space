@@ -16,6 +16,7 @@ mod test_helpers {
     use crate::map_layout::MapLayout;
     use crate::persistence::data::v1::UniverseSaveData;
     use crate::simulation::asteroids::SectorWasSpawnedEvent;
+    use crate::simulation::precomputed_orbit_directions::PrecomputedOrbitDirections;
     use crate::SpriteHandles;
     use bevy::prelude::*;
 
@@ -24,6 +25,7 @@ mod test_helpers {
             let mut app = App::new();
             app.init_resource::<MapLayout>();
             app.init_resource::<SpriteHandles>();
+            app.init_resource::<PrecomputedOrbitDirections>();
             app.add_event::<SectorWasSpawnedEvent>();
             app.insert_resource(GameData::mock_data());
             app.insert_resource(self.sectors);

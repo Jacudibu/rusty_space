@@ -1,5 +1,4 @@
 pub mod constant_velocity;
-mod orbit_directions;
 mod orbit_system;
 mod overlap;
 mod plugin;

@@ -3,6 +3,7 @@ use crate::components::{
 };
 use crate::persistence::{PlanetIdMap, SectorFeatureSaveData};
 use crate::simulation::asteroids::SectorWasSpawnedEvent;
+use crate::simulation::precomputed_orbit_directions::PrecomputedOrbitDirections;
 use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::utils::spawn_helpers::spawn_planet::spawn_planet;
 use crate::utils::{SectorEntity, StarEntity};
@@ -20,6 +21,7 @@ pub fn spawn_sector(
     sector_spawn_event: &mut EventWriter<SectorWasSpawnedEvent>,
     sprites: &SpriteHandles,
     planet_id_map: &mut PlanetIdMap,
+    orbit_directions: &PrecomputedOrbitDirections,
 ) -> SectorEntity {
     let position = layout.hex_to_world_pos(coordinate);
 
@@ -85,6 +87,7 @@ pub fn spawn_sector(
                 position,
                 sector,
                 gravitation_well_mass,
+                orbit_directions,
             );
         }
 
