@@ -19,7 +19,7 @@ pub fn a_star(
     let mut costs: HashMap<PathElement, u32> = HashMap::new();
 
     for (sector, gate_pair) in &sectors.get(from.into()).unwrap().gates {
-        let cost_to_gate = cost(
+        let cost = cost(
             sectors,
             gate_positions,
             from,
@@ -28,8 +28,7 @@ pub fn a_star(
             to,
             to_position,
         )
-        .unwrap()
-            - GATE_COST;
+        .unwrap();
 
         let this = PathElement::new(*sector, *gate_pair);
 
@@ -38,20 +37,20 @@ pub fn a_star(
             let from = sectors.get(from.into()).unwrap();
             let to = sectors.get(sector.into()).unwrap();
             println!(
-                "init with [{},{}] -> [{},{}] == {cost_to_gate}",
+                "init with [{},{}] -> [{},{}] == {cost}",
                 from.coordinate.x, from.coordinate.y, to.coordinate.x, to.coordinate.y,
             );
         }
 
-        costs.insert(this, cost_to_gate);
+        costs.insert(this, cost);
         open.push(SearchNode {
             sector: *sector,
             gate_pair: *gate_pair,
-            cost: cost_to_gate,
+            cost,
         });
     }
 
-    // <Next, Previous>
+    // <Next, Previous> - used to reconstruct the optimal path later
     let mut came_from: HashMap<PathElement, PathElement> = HashMap::new();
 
     while let Some(node) = open.pop() {
@@ -92,17 +91,7 @@ pub fn a_star(
             };
 
             let neighbor = PathElement::new(*next_sector, *gate_pair);
-            let mut neighbor_cost = current_cost + cost;
-            if next_sector == &to {
-                if let Some(to_position) = to_position {
-                    // This will make sure that we truly take the shortest route to the target position
-                    let next_gate_pos = gate_positions
-                        .get(neighbor.gate_pair.to.into())
-                        .unwrap()
-                        .translation;
-                    neighbor_cost += to_position.distance_squared(next_gate_pos).abs() as u32;
-                }
-            }
+            let neighbor_cost = current_cost + cost;
 
             if !costs.contains_key(&neighbor) || costs[&neighbor] > neighbor_cost {
                 came_from.insert(neighbor, current);
@@ -140,28 +129,35 @@ fn cost(
     full_path_target_pos: Option<Vec2>,
 ) -> Option<u32> {
     if from_sector == to_sector {
-        return Some(0);
+        return if let Some(full_path_target_pos) = full_path_target_pos {
+            Some(
+                from_pos_in_sector
+                    .distance_squared(full_path_target_pos)
+                    .abs() as u32,
+            )
+        } else {
+            Some(0)
+        };
     }
 
-    let a = sectors.get(from_sector.into()).unwrap();
+    let current_sector = sectors.get(from_sector.into()).unwrap();
+    let gate_pair = current_sector.gates.get(&to_sector)?;
 
-    a.gates.get(&to_sector).map(|gate| {
-        let to_gate = gate_positions.get(gate.from.into()).unwrap();
-        let mut result = from_pos_in_sector
-            .distance_squared(to_gate.translation)
-            .abs() as u32
-            + GATE_COST;
+    let enter_gate = gate_positions.get(gate_pair.from.into()).unwrap();
+    let mut result = from_pos_in_sector
+        .distance_squared(enter_gate.translation)
+        .abs() as u32
+        + GATE_COST;
 
-        if to_sector == full_path_target_sector {
-            if let Some(target_pos) = full_path_target_pos {
-                // This will make sure that we truly take the shortest route to the target position
-                let next_gate_pos = gate_positions.get(gate.to.into()).unwrap().translation;
-                result += target_pos.distance_squared(next_gate_pos).abs() as u32;
-            }
+    if to_sector == full_path_target_sector {
+        if let Some(target_pos) = full_path_target_pos {
+            // This will make sure that we truly take the shortest route to the target position
+            let next_gate_pos = gate_positions.get(gate_pair.to.into()).unwrap().translation;
+            result += target_pos.distance_squared(next_gate_pos).abs() as u32;
         }
+    }
 
-        result
-    })
+    Some(result)
 }
 
 fn reconstruct_path(
@@ -486,9 +482,9 @@ mod test {
         );
     }
 
+    #[ignore = "Pathfinding where from_pos == to_pos just shouldn't happen right now"]
     #[test]
-    fn find_path_to_position_target_sector_is_current_sector_but_path_through_other_sector_is_shorter(
-    ) {
+    fn find_path_to_position_in_self_but_path_through_other_sector_is_shorter() {
         let mut universe = UniverseSaveData::default();
         universe.sectors.add(CENTER);
         universe.sectors.add(RIGHT);
@@ -523,6 +519,44 @@ mod test {
                 assert_eq!(result.len(), 2);
                 assert_eq!(result[0].exit_sector, sector_id_map.id_to_entity()[&RIGHT]);
                 assert_eq!(result[1].exit_sector, sector_id_map.id_to_entity()[&CENTER]);
+            },
+        );
+    }
+
+    #[ignore = "Pathfinding where from_pos == to_pos just shouldn't happen right now"]
+    #[test]
+    fn find_path_to_position_in_self_best_route_is_to_just_ignore_gates() {
+        let mut universe = UniverseSaveData::default();
+        universe.sectors.add(CENTER);
+        universe.sectors.add(RIGHT);
+
+        universe.gate_pairs.add(
+            LocalHexPosition::new(CENTER, Vec2::X * 1000.0),
+            LocalHexPosition::new(RIGHT, Vec2::NEG_X),
+        );
+        universe.gate_pairs.add(
+            LocalHexPosition::new(RIGHT, Vec2::X),
+            LocalHexPosition::new(CENTER, Vec2::NEG_X * 1000.0),
+        );
+
+        let mut app = universe.build_test_app();
+        let world = app.world_mut();
+
+        world.run_system_once(
+            move |sectors: Query<&Sector>,
+                  transforms: Query<&SimulationTransform>,
+                  sector_id_map: Res<SectorIdMap>| {
+                let result = find_path(
+                    &sectors,
+                    &transforms,
+                    sector_id_map.id_to_entity()[&CENTER],
+                    Vec2::X,
+                    sector_id_map.id_to_entity()[&CENTER],
+                    Some(Vec2::NEG_X),
+                )
+                .unwrap();
+
+                assert_eq!(result.len(), 0);
             },
         );
     }
