@@ -17,6 +17,14 @@ pub fn find_path(
     from: SectorEntity,
     from_position: Vec2,
     to: SectorEntity,
+    to_position: Option<Vec2>,
 ) -> Option<Vec<PathElement>> {
-    a_star::a_star(sectors, gate_positions, from, from_position, to)
+    a_star::a_star(
+        sectors,
+        gate_positions,
+        from,
+        from_position,
+        to,
+        to_position,
+    )
 }

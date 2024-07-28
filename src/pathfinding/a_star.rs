@@ -13,14 +13,36 @@ pub fn a_star(
     from: SectorEntity,
     from_position: Vec2,
     to: SectorEntity,
+    to_position: Option<Vec2>,
 ) -> Option<Vec<PathElement>> {
     let mut open = BinaryHeap::new();
     let mut costs: HashMap<PathElement, u32> = HashMap::new();
 
     for (sector, gate_pair) in &sectors.get(from.into()).unwrap().gates {
-        let cost_to_gate =
-            cost(sectors, gate_positions, from, from_position, *sector).unwrap() - GATE_COST;
+        let cost_to_gate = cost(
+            sectors,
+            gate_positions,
+            from,
+            from_position,
+            *sector,
+            to,
+            to_position,
+        )
+        .unwrap()
+            - GATE_COST;
+
         let this = PathElement::new(*sector, *gate_pair);
+
+        #[cfg(test)]
+        {
+            let from = sectors.get(from.into()).unwrap();
+            let to = sectors.get(sector.into()).unwrap();
+            println!(
+                "init with [{},{}] -> [{},{}] == {cost_to_gate}",
+                from.coordinate.x, from.coordinate.y, to.coordinate.x, to.coordinate.y,
+            );
+        }
+
         costs.insert(this, cost_to_gate);
         open.push(SearchNode {
             sector: *sector,
@@ -33,31 +55,69 @@ pub fn a_star(
     let mut came_from: HashMap<PathElement, PathElement> = HashMap::new();
 
     while let Some(node) = open.pop() {
+        #[cfg(test)]
+        {
+            let from = sectors.get(node.sector.into()).unwrap();
+            println!("Now in [{},{}]", from.coordinate.x, from.coordinate.y)
+        }
+
         if node.sector == to {
-            // TODO: multiple paths may lead to the same goal, and this might not be the best yet,
-            //       especially if we want to move to a position further away from the gate -
-            //       continue until all nodes have a bigger cost than the current best + distance to target_position
+            #[cfg(test)]
+            {
+                println!("In target sector. Total Cost: {}", node.cost);
+            }
+
             return Some(reconstruct_path(&came_from, node));
         }
 
         let current = PathElement::new(node.sector, node.gate_pair);
         let current_cost = costs[&current];
-        for (sector, gate_pair) in &sectors.get(node.sector.into()).unwrap().gates {
+        for (next_sector, gate_pair) in &sectors.get(node.sector.into()).unwrap().gates {
             let gate_pos = gate_positions
                 .get(node.gate_pair.to.into())
                 .unwrap()
                 .translation;
 
-            let Some(cost) = cost(sectors, gate_positions, node.sector, gate_pos, *sector) else {
+            let Some(cost) = cost(
+                sectors,
+                gate_positions,
+                node.sector,
+                gate_pos,
+                *next_sector,
+                to,
+                to_position,
+            ) else {
                 // Technically this never happens... yet. Maybe once we have initial sector fog of war, though.
                 continue;
             };
 
-            let neighbor = PathElement::new(*sector, *gate_pair);
-            let neighbor_cost = current_cost + cost;
+            let neighbor = PathElement::new(*next_sector, *gate_pair);
+            let mut neighbor_cost = current_cost + cost;
+            if next_sector == &to {
+                if let Some(to_position) = to_position {
+                    // This will make sure that we truly take the shortest route to the target position
+                    let next_gate_pos = gate_positions
+                        .get(neighbor.gate_pair.to.into())
+                        .unwrap()
+                        .translation;
+                    neighbor_cost += to_position.distance_squared(next_gate_pos).abs() as u32;
+                }
+            }
+
             if !costs.contains_key(&neighbor) || costs[&neighbor] > neighbor_cost {
                 came_from.insert(neighbor, current);
                 costs.insert(neighbor, neighbor_cost);
+
+                #[cfg(test)]
+                {
+                    let from = sectors.get(node.sector.into()).unwrap();
+                    let to = sectors.get(next_sector.into()).unwrap();
+                    println!(
+                        "[{},{}] -> [{},{}] == {neighbor_cost}",
+                        from.coordinate.x, from.coordinate.y, to.coordinate.x, to.coordinate.y,
+                    );
+                }
+
                 open.push(SearchNode {
                     sector: neighbor.exit_sector,
                     gate_pair: neighbor.gate_pair,
@@ -75,20 +135,32 @@ fn cost(
     gate_positions: &Query<&SimulationTransform>,
     from_sector: SectorEntity,
     from_pos_in_sector: Vec2,
-    to: SectorEntity,
+    to_sector: SectorEntity,
+    full_path_target_sector: SectorEntity,
+    full_path_target_pos: Option<Vec2>,
 ) -> Option<u32> {
-    if from_sector == to {
+    if from_sector == to_sector {
         return Some(0);
     }
 
     let a = sectors.get(from_sector.into()).unwrap();
 
-    a.gates.get(&to).map(|gate| {
+    a.gates.get(&to_sector).map(|gate| {
         let to_gate = gate_positions.get(gate.from.into()).unwrap();
-        from_pos_in_sector
+        let mut result = from_pos_in_sector
             .distance_squared(to_gate.translation)
             .abs() as u32
-            + GATE_COST
+            + GATE_COST;
+
+        if to_sector == full_path_target_sector {
+            if let Some(target_pos) = full_path_target_pos {
+                // This will make sure that we truly take the shortest route to the target position
+                let next_gate_pos = gate_positions.get(gate.to.into()).unwrap().translation;
+                result += target_pos.distance_squared(next_gate_pos).abs() as u32;
+            }
+        }
+
+        result
     })
 }
 
@@ -150,6 +222,7 @@ mod test {
                     sector_id_map.id_to_entity()[&CENTER],
                     Vec2::ZERO,
                     sector_id_map.id_to_entity()[&RIGHT],
+                    None,
                 )
                 .unwrap();
 
@@ -187,6 +260,7 @@ mod test {
                     sector_id_map.id_to_entity()[&LEFT],
                     Vec2::ZERO,
                     sector_id_map.id_to_entity()[&RIGHT],
+                    None,
                 )
                 .unwrap();
 
@@ -235,6 +309,7 @@ mod test {
                     sector_id_map.id_to_entity()[&LEFT2],
                     Vec2::ZERO,
                     sector_id_map.id_to_entity()[&RIGHT2],
+                    None,
                 )
                 .unwrap();
 
@@ -294,12 +369,15 @@ mod test {
             |sectors: Query<&Sector>,
              transforms: Query<&SimulationTransform>,
              sector_id_map: Res<SectorIdMap>| {
+                let from = sector_id_map.id_to_entity()[&LEFT2];
+                let from_pos = sectors.get(from.into()).unwrap();
                 let result = find_path(
                     &sectors,
                     &transforms,
-                    sector_id_map.id_to_entity()[&LEFT2],
-                    Vec2::ZERO,
+                    from,
+                    from_pos.world_pos,
                     sector_id_map.id_to_entity()[&RIGHT2],
+                    None,
                 )
                 .unwrap();
 
@@ -308,6 +386,143 @@ mod test {
                 assert_eq!(result[1].exit_sector, sector_id_map.id_to_entity()[&CENTER]);
                 assert_eq!(result[2].exit_sector, sector_id_map.id_to_entity()[&RIGHT]);
                 assert_eq!(result[3].exit_sector, sector_id_map.id_to_entity()[&RIGHT2]);
+            },
+        );
+    }
+
+    #[test]
+    fn find_path_to_position_in_direct_neighbor_but_a_more_efficient_path_through_other_sector() {
+        let mut universe = UniverseSaveData::default();
+        universe.sectors.add(LEFT);
+        universe.sectors.add(CENTER);
+        universe.sectors.add(RIGHT);
+        universe.gate_pairs.add(
+            LocalHexPosition::new(LEFT, Vec2::X),
+            LocalHexPosition::new(CENTER, Vec2::NEG_X),
+        );
+        universe.gate_pairs.add(
+            LocalHexPosition::new(CENTER, Vec2::X),
+            LocalHexPosition::new(RIGHT, Vec2::NEG_X),
+        );
+        universe.gate_pairs.add(
+            LocalHexPosition::new(LEFT, Vec2::ZERO), // Right next to our starting position
+            LocalHexPosition::new(RIGHT, Vec2::X * -20000.0), // But SO far away afterwards~
+        );
+
+        let mut app = universe.build_test_app();
+        let world = app.world_mut();
+
+        world.run_system_once(
+            move |sectors: Query<&Sector>,
+                  transforms: Query<&SimulationTransform>,
+                  sector_id_map: Res<SectorIdMap>| {
+                let from = sector_id_map.id_to_entity()[&LEFT];
+                let from_pos = sectors.get(from.into()).unwrap();
+                let result = find_path(
+                    &sectors,
+                    &transforms,
+                    from,
+                    from_pos.world_pos,
+                    sector_id_map.id_to_entity()[&RIGHT],
+                    Some(Vec2::ZERO),
+                )
+                .unwrap();
+
+                assert_eq!(result.len(), 2);
+                assert_eq!(result[0].exit_sector, sector_id_map.id_to_entity()[&CENTER]);
+                assert_eq!(result[1].exit_sector, sector_id_map.id_to_entity()[&RIGHT]);
+            },
+        );
+    }
+
+    #[test]
+    fn find_path_to_position_with_multiple_gates_to_target_sector() {
+        let mut universe = UniverseSaveData::default();
+        universe.sectors.add(LEFT2);
+        universe.sectors.add(LEFT);
+        universe.sectors.add(CENTER);
+        universe.sectors.add(RIGHT);
+        universe.gate_pairs.add(
+            LocalHexPosition::new(LEFT2, Vec2::X),
+            LocalHexPosition::new(LEFT, Vec2::NEG_X),
+        );
+        universe.gate_pairs.add(
+            LocalHexPosition::new(LEFT, Vec2::X),
+            LocalHexPosition::new(CENTER, Vec2::NEG_X),
+        );
+        universe.gate_pairs.add(
+            LocalHexPosition::new(CENTER, Vec2::X),
+            LocalHexPosition::new(RIGHT, Vec2::NEG_X),
+        );
+        universe.gate_pairs.add(
+            LocalHexPosition::new(LEFT, Vec2::ZERO), // Easier to reach
+            LocalHexPosition::new(RIGHT, Vec2::X * 500.0), // But SO far away~
+        );
+
+        let mut app = universe.build_test_app();
+        let world = app.world_mut();
+
+        world.run_system_once(
+            move |sectors: Query<&Sector>,
+                  transforms: Query<&SimulationTransform>,
+                  sector_id_map: Res<SectorIdMap>| {
+                let from = sector_id_map.id_to_entity()[&LEFT2];
+                let from_pos = sectors.get(from.into()).unwrap();
+                let result = find_path(
+                    &sectors,
+                    &transforms,
+                    from,
+                    from_pos.world_pos,
+                    sector_id_map.id_to_entity()[&RIGHT],
+                    Some(Vec2::ZERO),
+                )
+                .unwrap();
+
+                assert_eq!(result.len(), 3);
+                assert_eq!(result[0].exit_sector, sector_id_map.id_to_entity()[&LEFT]);
+                assert_eq!(result[1].exit_sector, sector_id_map.id_to_entity()[&CENTER]);
+                assert_eq!(result[2].exit_sector, sector_id_map.id_to_entity()[&RIGHT]);
+            },
+        );
+    }
+
+    #[test]
+    fn find_path_to_position_target_sector_is_current_sector_but_path_through_other_sector_is_shorter(
+    ) {
+        let mut universe = UniverseSaveData::default();
+        universe.sectors.add(CENTER);
+        universe.sectors.add(RIGHT);
+
+        let from_pos = Vec2::X * 1000.0;
+        universe.gate_pairs.add(
+            LocalHexPosition::new(CENTER, from_pos),
+            LocalHexPosition::new(RIGHT, Vec2::NEG_X),
+        );
+        universe.gate_pairs.add(
+            LocalHexPosition::new(RIGHT, Vec2::X),
+            LocalHexPosition::new(CENTER, -from_pos), // Cheesy shortcut!
+        );
+
+        let mut app = universe.build_test_app();
+        let world = app.world_mut();
+
+        world.run_system_once(
+            move |sectors: Query<&Sector>,
+                  transforms: Query<&SimulationTransform>,
+                  sector_id_map: Res<SectorIdMap>| {
+                let result = find_path(
+                    &sectors,
+                    &transforms,
+                    sector_id_map.id_to_entity()[&CENTER],
+                    from_pos,
+                    sector_id_map.id_to_entity()[&CENTER],
+                    Some(-from_pos),
+                )
+                .unwrap();
+
+                assert_eq!(result.len(), 2);
+                assert_eq!(result[0].exit_sector, sector_id_map.id_to_entity()[&RIGHT]);
+                assert_eq!(result[1].exit_sector, sector_id_map.id_to_entity()[&CENTER]);
             },
         );
     }

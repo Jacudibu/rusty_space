@@ -132,6 +132,7 @@ impl TradePlan {
                 ship_sector.get(),
                 ship_pos,
                 self.seller_sector,
+                Some(all_transforms.get(self.seller.into()).unwrap().translation),
             )
             .unwrap();
 
@@ -163,6 +164,7 @@ impl TradePlan {
                 self.seller_sector,
                 seller_pos,
                 self.buyer_sector,
+                Some(all_transforms.get(self.buyer.into()).unwrap().translation),
             )
             .unwrap();
 

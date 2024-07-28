@@ -130,6 +130,7 @@ pub fn handle_idle_ships(
                             in_sector.sector,
                             all_transforms.get(ship_entity).unwrap().translation,
                             sector_id_map.id_to_entity()[&target_sector.coordinate],
+                            None,
                         )
                         .unwrap();
                         pathfinding::create_tasks_to_follow_path(&mut queue, path);

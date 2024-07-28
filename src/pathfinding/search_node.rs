@@ -26,12 +26,14 @@ impl PartialOrd for SearchNode {
 
 impl Ord for SearchNode {
     fn cmp(&self, other: &Self) -> Ordering {
-        self.cost.cmp(&other.cost).then_with(|| {
-            self.sector.cmp(&other.sector).then_with(|| {
-                self.gate_pair
+        // Since we use this in a binary heap, everything needs to be inverted
+        other.cost.cmp(&self.cost).then_with(|| {
+            other.sector.cmp(&self.sector).then_with(|| {
+                other
+                    .gate_pair
                     .from
-                    .cmp(&other.gate_pair.from)
-                    .then_with(|| self.gate_pair.to.cmp(&other.gate_pair.to))
+                    .cmp(&self.gate_pair.from)
+                    .then_with(|| other.gate_pair.to.cmp(&self.gate_pair.to))
             })
         })
     }
