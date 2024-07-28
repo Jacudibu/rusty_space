@@ -6,38 +6,15 @@ If my machine can handle that, I'd assume a potato can run 10% of that smoothly,
 
 # Improved Trading
 
-- ~~Add more Items~~
-- ~~Sell & Buy offers should be different components so we can iterate over them at the same time~~
-- ~~Ship AI decides which items to pick up and sell~~
-- ~~Stations reserve goods & storage space for incoming trades... phantom inventories!~~
-- ~~Dynamic Pricing~~
 - Individual inventory capacities for each item
 - Individual m³-storage consumption for each item
 - Automatically generate relevant buy & sell orders for stations, depending on existing station modules
 
 # Multiple Stations
 
-- ~~Add more Stations~~
-- ~~Stations can buy and sell only specific items~~
-- ~~Ship AI searches for the best deal~~
 - Ship AI can buy from one seller and plan ahead to sell to multiple buyers at once, within given range
   We iterate through all offers anyway, might just as well keep an array of the best offers and check if any of them are
   on route to the final candidate if there's still some storage capacity left.
-
-# Simple Debug UI
-
-- ~~Process mouse clicks~~
-- ~~Highlight selected objects~~
-- ~~Click on station, see storage.~~
-- ~~Click on ship, see storage and task information.~~
-- ~~List how many units of each individual type have been selected~~
-
-# Production
-
-- ~~Add item recipes~~
-- ~~Stations will process one or more ingredients to one or more new items~~
-- ~~Stations can have multiple production modules, with individual productions~~
-- ~~Shipyard Module will produce new ships~~
 
 # Less Debug Values
 
@@ -62,26 +39,15 @@ Modules:
 - Defense (later on)
 
 # Sectors
-
-Sectors keep track of the entities inside them, allowing for cheaper localized physics, trade and unit selection.
-
-- ~~Separate the map into hexagonal sectors which are connected through gates~~
-- ~~Ships can only travel between sectors by using gates~~
-- ~~Draw lines between gates~~
-- ~~Draw borders around sectors~~
-- ~~UI should display the name of the sector that's currently being hovered over~~
-
 ## Sector Resources
 
 Sectors have different resource distributions, requiring either trade or expansion to fix local scarcity and rising
 demands.
 
-- ~~Asteroids could randomly spawn at the sector edges and drift through them, until either getting harvested or leaving the sector again.~~
-- Density and yields depend on sector values. Wouldn't bother with station collisions, though extra protective measurements could be a nice excuse to make stations more expensive in these sectors.
+- Asteroid Density and yields depend on sector values. Wouldn't bother with station collisions, though extra protective measurements could be a nice excuse to make stations more expensive in these sectors.
 
 ## Planets
 
-- ~~Sectors with only one or two gates and otherwise low resources might have celestial bodies inside them, orbiting a Star or Black Hole at veeeery slow speeds.~~
 - Gas giants serve as a reliable source of certain raw resources
 - Some Production (mainly Energy Cell) may depend on available solar power in sector
 - Solid planets can be colonized by the sector owner for additional resources, but usually it should be both cheaper and more efficient to just harvest more asteroids rather than bothering with the extra costs from dealing with various atmospheres and gravitation. However, once the entire Universe is colonized and borders are well established in between factions and resources grow sparse, they might be a way to unlock additional resource production over time.
@@ -89,10 +55,9 @@ demands.
 
 # Task System Overhaul
 
-- ~~Every Ship has a behavior assigned to it, which serves as its AI decision maker.~~
 - See if beet might help implementing some of the more complex behaviors: https://github.com/mrchantey/beet
 - Main tasks are handed out by the ShipBehavior, and are then dynamically filled with subtasks to complete them.
-    - e.g. AutoTrade: Just add `Buy X` and `Sell x`, then do the pathfinding in a more concurrent system.
+    - e.g. AutoTrade: Just add `Buy X` and `Sell x`, then do the pathfinding in a more concurrent system once it becomes relevant.
 
 ### Examples
 
@@ -145,11 +110,9 @@ Attack Target
 
 # Persistence
 
-- ~~Refactor Universe generation to spawn stuff from predefined resources for the following steps~~
-- ~~Extract ECS stuff in a data object, from which it can be fully recreated~~
-- Saving current universe to file
-- Saving occurs in the background, without interrupting gameplay
-- Loading universe from file
+- Saving UniverseSaveData to file
+- Saving occurs in the background, without interrupting gameplay (similar to render extract phase)
+- Loading UniverseSaveData from file
 
 # Multiplayer
 
