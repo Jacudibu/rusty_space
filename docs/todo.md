@@ -71,15 +71,21 @@ Sectors keep track of the entities inside them, allowing for cheaper localized p
 - ~~Draw borders around sectors~~
 - ~~UI should display the name of the sector that's currently being hovered over~~
 
-# Sector Resources
+## Sector Resources
 
 Sectors have different resource distributions, requiring either trade or expansion to fix local scarcity and rising
 demands.
 
 - ~~Asteroids could randomly spawn at the sector edges and drift through them, until either getting harvested or leaving the sector again.~~
 - Density and yields depend on sector values. Wouldn't bother with station collisions, though extra protective measurements could be a nice excuse to make stations more expensive in these sectors.
-- Gas Clouds... no clue. Maybe having ships or stations suck up the atmosphere of a Gas Giant? But that would make
-  limiting hourly yields fairly hard or unlogical.
+
+## Planets
+
+- ~~Sectors with only one or two gates and otherwise low resources might have celestial bodies inside them, orbiting a Star or Black Hole at veeeery slow speeds.~~
+- Gas giants serve as a reliable source of certain raw resources
+- Some Production (mainly Energy Cell) may depend on available solar power in sector
+- Solid planets can be colonized by the sector owner for additional resources, but usually it should be both cheaper and more efficient to just harvest more asteroids rather than bothering with the extra costs from dealing with various atmospheres and gravitation. However, once the entire Universe is colonized and borders are well established in between factions and resources grow sparse, they might be a way to unlock additional resource production over time.
+
 
 # Task System Overhaul
 
@@ -140,6 +146,7 @@ Attack Target
 # Persistence
 
 - ~~Refactor Universe generation to spawn stuff from predefined resources for the following steps~~
+- ~~Extract ECS stuff in a data object, from which it can be fully recreated~~
 - Saving current universe to file
 - Saving occurs in the background, without interrupting gameplay
 - Loading universe from file
@@ -153,12 +160,6 @@ clients.
 Level 0: After Universe Creation, sync the map with all entities to connected clients
 Level 1: Synchronize Task creation (Bare minimum, limiting the big AI decision-making to the host.)
 Level 2: Synchronize Sector transitions (Should improve positional sync, but might not even be necessary, needs testing, could be optional since we can easily just turn the related event listener off)
-
-# Planets
-
-Sectors with only one or two gates and otherwise low resources might have celestial bodies inside them, orbiting a Star or Black Hole at veeeery slow speeds.
-Early on, gas giants serve as a reliable source of certain for intermediary goods, and energy cells can be produced with solar panels in a sector containing a star.
-Later solid planets could be colonized by the sector owner for additional resources, but usually it should be both cheaper and more efficient to just harvest more asteroids rather than bothering with the extra costs from dealing with various atmospheres and gravitation. However, once the entire Universe is colonized and borders are well established in between factions and resources grow sparse, they might be a way to unlock additional resource production over time.
 
 # Player Control
 
