@@ -179,12 +179,13 @@ fn reconstruct_path(
 #[cfg(test)]
 mod test {
     use crate::components::Sector;
-    use crate::pathfinding::find_path;
+    use crate::pathfinding::a_star::a_star;
+    use crate::pathfinding::PathElement;
     use crate::persistence::local_hex_position::LocalHexPosition;
     use crate::persistence::{SectorIdMap, UniverseSaveData};
     use crate::simulation::transform::simulation_transform::SimulationTransform;
     use bevy::ecs::system::RunSystemOnce;
-    use bevy::prelude::{Query, Res, Vec2};
+    use bevy::prelude::{Query, Res, Vec2, World};
     use hexx::Hex;
 
     const LEFT2: Hex = Hex::new(-2, 0);
@@ -194,6 +195,41 @@ mod test {
     const CENTER_RIGHT_TOP: Hex = Hex::new(1, 1);
     const RIGHT: Hex = Hex::new(1, 0);
     const RIGHT2: Hex = Hex::new(2, 0);
+
+    fn test_a_star<F>(
+        world: &mut World,
+        from_sector: Hex,
+        from_local_position: Vec2,
+        to_sector: Hex,
+        to_local_position: Option<Vec2>,
+        assertions: F,
+    ) where
+        F: Fn(Vec<PathElement>, &SectorIdMap) + Send + Sync + 'static,
+    {
+        world.run_system_once(
+            move |sectors: Query<&Sector>,
+                  transforms: Query<&SimulationTransform>,
+                  sector_id_map: Res<SectorIdMap>| {
+                let from_entity = sector_id_map.id_to_entity()[&from_sector];
+                let from = sectors.get(from_entity.into()).unwrap();
+
+                let to_entity = sector_id_map.id_to_entity()[&to_sector];
+                let to = sectors.get(to_entity.into()).unwrap();
+
+                let result = a_star(
+                    &sectors,
+                    &transforms,
+                    from_entity,
+                    from_local_position + from.world_pos,
+                    to_entity,
+                    to_local_position.map(|x| x + to.world_pos),
+                )
+                .unwrap();
+
+                assertions(result, &sector_id_map);
+            },
+        );
+    }
 
     #[test]
     fn find_path_to_neighbor() {
@@ -208,20 +244,13 @@ mod test {
         let mut app = universe.build_test_app();
         let world = app.world_mut();
 
-        world.run_system_once(
-            |sectors: Query<&Sector>,
-             transforms: Query<&SimulationTransform>,
-             sector_id_map: Res<SectorIdMap>| {
-                let result = find_path(
-                    &sectors,
-                    &transforms,
-                    sector_id_map.id_to_entity()[&CENTER],
-                    Vec2::ZERO,
-                    sector_id_map.id_to_entity()[&RIGHT],
-                    None,
-                )
-                .unwrap();
-
+        test_a_star(
+            world,
+            CENTER,
+            Vec2::ZERO,
+            RIGHT,
+            None,
+            |result, sector_id_map| {
                 assert_eq!(result.len(), 1);
                 assert_eq!(result[0].exit_sector, sector_id_map.id_to_entity()[&RIGHT]);
             },
@@ -246,20 +275,13 @@ mod test {
         let mut app = universe.build_test_app();
         let world = app.world_mut();
 
-        world.run_system_once(
-            |sectors: Query<&Sector>,
-             transforms: Query<&SimulationTransform>,
-             sector_id_map: Res<SectorIdMap>| {
-                let result = find_path(
-                    &sectors,
-                    &transforms,
-                    sector_id_map.id_to_entity()[&LEFT],
-                    Vec2::ZERO,
-                    sector_id_map.id_to_entity()[&RIGHT],
-                    None,
-                )
-                .unwrap();
-
+        test_a_star(
+            world,
+            LEFT,
+            Vec2::ZERO,
+            RIGHT,
+            None,
+            |result, sector_id_map| {
                 assert_eq!(result.len(), 2);
                 assert_eq!(result[0].exit_sector, sector_id_map.id_to_entity()[&CENTER]);
                 assert_eq!(result[1].exit_sector, sector_id_map.id_to_entity()[&RIGHT]);
@@ -295,20 +317,13 @@ mod test {
         let mut app = universe.build_test_app();
         let world = app.world_mut();
 
-        world.run_system_once(
-            |sectors: Query<&Sector>,
-             transforms: Query<&SimulationTransform>,
-             sector_id_map: Res<SectorIdMap>| {
-                let result = find_path(
-                    &sectors,
-                    &transforms,
-                    sector_id_map.id_to_entity()[&LEFT2],
-                    Vec2::ZERO,
-                    sector_id_map.id_to_entity()[&RIGHT2],
-                    None,
-                )
-                .unwrap();
-
+        test_a_star(
+            world,
+            LEFT2,
+            Vec2::ZERO,
+            RIGHT2,
+            None,
+            |result, sector_id_map| {
                 assert_eq!(result.len(), 4);
                 assert_eq!(result[0].exit_sector, sector_id_map.id_to_entity()[&LEFT]);
                 assert_eq!(result[1].exit_sector, sector_id_map.id_to_entity()[&CENTER]);
@@ -361,22 +376,13 @@ mod test {
         let mut app = universe.build_test_app();
         let world = app.world_mut();
 
-        world.run_system_once(
-            |sectors: Query<&Sector>,
-             transforms: Query<&SimulationTransform>,
-             sector_id_map: Res<SectorIdMap>| {
-                let from = sector_id_map.id_to_entity()[&LEFT2];
-                let from_pos = sectors.get(from.into()).unwrap();
-                let result = find_path(
-                    &sectors,
-                    &transforms,
-                    from,
-                    from_pos.world_pos,
-                    sector_id_map.id_to_entity()[&RIGHT2],
-                    None,
-                )
-                .unwrap();
-
+        test_a_star(
+            world,
+            LEFT2,
+            Vec2::ZERO,
+            RIGHT2,
+            None,
+            |result, sector_id_map| {
                 assert_eq!(result.len(), 4);
                 assert_eq!(result[0].exit_sector, sector_id_map.id_to_entity()[&LEFT]);
                 assert_eq!(result[1].exit_sector, sector_id_map.id_to_entity()[&CENTER]);
@@ -408,22 +414,13 @@ mod test {
         let mut app = universe.build_test_app();
         let world = app.world_mut();
 
-        world.run_system_once(
-            move |sectors: Query<&Sector>,
-                  transforms: Query<&SimulationTransform>,
-                  sector_id_map: Res<SectorIdMap>| {
-                let from = sector_id_map.id_to_entity()[&LEFT];
-                let from_pos = sectors.get(from.into()).unwrap();
-                let result = find_path(
-                    &sectors,
-                    &transforms,
-                    from,
-                    from_pos.world_pos,
-                    sector_id_map.id_to_entity()[&RIGHT],
-                    Some(Vec2::ZERO),
-                )
-                .unwrap();
-
+        test_a_star(
+            world,
+            LEFT,
+            Vec2::ZERO,
+            RIGHT,
+            Some(Vec2::ZERO),
+            |result, sector_id_map| {
                 assert_eq!(result.len(), 2);
                 assert_eq!(result[0].exit_sector, sector_id_map.id_to_entity()[&CENTER]);
                 assert_eq!(result[1].exit_sector, sector_id_map.id_to_entity()[&RIGHT]);
@@ -458,22 +455,13 @@ mod test {
         let mut app = universe.build_test_app();
         let world = app.world_mut();
 
-        world.run_system_once(
-            move |sectors: Query<&Sector>,
-                  transforms: Query<&SimulationTransform>,
-                  sector_id_map: Res<SectorIdMap>| {
-                let from = sector_id_map.id_to_entity()[&LEFT2];
-                let from_pos = sectors.get(from.into()).unwrap();
-                let result = find_path(
-                    &sectors,
-                    &transforms,
-                    from,
-                    from_pos.world_pos,
-                    sector_id_map.id_to_entity()[&RIGHT],
-                    Some(Vec2::ZERO),
-                )
-                .unwrap();
-
+        test_a_star(
+            world,
+            LEFT2,
+            Vec2::ZERO,
+            RIGHT,
+            Some(Vec2::ZERO),
+            |result, sector_id_map| {
                 assert_eq!(result.len(), 3);
                 assert_eq!(result[0].exit_sector, sector_id_map.id_to_entity()[&LEFT]);
                 assert_eq!(result[1].exit_sector, sector_id_map.id_to_entity()[&CENTER]);
@@ -502,20 +490,13 @@ mod test {
         let mut app = universe.build_test_app();
         let world = app.world_mut();
 
-        world.run_system_once(
-            move |sectors: Query<&Sector>,
-                  transforms: Query<&SimulationTransform>,
-                  sector_id_map: Res<SectorIdMap>| {
-                let result = find_path(
-                    &sectors,
-                    &transforms,
-                    sector_id_map.id_to_entity()[&CENTER],
-                    from_pos,
-                    sector_id_map.id_to_entity()[&CENTER],
-                    Some(-from_pos),
-                )
-                .unwrap();
-
+        test_a_star(
+            world,
+            CENTER,
+            from_pos,
+            CENTER,
+            Some(-from_pos),
+            |result, sector_id_map| {
                 assert_eq!(result.len(), 2);
                 assert_eq!(result[0].exit_sector, sector_id_map.id_to_entity()[&RIGHT]);
                 assert_eq!(result[1].exit_sector, sector_id_map.id_to_entity()[&CENTER]);
@@ -542,20 +523,14 @@ mod test {
         let mut app = universe.build_test_app();
         let world = app.world_mut();
 
-        world.run_system_once(
-            move |sectors: Query<&Sector>,
-                  transforms: Query<&SimulationTransform>,
-                  sector_id_map: Res<SectorIdMap>| {
-                let result = find_path(
-                    &sectors,
-                    &transforms,
-                    sector_id_map.id_to_entity()[&CENTER],
-                    Vec2::X,
-                    sector_id_map.id_to_entity()[&CENTER],
-                    Some(Vec2::NEG_X),
-                )
-                .unwrap();
-
+        test_a_star(
+            world,
+            CENTER,
+            Vec2::X,
+            CENTER,
+            Some(Vec2::NEG_X),
+            |result, sector_id_map| {
+                // TODO: Probably should return some kinda enum for None|Local|GatePath
                 assert_eq!(result.len(), 0);
             },
         );
