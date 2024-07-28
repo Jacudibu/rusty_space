@@ -1,4 +1,5 @@
 mod a_star;
+mod breadth_search;
 mod create_tasks_following_path;
 mod path_element;
 mod search_node;
