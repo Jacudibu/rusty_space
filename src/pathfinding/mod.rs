@@ -1,8 +1,8 @@
 mod a_star;
-mod breadth_search;
 mod create_tasks_following_path;
 mod path_element;
 mod search_node;
+mod surrounding_sector_search;
 
 use crate::components::Sector;
 use crate::utils::SectorEntity;
