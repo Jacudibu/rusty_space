@@ -114,28 +114,40 @@ pub fn handle_idle_ships(
                         }
                     } else {
                         behavior.next_idle_update = now.add_milliseconds(2000);
-                        // TODO: Properly search for nearest sector with resources
-                        let target_sector =
+
+                        let nearby_sectors_with_asteroids =
                             pathfinding::surrounding_sector_search::surrounding_sector_search(
                                 &all_sectors,
                                 in_sector.sector,
                                 u8::MAX, // TODO: Should be limited
                                 &all_sectors_with_asteroids,
                                 |_| true,
-                            )
-                            .first()
-                            // TODO: Handle the case that there aren't any
-                            .unwrap()
-                            .sector;
+                            );
 
-                        // TODO: Prioritize results based on their "health" (how many asteroids are still available)
+                        let Some(target_sector) =
+                            nearby_sectors_with_asteroids.iter().min_by_key(|item| {
+                                let asteroid_data =
+                                    all_sectors_with_asteroids.get(item.sector.into()).unwrap();
+
+                                let health = asteroid_data.remaining_percentage();
+
+                                if health > 0.4 {
+                                    item.distance as u16
+                                } else {
+                                    (item.distance * 10) as u16 * item.distance as u16
+                                        + ((1.0 - health.powi(2)) * 100.0) as u16
+                                }
+                            })
+                        else {
+                            return;
+                        };
 
                         let path = pathfinding::find_path(
                             &all_sectors,
                             &all_transforms,
                             in_sector.sector,
                             all_transforms.get(ship_entity).unwrap().translation,
-                            target_sector,
+                            target_sector.sector,
                             None,
                         )
                         .unwrap();

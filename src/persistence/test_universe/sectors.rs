@@ -42,7 +42,14 @@ pub fn create_test_data() -> SaveDataCollection<SectorSaveData> {
     sectors
         .add(coordinates::TOP_RIGHT)
         .with_asteroids(SectorAsteroidSaveData {
-            average_velocity: Vec2::splat(2.0),
+            average_velocity: Vec2::splat(1.5),
+            respawning_asteroids: Vec::new(),
+            live_asteroids: Vec::new(),
+        });
+    sectors
+        .add(coordinates::TOP_RIGHT_TOP_RIGHT)
+        .with_asteroids(SectorAsteroidSaveData {
+            average_velocity: Vec2::new(-0.5, -1.3),
             respawning_asteroids: Vec::new(),
             live_asteroids: Vec::new(),
         });

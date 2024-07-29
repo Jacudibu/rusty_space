@@ -21,6 +21,14 @@ impl SectorAsteroidComponent {
         }
     }
 
+    /// How "Healthy" the asteroid field of this sector is... as in how many of its asteroids are currently spawned, in Range [0,1].
+    pub fn remaining_percentage(&self) -> f32 {
+        let spawned = self.asteroids.len();
+        let despawned = self.asteroid_respawns.len();
+
+        spawned as f32 / (spawned + despawned) as f32
+    }
+
     /// Adds the given asteroid to this sector and inserts the [InSector] component to it.
     pub fn add_asteroid(
         &mut self,
