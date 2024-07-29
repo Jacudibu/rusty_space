@@ -32,11 +32,11 @@ pub fn surrounding_sector_search<TSearchFunction>(
     all_sectors: &Query<&Sector>,
     from: SectorEntity,
     max_range: u8,
-    sector_search_query: &Query<&SectorAsteroidComponent>, // TODO: Find a way to replace this with a generic search query + function
+    sector_search_query: &Query<(&Sector, &SectorAsteroidComponent)>, // TODO: Find a way to replace this with a generic search query + function
     search_fn: TSearchFunction,
 ) -> Vec<SearchResult>
 where
-    TSearchFunction: Fn(&SectorAsteroidComponent) -> bool,
+    TSearchFunction: Fn((&Sector, &SectorAsteroidComponent)) -> bool,
 {
     let mut visited = HashSet::default();
     let mut next = vec![&from];
@@ -86,7 +86,7 @@ mod test {
     const CENTER: Hex = Hex::new(0, 0);
     const RIGHT: Hex = Hex::new(1, 0);
 
-    fn has_asteroids(_asteroids: &SectorAsteroidComponent) -> bool {
+    fn has_asteroids(_: (&Sector, &SectorAsteroidComponent)) -> bool {
         true
     }
 
@@ -99,7 +99,7 @@ mod test {
         world.run_system_once(
             move |sectors: Query<&Sector>,
                   sector_id_map: Res<SectorIdMap>,
-                  search_query: Query<&SectorAsteroidComponent>| {
+                  search_query: Query<(&Sector, &SectorAsteroidComponent)>| {
                 let from_entity = sector_id_map.id_to_entity()[&from_sector];
 
                 let result = surrounding_sector_search(

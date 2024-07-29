@@ -2,7 +2,6 @@ use crate::components::{
     Asteroid, BuyOrders, InSector, Inventory, Sector, SectorAsteroidComponent,
 };
 use crate::pathfinding;
-use crate::persistence::SectorIdMap;
 use crate::simulation::prelude::{SimulationTime, SimulationTimestamp};
 use crate::simulation::ship_ai::ship_is_idle_filter::ShipIsIdleFilter;
 use crate::simulation::ship_ai::{TaskInsideQueue, TaskQueue};
@@ -46,7 +45,6 @@ pub fn handle_idle_ships(
     all_sectors: Query<&Sector>,
     mut all_asteroids: Query<&mut Asteroid>,
     all_transforms: Query<&SimulationTransform>,
-    sector_id_map: Res<SectorIdMap>,
 ) {
     let now = simulation_time.now();
 
@@ -117,19 +115,27 @@ pub fn handle_idle_ships(
                     } else {
                         behavior.next_idle_update = now.add_milliseconds(2000);
                         // TODO: Properly search for nearest sector with resources
-                        let (target_sector, _) = all_sectors_with_asteroids
-                            .iter()
-                            .find(|(_, _asteroids)| {
-                                // TODO: Filter for the required asteroid types instead of just grabbing the first. :>
-                                true
-                            })
-                            .unwrap();
+                        let target_sector =
+                            pathfinding::surrounding_sector_search::surrounding_sector_search(
+                                &all_sectors,
+                                in_sector.sector,
+                                u8::MAX, // TODO: Should be limited
+                                &all_sectors_with_asteroids,
+                                |(_, _)| true,
+                            )
+                            .first()
+                            // TODO: Handle the case that there aren't any
+                            .unwrap()
+                            .sector;
+
+                        // TODO: Prioritize results based on their "health" (how many asteroids are still available)
+
                         let path = pathfinding::find_path(
                             &all_sectors,
                             &all_transforms,
                             in_sector.sector,
                             all_transforms.get(ship_entity).unwrap().translation,
-                            sector_id_map.id_to_entity()[&target_sector.coordinate],
+                            target_sector,
                             None,
                         )
                         .unwrap();
