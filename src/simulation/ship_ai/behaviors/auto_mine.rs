@@ -41,7 +41,7 @@ pub fn handle_idle_ships(
     mut ships: Query<(Entity, &mut TaskQueue, &mut AutoMineBehavior, &InSector), ShipIsIdleFilter>,
     buy_orders: Query<(Entity, &mut BuyOrders, &InSector)>,
     mut inventories: Query<&mut Inventory>,
-    all_sectors_with_asteroids: Query<(&Sector, &SectorAsteroidComponent)>,
+    all_sectors_with_asteroids: Query<&SectorAsteroidComponent>,
     all_sectors: Query<&Sector>,
     mut all_asteroids: Query<&mut Asteroid>,
     all_transforms: Query<&SimulationTransform>,
@@ -69,7 +69,7 @@ pub fn handle_idle_ships(
 
             match behavior.state {
                 AutoMineState::Mining => {
-                    if let Ok((_, asteroid_component)) =
+                    if let Ok(asteroid_component) =
                         all_sectors_with_asteroids.get(in_sector.sector.into())
                     {
                         let ship_pos = all_transforms.get(ship_entity).unwrap().translation;
@@ -121,7 +121,7 @@ pub fn handle_idle_ships(
                                 in_sector.sector,
                                 u8::MAX, // TODO: Should be limited
                                 &all_sectors_with_asteroids,
-                                |(_, _)| true,
+                                |_| true,
                             )
                             .first()
                             // TODO: Handle the case that there aren't any

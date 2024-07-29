@@ -1,8 +1,10 @@
-use crate::components::{Sector, SectorAsteroidComponent};
+use crate::components::Sector;
 use crate::utils::SectorEntity;
+use bevy::ecs::query::{QueryData, ReadOnlyQueryData};
 use bevy::prelude::Query;
 use bevy::utils::HashSet;
 use std::cmp::Ordering;
+use std::ops::Not;
 
 #[derive(PartialEq, Eq)]
 pub struct SearchResult {
@@ -24,26 +26,27 @@ impl PartialOrd for SearchResult {
     }
 }
 
-/// Performs a breadth-first search on the sectors surrounding `from`.
+/// Performs a breadth-first search on the sectors surrounding `from`, reaching up to (and including) `max_range` sectors away.
 ///
 /// # Returns
-/// A Vec containing the [`SearchResult`]s which match the provided `search_fn`, ordered by their distance to `from`.
-pub fn surrounding_sector_search<TSearchFunction>(
+/// A Vec containing the [`SearchResult`]s matching the provided `search_fn`, ordered by their sector distance to `from`.
+pub fn surrounding_sector_search<'a, TSearchQueryData, TSearchFunction>(
     all_sectors: &Query<&Sector>,
     from: SectorEntity,
     max_range: u8,
-    sector_search_query: &Query<(&Sector, &SectorAsteroidComponent)>, // TODO: Find a way to replace this with a generic search query + function
+    sector_search_query: &'a Query<'a, '_, TSearchQueryData>,
     search_fn: TSearchFunction,
 ) -> Vec<SearchResult>
 where
-    TSearchFunction: Fn((&Sector, &SectorAsteroidComponent)) -> bool,
+    TSearchQueryData: QueryData + ReadOnlyQueryData,
+    TSearchFunction: Fn(TSearchQueryData::Item<'a>) -> bool,
 {
     let mut visited = HashSet::default();
     let mut next = vec![&from];
     let mut result = Vec::new();
 
     let mut current_depth = 0;
-    while current_depth <= max_range {
+    while current_depth <= max_range && next.is_empty().not() {
         let mut next_next = Vec::new();
         for sector_entity in next.into_iter() {
             visited.insert(sector_entity);
@@ -86,7 +89,7 @@ mod test {
     const CENTER: Hex = Hex::new(0, 0);
     const RIGHT: Hex = Hex::new(1, 0);
 
-    fn has_asteroids(_: (&Sector, &SectorAsteroidComponent)) -> bool {
+    fn has_asteroids(_: &SectorAsteroidComponent) -> bool {
         true
     }
 
@@ -99,7 +102,7 @@ mod test {
         world.run_system_once(
             move |sectors: Query<&Sector>,
                   sector_id_map: Res<SectorIdMap>,
-                  search_query: Query<(&Sector, &SectorAsteroidComponent)>| {
+                  search_query: Query<&SectorAsteroidComponent>| {
                 let from_entity = sector_id_map.id_to_entity()[&from_sector];
 
                 let result = surrounding_sector_search(
