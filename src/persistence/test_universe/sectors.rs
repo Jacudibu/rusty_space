@@ -1,3 +1,5 @@
+use crate::constants;
+use crate::map_layout::MapLayout;
 use crate::persistence::test_universe::coordinates;
 use crate::persistence::{
     ConstantOrbitSaveData, SaveDataCollection, SectorAsteroidSaveData, SectorPlanetSaveData,
@@ -7,6 +9,7 @@ use crate::utils::{EarthMass, SolarMass};
 use bevy::math::Vec2;
 
 pub fn create_test_data() -> SaveDataCollection<SectorSaveData> {
+    let map_layout = MapLayout::default();
     let mut sectors = SaveDataCollection::<SectorSaveData>::default();
     sectors.add(coordinates::CENTER);
     sectors
@@ -39,20 +42,26 @@ pub fn create_test_data() -> SaveDataCollection<SectorSaveData> {
             },
         ));
 
-    sectors
-        .add(coordinates::TOP_RIGHT)
-        .with_asteroids(SectorAsteroidSaveData {
-            average_velocity: Vec2::splat(1.5),
-            respawning_asteroids: Vec::new(),
-            live_asteroids: Vec::new(),
-        });
+    sectors.add(coordinates::TOP_RIGHT).with_asteroids(
+        SectorAsteroidSaveData::new()
+            .with_average_velocity(Vec2::splat(1.5))
+            .add_random_live_asteroids(
+                coordinates::TOP_RIGHT,
+                constants::ASTEROID_COUNT,
+                &map_layout,
+            ),
+    );
     sectors
         .add(coordinates::TOP_RIGHT_TOP_RIGHT)
-        .with_asteroids(SectorAsteroidSaveData {
-            average_velocity: Vec2::new(-0.5, -1.3),
-            respawning_asteroids: Vec::new(),
-            live_asteroids: Vec::new(),
-        });
+        .with_asteroids(
+            SectorAsteroidSaveData::new()
+                .with_average_velocity(Vec2::new(-0.5, -1.3))
+                .add_random_live_asteroids(
+                    coordinates::TOP_RIGHT_TOP_RIGHT,
+                    constants::ASTEROID_COUNT,
+                    &map_layout,
+                ),
+        );
     sectors.add(coordinates::BOTTOM_LEFT);
 
     sectors

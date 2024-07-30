@@ -1,7 +1,6 @@
 use crate::simulation::asteroids::despawning::AsteroidWasFullyMinedEvent;
 use crate::simulation::asteroids::fading::{FadingAsteroidsIn, FadingAsteroidsOut};
-use crate::simulation::asteroids::SectorWasSpawnedEvent;
-use crate::simulation::asteroids::{despawning, fading, respawning, spawning};
+use crate::simulation::asteroids::{despawning, fading, respawning};
 use crate::states::SimulationState;
 use bevy::app::{App, Plugin};
 use bevy::prelude::{in_state, on_event, FixedUpdate, IntoSystemConfigs, Update};
@@ -20,15 +19,11 @@ impl Plugin for AsteroidPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<FadingAsteroidsOut>()
             .init_resource::<FadingAsteroidsIn>()
-            .add_event::<SectorWasSpawnedEvent>()
             .add_event::<AsteroidWasFullyMinedEvent>()
             .add_systems(
                 FixedUpdate,
                 (
-                    spawning::spawn_asteroids_for_new_sector
-                        .run_if(on_event::<SectorWasSpawnedEvent>()),
-                    despawning::make_asteroids_disappear_when_they_leave_sector
-                        .before(spawning::spawn_asteroids_for_new_sector),
+                    despawning::make_asteroids_disappear_when_they_leave_sector,
                     despawning::on_asteroid_was_fully_mined
                         .run_if(on_event::<AsteroidWasFullyMinedEvent>()),
                     respawning::respawn_asteroids,

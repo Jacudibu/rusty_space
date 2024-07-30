@@ -1,15 +1,14 @@
 use crate::components::{
     InSector, Sector, SectorAsteroidComponent, SectorStarComponent, SelectableEntity,
 };
-use crate::persistence::{PlanetIdMap, SectorFeatureSaveData};
-use crate::simulation::asteroids::SectorWasSpawnedEvent;
+use crate::persistence::{AsteroidIdMap, PlanetIdMap, SectorFeatureSaveData};
 use crate::simulation::precomputed_orbit_directions::PrecomputedOrbitDirections;
 use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::utils::spawn_helpers::spawn_planet::spawn_planet;
-use crate::utils::{SectorEntity, StarEntity};
+use crate::utils::{spawn_helpers, SectorEntity, StarEntity};
 use crate::{components, constants, SpriteHandles};
 use bevy::core::Name;
-use bevy::prelude::{Commands, EventWriter, Vec2};
+use bevy::prelude::{Commands, Vec2};
 use bevy::sprite::SpriteBundle;
 use hexx::{Hex, HexLayout};
 
@@ -18,8 +17,8 @@ pub fn spawn_sector(
     layout: &HexLayout,
     coordinate: Hex,
     features: &SectorFeatureSaveData, // Create a feature list if we ever want to spawn sectors from something else than save data, but for now that's enough
-    sector_spawn_event: &mut EventWriter<SectorWasSpawnedEvent>,
     sprites: &SpriteHandles,
+    asteroid_id_map: &mut AsteroidIdMap,
     planet_id_map: &mut PlanetIdMap,
     orbit_directions: &PrecomputedOrbitDirections,
 ) -> SectorEntity {
@@ -35,17 +34,37 @@ pub fn spawn_sector(
         simulation_transform,
     ));
 
+    let sector_entity = entity_commands.id();
+    let sector = SectorEntity::from(sector_entity);
+
     if let Some(asteroids) = &features.asteroids {
-        entity_commands.insert(SectorAsteroidComponent {
-            // TODO
+        let mut component = SectorAsteroidComponent {
             average_velocity: asteroids.average_velocity,
             asteroids: Default::default(),
             asteroid_respawns: Default::default(),
-        });
-    }
+        };
 
-    let sector_entity = entity_commands.id();
-    let sector = SectorEntity::from(sector_entity);
+        for x in &asteroids.live_asteroids {
+            spawn_helpers::spawn_asteroid(
+                commands,
+                asteroid_id_map,
+                sprites,
+                "Asteroid".to_string(),
+                x.position,
+                &mut component,
+                sector,
+                x.velocity,
+                x.ore_current,
+                x.ore_max,
+                x.rotation_degrees,
+                x.angular_velocity,
+                x.lifetime,
+                false,
+            );
+        }
+
+        commands.entity(sector_entity).insert(component);
+    }
 
     let mut gravitation_well_mass = None;
     if let Some(star) = &features.star {
@@ -94,6 +113,5 @@ pub fn spawn_sector(
         commands.entity(sector_entity).insert(component);
     }
 
-    sector_spawn_event.send(SectorWasSpawnedEvent { sector });
     sector
 }

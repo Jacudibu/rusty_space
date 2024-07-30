@@ -20,17 +20,19 @@ pub fn spawn_asteroid(
     asteroid_feature: &mut SectorAsteroidComponent,
     sector_entity: SectorEntity,
     velocity: Vec2,
-    ore_amount: u32,
+    ore_current: u32,
+    ore_max: u32,
     sprite_rotation: f32,
+    angular_velocity: f32,
     despawn_at: SimulationTimestamp,
     fading_in: bool,
 ) -> AsteroidEntity {
     let asteroid_id = PersistentAsteroidId::next();
-    let asteroid = Asteroid::new(asteroid_id, ore_amount, despawn_at);
+    let asteroid = Asteroid::new(asteroid_id, ore_current, ore_max, despawn_at);
 
     let simulation_transform = SimulationTransform::new(
         global_pos,
-        Rot2::radians(sprite_rotation * std::f32::consts::PI * 1000.0),
+        Rot2::radians(sprite_rotation),
         asteroid.scale_depending_on_current_ore_volume(),
     );
 
@@ -38,7 +40,7 @@ pub fn spawn_asteroid(
         .spawn((
             Name::new(name),
             SelectableEntity::Asteroid,
-            ConstantVelocity::new(velocity, sprite_rotation),
+            ConstantVelocity::new(velocity, angular_velocity),
             SpriteBundle {
                 texture: sprites.asteroid.clone(),
                 transform: simulation_transform.as_transform(constants::ASTEROID_LAYER),

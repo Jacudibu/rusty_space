@@ -20,11 +20,16 @@ impl ComponentWithPersistentId<Asteroid> for Asteroid {
 }
 
 impl Asteroid {
-    pub fn new(id: PersistentAsteroidId, ore: u32, despawn_timestamp: SimulationTimestamp) -> Self {
+    pub fn new(
+        id: PersistentAsteroidId,
+        ore: u32,
+        ore_max: u32,
+        despawn_timestamp: SimulationTimestamp,
+    ) -> Self {
         Self {
             id,
             ore,
-            ore_max: ore,
+            ore_max,
             remaining_after_reservations: ore,
             despawn_timestamp,
         }

@@ -1,16 +1,19 @@
 use crate::map_layout::MapLayout;
 use crate::persistence::data::v1::{SaveDataCollection, SectorAsteroidSaveData, SectorSaveData};
 use crate::persistence::{
-    AsteroidIdMap, PlanetIdMap, SectorFeatureSaveData, SectorIdMap, SectorPlanetSaveData,
-    SectorStarSaveData,
+    AsteroidIdMap, AsteroidSaveData, PersistentAsteroidId, PlanetIdMap, SectorFeatureSaveData,
+    SectorIdMap, SectorPlanetSaveData, SectorStarSaveData,
 };
-use crate::simulation::asteroids::SectorWasSpawnedEvent;
 use crate::simulation::precomputed_orbit_directions::PrecomputedOrbitDirections;
+use crate::simulation::time::SimulationTimestamp;
 use crate::utils::{spawn_helpers, SectorEntity};
-use crate::SpriteHandles;
+use crate::{constants, SpriteHandles};
 use bevy::ecs::system::SystemParam;
-use bevy::prelude::{Commands, EventWriter, Res, Vec2};
+use bevy::prelude::{Circle, Commands, Res, ShapeSample, Vec2};
 use hexx::Hex;
+use rand::distributions::Distribution;
+use rand::prelude::StdRng;
+use rand::{Rng, SeedableRng};
 
 #[derive(SystemParam)]
 pub struct Args<'w, 's> {
@@ -18,25 +21,24 @@ pub struct Args<'w, 's> {
     sprites: Res<'w, SpriteHandles>,
     map_layout: Res<'w, MapLayout>,
     orbit_directions: Res<'w, PrecomputedOrbitDirections>,
-    sector_spawn_event: EventWriter<'w, SectorWasSpawnedEvent>,
 }
 
 type SaveData = SaveDataCollection<SectorSaveData>;
 
 pub fn spawn_all(data: Res<SaveData>, mut args: Args) {
     let mut sector_id_map = SectorIdMap::new();
+    let mut asteroid_id_map = AsteroidIdMap::new();
     let mut planet_id_map = PlanetIdMap::new();
     for builder in &data.data {
         let coordinate = builder.coordinate;
-        let entity = builder.build(&mut args, &mut planet_id_map);
+        let entity = builder.build(&mut args, &mut asteroid_id_map, &mut planet_id_map);
         sector_id_map.insert(coordinate, entity);
     }
 
     args.commands.remove_resource::<SaveData>();
     args.commands.insert_resource(sector_id_map);
+    args.commands.insert_resource(asteroid_id_map);
     args.commands.insert_resource(planet_id_map);
-    let asteroid_map = AsteroidIdMap::new();
-    args.commands.insert_resource(asteroid_map);
 }
 
 impl SaveData {
@@ -50,14 +52,19 @@ impl SaveData {
 }
 
 impl SectorSaveData {
-    pub fn build(&self, args: &mut Args, planet_id_map: &mut PlanetIdMap) -> SectorEntity {
+    pub fn build(
+        &self,
+        args: &mut Args,
+        asteroid_id_map: &mut AsteroidIdMap,
+        planet_id_map: &mut PlanetIdMap,
+    ) -> SectorEntity {
         spawn_helpers::spawn_sector(
             &mut args.commands,
             &args.map_layout.hex_layout,
             self.coordinate,
             &self.features,
-            &mut args.sector_spawn_event,
             &args.sprites,
+            asteroid_id_map,
             planet_id_map,
             &args.orbit_directions,
         )
@@ -90,5 +97,54 @@ impl SectorAsteroidSaveData {
             live_asteroids: Vec::new(),
             respawning_asteroids: Vec::new(),
         }
+    }
+
+    pub fn with_average_velocity(mut self, velocity: Vec2) -> Self {
+        self.average_velocity = velocity;
+        self
+    }
+
+    pub fn add_random_live_asteroids(
+        mut self,
+        sector_hex: Hex,
+        amount: usize,
+        map_layout: &MapLayout,
+    ) -> Self {
+        let shape = Circle::new(constants::SECTOR_SIZE * 0.8);
+        let seed = (sector_hex.x * 100000 + sector_hex.y) as u64;
+        let position_rng = StdRng::seed_from_u64(seed);
+        let mut inner_rng = StdRng::seed_from_u64(seed);
+
+        let sector_pos = map_layout.hex_layout.hex_to_world_pos(sector_hex);
+
+        for local_position in shape.interior_dist().sample_iter(position_rng).take(amount) {
+            let velocity = Vec2::new(
+                self.average_velocity.x
+                    * inner_rng.gen_range(constants::ASTEROID_VELOCITY_RANDOM_RANGE),
+                self.average_velocity.y
+                    * inner_rng.gen_range(constants::ASTEROID_VELOCITY_RANDOM_RANGE),
+            );
+
+            let despawn_after = crate::simulation::asteroids::helpers::calculate_milliseconds_until_asteroid_leaves_hexagon(
+                map_layout.hex_edge_vertices,
+                local_position,
+                velocity,
+            );
+
+            let rotation = inner_rng.gen_range(constants::ASTEROID_ROTATION_RANDOM_RANGE);
+            let ore = inner_rng.gen_range(constants::ASTEROID_ORE_RANGE);
+            self.live_asteroids.push(AsteroidSaveData {
+                id: PersistentAsteroidId::next(),
+                position: local_position + sector_pos,
+                velocity,
+                rotation_degrees: rotation * std::f32::consts::PI * 1000.0,
+                angular_velocity: rotation,
+                ore_current: ore,
+                ore_max: ore,
+                lifetime: SimulationTimestamp::from(despawn_after),
+            });
+        }
+
+        self
     }
 }

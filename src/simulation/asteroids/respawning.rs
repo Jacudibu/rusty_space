@@ -45,6 +45,8 @@ pub fn respawn_asteroids(
                 sector_entity.into(),
                 next.velocity,
                 next.ore_max,
+                next.ore_max,
+                next.angular_velocity * std::f32::consts::PI * 1000.0,
                 next.angular_velocity,
                 next.timestamp + millis_until_asteroid_leaves_again,
                 true,
