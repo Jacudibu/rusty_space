@@ -20,7 +20,7 @@ A prime candidate for a **Carbon+Ammonia**-based life form. Bird-Raptor hybrids 
 
 - Consumables involve ammonia and plants, which can be harvested on Gas Giants and cultivated on ice planets or hydroponics.
 - Luxury goods revolve around electronic gadgets and augmentations, more complicated to produce than those of other races.
-- Ships and components are more expensive, especially at higher tiers. Heavy focus on quantity over quality.
+- Ships and components are more expensive, especially at higher tiers. Heavy focus on quality over quantity.
 
 *Avali are [`CC BY SA`](https://creativecommons.org/licenses/by-sa/4.0/) by RyuujinZERO*<br>
 There's an entire wiki on these curious critters: https://avali.fandom.com/wiki/The_Official_Avali_Wiki
