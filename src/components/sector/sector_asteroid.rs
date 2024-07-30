@@ -2,7 +2,7 @@ use crate::components::{Asteroid, InSector};
 use crate::constants;
 use crate::persistence::{ComponentWithPersistentId, PersistentAsteroidId};
 use crate::simulation::physics::ConstantVelocity;
-use crate::simulation::prelude::{SimulationTimestamp, SimulationTransform};
+use crate::simulation::prelude::SimulationTimestamp;
 use crate::utils::{AsteroidEntityWithTimestamp, SectorEntity};
 use bevy::math::Vec2;
 use bevy::prelude::{Commands, Component};

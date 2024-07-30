@@ -7,7 +7,7 @@ use crate::simulation::ship_ai::ship_is_idle_filter::ShipIsIdleFilter;
 use crate::simulation::ship_ai::{TaskInsideQueue, TaskQueue};
 use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::trade_plan::TradePlan;
-use crate::utils::{AsteroidEntityWithTimestamp, TradeIntent};
+use crate::utils::{AsteroidEntityWithTimestamp, SectorEntity, TradeIntent};
 use bevy::prelude::{error, Commands, Component, Entity, Query, Res, Vec2};
 use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
@@ -107,53 +107,34 @@ pub fn handle_idle_ships(
                             });
 
                             queue.apply(&mut commands, now, ship_entity);
-                        } else {
-                            behavior.next_idle_update = now.add_milliseconds(2000);
-                            // TODO: No asteroids found -> Sector has been fully mined.
-                            //       Either go somewhere else or just idle until a new one spawns.
-                        }
-                    } else {
-                        behavior.next_idle_update = now.add_milliseconds(2000);
-
-                        let nearby_sectors_with_asteroids =
-                            pathfinding::surrounding_sector_search::surrounding_sector_search(
-                                &all_sectors,
-                                in_sector.sector,
-                                u8::MAX, // TODO: Should be limited
-                                &all_sectors_with_asteroids,
-                                |_| true,
-                            );
-
-                        let Some(target_sector) =
-                            nearby_sectors_with_asteroids.iter().min_by_key(|item| {
-                                let asteroid_data =
-                                    all_sectors_with_asteroids.get(item.sector.into()).unwrap();
-
-                                let health = asteroid_data.remaining_percentage();
-
-                                if health > 0.4 {
-                                    item.distance as u16
-                                } else {
-                                    (item.distance * 10) as u16 * item.distance as u16
-                                        + ((1.0 - health.powi(2)) * 100.0) as u16
-                                }
-                            })
-                        else {
                             return;
-                        };
-
-                        let path = pathfinding::find_path(
-                            &all_sectors,
-                            &all_transforms,
-                            in_sector.sector,
-                            all_transforms.get(ship_entity).unwrap().translation,
-                            target_sector.sector,
-                            None,
-                        )
-                        .unwrap();
-                        pathfinding::create_tasks_to_follow_path(&mut queue, path);
-                        queue.apply(&mut commands, now, ship_entity);
+                        }
                     }
+
+                    // No asteroids available in current sector, go somewhere else!
+                    let target_sector = match find_nearby_sector_with_asteroids(
+                        &all_sectors_with_asteroids,
+                        &all_sectors,
+                        in_sector,
+                    ) {
+                        Some(value) => value,
+                        None => {
+                            behavior.next_idle_update = now.add_milliseconds(2000);
+                            return;
+                        }
+                    };
+
+                    let path = pathfinding::find_path(
+                        &all_sectors,
+                        &all_transforms,
+                        in_sector.sector,
+                        all_transforms.get(ship_entity).unwrap().translation,
+                        target_sector,
+                        None,
+                    )
+                    .unwrap();
+                    pathfinding::create_tasks_to_follow_path(&mut queue, path);
+                    queue.apply(&mut commands, now, ship_entity);
                 }
                 AutoMineState::Trading => {
                     let Some(plan) = TradePlan::sell_anything_from_inventory(
@@ -178,6 +159,37 @@ pub fn handle_idle_ships(
                 }
             }
         });
+}
+
+fn find_nearby_sector_with_asteroids(
+    all_sectors_with_asteroids: &Query<&SectorAsteroidComponent>,
+    all_sectors: &Query<&Sector>,
+    in_sector: &InSector,
+) -> Option<SectorEntity> {
+    let nearby_sectors_with_asteroids =
+        pathfinding::surrounding_sector_search::surrounding_sector_search(
+            all_sectors,
+            in_sector.sector,
+            1,
+            u8::MAX, // TODO: Should be limited
+            all_sectors_with_asteroids,
+            |_| true,
+        );
+
+    let target_sector = nearby_sectors_with_asteroids.iter().min_by_key(|item| {
+        let asteroid_data = all_sectors_with_asteroids.get(item.sector.into()).unwrap();
+
+        let health = asteroid_data.remaining_percentage();
+
+        if health > 0.4 {
+            item.distance as u16
+        } else {
+            (item.distance * 10) as u16 * item.distance as u16
+                + ((1.0 - health.powi(2)) * 100.0) as u16
+        }
+    })?;
+
+    Some(target_sector.sector)
 }
 
 fn compare_asteroid_distances(

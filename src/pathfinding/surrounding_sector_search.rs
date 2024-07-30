@@ -33,6 +33,7 @@ impl PartialOrd for SearchResult {
 pub fn surrounding_sector_search<'a, TSearchQueryData, TSearchFunction>(
     all_sectors: &Query<&Sector>,
     from: SectorEntity,
+    min_range: u8,
     max_range: u8,
     sector_search_query: &'a Query<'a, '_, TSearchQueryData>,
     search_fn: TSearchFunction,
@@ -52,12 +53,15 @@ where
             visited.insert(sector_entity);
 
             let sector = all_sectors.get(sector_entity.into()).unwrap();
-            if let Ok(search_components) = sector_search_query.get(sector_entity.into()) {
-                if search_fn(search_components) {
-                    result.push(SearchResult {
-                        distance: current_depth,
-                        sector: *sector_entity,
-                    });
+
+            if current_depth >= min_range {
+                if let Ok(search_components) = sector_search_query.get(sector_entity.into()) {
+                    if search_fn(search_components) {
+                        result.push(SearchResult {
+                            distance: current_depth,
+                            sector: *sector_entity,
+                        });
+                    }
                 }
             }
 
@@ -96,6 +100,7 @@ mod test {
     fn test_breadth_search(
         world: &mut World,
         from_sector: Hex,
+        min_range: u8,
         max_range: u8,
         expected_result: Vec<(u8, Hex)>,
     ) {
@@ -108,6 +113,7 @@ mod test {
                 let result = surrounding_sector_search(
                     &sectors,
                     from_entity,
+                    min_range,
                     max_range,
                     &search_query,
                     has_asteroids,
@@ -124,7 +130,7 @@ mod test {
     }
 
     #[test]
-    fn find_neighbor_with_asteroids() {
+    fn single_result_direct_neighbor() {
         let mut universe = UniverseSaveData::default();
         universe.sectors.add(LEFT);
         universe.sectors.add(CENTER);
@@ -149,11 +155,11 @@ mod test {
         let mut app = universe.build_test_app();
         let world = app.world_mut();
 
-        test_breadth_search(world, CENTER, 5, vec![(1, RIGHT)]);
+        test_breadth_search(world, CENTER, 0, 5, vec![(1, RIGHT)]);
     }
 
     #[test]
-    fn find_multiple_neighbor_with_asteroids() {
+    fn multiple_results() {
         let mut universe = UniverseSaveData::default();
         universe.sectors.add(LEFT);
         universe
@@ -186,11 +192,56 @@ mod test {
         let mut app = universe.build_test_app();
         let world = app.world_mut();
 
-        test_breadth_search(world, LEFT, 2, vec![(1, CENTER), (2, RIGHT)]);
+        test_breadth_search(world, LEFT, 0, 2, vec![(1, CENTER), (2, RIGHT)]);
     }
 
     #[test]
-    fn find_neighbor_with_asteroids_does_not_find_anything_outside_of_max_range() {
+    fn min_range() {
+        let mut universe = UniverseSaveData::default();
+        universe
+            .sectors
+            .add(LEFT)
+            .with_asteroids(SectorAsteroidSaveData {
+                // TODO: That probably also needs a builder
+                average_velocity: Vec2::ONE,
+                live_asteroids: Vec::new(),
+                respawning_asteroids: Vec::new(),
+            });
+        universe
+            .sectors
+            .add(CENTER)
+            .with_asteroids(SectorAsteroidSaveData {
+                // TODO: That probably also needs a builder
+                average_velocity: Vec2::ONE,
+                live_asteroids: Vec::new(),
+                respawning_asteroids: Vec::new(),
+            });
+        universe
+            .sectors
+            .add(RIGHT)
+            .with_asteroids(SectorAsteroidSaveData {
+                // TODO: That probably also needs a builder
+                average_velocity: Vec2::ONE,
+                live_asteroids: Vec::new(),
+                respawning_asteroids: Vec::new(),
+            });
+        universe.gate_pairs.add(
+            LocalHexPosition::new(LEFT, Vec2::X),
+            LocalHexPosition::new(CENTER, Vec2::NEG_X),
+        );
+        universe.gate_pairs.add(
+            LocalHexPosition::new(CENTER, Vec2::X),
+            LocalHexPosition::new(RIGHT, Vec2::NEG_X),
+        );
+
+        let mut app = universe.build_test_app();
+        let world = app.world_mut();
+
+        test_breadth_search(world, LEFT, 2, 2, vec![(2, RIGHT)]);
+    }
+
+    #[test]
+    fn max_range() {
         let mut universe = UniverseSaveData::default();
         universe.sectors.add(LEFT);
         universe.sectors.add(CENTER);
@@ -215,6 +266,6 @@ mod test {
         let mut app = universe.build_test_app();
         let world = app.world_mut();
 
-        test_breadth_search(world, LEFT, 1, vec![]);
+        test_breadth_search(world, LEFT, 0, 1, vec![]);
     }
 }

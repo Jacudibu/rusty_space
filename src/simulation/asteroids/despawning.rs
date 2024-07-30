@@ -3,7 +3,7 @@ use crate::components::{
 };
 use crate::map_layout::MapLayout;
 use crate::simulation::asteroids::fading::FadingAsteroidsOut;
-use crate::simulation::asteroids::{helpers, respawning};
+use crate::simulation::asteroids::respawning;
 use crate::simulation::physics::ConstantVelocity;
 use crate::simulation::prelude::{SimulationTime, SimulationTimestamp};
 use crate::simulation::transform::SimulationTransform;
@@ -29,8 +29,12 @@ pub fn on_asteroid_was_fully_mined(
     map_layout: Res<MapLayout>,
 ) {
     for event in events.read() {
-        let (asteroid_sector, asteroid, velocity, transform) =
-            asteroids.get(event.asteroid.into()).unwrap();
+        let Ok((asteroid_sector, asteroid, velocity, transform)) =
+            asteroids.get(event.asteroid.into())
+        else {
+            // This event is surprisingly late to the party!
+            continue;
+        };
 
         let (sector, mut asteroid_component) = sectors_with_asteroids
             .get_mut(asteroid_sector.sector.into())
@@ -42,7 +46,7 @@ pub fn on_asteroid_was_fully_mined(
             timestamp: event.despawn_timer,
         };
 
-        // Asteroid might have already started despawning naturally if it wasn't removed
+        // Asteroid might have already started despawning naturally if it wasn't removed...
         if asteroid_component.asteroids.remove(&asteroid_entity) {
             let local_respawn_position =
                 respawning::calculate_local_asteroid_respawn_position_asteroid_was_mined(

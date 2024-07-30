@@ -8,7 +8,7 @@ use crate::{constants, SpriteHandles};
 use bevy::color::Color;
 use bevy::core::Name;
 use bevy::math::Vec2;
-use bevy::prelude::{default, Commands, Rot2, Sprite, SpriteBundle};
+use bevy::prelude::{Commands, Rot2, Sprite, SpriteBundle};
 
 #[allow(clippy::too_many_arguments)]
 pub fn spawn_asteroid(

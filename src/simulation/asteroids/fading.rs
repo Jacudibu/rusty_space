@@ -1,9 +1,8 @@
 use crate::components::Asteroid;
-use crate::entity_selection::Selected;
 use crate::persistence::AsteroidIdMap;
 use crate::utils::AsteroidEntity;
 use bevy::color::Alpha;
-use bevy::prelude::{Commands, Query, Res, ResMut, Resource, Sprite, Time, Visibility, With};
+use bevy::prelude::{Commands, Query, Res, ResMut, Resource, Sprite, Time, With};
 use bevy::utils::HashSet;
 
 #[derive(Resource, Default)]
