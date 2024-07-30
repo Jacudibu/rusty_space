@@ -1,3 +1,4 @@
+use crate::simulation::asteroids;
 use crate::simulation::ship_ai::behaviors;
 use crate::simulation::ship_ai::task_finished_event::TaskFinishedEvent;
 use crate::simulation::ship_ai::tasks::{ExchangeWares, MineAsteroid, MoveToEntity, UseGate};
@@ -17,7 +18,7 @@ impl Plugin for ShipAiPlugin {
             FixedUpdate,
             (
                 behaviors::auto_trade::handle_idle_ships,
-                behaviors::auto_mine::handle_idle_ships,
+                behaviors::auto_mine::handle_idle_ships.before(asteroids::respawn_asteroids),
                 ExchangeWares::run_tasks,
                 ExchangeWares::complete_tasks.after(ExchangeWares::run_tasks).run_if(on_event::<TaskFinishedEvent<ExchangeWares>>()),
                 MoveToEntity::run_tasks,

@@ -19,11 +19,22 @@ pub struct AsteroidSaveData {
 }
 
 #[derive(Serialize, Deserialize)]
+#[cfg_attr(test, derive(Clone, Debug, PartialEq))]
+pub struct AsteroidRespawnSaveData {
+    pub id: PersistentAsteroidId,
+    pub ore_max: u32,
+    pub position: Vec2,
+    pub velocity: Vec2,
+    pub angular_velocity: f32,
+    pub timestamp: SimulationTimestamp,
+}
+
+#[derive(Serialize, Deserialize)]
 #[cfg_attr(test, derive(Debug, PartialEq, Clone))]
 pub struct SectorAsteroidSaveData {
     pub average_velocity: Vec2,
     pub live_asteroids: Vec<AsteroidSaveData>,
-    pub respawning_asteroids: Vec<AsteroidSaveData>,
+    pub respawning_asteroids: Vec<AsteroidRespawnSaveData>,
 }
 
 #[derive(Serialize, Deserialize)]

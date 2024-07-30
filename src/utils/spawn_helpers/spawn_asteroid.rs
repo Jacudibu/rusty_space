@@ -1,13 +1,14 @@
-use crate::components::{Asteroid, AsteroidState, SectorAsteroidComponent, SelectableEntity};
+use crate::components::{Asteroid, SectorAsteroidComponent, SelectableEntity};
 use crate::persistence::{AsteroidIdMap, PersistentAsteroidId};
 use crate::simulation::physics::ConstantVelocity;
 use crate::simulation::prelude::SimulationTimestamp;
 use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::utils::{AsteroidEntity, AsteroidEntityWithTimestamp, SectorEntity};
 use crate::{constants, SpriteHandles};
+use bevy::color::Color;
 use bevy::core::Name;
 use bevy::math::Vec2;
-use bevy::prelude::{default, Commands, Rot2, SpriteBundle};
+use bevy::prelude::{default, Commands, Rot2, Sprite, SpriteBundle};
 
 #[allow(clippy::too_many_arguments)]
 pub fn spawn_asteroid(
@@ -22,13 +23,10 @@ pub fn spawn_asteroid(
     ore_amount: u32,
     sprite_rotation: f32,
     despawn_at: SimulationTimestamp,
-) {
+    fading_in: bool,
+) -> AsteroidEntity {
     let asteroid_id = PersistentAsteroidId::next();
-    let asteroid = Asteroid::new(
-        asteroid_id,
-        ore_amount,
-        AsteroidState::Spawned { until: despawn_at },
-    );
+    let asteroid = Asteroid::new(asteroid_id, ore_amount, despawn_at);
 
     let simulation_transform = SimulationTransform::new(
         global_pos,
@@ -44,7 +42,11 @@ pub fn spawn_asteroid(
             SpriteBundle {
                 texture: sprites.asteroid.clone(),
                 transform: simulation_transform.as_transform(constants::ASTEROID_LAYER),
-                ..default()
+                sprite: Sprite {
+                    color: Color::linear_rgba(1.0, 1.0, 1.0, if fading_in { 0.0 } else { 1.0 }),
+                    ..Default::default()
+                },
+                ..Default::default()
             },
             simulation_transform,
             asteroid,
@@ -60,4 +62,6 @@ pub fn spawn_asteroid(
             timestamp: despawn_at,
         },
     );
+
+    AsteroidEntity::from(entity)
 }

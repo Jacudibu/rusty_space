@@ -67,6 +67,7 @@ pub fn spawn_asteroids_for_new_sector(
                 inner_rng.gen_range(constants::ASTEROID_ORE_RANGE),
                 inner_rng.gen_range(ROTATION_RANDOM_RANGE),
                 now.add_milliseconds(despawn_after),
+                false,
             );
         }
     }

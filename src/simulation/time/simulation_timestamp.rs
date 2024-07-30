@@ -2,6 +2,7 @@ use crate::simulation::prelude::Milliseconds;
 use crate::simulation::time::MILLIS_PER_SECOND;
 use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
+use std::ops::Add;
 use std::time::Duration;
 
 /// Represents the current Timestamp in Milliseconds since session start.
@@ -107,5 +108,13 @@ impl Ord for SimulationTimestamp {
 impl PartialOrd for SimulationTimestamp {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.0.cmp(&other.0))
+    }
+}
+
+impl Add<Milliseconds> for SimulationTimestamp {
+    type Output = Self;
+
+    fn add(self, rhs: Milliseconds) -> Self::Output {
+        Self(self.0 + rhs)
     }
 }

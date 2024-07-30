@@ -73,12 +73,7 @@ impl MineAsteroid {
         &self,
         all_asteroids: &Query<(&mut Asteroid, &mut SimulationTransform)>,
     ) -> bool {
-        all_asteroids
-            .get(self.target.into())
-            .unwrap()
-            .0
-            .state
-            .is_despawned()
+        all_asteroids.get(self.target.into()).is_err()
     }
 
     pub fn run_tasks(
@@ -104,10 +99,12 @@ impl MineAsteroid {
                             .push((task.target, mined_amount));
                     }
                     TaskResult::Finished { mined_amount } => {
-                        mined_asteroids
-                            .lock()
-                            .unwrap()
-                            .push((task.target, mined_amount));
+                        if mined_amount > 0 {
+                            mined_asteroids
+                                .lock()
+                                .unwrap()
+                                .push((task.target, mined_amount));
+                        }
                         task_completions
                             .lock()
                             .unwrap()
@@ -121,14 +118,17 @@ impl MineAsteroid {
                 let batch = mined_asteroids.into_inner().unwrap();
                 if !batch.is_empty() {
                     for (asteroid_entity, mined_amount) in batch {
-                        let (mut asteroid, mut transform) =
-                            all_asteroids.get_mut(asteroid_entity.into()).unwrap();
+                        let Ok((mut asteroid, mut transform)) =
+                            all_asteroids.get_mut(asteroid_entity.into())
+                        else {
+                            continue; // Must have already despawned
+                        };
                         asteroid.ore -= mined_amount;
                         transform.scale = asteroid.scale_depending_on_current_ore_volume();
                         if asteroid.ore == 0 {
                             asteroid_was_fully_mined_event.send(AsteroidWasFullyMinedEvent {
                                 asteroid: asteroid_entity,
-                                despawn_timer: asteroid.state.timestamp(),
+                                despawn_timer: asteroid.despawn_timestamp,
                             });
                         }
                     }

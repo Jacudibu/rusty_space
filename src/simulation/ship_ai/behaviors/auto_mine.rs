@@ -51,7 +51,7 @@ pub fn handle_idle_ships(
     // Avoids selecting an asteroid which is close to leaving the sector
     let max_asteroid_age = now.add_milliseconds(15000);
 
-    // TODO: Benchmark this vs a priority queue
+    // TODO: Benchmark this .filter vs a priority queue
     ships
         .iter_mut()
         .filter(|(_, _, behavior, _)| now.has_passed(behavior.next_idle_update))

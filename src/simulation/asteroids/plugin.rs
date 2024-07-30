@@ -38,7 +38,10 @@ impl Plugin for AsteroidPlugin {
             )
             .add_systems(
                 Update,
-                (fading::fade_asteroids_out, fading::fade_asteroids_in)
+                (
+                    fading::fade_asteroids_out_and_despawn_entities,
+                    fading::fade_asteroids_in,
+                )
                     .run_if(in_state(SimulationState::Running)),
             );
     }

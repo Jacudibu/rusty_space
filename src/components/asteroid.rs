@@ -1,7 +1,6 @@
 use crate::constants;
 use crate::persistence::{ComponentWithPersistentId, PersistentAsteroidId};
-use crate::simulation::prelude::{Milliseconds, SimulationTimestamp};
-use crate::simulation::transform::SimulationTransform;
+use crate::simulation::prelude::SimulationTimestamp;
 use bevy::prelude::{Component, FloatExt};
 
 #[derive(Component)]
@@ -10,7 +9,7 @@ pub struct Asteroid {
     pub ore_max: u32,
     pub ore: u32,
     pub remaining_after_reservations: u32,
-    pub state: AsteroidState,
+    pub despawn_timestamp: SimulationTimestamp,
 }
 
 impl ComponentWithPersistentId<Asteroid> for Asteroid {
@@ -20,59 +19,15 @@ impl ComponentWithPersistentId<Asteroid> for Asteroid {
     }
 }
 
-pub enum AsteroidState {
-    Spawned { until: SimulationTimestamp },
-    Despawned { until: SimulationTimestamp },
-}
-
-impl AsteroidState {
-    /// Toggles the state between Spawned and Despawned, and adds onto the existing timer.
-    #[inline]
-    pub fn toggle_and_add_milliseconds(&mut self, milliseconds: Milliseconds) {
-        *self = match self {
-            AsteroidState::Spawned { mut until } => {
-                until.add_milliseconds(milliseconds);
-                AsteroidState::Despawned { until }
-            }
-            AsteroidState::Despawned { mut until } => {
-                until.add_milliseconds(milliseconds);
-                AsteroidState::Spawned { until }
-            }
-        };
-    }
-
-    #[inline]
-    pub fn timestamp(&self) -> SimulationTimestamp {
-        match self {
-            AsteroidState::Spawned { until } => *until,
-            AsteroidState::Despawned { until } => *until,
-        }
-    }
-
-    #[inline]
-    pub fn is_despawned(&self) -> bool {
-        match self {
-            AsteroidState::Spawned { .. } => false,
-            AsteroidState::Despawned { .. } => true,
-        }
-    }
-}
-
 impl Asteroid {
-    pub fn new(id: PersistentAsteroidId, ore: u32, state: AsteroidState) -> Self {
+    pub fn new(id: PersistentAsteroidId, ore: u32, despawn_timestamp: SimulationTimestamp) -> Self {
         Self {
             id,
             ore,
             ore_max: ore,
             remaining_after_reservations: ore,
-            state,
+            despawn_timestamp,
         }
-    }
-
-    pub fn reset(&mut self, transform: &mut SimulationTransform) {
-        self.ore = self.ore_max;
-        self.remaining_after_reservations = self.ore_max;
-        transform.scale = self.scale_depending_on_current_ore_volume();
     }
 
     /// Attempts to reserve the desired amount if possible, or less if there isn't as much left.

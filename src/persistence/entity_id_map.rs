@@ -102,6 +102,20 @@ where
     }
 
     #[inline]
+    pub fn remove_by_id(&mut self, id: &TId) {
+        if let Some(entity) = self.id_to_entity.remove(id) {
+            self.entity_to_id.remove(&entity);
+        }
+    }
+
+    #[inline]
+    pub fn remove_by_entity(&mut self, entity: &TEntity) {
+        if let Some(id) = self.entity_to_id.remove(entity) {
+            self.id_to_entity.remove(&id);
+        }
+    }
+
+    #[inline]
     pub fn get_entity(&self, id: &TId) -> Option<&TEntity> {
         self.id_to_entity.get(id)
     }

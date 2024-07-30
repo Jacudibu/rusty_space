@@ -1,4 +1,6 @@
-use crate::components::{Asteroid, Sector, SectorAsteroidComponent, SectorStarComponent, Star};
+use crate::components::{
+    Asteroid, RespawningAsteroidData, Sector, SectorAsteroidComponent, SectorStarComponent, Star,
+};
 use crate::persistence::data::v1::*;
 use crate::persistence::ComponentWithPersistentId;
 use crate::simulation::physics::ConstantVelocity;
@@ -18,7 +20,20 @@ impl AsteroidSaveData {
             rotation_degrees: transform.rotation.as_degrees(),
             velocity: velocity.velocity(),
             angular_velocity: velocity.sprite_rotation(),
-            lifetime: asteroid.state.timestamp(),
+            lifetime: asteroid.despawn_timestamp,
+        }
+    }
+}
+
+impl AsteroidRespawnSaveData {
+    pub fn from_respawn(respawn: RespawningAsteroidData) -> Self {
+        Self {
+            id: respawn.id,
+            ore_max: respawn.ore_max,
+            position: respawn.local_respawn_position,
+            velocity: respawn.velocity,
+            angular_velocity: respawn.angular_velocity,
+            timestamp: respawn.timestamp,
         }
     }
 }
@@ -34,11 +49,11 @@ impl SectorAsteroidSaveData {
             .map(|x| asteroid_query.get(x.entity.into()).unwrap())
             .map(AsteroidSaveData::from)
             .collect();
+
         let respawning_asteroids = asteroid_component
             .asteroid_respawns
             .iter()
-            .map(|x| asteroid_query.get(x.0.entity.into()).unwrap())
-            .map(AsteroidSaveData::from)
+            .map(|x| AsteroidRespawnSaveData::from_respawn(x.0))
             .collect();
 
         Self {

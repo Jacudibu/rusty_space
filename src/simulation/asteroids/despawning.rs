@@ -1,9 +1,15 @@
-use crate::components::{Asteroid, InSector, SectorAsteroidComponent};
-use crate::constants;
+use crate::components::{
+    Asteroid, InSector, RespawningAsteroidData, Sector, SectorAsteroidComponent,
+};
+use crate::map_layout::MapLayout;
 use crate::simulation::asteroids::fading::FadingAsteroidsOut;
+use crate::simulation::asteroids::{helpers, respawning};
+use crate::simulation::physics::ConstantVelocity;
 use crate::simulation::prelude::{SimulationTime, SimulationTimestamp};
+use crate::simulation::transform::SimulationTransform;
 use crate::utils::{AsteroidEntity, AsteroidEntityWithTimestamp};
-use bevy::prelude::{Event, EventReader, Query, Res, ResMut};
+use bevy::prelude::{Event, EventReader, Query, Res, ResMut, Vec2};
+
 #[derive(Event)]
 pub struct AsteroidWasFullyMinedEvent {
     pub asteroid: AsteroidEntity,
@@ -13,12 +19,20 @@ pub struct AsteroidWasFullyMinedEvent {
 pub fn on_asteroid_was_fully_mined(
     mut events: EventReader<AsteroidWasFullyMinedEvent>,
     mut fading_asteroids: ResMut<FadingAsteroidsOut>,
-    mut asteroids: Query<(&InSector, &mut Asteroid)>,
-    mut sectors_with_asteroids: Query<&mut SectorAsteroidComponent>,
+    asteroids: Query<(
+        &InSector,
+        &Asteroid,
+        &ConstantVelocity,
+        &SimulationTransform,
+    )>,
+    mut sectors_with_asteroids: Query<(&Sector, &mut SectorAsteroidComponent)>,
+    map_layout: Res<MapLayout>,
 ) {
     for event in events.read() {
-        let (asteroid_sector, mut asteroid) = asteroids.get_mut(event.asteroid.into()).unwrap();
-        let mut asteroid_component = sectors_with_asteroids
+        let (asteroid_sector, asteroid, velocity, transform) =
+            asteroids.get(event.asteroid.into()).unwrap();
+
+        let (sector, mut asteroid_component) = sectors_with_asteroids
             .get_mut(asteroid_sector.sector.into())
             .unwrap();
 
@@ -28,60 +42,79 @@ pub fn on_asteroid_was_fully_mined(
             timestamp: event.despawn_timer,
         };
 
-        // Asteroid might have already started despawning naturally, so test if it was still inside.
+        // Asteroid might have already started despawning naturally if it wasn't removed
         if asteroid_component.asteroids.remove(&asteroid_entity) {
-            despawn_asteroid(
+            let local_respawn_position =
+                respawning::calculate_local_asteroid_respawn_position_asteroid_was_mined(
+                    map_layout.hex_edge_vertices,
+                    transform.translation - sector.world_pos,
+                    velocity.velocity(),
+                );
+
+            initiate_despawn_animation(
                 &mut fading_asteroids,
                 asteroid_entity,
                 &mut asteroid_component,
-                &mut asteroid,
+                asteroid,
+                velocity,
+                local_respawn_position,
             );
         }
     }
-}
-
-pub fn despawn_asteroid(
-    fading_asteroids: &mut ResMut<FadingAsteroidsOut>,
-    mut asteroid_entity: AsteroidEntityWithTimestamp,
-    feature: &mut SectorAsteroidComponent,
-    asteroid: &mut Asteroid,
-) {
-    asteroid_entity
-        .timestamp
-        .add_milliseconds(constants::ASTEROID_RESPAWN_TIME_MILLISECONDS);
-    asteroid
-        .state
-        .toggle_and_add_milliseconds(constants::ASTEROID_RESPAWN_TIME_MILLISECONDS);
-    fading_asteroids.asteroids.insert(asteroid_entity.entity);
-    feature
-        .asteroid_respawns
-        .push(std::cmp::Reverse(asteroid_entity));
 }
 
 /// Needs to run before [spawning::spawn_asteroids_for_new_sector] in order to ensure no new asteroids are spawned which aren't yet synced.
 /// Technically this doesn't need to run every frame, given the super slow speed of asteroids.
 pub fn make_asteroids_disappear_when_they_leave_sector(
     mut fading_asteroids: ResMut<FadingAsteroidsOut>,
-    mut sector: Query<&mut SectorAsteroidComponent>,
-    mut asteroids: Query<&mut Asteroid>,
+    mut sector_asteroids: Query<(&Sector, &mut SectorAsteroidComponent)>,
+    asteroids: Query<(&Asteroid, &ConstantVelocity, &SimulationTransform)>,
     simulation_time: Res<SimulationTime>,
 ) {
     let now = simulation_time.now();
 
-    for mut asteroid_component in sector.iter_mut() {
+    for (sector, mut asteroid_component) in sector_asteroids.iter_mut() {
         while let Some(next) = asteroid_component.asteroids.first() {
             if now.has_not_passed(next.timestamp) {
                 break;
             }
 
             let asteroid_entity = asteroid_component.asteroids.pop_first().unwrap();
-            let mut asteroid = asteroids.get_mut(asteroid_entity.entity.into()).unwrap();
-            despawn_asteroid(
+            let (asteroid, velocity, transform) =
+                asteroids.get(asteroid_entity.entity.into()).unwrap();
+
+            let local_respawn_position =
+                respawning::calculate_local_asteroid_respawn_position_asteroid_left_sector(
+                    transform.translation - sector.world_pos,
+                );
+
+            initiate_despawn_animation(
                 &mut fading_asteroids,
                 asteroid_entity,
                 &mut asteroid_component,
-                &mut asteroid,
+                asteroid,
+                velocity,
+                local_respawn_position,
             );
         }
     }
+}
+
+fn initiate_despawn_animation(
+    fading_asteroids: &mut ResMut<FadingAsteroidsOut>,
+    asteroid_entity: AsteroidEntityWithTimestamp,
+    feature: &mut SectorAsteroidComponent,
+    asteroid: &Asteroid,
+    velocity: &ConstantVelocity,
+    local_respawn_position: Vec2,
+) {
+    feature
+        .asteroid_respawns
+        .push(std::cmp::Reverse(RespawningAsteroidData::new(
+            asteroid,
+            velocity,
+            local_respawn_position,
+        )));
+
+    fading_asteroids.asteroids.insert(asteroid_entity.entity);
 }
