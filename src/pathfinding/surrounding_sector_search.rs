@@ -137,12 +137,7 @@ mod test {
         universe
             .sectors
             .add(RIGHT)
-            .with_asteroids(SectorAsteroidSaveData {
-                // TODO: That probably also needs a builder
-                average_velocity: Vec2::ONE,
-                live_asteroids: Vec::new(),
-                respawning_asteroids: Vec::new(),
-            });
+            .with_asteroids(SectorAsteroidSaveData::new());
         universe.gate_pairs.add(
             LocalHexPosition::new(LEFT, Vec2::X),
             LocalHexPosition::new(CENTER, Vec2::NEG_X),
@@ -165,21 +160,11 @@ mod test {
         universe
             .sectors
             .add(CENTER)
-            .with_asteroids(SectorAsteroidSaveData {
-                // TODO: That probably also needs a builder
-                average_velocity: Vec2::ONE,
-                live_asteroids: Vec::new(),
-                respawning_asteroids: Vec::new(),
-            });
+            .with_asteroids(SectorAsteroidSaveData::new());
         universe
             .sectors
             .add(RIGHT)
-            .with_asteroids(SectorAsteroidSaveData {
-                // TODO: That probably also needs a builder
-                average_velocity: Vec2::ONE,
-                live_asteroids: Vec::new(),
-                respawning_asteroids: Vec::new(),
-            });
+            .with_asteroids(SectorAsteroidSaveData::new());
         universe.gate_pairs.add(
             LocalHexPosition::new(LEFT, Vec2::X),
             LocalHexPosition::new(CENTER, Vec2::NEG_X),
@@ -201,30 +186,15 @@ mod test {
         universe
             .sectors
             .add(LEFT)
-            .with_asteroids(SectorAsteroidSaveData {
-                // TODO: That probably also needs a builder
-                average_velocity: Vec2::ONE,
-                live_asteroids: Vec::new(),
-                respawning_asteroids: Vec::new(),
-            });
+            .with_asteroids(SectorAsteroidSaveData::new());
         universe
             .sectors
             .add(CENTER)
-            .with_asteroids(SectorAsteroidSaveData {
-                // TODO: That probably also needs a builder
-                average_velocity: Vec2::ONE,
-                live_asteroids: Vec::new(),
-                respawning_asteroids: Vec::new(),
-            });
+            .with_asteroids(SectorAsteroidSaveData::new());
         universe
             .sectors
             .add(RIGHT)
-            .with_asteroids(SectorAsteroidSaveData {
-                // TODO: That probably also needs a builder
-                average_velocity: Vec2::ONE,
-                live_asteroids: Vec::new(),
-                respawning_asteroids: Vec::new(),
-            });
+            .with_asteroids(SectorAsteroidSaveData::new());
         universe.gate_pairs.add(
             LocalHexPosition::new(LEFT, Vec2::X),
             LocalHexPosition::new(CENTER, Vec2::NEG_X),
@@ -248,12 +218,7 @@ mod test {
         universe
             .sectors
             .add(RIGHT)
-            .with_asteroids(SectorAsteroidSaveData {
-                // TODO: That probably also needs a builder
-                average_velocity: Vec2::ONE,
-                live_asteroids: Vec::new(),
-                respawning_asteroids: Vec::new(),
-            });
+            .with_asteroids(SectorAsteroidSaveData::new());
         universe.gate_pairs.add(
             LocalHexPosition::new(LEFT, Vec2::X),
             LocalHexPosition::new(CENTER, Vec2::NEG_X),

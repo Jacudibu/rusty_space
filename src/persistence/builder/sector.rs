@@ -84,9 +84,9 @@ impl SectorSaveData {
 }
 
 impl SectorAsteroidSaveData {
-    pub fn new(average_velocity: Vec2) -> Self {
+    pub fn new() -> Self {
         Self {
-            average_velocity,
+            average_velocity: Vec2::ONE,
             live_asteroids: Vec::new(),
             respawning_asteroids: Vec::new(),
         }
