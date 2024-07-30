@@ -117,7 +117,7 @@ impl SectorAsteroidSaveData {
 
         let sector_pos = map_layout.hex_layout.hex_to_world_pos(sector_hex);
 
-        for local_position in shape.interior_dist().sample_iter(position_rng).take(amount) {
+        self.live_asteroids.extend(shape.interior_dist().sample_iter(position_rng).take(amount).map(|local_position| {
             let velocity = Vec2::new(
                 self.average_velocity.x
                     * inner_rng.gen_range(constants::ASTEROID_VELOCITY_RANDOM_RANGE),
@@ -133,7 +133,7 @@ impl SectorAsteroidSaveData {
 
             let rotation = inner_rng.gen_range(constants::ASTEROID_ROTATION_RANDOM_RANGE);
             let ore = inner_rng.gen_range(constants::ASTEROID_ORE_RANGE);
-            self.live_asteroids.push(AsteroidSaveData {
+            AsteroidSaveData {
                 id: PersistentAsteroidId::next(),
                 position: local_position + sector_pos,
                 velocity,
@@ -142,8 +142,8 @@ impl SectorAsteroidSaveData {
                 ore_current: ore,
                 ore_max: ore,
                 lifetime: SimulationTimestamp::from(despawn_after),
-            });
-        }
+            }
+        }));
 
         self
     }
