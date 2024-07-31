@@ -1,7 +1,9 @@
 use crate::simulation::asteroids;
 use crate::simulation::ship_ai::behaviors;
 use crate::simulation::ship_ai::task_finished_event::TaskFinishedEvent;
-use crate::simulation::ship_ai::tasks::{ExchangeWares, MineAsteroid, MoveToEntity, UseGate};
+use crate::simulation::ship_ai::tasks::{
+    ExchangeWares, HarvestGas, MineAsteroid, MoveToEntity, UseGate,
+};
 use crate::states::SimulationState;
 use bevy::app::App;
 use bevy::prelude::{in_state, on_event, FixedPostUpdate, FixedUpdate, IntoSystemConfigs, Plugin};
@@ -14,6 +16,7 @@ impl Plugin for ShipAiPlugin {
         app.add_event::<TaskFinishedEvent<ExchangeWares>>();
         app.add_event::<TaskFinishedEvent<UseGate>>();
         app.add_event::<TaskFinishedEvent<MineAsteroid>>();
+        app.add_event::<TaskFinishedEvent<HarvestGas>>();
         app.add_systems(
             FixedUpdate,
             (
@@ -27,6 +30,8 @@ impl Plugin for ShipAiPlugin {
                 UseGate::complete_tasks.after(UseGate::run_tasks).run_if(on_event::<TaskFinishedEvent<UseGate>>()),
                 MineAsteroid::run_tasks,
                 MineAsteroid::complete_tasks.after(MineAsteroid::run_tasks).run_if(on_event::<TaskFinishedEvent<MineAsteroid>>()),
+                HarvestGas::run_tasks,
+                HarvestGas::complete_tasks.after(HarvestGas::run_tasks).run_if(on_event::<TaskFinishedEvent<HarvestGas>>()),
             )
                 .run_if(in_state(SimulationState::Running)),
         );

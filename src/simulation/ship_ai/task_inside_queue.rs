@@ -1,6 +1,6 @@
 use crate::simulation::prelude::{CurrentSimulationTimestamp, SimulationTimestamp};
 use crate::simulation::ship_ai::tasks;
-use crate::utils::{AsteroidEntity, ExchangeWareData, TypedEntity};
+use crate::utils::{AsteroidEntity, ExchangeWareData, PlanetEntity, TypedEntity};
 use crate::utils::{GateEntity, SectorEntity};
 use bevy::ecs::system::EntityCommands;
 
@@ -21,6 +21,9 @@ pub enum TaskInsideQueue {
     MineAsteroid {
         target: AsteroidEntity,
         reserved: u32,
+    },
+    HarvestGas {
+        target: PlanetEntity,
     },
 }
 
@@ -60,6 +63,9 @@ impl TaskInsideQueue {
             }
             TaskInsideQueue::MineAsteroid { target, reserved } => {
                 entity_commands.insert(tasks::MineAsteroid::new(*target, now, *reserved));
+            }
+            TaskInsideQueue::HarvestGas { target } => {
+                entity_commands.insert(tasks::HarvestGas::new(*target, now));
             }
         }
     }

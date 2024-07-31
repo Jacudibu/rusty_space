@@ -125,7 +125,7 @@ impl MoveToEntity {
 
         for event in event_reader.read() {
             if let Ok(mut queue) = all_ships_with_task.get_mut(event.entity) {
-                tasks::remove_task_and_add_new_one::<Self>(
+                tasks::remove_task_and_add_next_in_queue::<Self>(
                     &mut commands,
                     event.entity,
                     &mut queue,

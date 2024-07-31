@@ -94,7 +94,7 @@ impl ExchangeWares {
             if let Ok((mut queue, task)) = all_ships_with_task.get_mut(event.entity) {
                 task.complete(event.entity, &mut all_storages, &mut event_writer);
 
-                tasks::remove_task_and_add_new_one::<Self>(
+                tasks::remove_task_and_add_next_in_queue::<Self>(
                     &mut commands,
                     event.entity,
                     &mut queue,

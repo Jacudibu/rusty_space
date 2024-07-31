@@ -146,7 +146,7 @@ impl UseGate {
                         ShipEntity::from(event.entity),
                     );
 
-                tasks::remove_task_and_add_new_one::<Self>(
+                tasks::remove_task_and_add_next_in_queue::<Self>(
                     &mut commands,
                     event.entity,
                     &mut queue,
