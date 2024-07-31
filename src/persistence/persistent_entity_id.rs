@@ -167,11 +167,11 @@ impl<T: Component> Hash for TypedPersistentEntityId<T> {
 
 impl<T: Component> Display for TypedPersistentEntityId<T> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "[{}] {}", std::any::type_name::<T>(), self.0)
+        write!(f, "{}", self.0)
     }
 }
 impl<T: Component> Debug for TypedPersistentEntityId<T> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        fmt::Display::fmt(self, f)
+        write!(f, "[{}] {}", std::any::type_name::<T>(), self.0)
     }
 }

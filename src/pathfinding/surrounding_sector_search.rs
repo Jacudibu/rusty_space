@@ -56,6 +56,7 @@ where
 
             if current_depth >= min_range {
                 if let Ok(search_components) = sector_search_query.get(sector_entity.into()) {
+                    // TODO: TSearchFunction could return an Option<T>, which could be persisted in SearchResult<T>
                     if search_fn(search_components) {
                         result.push(SearchResult {
                             distance: current_depth,

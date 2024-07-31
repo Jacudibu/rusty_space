@@ -5,42 +5,23 @@ use crate::persistence::{
     ConstantOrbitSaveData, SaveDataCollection, SectorAsteroidSaveData, SectorPlanetSaveData,
     SectorSaveData, SectorStarSaveData,
 };
-use crate::utils::{EarthMass, SolarMass};
 use bevy::math::Vec2;
 
 pub fn create_test_data() -> SaveDataCollection<SectorSaveData> {
     let map_layout = MapLayout::default();
     let mut sectors = SaveDataCollection::<SectorSaveData>::default();
     sectors.add(coordinates::CENTER);
+
     sectors
         .add(coordinates::RIGHT)
-        .with_star(SectorStarSaveData {
-            mass: SolarMass::from_solar_mass(1, 0),
-        })
+        .with_star(SectorStarSaveData::new())
         .with_planet(SectorPlanetSaveData::new(
-            "Planet Alpha".to_string(),
-            EarthMass::from_earth_mass(1, 0),
-            ConstantOrbitSaveData {
-                radius: 50.0,
-                current_rotational_fraction: 0.3,
-            },
+            ConstantOrbitSaveData::new(50.0).with_current_rotational_fraction(0.3),
         ))
         .with_planet(SectorPlanetSaveData::new(
-            "Planet Beta".to_string(),
-            EarthMass::from_earth_mass(1, 50),
-            ConstantOrbitSaveData {
-                radius: 200.0,
-                current_rotational_fraction: 0.7,
-            },
+            ConstantOrbitSaveData::new(200.0).with_current_rotational_fraction(0.7),
         ))
-        .with_planet(SectorPlanetSaveData::new(
-            "Planet Gamma".to_string(),
-            EarthMass::from_earth_mass(2, 0),
-            ConstantOrbitSaveData {
-                radius: 400.0,
-                current_rotational_fraction: 0.0,
-            },
-        ));
+        .with_planet(SectorPlanetSaveData::new(ConstantOrbitSaveData::new(400.0)));
 
     sectors.add(coordinates::TOP_RIGHT).with_asteroids(
         SectorAsteroidSaveData::new()

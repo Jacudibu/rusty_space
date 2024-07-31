@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 #[cfg_attr(test, derive(Clone, Debug, PartialEq))]
 pub struct SectorPlanetSaveData {
     pub id: PersistentPlanetId,
+    pub kind: PlanetKindSaveData,
     pub name: String,
     pub mass: EarthMass,
     pub orbit: ConstantOrbitSaveData,
@@ -16,4 +17,11 @@ pub struct SectorPlanetSaveData {
 pub struct ConstantOrbitSaveData {
     pub current_rotational_fraction: f32,
     pub radius: f32,
+}
+
+#[derive(Serialize, Deserialize)]
+#[cfg_attr(test, derive(Clone, Debug, PartialEq))]
+pub enum PlanetKindSaveData {
+    Terrestrial,
+    GasGiant,
 }
