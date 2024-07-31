@@ -32,7 +32,7 @@ As with everything in this folder, this is just a collection of ideas to pick fr
 - **Terraforming Agents:** Employed in the atmosphere of planets to promote the creation of habitable environments, adjusting temperature, and chemical composition
 
 ## Lower Layers
-*These require special equipment to be accessed. Such equipment could come in the form of a vent-like structure built on the planet.*
+*These require special equipment to be accessed. Such equipment could come in the form of a vent-like structure built on the planet. Technically, this could be the surface of the gas giant, and things could also be in liquid form, starting from here.*
 
 ### Water Vapors
 - **Agriculture:** Hydroponic Farms will be very happy.

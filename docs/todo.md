@@ -116,13 +116,8 @@ Attack Target
 
 # Multiplayer
 
-Implement multiplayer with selectable "Sync Intensity" values. (It's just a state, ez)
-These will limit which systems run exclusively on the host, which will then send network events to the connected
-clients.
-
-Level 0: After Universe Creation, sync the map with all entities to connected clients
-Level 1: Synchronize Task creation (Bare minimum, limiting the big AI decision-making to the host.)
-Level 2: Synchronize Sector transitions (Should improve positional sync, but might not even be necessary, needs testing, could be optional since we can easily just turn the related event listener off)
+Adding multiplayer to this already is and also will be an ongoing adventure.
+It's further defined [here](technical/networking.md)
 
 # Player Control
 
@@ -162,10 +157,6 @@ Define the firing arcs and ranges at which ships can fire, and the required phys
 
 Step 2: Projectiles
 For the lulz, don't apply the damage instantly and spawn the projectiles. If we restrict collision detection to stuff within the same sector and have low fire rates, this *might* be manageable for a dozen or so ships. Or not. Either way, it's gonna be fun to watch for a bit. If the simulation for some strange reason still runs on a somewhat bearable framerate during two big clashes, it could be toggled on or off through a setting.
-
-## Multiplayer #2
-
-Level 3: Synchronize Combat events (Hit detection / damage) This will be very much necessary for any level of non-cooperative play.
 
 # Upgrades & Research
 

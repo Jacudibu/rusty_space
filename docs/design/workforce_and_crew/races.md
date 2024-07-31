@@ -4,12 +4,12 @@
 If we implement them, Races should matter.
 They should not just come with skins or flavor texts, but actually feel or play different in some way.
 
-That means some of their production chains should be partially different to others, and their ships and modules should be differently balanced, maybe even have a specific module that's unique to them. Crew could yield different bonuses.
+That means some of their production chains should be partially different to others, and their ships (and maybe their modules) should be differently balanced, maybe even have a specific module that's unique to them. Crew could yield different bonuses.
 
-The tech of other races can be acquired by analyzing ship and station wreckages. Multiple wreckages and a lot of other resources might be required to fully figure out advanced technology.
+The tech of other races can be acquired by analyzing ship and station wreckages. Multiple wreckages as well as a lot of other resources might be required to fully figure out advanced technology. Alternatively, in a peaceful universe, blueprints can just be purchased for a load of money.
 
 ## Humans
-Boring, **Carbon+Water**-based creatures. You already know them well enough, and for the sake of simplicity, they'll definitely be the default until there's time for more. Consumables are focused around Water and Hydroponics, luxury goods focus around ...?
+Boring, **Carbon+Water**-based creatures. You already know them well enough, and for the sake of simplicity, they'll definitely be the default until there's time for more. Consumables are focused around Water and Hydroponics, luxury goods focus around... ~~alcohol and other drugs~~ ...?
 
 - Consumables involve water and plants. Water can be harvested from ice-asteroids or deep gas giant layers and cultivated on "earth-like" planets or hydroponics.
 - Luxury goods revolve around Alcohol and other drugs, lol. They are relatively easy to produce. 
@@ -20,7 +20,7 @@ A prime candidate for a **Carbon+Ammonia**-based life form. Bird-Raptor hybrids 
 
 - Consumables involve ammonia and plants, which can be harvested on Gas Giants and cultivated on ice planets or hydroponics.
 - Luxury goods revolve around electronic gadgets and augmentations, more complicated to produce than those of other races.
-- Ships and components are more expensive, especially at higher tiers. Heavy focus on quality over quantity.
+- Ships and components are more expensive, especially at higher tiers. Heavy focus on quality over quantity - they come with better base stats and maybe even extra module slots.
 
 *Avali are [`CC BY SA`](https://creativecommons.org/licenses/by-sa/4.0/) by RyuujinZERO*<br>
 There's an entire wiki on these curious critters: https://avali.fandom.com/wiki/The_Official_Avali_Wiki

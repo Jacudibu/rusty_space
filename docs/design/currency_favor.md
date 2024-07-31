@@ -27,3 +27,7 @@ Suddenly being liked less by someone just because you bought a bunch of stuff fr
 Doing "Bad things" decrease both your Favor and Perception, however, your Perception will be affected more heavily the bigger the difference to your current favor is.
 
 So if you just purchased *a lot* of super expensive goods and then blow up the station producing said goods, the faction will immediately recognize this as high-level sabotage. Similarly, if you are high on favor and do a little whoopsiedoodle by assaulting their allies, the faction will be more lenient with you.
+
+## Open Questions
+- How is this supposed to work in multiplayer with different player factions?
+
