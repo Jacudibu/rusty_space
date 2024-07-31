@@ -180,6 +180,7 @@ fn reconstruct_path(
 mod test {
     use crate::components::Sector;
     use crate::pathfinding::a_star::a_star;
+    use crate::pathfinding::search_node::GATE_COST;
     use crate::pathfinding::PathElement;
     use crate::persistence::local_hex_position::LocalHexPosition;
     use crate::persistence::{SectorIdMap, UniverseSaveData};
@@ -449,7 +450,7 @@ mod test {
         );
         universe.gate_pairs.add(
             LocalHexPosition::new(LEFT, Vec2::ZERO), // Easier to reach
-            LocalHexPosition::new(RIGHT, Vec2::X * 500.0), // But SO far away~
+            LocalHexPosition::new(RIGHT, Vec2::X * GATE_COST as f32 * 2.0), // But SO far away~
         );
 
         let mut app = universe.build_test_app();

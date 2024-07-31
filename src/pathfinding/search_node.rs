@@ -11,7 +11,7 @@ pub struct SearchNode {
 
 // TODO: Remove this constant and use something in relation to ship speed instead.
 //       Slow ships should be more inclined to use gates, whereas super fast ships might prefer skipping a gate.
-pub const GATE_COST: u32 = (constants::SECTOR_SIZE * constants::SECTOR_SIZE) as u32;
+pub const GATE_COST: u32 = (constants::SECTOR_SIZE * 3.0) as u32;
 
 impl Eq for SearchNode {}
 
