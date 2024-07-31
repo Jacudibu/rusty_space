@@ -1,5 +1,5 @@
 use crate::components::Ship;
-use crate::simulation::ship_ai::tasks::{ExchangeWares, MineAsteroid, UseGate};
+use crate::simulation::ship_ai::tasks::{ExchangeWares, HarvestGas, MineAsteroid, UseGate};
 use crate::simulation::ship_ai::MoveToEntity;
 use bevy::ecs::query::QueryFilter;
 use bevy::prelude::{With, Without};
@@ -13,5 +13,6 @@ pub struct ShipIsIdleFilter {
         Without<MoveToEntity>,
         Without<UseGate>,
         Without<MineAsteroid>,
+        Without<HarvestGas>,
     ),
 }

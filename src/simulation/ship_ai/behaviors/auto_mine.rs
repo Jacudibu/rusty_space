@@ -7,10 +7,9 @@ use crate::simulation::ship_ai::ship_is_idle_filter::ShipIsIdleFilter;
 use crate::simulation::ship_ai::{TaskInsideQueue, TaskQueue};
 use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::trade_plan::TradePlan;
-use crate::utils::{AsteroidEntityWithTimestamp, SectorEntity, TradeIntent};
-use bevy::prelude::{error, Commands, Component, Entity, Query, Res, Vec2};
+use crate::utils::{SectorEntity, TradeIntent};
+use bevy::prelude::{Commands, Component, Entity, Query, Res, Vec2};
 use serde::{Deserialize, Serialize};
-use std::cmp::Ordering;
 
 #[derive(Eq, PartialEq, Serialize, Deserialize, Copy, Clone)]
 #[cfg_attr(test, derive(Debug))]

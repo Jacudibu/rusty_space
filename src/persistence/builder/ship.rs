@@ -82,6 +82,13 @@ impl From<ShipBehaviorSaveData> for BehaviorBuilder {
                 next_idle_update,
                 state,
             },
+            ShipBehaviorSaveData::AutoHarvest {
+                next_idle_update,
+                state,
+            } => BehaviorBuilder::AutoHarvest {
+                next_idle_update,
+                state,
+            },
         }
     }
 }

@@ -27,7 +27,7 @@ pub fn spawn_sector(
     let simulation_transform =
         SimulationTransform::from_translation(Vec2::new(position.x, position.y));
 
-    let mut entity_commands = commands.spawn((
+    let entity_commands = commands.spawn((
         Name::new(format!("[{},{}]", coordinate.x, coordinate.y)),
         Sector::new(coordinate, position),
         simulation_transform.as_transform(0.0),

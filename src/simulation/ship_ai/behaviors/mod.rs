@@ -1,4 +1,5 @@
 use crate::simulation::prelude::SimulationTimestamp;
+use crate::simulation::ship_ai::behaviors::auto_harvest::AutoHarvestBehavior;
 use crate::simulation::ship_ai::{AutoMineBehavior, AutoMineState, AutoTradeBehavior};
 use bevy::ecs::system::EntityCommands;
 
@@ -11,6 +12,10 @@ pub enum BehaviorBuilder {
         next_idle_update: SimulationTimestamp,
     },
     AutoMine {
+        next_idle_update: SimulationTimestamp,
+        state: AutoMineState,
+    },
+    AutoHarvest {
         next_idle_update: SimulationTimestamp,
         state: AutoMineState,
     },
@@ -31,6 +36,13 @@ impl BehaviorBuilder {
                 next_idle_update,
                 state,
             } => entity_commands.insert(AutoMineBehavior {
+                next_idle_update: *next_idle_update,
+                state: *state,
+            }),
+            BehaviorBuilder::AutoHarvest {
+                next_idle_update,
+                state,
+            } => entity_commands.insert(AutoHarvestBehavior {
                 next_idle_update: *next_idle_update,
                 state: *state,
             }),

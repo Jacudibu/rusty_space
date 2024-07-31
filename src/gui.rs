@@ -108,6 +108,7 @@ impl UiIcons {
                 ExchangeWareData::Sell(_, _) => self.sell,
             },
             TaskInsideQueue::MineAsteroid { .. } => self.asteroid,
+            TaskInsideQueue::HarvestGas { .. } => self.planet,
         }
     }
 }
@@ -412,6 +413,9 @@ pub fn list_selection_details(
                                     },
                                     TaskInsideQueue::MineAsteroid { target, .. } => {
                                         format!("Mining {}", names.get(target.into()).unwrap())
+                                    }
+                                    TaskInsideQueue::HarvestGas { target } => {
+                                        format!("Harvesting {}", names.get(target.into()).unwrap())
                                     }
                                 });
                             });

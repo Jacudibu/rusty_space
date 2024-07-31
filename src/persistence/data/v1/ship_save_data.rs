@@ -30,4 +30,8 @@ pub enum ShipBehaviorSaveData {
         next_idle_update: SimulationTimestamp,
         state: AutoMineState,
     },
+    AutoHarvest {
+        next_idle_update: SimulationTimestamp,
+        state: AutoMineState,
+    },
 }

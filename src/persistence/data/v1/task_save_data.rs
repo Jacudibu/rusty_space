@@ -1,5 +1,7 @@
 use crate::game_data::ItemId;
-use crate::persistence::{PersistentAsteroidId, PersistentEntityId, PersistentGateId};
+use crate::persistence::{
+    PersistentAsteroidId, PersistentEntityId, PersistentGateId, PersistentPlanetId,
+};
 use hexx::Hex;
 use serde::{Deserialize, Serialize};
 
@@ -21,6 +23,9 @@ pub enum TaskSaveData {
     MineAsteroid {
         target: PersistentAsteroidId,
         reserved: u32,
+    },
+    HarvestGas {
+        target: PersistentPlanetId,
     },
 }
 

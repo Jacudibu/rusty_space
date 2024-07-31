@@ -2,8 +2,8 @@ use crate::constants;
 use crate::map_layout::MapLayout;
 use crate::persistence::test_universe::coordinates;
 use crate::persistence::{
-    ConstantOrbitSaveData, SaveDataCollection, SectorAsteroidSaveData, SectorPlanetSaveData,
-    SectorSaveData, SectorStarSaveData,
+    ConstantOrbitSaveData, PlanetKindSaveData, SaveDataCollection, SectorAsteroidSaveData,
+    SectorPlanetSaveData, SectorSaveData, SectorStarSaveData,
 };
 use bevy::math::Vec2;
 
@@ -21,7 +21,10 @@ pub fn create_test_data() -> SaveDataCollection<SectorSaveData> {
         .with_planet(SectorPlanetSaveData::new(
             ConstantOrbitSaveData::new(200.0).with_current_rotational_fraction(0.7),
         ))
-        .with_planet(SectorPlanetSaveData::new(ConstantOrbitSaveData::new(400.0)));
+        .with_planet(
+            SectorPlanetSaveData::new(ConstantOrbitSaveData::new(400.0))
+                .with_kind(PlanetKindSaveData::GasGiant),
+        );
 
     sectors.add(coordinates::TOP_RIGHT).with_asteroids(
         SectorAsteroidSaveData::new()
