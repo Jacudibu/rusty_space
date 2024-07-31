@@ -66,7 +66,9 @@ fn get_window_title() -> String {
 
     format!(
         "{} ships [{config}]",
-        constants::TRADE_SHIP_COUNT + constants::MINING_SHIP_COUNT
+        constants::TRADE_SHIP_COUNT
+            + constants::MINING_SHIP_COUNT
+            + constants::HARVESTING_SHIP_COUNT
     )
 }
 

@@ -76,7 +76,7 @@ impl RespawningAsteroidData {
             id: value.id(),
             ore_max: value.ore_max,
             local_respawn_position,
-            timestamp: value.despawn_timestamp + constants::ASTEROID_RESPAWN_TIME_MILLISECONDS,
+            timestamp: value.despawn_timestamp + constants::ASTEROID_RESPAWN_TIME,
             velocity: velocity.velocity(),
             angular_velocity: velocity.sprite_rotation(),
         }

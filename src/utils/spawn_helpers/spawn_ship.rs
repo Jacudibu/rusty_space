@@ -40,7 +40,7 @@ pub fn spawn_ship(
             TaskQueue::new(),
             SpriteBundle {
                 texture: sprites.ship.clone(),
-                transform: simulation_transform.as_transform(constants::SHIP_LAYER),
+                transform: simulation_transform.as_transform(constants::z_layers::SHIP),
                 ..default()
             },
             simulation_transform,

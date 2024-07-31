@@ -51,7 +51,7 @@ pub fn spawn_station(
             Name::new(format!("{name} (Icon)")),
             SpriteBundle {
                 texture: icon_sprite,
-                transform: simulation_transform.as_transform(constants::STATION_ICON_LAYER),
+                transform: simulation_transform.as_transform(constants::z_layers::STATION_ICON),
                 sprite: Sprite {
                     color: Color::linear_rgb(0.0, 0.0, 0.0),
                     ..default()
@@ -68,7 +68,7 @@ pub fn spawn_station(
             Station::new(id),
             SpriteBundle {
                 texture: sprites.station.clone(),
-                transform: simulation_transform.as_transform(constants::STATION_LAYER),
+                transform: simulation_transform.as_transform(constants::z_layers::STATION),
                 ..default()
             },
             Inventory::new_with_content(

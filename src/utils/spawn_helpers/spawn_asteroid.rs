@@ -43,7 +43,7 @@ pub fn spawn_asteroid(
             ConstantVelocity::new(velocity, angular_velocity),
             SpriteBundle {
                 texture: sprites.asteroid.clone(),
-                transform: simulation_transform.as_transform(constants::ASTEROID_LAYER),
+                transform: simulation_transform.as_transform(constants::z_layers::ASTEROID),
                 sprite: Sprite {
                     color: Color::linear_rgba(1.0, 1.0, 1.0, if fading_in { 0.0 } else { 1.0 }),
                     ..Default::default()

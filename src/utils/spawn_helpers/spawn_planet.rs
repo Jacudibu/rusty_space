@@ -50,7 +50,7 @@ pub fn spawn_planet(
             ),
             SpriteBundle {
                 texture: sprites.planet.clone(),
-                transform: simulation_transform.as_transform(constants::PLANET_AND_STARS_LAYER),
+                transform: simulation_transform.as_transform(constants::z_layers::PLANET_AND_STARS),
                 ..default()
             },
             simulation_transform,

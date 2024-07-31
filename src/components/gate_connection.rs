@@ -27,7 +27,7 @@ impl GateConnectionComponent {
     pub fn calculate_render_positions(from_to_curve: &CubicCurve<Vec2>) -> Vec<Vec3> {
         from_to_curve
             .iter_positions(20)
-            .map(|x| x.extend(constants::GATE_CONNECTION_LAYER))
+            .map(|x| x.extend(constants::z_layers::GATE_CONNECTION))
             .collect()
     }
 

@@ -106,7 +106,7 @@ fn spawn_gate(
         Gate::new(id, ship_curve),
         SelectableEntity::Gate,
         SpriteBundle {
-            transform: simulation_transform.as_transform(constants::GATE_LAYER),
+            transform: simulation_transform.as_transform(constants::z_layers::GATE),
             texture: sprites.gate.clone(),
             ..Default::default()
         },

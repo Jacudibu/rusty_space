@@ -78,7 +78,8 @@ pub fn spawn_sector(
                 InSector { sector },
                 SelectableEntity::Star,
                 SpriteBundle {
-                    transform: simulation_transform.as_transform(constants::PLANET_AND_STARS_LAYER),
+                    transform: simulation_transform
+                        .as_transform(constants::z_layers::PLANET_AND_STARS),
                     texture: sprites.star.clone(),
                     ..Default::default()
                 },
