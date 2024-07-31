@@ -22,6 +22,7 @@ impl Plugin for ShipAiPlugin {
             (
                 behaviors::auto_trade::handle_idle_ships,
                 behaviors::auto_mine::handle_idle_ships.before(asteroids::respawn_asteroids),
+                behaviors::auto_harvest::handle_idle_ships,
                 ExchangeWares::run_tasks,
                 ExchangeWares::complete_tasks.after(ExchangeWares::run_tasks).run_if(on_event::<TaskFinishedEvent<ExchangeWares>>()),
                 MoveToEntity::run_tasks,

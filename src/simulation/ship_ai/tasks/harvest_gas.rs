@@ -1,6 +1,5 @@
-use crate::components::{Asteroid, Inventory};
+use crate::components::Inventory;
 use crate::game_data::DEBUG_ITEM_ID_ORE;
-use crate::simulation::asteroids::AsteroidWasFullyMinedEvent;
 use crate::simulation::prelude::{
     CurrentSimulationTimestamp, Milliseconds, SimulationTime, SimulationTimestamp,
 };
@@ -8,8 +7,7 @@ use crate::simulation::ship_ai::task_finished_event::TaskFinishedEvent;
 use crate::simulation::ship_ai::task_queue::TaskQueue;
 use crate::simulation::ship_ai::tasks;
 use crate::simulation::ship_ai::tasks::send_completion_events;
-use crate::simulation::transform::simulation_transform::SimulationTransform;
-use crate::utils::{AsteroidEntity, PlanetEntity};
+use crate::utils::PlanetEntity;
 use bevy::log::error;
 use bevy::prelude::{Commands, Component, Entity, EventReader, EventWriter, Query, Res, With};
 use std::sync::{Arc, Mutex};

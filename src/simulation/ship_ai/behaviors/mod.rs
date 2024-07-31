@@ -2,6 +2,7 @@ use crate::simulation::prelude::SimulationTimestamp;
 use crate::simulation::ship_ai::{AutoMineBehavior, AutoMineState, AutoTradeBehavior};
 use bevy::ecs::system::EntityCommands;
 
+pub mod auto_harvest;
 pub mod auto_mine;
 pub mod auto_trade;
 

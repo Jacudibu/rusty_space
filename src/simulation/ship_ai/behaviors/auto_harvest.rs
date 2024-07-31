@@ -1,49 +1,26 @@
-use crate::components::{
-    Asteroid, BuyOrders, InSector, Inventory, Sector, SectorAsteroidComponent,
-};
+use crate::components::{BuyOrders, GasGiant, InSector, Inventory, Sector, SectorPlanets};
 use crate::pathfinding;
 use crate::simulation::prelude::{SimulationTime, SimulationTimestamp};
+use crate::simulation::ship_ai::behaviors::auto_mine;
 use crate::simulation::ship_ai::ship_is_idle_filter::ShipIsIdleFilter;
 use crate::simulation::ship_ai::{TaskInsideQueue, TaskQueue};
 use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::trade_plan::TradePlan;
-use crate::utils::{AsteroidEntityWithTimestamp, SectorEntity, TradeIntent};
-use bevy::prelude::{error, Commands, Component, Entity, Query, Res, Vec2};
-use serde::{Deserialize, Serialize};
-use std::cmp::Ordering;
-
-#[derive(Eq, PartialEq, Serialize, Deserialize, Copy, Clone)]
-#[cfg_attr(test, derive(Debug))]
-pub enum AutoMineState {
-    Mining,
-    Trading,
-}
-
-impl AutoMineState {
-    pub fn flip_task_depending_on_inventory(
-        &mut self,
-        used_inventory_space: u32,
-        inventory_capacity: u32,
-    ) {
-        if self == &AutoMineState::Mining && used_inventory_space == inventory_capacity {
-            *self = AutoMineState::Trading;
-        } else if self == &AutoMineState::Trading && used_inventory_space == 0 {
-            *self = AutoMineState::Mining;
-        }
-    }
-}
+use crate::utils::{SectorEntity, TradeIntent, TypedEntity};
+use bevy::prelude::{Commands, Component, Entity, Query, Res};
 
 #[derive(Component)]
-pub struct AutoMineBehavior {
+pub struct AutoHarvestBehavior {
+    // TODO: Could just be AutoMineBehavior<T> with T: MineAsteroid | HarvestGas
     pub next_idle_update: SimulationTimestamp,
-    pub state: AutoMineState,
+    pub state: auto_mine::AutoMineState,
 }
 
-impl Default for AutoMineBehavior {
+impl Default for AutoHarvestBehavior {
     fn default() -> Self {
         Self {
             next_idle_update: SimulationTimestamp::MIN,
-            state: AutoMineState::Mining,
+            state: auto_mine::AutoMineState::Mining,
         }
     }
 }
@@ -52,20 +29,19 @@ impl Default for AutoMineBehavior {
 pub fn handle_idle_ships(
     mut commands: Commands,
     simulation_time: Res<SimulationTime>,
-    mut ships: Query<(Entity, &mut TaskQueue, &mut AutoMineBehavior, &InSector), ShipIsIdleFilter>,
+    mut ships: Query<
+        (Entity, &mut TaskQueue, &mut AutoHarvestBehavior, &InSector),
+        ShipIsIdleFilter,
+    >,
     buy_orders: Query<(Entity, &mut BuyOrders, &InSector)>,
     mut inventories: Query<&mut Inventory>,
-    all_sectors_with_asteroids: Query<&SectorAsteroidComponent>,
+    all_sectors_with_gas_giants: Query<&SectorPlanets>,
     all_sectors: Query<&Sector>,
-    mut all_asteroids: Query<&mut Asteroid>,
+    all_gas_giants: Query<&GasGiant>,
     all_transforms: Query<&SimulationTransform>,
 ) {
     let now = simulation_time.now();
 
-    // Avoids selecting an asteroid which is close to leaving the sector
-    let max_asteroid_age = now.add_milliseconds(15000);
-
-    // TODO: Benchmark this .filter vs a priority queue
     ships
         .iter_mut()
         .filter(|(_, _, behavior, _)| now.has_passed(behavior.next_idle_update))
@@ -78,42 +54,30 @@ pub fn handle_idle_ships(
                 .flip_task_depending_on_inventory(used_inventory_space, ship_inventory.capacity);
 
             match behavior.state {
-                AutoMineState::Mining => {
-                    if let Ok(asteroid_component) =
-                        all_sectors_with_asteroids.get(in_sector.sector.into())
+                auto_mine::AutoMineState::Mining => {
+                    if let Ok(sector_planets) =
+                        all_sectors_with_gas_giants.get(in_sector.sector.into())
                     {
                         let ship_pos = all_transforms.get(ship_entity).unwrap().translation;
 
-                        // TODO: Also Test whether asteroid_data contains the requested asteroid type
-                        if let Some(closest_asteroid) = asteroid_component
-                            .asteroids
+                        if let Some(closest_planet) = sector_planets
+                            .planets
                             .iter()
-                            .filter(|x| max_asteroid_age.has_not_passed(&x.timestamp))
-                            .filter(|x| {
-                                all_asteroids
-                                    .get(x.entity.into())
-                                    .unwrap()
-                                    .remaining_after_reservations
-                                    > 0
-                            })
-                            .min_by_key(|&asteroid| {
-                                entity_distance_to_ship_squared(&all_transforms, ship_pos, asteroid)
+                            .filter(|&x| all_gas_giants.get(x.into()).is_ok())
+                            .min_by_key(|&planet| {
+                                auto_mine::entity_distance_to_ship_squared(
+                                    &all_transforms,
+                                    ship_pos,
+                                    planet,
+                                )
                             })
                         {
-                            let mut asteroid = all_asteroids
-                                .get_mut(closest_asteroid.entity.into())
-                                .unwrap();
-
-                            let reserved_amount = asteroid
-                                .try_to_reserve(ship_inventory.capacity - used_inventory_space);
-
                             queue.push_back(TaskInsideQueue::MoveToEntity {
-                                target: closest_asteroid.entity.into(),
+                                target: TypedEntity::Planet(*closest_planet),
                                 stop_at_target: true,
                             });
-                            queue.push_back(TaskInsideQueue::MineAsteroid {
-                                target: closest_asteroid.entity,
-                                reserved: reserved_amount,
+                            queue.push_back(TaskInsideQueue::HarvestGas {
+                                target: *closest_planet,
                             });
 
                             queue.apply(&mut commands, now, ship_entity);
@@ -121,9 +85,10 @@ pub fn handle_idle_ships(
                         }
                     }
 
-                    // No asteroids available in current sector, go somewhere else!
-                    let target_sector = match find_nearby_sector_with_asteroids(
-                        &all_sectors_with_asteroids,
+                    // No planets available in current sector, go somewhere else!
+                    let target_sector = match find_nearby_sector_with_gas_giants(
+                        &all_gas_giants,
+                        &all_sectors_with_gas_giants,
                         &all_sectors,
                         in_sector,
                     ) {
@@ -146,7 +111,8 @@ pub fn handle_idle_ships(
                     pathfinding::create_tasks_to_follow_path(&mut queue, path);
                     queue.apply(&mut commands, now, ship_entity);
                 }
-                AutoMineState::Trading => {
+                auto_mine::AutoMineState::Trading => {
+                    // TODO: This is quite literally 100% the same logic as auto_mine
                     let Some(plan) = TradePlan::sell_anything_from_inventory(
                         ship_entity,
                         in_sector,
@@ -171,8 +137,9 @@ pub fn handle_idle_ships(
         });
 }
 
-fn find_nearby_sector_with_asteroids(
-    all_sectors_with_asteroids: &Query<&SectorAsteroidComponent>,
+fn find_nearby_sector_with_gas_giants(
+    all_gas_giants: &Query<&GasGiant>,
+    all_sectors_with_planets: &Query<&SectorPlanets>,
     all_sectors: &Query<&Sector>,
     in_sector: &InSector,
 ) -> Option<SectorEntity> {
@@ -182,37 +149,14 @@ fn find_nearby_sector_with_asteroids(
             in_sector.sector,
             1,
             u8::MAX, // TODO: Should be limited
-            all_sectors_with_asteroids,
-            |_| true,
+            all_sectors_with_planets,
+            |x| {
+                x.planets
+                    .iter()
+                    .any(|x| all_gas_giants.get(x.into()).is_ok())
+            },
         );
 
-    let target_sector = nearby_sectors_with_asteroids.iter().min_by_key(|item| {
-        let asteroid_data = all_sectors_with_asteroids.get(item.sector.into()).unwrap();
-
-        let health = asteroid_data.remaining_percentage();
-
-        if health > 0.4 {
-            item.distance as u16
-        } else {
-            (item.distance * 10) as u16 * item.distance as u16
-                + ((1.0 - health.powi(2)) * 100.0) as u16
-        }
-    })?;
-
+    let target_sector = nearby_sectors_with_asteroids.iter().min()?;
     Some(target_sector.sector)
-}
-
-pub fn entity_distance_to_ship_squared<T>(
-    all_transforms: &Query<&SimulationTransform>,
-    ship_pos: Vec2,
-    a: T,
-) -> u32
-where
-    T: Into<Entity>,
-{
-    all_transforms
-        .get(a.into())
-        .unwrap()
-        .translation
-        .distance_squared(ship_pos) as u32
 }
