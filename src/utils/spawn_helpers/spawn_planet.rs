@@ -1,5 +1,5 @@
 use crate::components::{ConstantOrbit, Planet, SelectableEntity};
-use crate::persistence::{PlanetIdMap, SectorPlanetSaveData};
+use crate::persistence::{PlanetIdMap, PlanetKindSaveData, SectorPlanetSaveData};
 use crate::simulation::precomputed_orbit_directions::PrecomputedOrbitDirections;
 use crate::simulation::ship_ai::AutoTradeBehavior;
 use crate::simulation::transform::simulation_transform::SimulationTransform;
@@ -57,6 +57,13 @@ pub fn spawn_planet(
             planet,
         ))
         .id();
+
+    match planet_data.kind {
+        PlanetKindSaveData::Terrestrial => {}
+        PlanetKindSaveData::GasGiant => {
+            commands.entity(entity).insert(components::GasGiant {});
+        }
+    };
 
     let planet_entity = PlanetEntity::from(entity);
     planet_id_map.insert(planet_data.id, planet_entity);

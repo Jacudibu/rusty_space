@@ -14,3 +14,7 @@ impl Planet {
         Self { id, mass }
     }
 }
+
+/// Marker Component for Planets with harvestable gases
+#[derive(Component)]
+pub struct GasGiant {}
