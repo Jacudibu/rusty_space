@@ -82,6 +82,7 @@ pub struct UiIcons {
     pub star: SizedTexture,
     pub station: SizedTexture,
 
+    pub awaiting_signal: SizedTexture,
     pub idle: SizedTexture,
     pub move_to: SizedTexture,
     pub buy: SizedTexture,
@@ -110,8 +111,8 @@ impl UiIcons {
             },
             TaskInsideQueue::MineAsteroid { .. } => self.asteroid,
             TaskInsideQueue::HarvestGas { .. } => self.planet,
-            TaskInsideQueue::AwaitingSignal => self.station, // TODO
-            TaskInsideQueue::RequestAccess { .. } => self.station, // TODO
+            TaskInsideQueue::AwaitingSignal => self.awaiting_signal,
+            TaskInsideQueue::RequestAccess { .. } => self.awaiting_signal,
         }
     }
 }
@@ -126,6 +127,7 @@ pub fn initialize(
         .ctx_mut()
         .style_mut(|style| style.visuals.window_shadow = Shadow::NONE);
 
+    let awaiting_signal = asset_server.load("ui_icons/awaiting_signal.png");
     let idle = asset_server.load("ui_icons/idle.png");
     let move_to = asset_server.load("ui_icons/move_to.png");
     let buy = asset_server.load("ui_icons/buy.png");
@@ -140,6 +142,7 @@ pub fn initialize(
         ship: SizedTexture::new(contexts.add_image(sprites.ship.clone()), ICON_SIZE),
         star: SizedTexture::new(contexts.add_image(sprites.star.clone()), ICON_SIZE),
         station: SizedTexture::new(contexts.add_image(sprites.station.clone()), ICON_SIZE),
+        awaiting_signal: SizedTexture::new(contexts.add_image(awaiting_signal), ICON_SIZE),
         idle: SizedTexture::new(contexts.add_image(idle), ICON_SIZE),
         move_to: SizedTexture::new(contexts.add_image(move_to), ICON_SIZE),
         buy: SizedTexture::new(contexts.add_image(buy), ICON_SIZE),
