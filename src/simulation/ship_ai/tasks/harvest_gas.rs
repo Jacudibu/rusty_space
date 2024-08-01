@@ -6,7 +6,7 @@ use crate::simulation::prelude::{
 use crate::simulation::ship_ai::task_finished_event::TaskFinishedEvent;
 use crate::simulation::ship_ai::task_queue::TaskQueue;
 use crate::simulation::ship_ai::tasks;
-use crate::simulation::ship_ai::tasks::send_completion_events;
+use crate::simulation::ship_ai::tasks::{finish_interaction, send_completion_events};
 use crate::utils::PlanetEntity;
 use bevy::log::error;
 use bevy::prelude::{Commands, Component, Entity, EventReader, EventWriter, Query, Res};
@@ -91,10 +91,11 @@ impl HarvestGas {
 
         for event in event_reader.read() {
             if let Ok((mut queue, task)) = all_ships_with_task.get_mut(event.entity) {
-                interaction_queues
-                    .get_mut(task.target.into())
-                    .unwrap()
-                    .finish_interaction(&mut signal_writer);
+                finish_interaction(
+                    task.target.into(),
+                    &mut interaction_queues,
+                    &mut signal_writer,
+                );
 
                 tasks::remove_task_and_add_next_in_queue::<Self>(
                     &mut commands,

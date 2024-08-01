@@ -8,7 +8,7 @@ use bevy::ecs::system::EntityCommands;
 pub enum TaskInsideQueue {
     AwaitingSignal,
     RequestAccess {
-        target: PlanetEntity,
+        target: TypedEntity,
     },
     ExchangeWares {
         target: TypedEntity,

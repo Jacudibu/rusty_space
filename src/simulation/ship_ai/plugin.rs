@@ -18,6 +18,7 @@ impl Plugin for ShipAiPlugin {
         app.add_event::<TaskFinishedEvent<MineAsteroid>>();
         app.add_event::<TaskFinishedEvent<HarvestGas>>();
         app.add_event::<TaskFinishedEvent<AwaitingSignal>>();
+        app.add_event::<TaskFinishedEvent<RequestAccess>>(); // TODO: Remove once Docking Task exists
         app.add_systems(
             FixedUpdate,
             (
@@ -25,7 +26,10 @@ impl Plugin for ShipAiPlugin {
                 behaviors::auto_mine::handle_idle_ships.before(asteroids::respawn_asteroids),
                 behaviors::auto_harvest::handle_idle_ships,
                 RequestAccess::run_tasks,
-                AwaitingSignal::complete_tasks.run_if(on_event::<TaskFinishedEvent<AwaitingSignal>>()),
+                AwaitingSignal::complete_tasks.run_if(on_event::<TaskFinishedEvent<AwaitingSignal>>())
+                    .after(ExchangeWares::complete_tasks) 
+                    .after(HarvestGas::complete_tasks)
+                ,
                 ExchangeWares::run_tasks,
                 ExchangeWares::complete_tasks.after(ExchangeWares::run_tasks).run_if(on_event::<TaskFinishedEvent<ExchangeWares>>()),
                 MoveToEntity::run_tasks,

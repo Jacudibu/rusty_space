@@ -77,7 +77,7 @@ pub fn handle_idle_ships(
                                 stop_at_target: true,
                             });
                             queue.push_back(TaskInsideQueue::RequestAccess {
-                                target: *closest_planet,
+                                target: TypedEntity::Planet(*closest_planet),
                             });
                             queue.push_back(TaskInsideQueue::HarvestGas {
                                 target: *closest_planet,

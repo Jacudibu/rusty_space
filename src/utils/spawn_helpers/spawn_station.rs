@@ -1,4 +1,6 @@
-use crate::components::{BuyOrders, Inventory, Sector, SelectableEntity, SellOrders, Station};
+use crate::components::{
+    BuyOrders, InteractionQueue, Inventory, Sector, SelectableEntity, SellOrders, Station,
+};
 use crate::game_data::ItemDefinition;
 use crate::persistence::{PersistentStationId, StationIdMap};
 use crate::simulation::production::{ProductionComponent, ShipyardComponent};
@@ -78,6 +80,7 @@ pub fn spawn_station(
                     .map(|x| (x.id, constants::MOCK_STATION_INVENTORY_SIZE))
                     .collect(),
             ),
+            InteractionQueue::new(constants::SIMULTANEOUS_STATION_INTERACTIONS),
             simulation_transform,
         ))
         .id();

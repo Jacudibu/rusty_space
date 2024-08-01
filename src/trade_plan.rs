@@ -143,7 +143,9 @@ impl TradePlan {
             target: self.seller,
             stop_at_target: true,
         });
-
+        queue.push_back(TaskInsideQueue::RequestAccess {
+            target: self.seller,
+        });
         queue.push_back(TaskInsideQueue::ExchangeWares {
             target: self.seller,
             data: ExchangeWareData::Buy(self.item_id, self.amount),
@@ -175,6 +177,7 @@ impl TradePlan {
             target: self.buyer,
             stop_at_target: true,
         });
+        queue.push_back(TaskInsideQueue::RequestAccess { target: self.buyer });
         queue.push_back(TaskInsideQueue::ExchangeWares {
             target: self.buyer,
             data: ExchangeWareData::Sell(self.item_id, self.amount),

@@ -36,6 +36,7 @@ pub const ASTEROID_RESPAWN_TIME: Milliseconds = 5000;
 /// Basically a multiplier for orbit speeds
 pub const GRAVITATIONAL_CONSTANT: f32 = 0.000000067;
 
+pub const SIMULTANEOUS_STATION_INTERACTIONS: u32 = 4;
 pub const SIMULTANEOUS_PLANET_INTERACTIONS: u32 = 8;
 
 pub mod z_layers {

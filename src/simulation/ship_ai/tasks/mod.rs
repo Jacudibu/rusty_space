@@ -1,4 +1,4 @@
-use bevy::prelude::{Commands, Component, Entity, EventWriter, Mut};
+use bevy::prelude::{Commands, Component, Entity, EventWriter, Mut, Query};
 use std::sync::{Arc, Mutex};
 
 mod awaiting_signal;
@@ -11,6 +11,7 @@ mod use_gate;
 
 use crate::simulation::prelude::{CurrentSimulationTimestamp, TaskFinishedEvent, TaskQueue};
 
+use crate::components::InteractionQueue;
 pub use {
     awaiting_signal::AwaitingSignal, exchange_wares::ExchangeWares, harvest_gas::HarvestGas,
     mine_asteroid::MineAsteroid, move_to_entity::MoveToEntity, request_access::RequestAccess,
@@ -49,4 +50,16 @@ pub fn remove_task_and_add_next_in_queue<T: Component>(
     if let Some(next_task) = queue.front() {
         next_task.create_and_insert_component(&mut entity_commands, now);
     }
+}
+
+#[inline]
+pub fn finish_interaction(
+    queue_entity: Entity,
+    interaction_queues: &mut Query<&mut InteractionQueue>,
+    signal_writer: &mut EventWriter<TaskFinishedEvent<AwaitingSignal>>,
+) {
+    interaction_queues
+        .get_mut(queue_entity)
+        .unwrap()
+        .finish_interaction(signal_writer);
 }

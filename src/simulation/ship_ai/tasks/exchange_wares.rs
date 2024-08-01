@@ -1,10 +1,14 @@
-use crate::components::Inventory;
-use crate::simulation::prelude::{CurrentSimulationTimestamp, SimulationTime, SimulationTimestamp};
+use crate::components::{InteractionQueue, Inventory};
+use crate::simulation::prelude::{
+    AwaitingSignal, CurrentSimulationTimestamp, SimulationTime, SimulationTimestamp,
+};
 use crate::simulation::production::InventoryUpdateForProductionEvent;
 use crate::simulation::ship_ai::task_finished_event::TaskFinishedEvent;
 use crate::simulation::ship_ai::task_queue::TaskQueue;
 use crate::simulation::ship_ai::task_result::TaskResult;
-use crate::simulation::ship_ai::tasks::send_completion_events;
+use crate::simulation::ship_ai::tasks::{
+    finish_interaction, send_completion_events, RequestAccess,
+};
 use crate::simulation::ship_ai::{tasks, MoveToEntity};
 use crate::utils::ExchangeWareData;
 use crate::utils::{TradeIntent, TypedEntity};
@@ -86,6 +90,8 @@ impl ExchangeWares {
         mut all_ships_with_task: Query<(&mut TaskQueue, &Self)>,
         mut all_storages: Query<&mut Inventory>,
         mut event_writer: EventWriter<InventoryUpdateForProductionEvent>,
+        mut interaction_queues: Query<&mut InteractionQueue>,
+        mut signal_writer: EventWriter<TaskFinishedEvent<AwaitingSignal>>,
         simulation_time: Res<SimulationTime>,
     ) {
         let now = simulation_time.now();
@@ -93,6 +99,12 @@ impl ExchangeWares {
         for event in event_reader.read() {
             if let Ok((mut queue, task)) = all_ships_with_task.get_mut(event.entity) {
                 task.complete(event.entity, &mut all_storages, &mut event_writer);
+
+                finish_interaction(
+                    task.target.into(),
+                    &mut interaction_queues,
+                    &mut signal_writer,
+                );
 
                 tasks::remove_task_and_add_next_in_queue::<Self>(
                     &mut commands,
@@ -113,11 +125,20 @@ impl ExchangeWares {
     /// Even in a busy session, there should always be *way, WAY* less of those than Entities.
     pub fn on_task_creation(
         mut query: Query<&mut Self>,
-        mut finished_events: EventReader<TaskFinishedEvent<MoveToEntity>>,
+        mut finished_events_a: EventReader<TaskFinishedEvent<RequestAccess>>, // TODO: Remove once Docking Task exists
+        mut finished_events_b: EventReader<TaskFinishedEvent<AwaitingSignal>>, // TODO: Remove once Docking Task exists
         simulation_time: Res<SimulationTime>,
     ) {
         let now = simulation_time.now();
-        for x in finished_events.read() {
+        for x in finished_events_a.read() {
+            let Ok(mut created_component) = query.get_mut(x.entity) else {
+                continue;
+            };
+
+            created_component.finishes_at = now.add_seconds(2);
+        }
+
+        for x in finished_events_b.read() {
             let Ok(mut created_component) = query.get_mut(x.entity) else {
                 continue;
             };

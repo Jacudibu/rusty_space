@@ -7,6 +7,7 @@ use bevy::prelude::{error, Commands, Component, EventReader, Query, Res, With};
 pub struct AwaitingSignal {}
 
 impl AwaitingSignal {
+    /// Needs to run after any systems which may send TaskFinishedEvent<AwaitingSignal>, which is a bit nasty to manage
     pub fn complete_tasks(
         mut commands: Commands,
         mut event_reader: EventReader<TaskFinishedEvent<Self>>,
