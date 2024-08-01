@@ -30,6 +30,13 @@ impl<T: Component> From<&Entity> for TypedEntityWrapper<T> {
     }
 }
 
+#[cfg(test)]
+impl<T: Component> From<u32> for TypedEntityWrapper<T> {
+    fn from(value: u32) -> Self {
+        Self::from(Entity::from_raw(value))
+    }
+}
+
 impl<T: Component> From<TypedEntityWrapper<T>> for Entity {
     fn from(value: TypedEntityWrapper<T>) -> Self {
         value.0

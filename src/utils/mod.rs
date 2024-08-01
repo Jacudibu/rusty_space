@@ -1,6 +1,7 @@
 mod celestial_mass;
 mod entity_wrappers;
 mod exchange_ware_data;
+mod interaction_queue;
 pub mod interpolation;
 mod key_value_resource;
 mod price_range;
