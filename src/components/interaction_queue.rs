@@ -7,9 +7,9 @@ use std::collections::BTreeMap;
 
 #[derive(Component)]
 pub struct InteractionQueue {
-    pub maximum_simultaneous_interactions: u32,
-    pub currently_interacting: u32,
-    pub waiting_queue: BTreeMap<SimulationTimestamp, ShipEntity>,
+    maximum_simultaneous_interactions: u32,
+    currently_interacting: u32,
+    waiting_queue: BTreeMap<SimulationTimestamp, ShipEntity>,
 }
 
 impl InteractionQueue {
@@ -19,6 +19,14 @@ impl InteractionQueue {
             currently_interacting: 0,
             waiting_queue: Default::default(),
         }
+    }
+
+    pub fn maximum_interactions(&self) -> u32 {
+        self.maximum_simultaneous_interactions
+    }
+
+    pub fn currently_interacting(&self) -> u32 {
+        self.currently_interacting
     }
 
     /// Attempts to start an interaction.

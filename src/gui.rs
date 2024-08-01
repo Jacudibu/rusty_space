@@ -8,7 +8,8 @@ use bevy_egui::egui::{Align2, Shadow, Ui};
 use bevy_egui::{egui, EguiContexts, EguiStartupSet};
 
 use crate::components::{
-    Asteroid, BuyOrders, Gate, InSector, Inventory, SelectableEntity, SellOrders, TradeOrder,
+    Asteroid, BuyOrders, Gate, InSector, InteractionQueue, Inventory, SelectableEntity, SellOrders,
+    TradeOrder,
 };
 use crate::entity_selection::{MouseCursor, Selected};
 use crate::game_data::GameData;
@@ -239,6 +240,7 @@ pub fn list_selection_details(
             Option<&ShipyardComponent>,
             Option<&Gate>,
             Option<&InSector>,
+            Option<&InteractionQueue>,
         ),
         With<Selected>,
     >,
@@ -274,6 +276,7 @@ pub fn list_selection_details(
                     shipyard,
                     _,
                     in_sector,
+                    interaction_queue,
                 ) = selected.single();
                 draw_ship_summary_row(
                     &images, ui, selectable, name, inventory, velocity, task_queue,
@@ -283,6 +286,14 @@ pub fn list_selection_details(
                     ui.label(format!(
                         "In sector {}",
                         names.get(in_sector.sector.into()).unwrap()
+                    ));
+                }
+
+                if let Some(interaction_queue) = interaction_queue {
+                    ui.label(format!(
+                        "Interaction Queue at {}/{}",
+                        interaction_queue.currently_interacting(),
+                        interaction_queue.maximum_interactions()
                     ));
                 }
 
@@ -445,7 +456,7 @@ pub fn list_selection_details(
         .resizable(false)
         .vscroll(true)
         .show(context.ctx_mut(), |ui| {
-            for (_, selectable, name, storage, _, velocity, task_queue, _, _, _, _, _, _) in
+            for (_, selectable, name, storage, _, velocity, task_queue, _, _, _, _, _, _, _) in
                 selected.iter()
             {
                 draw_ship_summary_row(&images, ui, selectable, name, storage, velocity, task_queue);
