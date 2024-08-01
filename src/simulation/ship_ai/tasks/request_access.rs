@@ -1,8 +1,8 @@
-use crate::components::{GasGiant, InteractionQueue};
+use crate::components::InteractionQueue;
 use crate::simulation::prelude::{SimulationTime, TaskInsideQueue, TaskQueue};
-use crate::simulation::ship_ai::{tasks, TaskFinishedEvent};
+use crate::simulation::ship_ai::tasks;
 use crate::utils::TypedEntity;
-use bevy::prelude::{Commands, Component, Entity, EventWriter, Query, Res};
+use bevy::prelude::{Commands, Component, Entity, Query, Res};
 
 /// Intermediate task to reserve a spot inside an [`InteractionQueue`] attached to the [`target`].
 ///
@@ -24,7 +24,6 @@ impl RequestAccess {
         mut all_ships_with_task: Query<(Entity, &Self, &mut TaskQueue)>,
         mut all_interaction_queues: Query<&mut InteractionQueue>,
         simulation_time: Res<SimulationTime>,
-        mut finished_events: EventWriter<TaskFinishedEvent<RequestAccess>>, // TODO: Remove once Docking Task exists
     ) {
         let now = simulation_time.now();
 
@@ -44,8 +43,6 @@ impl RequestAccess {
                 &mut task_queue,
                 now,
             );
-
-            finished_events.send(TaskFinishedEvent::new(entity)); // TODO: Remove once Docking Task exists
         }
     }
 }

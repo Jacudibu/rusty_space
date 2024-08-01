@@ -87,6 +87,7 @@ pub struct UiIcons {
     pub move_to: SizedTexture,
     pub buy: SizedTexture,
     pub sell: SizedTexture,
+    pub dock_at: SizedTexture,
 }
 
 impl UiIcons {
@@ -113,6 +114,7 @@ impl UiIcons {
             TaskInsideQueue::HarvestGas { .. } => self.planet,
             TaskInsideQueue::AwaitingSignal => self.awaiting_signal,
             TaskInsideQueue::RequestAccess { .. } => self.awaiting_signal,
+            TaskInsideQueue::DockAtEntity { .. } => self.dock_at,
         }
     }
 }
@@ -130,6 +132,7 @@ pub fn initialize(
     let awaiting_signal = asset_server.load("ui_icons/awaiting_signal.png");
     let idle = asset_server.load("ui_icons/idle.png");
     let move_to = asset_server.load("ui_icons/move_to.png");
+    let dock_at = asset_server.load("ui_icons/move_to.png"); // TODO
     let buy = asset_server.load("ui_icons/buy.png");
     let sell = asset_server.load("ui_icons/sell.png");
 
@@ -145,6 +148,7 @@ pub fn initialize(
         awaiting_signal: SizedTexture::new(contexts.add_image(awaiting_signal), ICON_SIZE),
         idle: SizedTexture::new(contexts.add_image(idle), ICON_SIZE),
         move_to: SizedTexture::new(contexts.add_image(move_to), ICON_SIZE),
+        dock_at: SizedTexture::new(contexts.add_image(dock_at), ICON_SIZE),
         buy: SizedTexture::new(contexts.add_image(buy), ICON_SIZE),
         sell: SizedTexture::new(contexts.add_image(sell), ICON_SIZE),
     };
@@ -412,6 +416,9 @@ pub fn list_selection_details(
                                     }
                                     TaskInsideQueue::MoveToEntity { target, .. } => {
                                         format!("Move to {}", names.get(target.into()).unwrap())
+                                    }
+                                    TaskInsideQueue::DockAtEntity { target, .. } => {
+                                        format!("Dock at {}", names.get(target.into()).unwrap())
                                     }
                                     TaskInsideQueue::ExchangeWares { data, .. } => match data {
                                         ExchangeWareData::Buy(item_id, amount) => {

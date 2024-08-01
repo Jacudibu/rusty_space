@@ -1,8 +1,5 @@
-use crate::components::Ship;
-use crate::simulation::ship_ai::tasks::{
-    AwaitingSignal, ExchangeWares, HarvestGas, MineAsteroid, RequestAccess, UseGate,
-};
-use crate::simulation::ship_ai::MoveToEntity;
+use crate::components;
+use crate::simulation::ship_ai::tasks;
 use bevy::ecs::query::QueryFilter;
 use bevy::prelude::{With, Without};
 
@@ -10,13 +7,14 @@ use bevy::prelude::{With, Without};
 #[allow(clippy::type_complexity)]
 pub struct ShipIsIdleFilter {
     tuple: (
-        With<Ship>,
-        Without<ExchangeWares>,
-        Without<MoveToEntity>,
-        Without<UseGate>,
-        Without<MineAsteroid>,
-        Without<HarvestGas>,
-        Without<AwaitingSignal>,
-        Without<RequestAccess>,
+        With<components::Ship>,
+        Without<tasks::ExchangeWares>,
+        Without<tasks::MoveToEntity>,
+        Without<tasks::UseGate>,
+        Without<tasks::MineAsteroid>,
+        Without<tasks::HarvestGas>,
+        Without<tasks::AwaitingSignal>,
+        Without<tasks::RequestAccess>,
+        Without<tasks::DockAtEntity>,
     ),
 }

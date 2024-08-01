@@ -6,10 +6,8 @@ use crate::simulation::production::InventoryUpdateForProductionEvent;
 use crate::simulation::ship_ai::task_finished_event::TaskFinishedEvent;
 use crate::simulation::ship_ai::task_queue::TaskQueue;
 use crate::simulation::ship_ai::task_result::TaskResult;
-use crate::simulation::ship_ai::tasks::{
-    finish_interaction, send_completion_events, RequestAccess,
-};
-use crate::simulation::ship_ai::{tasks, MoveToEntity};
+use crate::simulation::ship_ai::tasks;
+use crate::simulation::ship_ai::tasks::{finish_interaction, send_completion_events, DockAtEntity};
 use crate::utils::ExchangeWareData;
 use crate::utils::{TradeIntent, TypedEntity};
 use bevy::prelude::{error, Commands, Component, Entity, EventReader, EventWriter, Query, Res};
@@ -125,20 +123,11 @@ impl ExchangeWares {
     /// Even in a busy session, there should always be *way, WAY* less of those than Entities.
     pub fn on_task_creation(
         mut query: Query<&mut Self>,
-        mut finished_events_a: EventReader<TaskFinishedEvent<RequestAccess>>, // TODO: Remove once Docking Task exists
-        mut finished_events_b: EventReader<TaskFinishedEvent<AwaitingSignal>>, // TODO: Remove once Docking Task exists
+        mut finished_events: EventReader<TaskFinishedEvent<DockAtEntity>>,
         simulation_time: Res<SimulationTime>,
     ) {
         let now = simulation_time.now();
-        for x in finished_events_a.read() {
-            let Ok(mut created_component) = query.get_mut(x.entity) else {
-                continue;
-            };
-
-            created_component.finishes_at = now.add_seconds(2);
-        }
-
-        for x in finished_events_b.read() {
+        for x in finished_events.read() {
             let Ok(mut created_component) = query.get_mut(x.entity) else {
                 continue;
             };

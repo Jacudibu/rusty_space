@@ -46,6 +46,11 @@ pub fn draw_selected_ship_task(
                 }
                 TaskInsideQueue::AwaitingSignal => {}
                 TaskInsideQueue::RequestAccess { .. } => {}
+                TaskInsideQueue::DockAtEntity { target } => {
+                    let target_position = all_transforms.get(target.into()).unwrap().translation;
+                    gizmos.line(current_position, target_position, GIZMO_COLOR);
+                    current_position = target_position;
+                }
             }
         }
     }

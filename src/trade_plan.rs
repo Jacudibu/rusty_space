@@ -149,6 +149,9 @@ impl TradePlan {
         queue.push_back(TaskInsideQueue::RequestAccess {
             target: self.seller,
         });
+        queue.push_back(TaskInsideQueue::DockAtEntity {
+            target: self.seller,
+        });
         queue.push_back(TaskInsideQueue::ExchangeWares {
             target: self.seller,
             data: ExchangeWareData::Buy(self.item_id, self.amount),
@@ -182,6 +185,7 @@ impl TradePlan {
             distance_to_target: Self::TARGET_DISTANCE_TO_STATION,
         });
         queue.push_back(TaskInsideQueue::RequestAccess { target: self.buyer });
+        queue.push_back(TaskInsideQueue::DockAtEntity { target: self.buyer });
         queue.push_back(TaskInsideQueue::ExchangeWares {
             target: self.buyer,
             data: ExchangeWareData::Sell(self.item_id, self.amount),

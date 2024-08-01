@@ -2,7 +2,8 @@ use crate::simulation::asteroids;
 use crate::simulation::ship_ai::behaviors;
 use crate::simulation::ship_ai::task_finished_event::TaskFinishedEvent;
 use crate::simulation::ship_ai::tasks::{
-    AwaitingSignal, ExchangeWares, HarvestGas, MineAsteroid, MoveToEntity, RequestAccess, UseGate,
+    AwaitingSignal, DockAtEntity, ExchangeWares, HarvestGas, MineAsteroid, MoveToEntity,
+    RequestAccess, UseGate,
 };
 use crate::states::SimulationState;
 use bevy::app::App;
@@ -13,12 +14,12 @@ impl Plugin for ShipAiPlugin {
     #[rustfmt::skip]
     fn build(&self, app: &mut App) {
         app.add_event::<TaskFinishedEvent<MoveToEntity>>();
+        app.add_event::<TaskFinishedEvent<DockAtEntity>>();
         app.add_event::<TaskFinishedEvent<ExchangeWares>>();
         app.add_event::<TaskFinishedEvent<UseGate>>();
         app.add_event::<TaskFinishedEvent<MineAsteroid>>();
         app.add_event::<TaskFinishedEvent<HarvestGas>>();
         app.add_event::<TaskFinishedEvent<AwaitingSignal>>();
-        app.add_event::<TaskFinishedEvent<RequestAccess>>(); // TODO: Remove once Docking Task exists
         app.add_systems(
             FixedUpdate,
             (
@@ -32,6 +33,8 @@ impl Plugin for ShipAiPlugin {
                 ,
                 ExchangeWares::run_tasks,
                 ExchangeWares::complete_tasks.after(ExchangeWares::run_tasks).run_if(on_event::<TaskFinishedEvent<ExchangeWares>>()),
+                DockAtEntity::run_tasks,
+                DockAtEntity::complete_tasks.after(DockAtEntity::run_tasks).run_if(on_event::<TaskFinishedEvent<DockAtEntity>>()),
                 MoveToEntity::run_tasks,
                 MoveToEntity::complete_tasks.after(MoveToEntity::run_tasks).run_if(on_event::<TaskFinishedEvent<MoveToEntity>>()),
                 UseGate::run_tasks,

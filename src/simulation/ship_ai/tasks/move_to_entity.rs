@@ -21,78 +21,79 @@ pub struct MoveToEntity {
     pub distance_to_target: f32,
 }
 
-impl MoveToEntity {
-    fn run(
-        &self,
-        this_entity: Entity,
-        all_transforms: &Query<&SimulationTransform>,
-        engine: &Engine,
-        velocity: &mut ShipVelocity,
-        time: &Time,
-    ) -> TaskResult {
-        let Ok(target_transform) = all_transforms.get(self.target.into()) else {
-            warn!(
-                "Didn't find target transform for {:?}, aborting MoveToEntity task.",
-                self.target
-            );
-            return TaskResult::Aborted;
-        };
-        let entity_transform = all_transforms.get(this_entity).unwrap();
-        let delta = target_transform.translation - entity_transform.translation;
+pub fn move_to_entity(
+    this_entity: Entity,
+    target: TypedEntity,
+    distance_to_target: f32,
+    stop_at_target: bool,
+    all_transforms: &Query<&SimulationTransform>,
+    engine: &Engine,
+    velocity: &mut ShipVelocity,
+    delta_seconds: f32,
+) -> TaskResult {
+    let Ok(target_transform) = all_transforms.get(target.into()) else {
+        warn!(
+            "Didn't find target transform for {:?}, aborting MoveToEntity task.",
+            target
+        );
+        return TaskResult::Aborted;
+    };
+    let entity_transform = all_transforms.get(this_entity).unwrap();
+    let delta = target_transform.translation - entity_transform.translation;
 
-        let own_rotation = entity_transform.rotation.as_radians();
-        let own_rotation = own_rotation + std::f32::consts::FRAC_PI_2;
+    let own_rotation = entity_transform.rotation.as_radians();
+    let own_rotation = own_rotation + std::f32::consts::FRAC_PI_2;
 
-        let target = delta.y.atan2(delta.x);
-        let mut angle_difference = target - own_rotation;
+    let target = delta.y.atan2(delta.x);
+    let mut angle_difference = target - own_rotation;
 
-        if angle_difference > std::f32::consts::PI {
-            angle_difference -= 2.0 * std::f32::consts::PI;
-        } else if angle_difference < -std::f32::consts::PI {
-            angle_difference += 2.0 * std::f32::consts::PI;
-        }
-
-        if angle_difference - velocity.angular > 0.0 {
-            velocity.turn_left(engine, time.delta_seconds());
-        } else {
-            velocity.turn_right(engine, time.delta_seconds());
-        }
-
-        let distance = delta.length() - self.distance_to_target;
-
-        if angle_difference.abs() > std::f32::consts::FRAC_PI_3 {
-            velocity.decelerate(engine, time.delta_seconds());
-        } else if self.stop_at_target {
-            let distance_to_stop =
-                (velocity.forward * velocity.forward) / (2.0 * engine.deceleration);
-
-            let distance_travelled_this_frame = velocity.forward * time.delta_seconds();
-
-            if distance - distance_travelled_this_frame > distance_to_stop {
-                velocity.accelerate(engine, time.delta_seconds());
-            } else {
-                velocity.decelerate(engine, time.delta_seconds());
-            }
-        } else {
-            velocity.accelerate(engine, time.delta_seconds());
-        }
-
-        if distance < 10.0 {
-            if self.stop_at_target {
-                if velocity.forward < 0.3 {
-                    velocity.force_stop();
-                    TaskResult::Finished
-                } else {
-                    TaskResult::Ongoing
-                }
-            } else {
-                TaskResult::Finished
-            }
-        } else {
-            TaskResult::Ongoing
-        }
+    if angle_difference > std::f32::consts::PI {
+        angle_difference -= 2.0 * std::f32::consts::PI;
+    } else if angle_difference < -std::f32::consts::PI {
+        angle_difference += 2.0 * std::f32::consts::PI;
     }
 
+    if angle_difference - velocity.angular > 0.0 {
+        velocity.turn_left(engine, delta_seconds);
+    } else {
+        velocity.turn_right(engine, delta_seconds);
+    }
+
+    let distance = delta.length() - distance_to_target;
+
+    if angle_difference.abs() > std::f32::consts::FRAC_PI_3 {
+        velocity.decelerate(engine, delta_seconds);
+    } else if stop_at_target {
+        let distance_to_stop = (velocity.forward * velocity.forward) / (2.0 * engine.deceleration);
+
+        let distance_travelled_this_frame = velocity.forward * delta_seconds;
+
+        if distance - distance_travelled_this_frame > distance_to_stop {
+            velocity.accelerate(engine, delta_seconds);
+        } else {
+            velocity.decelerate(engine, delta_seconds);
+        }
+    } else {
+        velocity.accelerate(engine, delta_seconds);
+    }
+
+    if distance < 10.0 {
+        if stop_at_target {
+            if velocity.forward < 0.3 {
+                velocity.force_stop();
+                TaskResult::Finished
+            } else {
+                TaskResult::Ongoing
+            }
+        } else {
+            TaskResult::Finished
+        }
+    } else {
+        TaskResult::Ongoing
+    }
+}
+
+impl MoveToEntity {
     pub fn run_tasks(
         event_writer: EventWriter<TaskFinishedEvent<Self>>,
         time: Res<Time>,
@@ -104,7 +105,16 @@ impl MoveToEntity {
         ships
             .par_iter_mut()
             .for_each(|(entity, task, engine, mut velocity)| {
-                match task.run(entity, &all_transforms, engine, &mut velocity, &time) {
+                match move_to_entity(
+                    entity,
+                    task.target,
+                    task.distance_to_target,
+                    task.stop_at_target,
+                    &all_transforms,
+                    engine,
+                    &mut velocity,
+                    time.delta_seconds(),
+                ) {
                     TaskResult::Ongoing => {}
                     TaskResult::Finished | TaskResult::Aborted => task_completions
                         .lock()

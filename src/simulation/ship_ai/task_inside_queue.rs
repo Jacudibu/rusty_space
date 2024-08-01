@@ -10,6 +10,9 @@ pub enum TaskInsideQueue {
     RequestAccess {
         target: TypedEntity,
     },
+    DockAtEntity {
+        target: TypedEntity,
+    },
     ExchangeWares {
         target: TypedEntity,
         data: ExchangeWareData,
@@ -79,6 +82,9 @@ impl TaskInsideQueue {
             }
             TaskInsideQueue::RequestAccess { target } => {
                 entity_commands.insert(tasks::RequestAccess::new(*target));
+            }
+            TaskInsideQueue::DockAtEntity { target } => {
+                entity_commands.insert(tasks::DockAtEntity::new(*target));
             }
         }
     }
