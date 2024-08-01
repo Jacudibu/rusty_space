@@ -1,4 +1,4 @@
-use crate::components::{GasGiant, Inventory};
+use crate::components::{InteractionQueue, Inventory};
 use crate::game_data::DEBUG_ITEM_ID_ORE;
 use crate::simulation::prelude::{
     AwaitingSignal, CurrentSimulationTimestamp, Milliseconds, SimulationTime, SimulationTimestamp,
@@ -83,7 +83,7 @@ impl HarvestGas {
         mut commands: Commands,
         mut event_reader: EventReader<TaskFinishedEvent<Self>>,
         mut all_ships_with_task: Query<(&mut TaskQueue, &Self)>,
-        mut gas_giants: Query<&mut GasGiant>,
+        mut interaction_queues: Query<&mut InteractionQueue>,
         simulation_time: Res<SimulationTime>,
         mut signal_writer: EventWriter<TaskFinishedEvent<AwaitingSignal>>,
     ) {
@@ -91,10 +91,9 @@ impl HarvestGas {
 
         for event in event_reader.read() {
             if let Ok((mut queue, task)) = all_ships_with_task.get_mut(event.entity) {
-                gas_giants
+                interaction_queues
                     .get_mut(task.target.into())
                     .unwrap()
-                    .interaction_queue
                     .finish_interaction(&mut signal_writer);
 
                 tasks::remove_task_and_add_next_in_queue::<Self>(

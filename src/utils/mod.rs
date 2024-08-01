@@ -1,7 +1,6 @@
 mod celestial_mass;
 mod entity_wrappers;
 mod exchange_ware_data;
-mod interaction_queue;
 pub mod interpolation;
 mod key_value_resource;
 mod price_range;
@@ -15,7 +14,6 @@ mod update_orders;
 pub use celestial_mass::*;
 pub use entity_wrappers::*;
 pub use exchange_ware_data::*;
-pub use interaction_queue::*;
 pub use price_range::*;
 pub use price_setting::*;
 pub use sector_position::*;

@@ -4,7 +4,7 @@ use crate::simulation::precomputed_orbit_directions::PrecomputedOrbitDirections;
 use crate::simulation::ship_ai::AutoTradeBehavior;
 use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::utils::spawn_helpers::helpers;
-use crate::utils::{InteractionQueue, PlanetEntity, SectorEntity, SolarMass};
+use crate::utils::{PlanetEntity, SectorEntity, SolarMass};
 use crate::{components, constants, SpriteHandles};
 use bevy::core::Name;
 use bevy::math::Vec2;
@@ -61,9 +61,10 @@ pub fn spawn_planet(
     match planet_data.kind {
         PlanetKindSaveData::Terrestrial => {}
         PlanetKindSaveData::GasGiant => {
-            commands.entity(entity).insert(components::GasGiant {
-                interaction_queue: InteractionQueue::new(8),
-            });
+            commands.entity(entity).insert((
+                components::GasGiant {},
+                components::InteractionQueue::new(constants::SIMULTANEOUS_PLANET_INTERACTIONS),
+            ));
         }
     };
 

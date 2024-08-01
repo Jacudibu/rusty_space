@@ -2,9 +2,10 @@ use crate::simulation::prelude::{
     AwaitingSignal, CurrentSimulationTimestamp, SimulationTimestamp, TaskFinishedEvent,
 };
 use crate::utils::ShipEntity;
-use bevy::prelude::{info, EventWriter};
+use bevy::prelude::{Component, EventWriter};
 use std::collections::BTreeMap;
 
+#[derive(Component)]
 pub struct InteractionQueue {
     pub maximum_simultaneous_interactions: u32,
     pub currently_interacting: u32,
@@ -64,14 +65,14 @@ impl InteractionQueue {
 
 #[cfg(test)]
 mod test {
+    use crate::components::interaction_queue::InteractionQueue;
     use crate::simulation::prelude::SimulationTimestamp;
-    use crate::utils::interaction_queue::InteractionQueue;
     use crate::utils::ShipEntity;
 
     #[test]
     fn interacting_below_capacity() {
         let mut queue = InteractionQueue::new(2);
-        assert_eq!(Ok(()), queue.try_start_interaction(1.into(), &1.into()));
+        assert_eq!(Ok(()), queue.try_start_interaction(&1.into(), 1.into()));
 
         assert_eq!(1, queue.currently_interacting)
     }
@@ -79,11 +80,11 @@ mod test {
     #[test]
     fn interacting_at_and_above_capacity() {
         let mut queue = InteractionQueue::new(2);
-        queue.try_start_interaction(1.into(), &1.into()).unwrap();
-        queue.try_start_interaction(2.into(), &2.into()).unwrap();
+        queue.try_start_interaction(&1.into(), 1.into()).unwrap();
+        queue.try_start_interaction(&2.into(), 2.into()).unwrap();
 
-        assert_eq!(Err(()), queue.try_start_interaction(3.into(), &3.into()));
-        assert_eq!(Err(()), queue.try_start_interaction(4.into(), &4.into()));
+        assert_eq!(Err(()), queue.try_start_interaction(&3.into(), 3.into()));
+        assert_eq!(Err(()), queue.try_start_interaction(&4.into(), 4.into()));
 
         assert_eq!(2, queue.currently_interacting);
         assert_eq!(2, queue.waiting_queue.len());
@@ -100,16 +101,16 @@ mod test {
     #[test]
     fn interacting_above_capacity_same_frame() {
         let mut queue = InteractionQueue::new(2);
-        queue.try_start_interaction(1.into(), &1.into()).unwrap();
-        queue.try_start_interaction(2.into(), &2.into()).unwrap();
+        queue.try_start_interaction(&1.into(), 1.into()).unwrap();
+        queue.try_start_interaction(&2.into(), 2.into()).unwrap();
 
         let first = ShipEntity::from(1);
         let second = ShipEntity::from(2);
         let third = ShipEntity::from(3);
 
-        assert_eq!(Err(()), queue.try_start_interaction(3.into(), &first));
-        assert_eq!(Err(()), queue.try_start_interaction(3.into(), &second));
-        assert_eq!(Err(()), queue.try_start_interaction(3.into(), &third));
+        assert_eq!(Err(()), queue.try_start_interaction(&3.into(), first));
+        assert_eq!(Err(()), queue.try_start_interaction(&3.into(), second));
+        assert_eq!(Err(()), queue.try_start_interaction(&3.into(), third));
 
         assert_eq!(2, queue.currently_interacting);
         assert_eq!(3, queue.waiting_queue.len());

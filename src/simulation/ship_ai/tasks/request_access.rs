@@ -1,4 +1,4 @@
-use crate::components::GasGiant;
+use crate::components::{GasGiant, InteractionQueue};
 use crate::simulation::prelude::{SimulationTime, TaskInsideQueue, TaskQueue};
 use crate::simulation::ship_ai::tasks;
 use crate::utils::PlanetEntity;
@@ -22,16 +22,13 @@ impl RequestAccess {
     pub fn run_tasks(
         mut commands: Commands,
         mut all_ships_with_task: Query<(Entity, &Self, &mut TaskQueue)>,
-        mut all_gas_giants: Query<&mut GasGiant>,
+        mut all_interaction_queues: Query<&mut InteractionQueue>,
         simulation_time: Res<SimulationTime>,
     ) {
         let now = simulation_time.now();
 
         for (entity, task, mut task_queue) in all_ships_with_task.iter_mut() {
-            let interaction_queue = &mut all_gas_giants
-                .get_mut(task.target.into())
-                .unwrap()
-                .interaction_queue;
+            let mut interaction_queue = all_interaction_queues.get_mut(task.target.into()).unwrap();
 
             if interaction_queue
                 .try_start_interaction(&now, entity.into())

@@ -1,5 +1,6 @@
 use crate::simulation::prelude::Milliseconds;
 use crate::simulation::time::MILLIS_PER_SECOND;
+use bevy::prelude::{Component, Entity};
 use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
 use std::ops::Add;
@@ -50,6 +51,13 @@ impl CurrentSimulationTimestamp {
         } else {
             Duration::from_millis(timestamp.0 - self.0)
         }
+    }
+}
+
+#[cfg(test)]
+impl From<Milliseconds> for CurrentSimulationTimestamp {
+    fn from(value: Milliseconds) -> Self {
+        Self(value)
     }
 }
 
