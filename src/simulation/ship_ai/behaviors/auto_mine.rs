@@ -109,6 +109,7 @@ pub fn handle_idle_ships(
                             queue.push_back(TaskInsideQueue::MoveToEntity {
                                 target: closest_asteroid.entity.into(),
                                 stop_at_target: true,
+                                distance_to_target: 0.0,
                             });
                             queue.push_back(TaskInsideQueue::MineAsteroid {
                                 target: closest_asteroid.entity,

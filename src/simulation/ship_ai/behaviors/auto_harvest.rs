@@ -75,6 +75,7 @@ pub fn handle_idle_ships(
                             queue.push_back(TaskInsideQueue::MoveToEntity {
                                 target: TypedEntity::Planet(*closest_planet),
                                 stop_at_target: true,
+                                distance_to_target: 0.0,
                             });
                             queue.push_back(TaskInsideQueue::RequestAccess {
                                 target: TypedEntity::Planet(*closest_planet),

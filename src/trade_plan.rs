@@ -116,6 +116,8 @@ impl TradePlan {
         best_offer
     }
 
+    const TARGET_DISTANCE_TO_STATION: f32 = 24.0;
+
     pub fn create_tasks_for_purchase(
         &self,
         all_sectors: &Query<&Sector>,
@@ -142,6 +144,7 @@ impl TradePlan {
         queue.push_back(TaskInsideQueue::MoveToEntity {
             target: self.seller,
             stop_at_target: true,
+            distance_to_target: Self::TARGET_DISTANCE_TO_STATION,
         });
         queue.push_back(TaskInsideQueue::RequestAccess {
             target: self.seller,
@@ -176,6 +179,7 @@ impl TradePlan {
         queue.push_back(TaskInsideQueue::MoveToEntity {
             target: self.buyer,
             stop_at_target: true,
+            distance_to_target: Self::TARGET_DISTANCE_TO_STATION,
         });
         queue.push_back(TaskInsideQueue::RequestAccess { target: self.buyer });
         queue.push_back(TaskInsideQueue::ExchangeWares {

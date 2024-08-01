@@ -13,9 +13,11 @@ impl TaskSaveData {
             TaskInsideQueue::MoveToEntity {
                 target,
                 stop_at_target,
+                distance_to_target: distance,
             } => Self::MoveToEntity {
                 target: all_entity_id_maps.get_typed_id_unchecked(target),
                 stop_at_target: *stop_at_target,
+                distance_to_target: *distance,
             },
             TaskInsideQueue::UseGate {
                 enter_gate,

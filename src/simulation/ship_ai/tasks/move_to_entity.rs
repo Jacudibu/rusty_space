@@ -18,6 +18,7 @@ use std::sync::{Arc, Mutex};
 pub struct MoveToEntity {
     pub target: TypedEntity,
     pub stop_at_target: bool,
+    pub distance_to_target: f32,
 }
 
 impl MoveToEntity {
@@ -57,7 +58,7 @@ impl MoveToEntity {
             velocity.turn_right(engine, time.delta_seconds());
         }
 
-        let distance = delta.length();
+        let distance = delta.length() - self.distance_to_target;
 
         if angle_difference.abs() > std::f32::consts::FRAC_PI_3 {
             velocity.decelerate(engine, time.delta_seconds());

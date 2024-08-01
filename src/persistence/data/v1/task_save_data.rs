@@ -15,6 +15,7 @@ pub enum TaskSaveData {
     MoveToEntity {
         target: PersistentEntityId,
         stop_at_target: bool,
+        distance_to_target: f32,
     },
     UseGate {
         enter_gate: PersistentGateId,

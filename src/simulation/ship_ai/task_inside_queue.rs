@@ -17,6 +17,7 @@ pub enum TaskInsideQueue {
     MoveToEntity {
         target: TypedEntity,
         stop_at_target: bool,
+        distance_to_target: f32,
     },
     UseGate {
         enter_gate: GateEntity,
@@ -48,10 +49,12 @@ impl TaskInsideQueue {
             TaskInsideQueue::MoveToEntity {
                 target,
                 stop_at_target,
+                distance_to_target: distance,
             } => {
                 entity_commands.insert(tasks::MoveToEntity {
                     target: *target,
                     stop_at_target: *stop_at_target,
+                    distance_to_target: *distance,
                 });
             }
             TaskInsideQueue::UseGate {
