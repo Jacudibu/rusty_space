@@ -2,7 +2,7 @@ use crate::simulation::asteroids;
 use crate::simulation::ship_ai::behaviors;
 use crate::simulation::ship_ai::task_finished_event::TaskFinishedEvent;
 use crate::simulation::ship_ai::tasks::{
-    ExchangeWares, HarvestGas, MineAsteroid, MoveToEntity, UseGate,
+    AwaitingSignal, ExchangeWares, HarvestGas, MineAsteroid, MoveToEntity, RequestAccess, UseGate,
 };
 use crate::states::SimulationState;
 use bevy::app::App;
@@ -17,12 +17,15 @@ impl Plugin for ShipAiPlugin {
         app.add_event::<TaskFinishedEvent<UseGate>>();
         app.add_event::<TaskFinishedEvent<MineAsteroid>>();
         app.add_event::<TaskFinishedEvent<HarvestGas>>();
+        app.add_event::<TaskFinishedEvent<AwaitingSignal>>();
         app.add_systems(
             FixedUpdate,
             (
                 behaviors::auto_trade::handle_idle_ships,
                 behaviors::auto_mine::handle_idle_ships.before(asteroids::respawn_asteroids),
                 behaviors::auto_harvest::handle_idle_ships,
+                RequestAccess::run_tasks,
+                AwaitingSignal::complete_tasks.run_if(on_event::<TaskFinishedEvent<AwaitingSignal>>()),
                 ExchangeWares::run_tasks,
                 ExchangeWares::complete_tasks.after(ExchangeWares::run_tasks).run_if(on_event::<TaskFinishedEvent<ExchangeWares>>()),
                 MoveToEntity::run_tasks,

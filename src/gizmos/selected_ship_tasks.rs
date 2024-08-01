@@ -44,6 +44,8 @@ pub fn draw_selected_ship_task(
                     let planet_pos = all_transforms.get(target.into()).unwrap().translation;
                     gizmos.line(current_position, planet_pos, GIZMO_COLOR);
                 }
+                TaskInsideQueue::AwaitingSignal => {}
+                TaskInsideQueue::RequestAccess { .. } => {}
             }
         }
     }

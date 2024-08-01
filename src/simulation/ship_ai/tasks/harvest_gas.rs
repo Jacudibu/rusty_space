@@ -1,7 +1,7 @@
-use crate::components::Inventory;
+use crate::components::{GasGiant, Inventory};
 use crate::game_data::DEBUG_ITEM_ID_ORE;
 use crate::simulation::prelude::{
-    CurrentSimulationTimestamp, Milliseconds, SimulationTime, SimulationTimestamp,
+    AwaitingSignal, CurrentSimulationTimestamp, Milliseconds, SimulationTime, SimulationTimestamp,
 };
 use crate::simulation::ship_ai::task_finished_event::TaskFinishedEvent;
 use crate::simulation::ship_ai::task_queue::TaskQueue;
@@ -9,7 +9,7 @@ use crate::simulation::ship_ai::tasks;
 use crate::simulation::ship_ai::tasks::send_completion_events;
 use crate::utils::PlanetEntity;
 use bevy::log::error;
-use bevy::prelude::{Commands, Component, Entity, EventReader, EventWriter, Query, Res, With};
+use bevy::prelude::{Commands, Component, Entity, EventReader, EventWriter, Query, Res};
 use std::sync::{Arc, Mutex};
 
 pub const TIME_BETWEEN_UPDATES: Milliseconds = 1000;
@@ -82,13 +82,21 @@ impl HarvestGas {
     pub fn complete_tasks(
         mut commands: Commands,
         mut event_reader: EventReader<TaskFinishedEvent<Self>>,
-        mut all_ships_with_task: Query<&mut TaskQueue, With<Self>>,
+        mut all_ships_with_task: Query<(&mut TaskQueue, &Self)>,
+        mut gas_giants: Query<&mut GasGiant>,
         simulation_time: Res<SimulationTime>,
+        mut signal_writer: EventWriter<TaskFinishedEvent<AwaitingSignal>>,
     ) {
         let now = simulation_time.now();
 
         for event in event_reader.read() {
-            if let Ok(mut queue) = all_ships_with_task.get_mut(event.entity) {
+            if let Ok((mut queue, task)) = all_ships_with_task.get_mut(event.entity) {
+                gas_giants
+                    .get_mut(task.target.into())
+                    .unwrap()
+                    .interaction_queue
+                    .finish_interaction(&mut signal_writer);
+
                 tasks::remove_task_and_add_next_in_queue::<Self>(
                     &mut commands,
                     event.entity,

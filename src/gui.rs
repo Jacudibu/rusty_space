@@ -109,6 +109,8 @@ impl UiIcons {
             },
             TaskInsideQueue::MineAsteroid { .. } => self.asteroid,
             TaskInsideQueue::HarvestGas { .. } => self.planet,
+            TaskInsideQueue::AwaitingSignal => self.station, // TODO
+            TaskInsideQueue::RequestAccess { .. } => self.station, // TODO
         }
     }
 }
@@ -416,6 +418,15 @@ pub fn list_selection_details(
                                     }
                                     TaskInsideQueue::HarvestGas { target } => {
                                         format!("Harvesting {}", names.get(target.into()).unwrap())
+                                    }
+                                    TaskInsideQueue::AwaitingSignal => {
+                                        "Awaiting Signal".to_string()
+                                    }
+                                    TaskInsideQueue::RequestAccess { target } => {
+                                        format!(
+                                            "Requesting Access to {}",
+                                            names.get(target.into()).unwrap()
+                                        )
                                     }
                                 });
                             });

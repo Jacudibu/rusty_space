@@ -6,6 +6,10 @@ use bevy::ecs::system::EntityCommands;
 
 /// Defines a Task inside the [TaskQueue]. New task components can be created from these.
 pub enum TaskInsideQueue {
+    AwaitingSignal,
+    RequestAccess {
+        target: PlanetEntity,
+    },
     ExchangeWares {
         target: TypedEntity,
         data: ExchangeWareData,
@@ -66,6 +70,12 @@ impl TaskInsideQueue {
             }
             TaskInsideQueue::HarvestGas { target } => {
                 entity_commands.insert(tasks::HarvestGas::new(*target, now));
+            }
+            TaskInsideQueue::AwaitingSignal => {
+                entity_commands.insert(tasks::AwaitingSignal {});
+            }
+            TaskInsideQueue::RequestAccess { target } => {
+                entity_commands.insert(tasks::RequestAccess::new(*target));
             }
         }
     }

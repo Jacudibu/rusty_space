@@ -1,5 +1,8 @@
-use crate::simulation::prelude::SimulationTimestamp;
+use crate::simulation::prelude::{
+    AwaitingSignal, CurrentSimulationTimestamp, SimulationTimestamp, TaskFinishedEvent,
+};
 use crate::utils::ShipEntity;
+use bevy::prelude::{info, EventWriter};
 use std::collections::BTreeMap;
 
 pub struct InteractionQueue {
@@ -20,18 +23,18 @@ impl InteractionQueue {
     /// Attempts to start an interaction.
     ///
     /// # Returns
-    /// Ok - The entity may interact immediately.
-    /// Err - We are currently at capacity, the entity has been added to the queue and will receive a signal when it may proceed.
+    /// - **Ok** - The entity may interact immediately.
+    /// - **Err** - We are currently at capacity, the entity has been added to the queue and will receive a signal once it may proceed.
     pub fn try_start_interaction(
         &mut self,
-        now: SimulationTimestamp,
-        requester: &ShipEntity,
+        now: &CurrentSimulationTimestamp,
+        requester: ShipEntity,
     ) -> Result<(), ()> {
         if self.currently_interacting < self.maximum_simultaneous_interactions {
             self.currently_interacting += 1;
             Ok(())
         } else {
-            self.insert_into_queue(now, *requester);
+            self.insert_into_queue(now.into(), requester);
             Err(())
         }
     }
@@ -42,12 +45,18 @@ impl InteractionQueue {
         }
     }
 
-    /// Called whenever something leaves the object we are queueing for
-    pub fn leave(&mut self) {
+    /// Notifies the next waiting entity within the queue, if there are any.
+    ///
+    /// Needs to be called whenever something stops interacting with the respective object!
+    pub fn finish_interaction(
+        &mut self,
+        event_writer: &mut EventWriter<TaskFinishedEvent<AwaitingSignal>>,
+    ) {
         self.currently_interacting -= 1;
         if self.currently_interacting <= self.maximum_simultaneous_interactions {
-            if let Some(next) = self.waiting_queue.pop_first() {
-                // TODO: Send event
+            if let Some((_, next)) = self.waiting_queue.pop_first() {
+                self.currently_interacting += 1;
+                event_writer.send(TaskFinishedEvent::new(next.into()));
             }
         }
     }

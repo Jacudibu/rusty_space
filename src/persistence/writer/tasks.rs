@@ -31,6 +31,12 @@ impl TaskSaveData {
             TaskInsideQueue::HarvestGas { target } => Self::HarvestGas {
                 target: all_entity_id_maps.planets.entity_to_id()[target],
             },
+            TaskInsideQueue::AwaitingSignal => {
+                todo!()
+            }
+            TaskInsideQueue::RequestAccess { .. } => {
+                todo!()
+            }
         }
     }
 }

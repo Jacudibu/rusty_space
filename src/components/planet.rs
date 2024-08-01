@@ -1,5 +1,5 @@
 use crate::persistence::PersistentPlanetId;
-use crate::utils::EarthMass;
+use crate::utils::{EarthMass, InteractionQueue};
 use bevy::prelude::Component;
 
 #[derive(Component)]
@@ -17,4 +17,6 @@ impl Planet {
 
 /// Marker Component for Planets with harvestable gases
 #[derive(Component)]
-pub struct GasGiant {}
+pub struct GasGiant {
+    pub interaction_queue: InteractionQueue,
+}

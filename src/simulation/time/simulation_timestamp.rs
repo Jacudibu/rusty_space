@@ -91,6 +91,11 @@ impl From<CurrentSimulationTimestamp> for SimulationTimestamp {
         Self(value.0)
     }
 }
+impl From<&CurrentSimulationTimestamp> for SimulationTimestamp {
+    fn from(value: &CurrentSimulationTimestamp) -> Self {
+        Self(value.0)
+    }
+}
 
 impl From<Milliseconds> for SimulationTimestamp {
     /// Can be used in universe creation to spread out initial idle checks across multiple frames

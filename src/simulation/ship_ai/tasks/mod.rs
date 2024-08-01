@@ -1,16 +1,20 @@
 use bevy::prelude::{Commands, Component, Entity, EventWriter, Mut};
 use std::sync::{Arc, Mutex};
 
+mod awaiting_signal;
 mod exchange_wares;
 mod harvest_gas;
 mod mine_asteroid;
 mod move_to_entity;
+mod request_access;
 mod use_gate;
 
 use crate::simulation::prelude::{CurrentSimulationTimestamp, TaskFinishedEvent, TaskQueue};
+
 pub use {
-    exchange_wares::ExchangeWares, harvest_gas::HarvestGas, mine_asteroid::MineAsteroid,
-    move_to_entity::MoveToEntity, use_gate::UseGate,
+    awaiting_signal::AwaitingSignal, exchange_wares::ExchangeWares, harvest_gas::HarvestGas,
+    mine_asteroid::MineAsteroid, move_to_entity::MoveToEntity, request_access::RequestAccess,
+    use_gate::UseGate,
 };
 
 pub fn send_completion_events<T: Component>(
