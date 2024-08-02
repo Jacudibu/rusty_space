@@ -1,5 +1,5 @@
 use crate::simulation::asteroids;
-use crate::simulation::ship_ai::behaviors;
+use crate::simulation::ship_ai::{behaviors, stop_idle_ships};
 use crate::simulation::ship_ai::task_finished_event::TaskFinishedEvent;
 use crate::simulation::ship_ai::tasks::{
     AwaitingSignal, DockAtEntity, ExchangeWares, HarvestGas, MineAsteroid, MoveToEntity,
@@ -24,6 +24,7 @@ impl Plugin for ShipAiPlugin {
         app.add_systems(
             FixedUpdate,
             (
+                stop_idle_ships::stop_idle_ships,
                 behaviors::auto_trade::handle_idle_ships,
                 behaviors::auto_mine::handle_idle_ships.before(asteroids::respawn_asteroids),
                 behaviors::auto_harvest::handle_idle_ships,
