@@ -1,11 +1,11 @@
-use crate::components::InSector;
+use crate::components::{InSector, IsDocked};
 use crate::simulation::physics::constant_velocity::ConstantVelocity;
 use crate::simulation::physics::orbit_system::orbit_system;
 use crate::simulation::physics::ShipVelocity;
 use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::states::SimulationState;
 use bevy::prelude::{
-    in_state, App, FixedPostUpdate, IntoSystemConfigs, Plugin, Query, Res, Time, With,
+    in_state, App, FixedPostUpdate, IntoSystemConfigs, Plugin, Query, Res, Time, With, Without,
 };
 
 /// Beautifully simplified fake physics.
@@ -22,7 +22,10 @@ impl Plugin for PhysicsPlugin {
 
 fn move_ships(
     time: Res<Time>,
-    mut ships: Query<(&mut SimulationTransform, &ShipVelocity), With<InSector>>,
+    mut ships: Query<
+        (&mut SimulationTransform, &ShipVelocity),
+        (With<InSector>, Without<IsDocked>),
+    >,
 ) {
     ships.par_iter_mut().for_each(|(mut transform, velocity)| {
         transform.rotate(velocity.angular * time.delta_seconds());

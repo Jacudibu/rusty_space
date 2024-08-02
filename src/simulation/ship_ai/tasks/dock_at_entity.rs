@@ -1,3 +1,4 @@
+use crate::components;
 use crate::components::Engine;
 use crate::simulation::physics::ShipVelocity;
 use crate::simulation::prelude::SimulationTime;
@@ -10,7 +11,7 @@ use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::utils::TypedEntity;
 use bevy::log::error;
 use bevy::prelude::{
-    warn, Commands, Component, Entity, EventReader, EventWriter, Query, Res, Time, With,
+    Commands, Component, Entity, EventReader, EventWriter, Query, Res, Time, Visibility, With,
 };
 use std::sync::{Arc, Mutex};
 
@@ -59,18 +60,21 @@ impl DockAtEntity {
     pub fn complete_tasks(
         mut commands: Commands,
         mut event_reader: EventReader<TaskFinishedEvent<Self>>,
-        mut all_ships_with_task: Query<&mut TaskQueue, With<Self>>,
+        mut all_ships_with_task: Query<(&mut TaskQueue, &mut Visibility, &Self)>,
         simulation_time: Res<SimulationTime>,
     ) {
         let now = simulation_time.now();
 
         for event in event_reader.read() {
-            if let Ok(mut queue) = all_ships_with_task.get_mut(event.entity) {
-                // TODO: Add an IsDocked Marker Component and turn visibility off
+            if let Ok((mut queue, mut visibility, task)) = all_ships_with_task.get_mut(event.entity)
+            {
+                *visibility = Visibility::Hidden;
 
-                tasks::remove_task_and_add_next_in_queue::<Self>(
-                    &mut commands,
-                    event.entity,
+                let mut entity_commands = commands.entity(event.entity);
+                entity_commands.insert(components::IsDocked::new(task.target));
+
+                tasks::remove_task_and_add_next_in_queue_to_entity_commands::<Self>(
+                    &mut entity_commands,
                     &mut queue,
                     now,
                 );

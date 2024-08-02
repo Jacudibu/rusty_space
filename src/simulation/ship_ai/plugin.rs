@@ -28,7 +28,7 @@ impl Plugin for ShipAiPlugin {
                 behaviors::auto_harvest::handle_idle_ships,
                 RequestAccess::run_tasks,
                 AwaitingSignal::complete_tasks.run_if(on_event::<TaskFinishedEvent<AwaitingSignal>>())
-                    .after(ExchangeWares::complete_tasks)  // Could be replaced with undock task
+                    .after(ExchangeWares::complete_tasks)  // Should be replaced with undock task
                     .after(HarvestGas::complete_tasks) // Could be replaced with a more general "disengage orbit" task or something alike
                 ,
                 ExchangeWares::run_tasks,

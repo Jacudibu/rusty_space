@@ -1,3 +1,4 @@
+use bevy::ecs::system::EntityCommands;
 use bevy::prelude::{Commands, Component, Entity, EventWriter, Mut, Query};
 use std::sync::{Arc, Mutex};
 
@@ -45,11 +46,19 @@ pub fn remove_task_and_add_next_in_queue<T: Component>(
     queue: &mut Mut<TaskQueue>,
     now: CurrentSimulationTimestamp,
 ) {
-    queue.queue.pop_front();
     let mut entity_commands = commands.entity(entity);
+    remove_task_and_add_next_in_queue_to_entity_commands::<T>(&mut entity_commands, queue, now);
+}
+
+pub fn remove_task_and_add_next_in_queue_to_entity_commands<T: Component>(
+    entity_commands: &mut EntityCommands,
+    queue: &mut Mut<TaskQueue>,
+    now: CurrentSimulationTimestamp,
+) {
     entity_commands.remove::<T>();
+    queue.queue.pop_front();
     if let Some(next_task) = queue.front() {
-        next_task.create_and_insert_component(&mut entity_commands, now);
+        next_task.create_and_insert_component(entity_commands, now);
     }
 }
 
