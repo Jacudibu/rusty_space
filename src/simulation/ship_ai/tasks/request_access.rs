@@ -31,7 +31,7 @@ impl RequestAccess {
             let mut interaction_queue = all_interaction_queues.get_mut(task.target.into()).unwrap();
 
             if interaction_queue
-                .try_start_interaction(&now, entity.into())
+                .try_start_interaction(entity.into())
                 .is_err()
             {
                 task_queue.insert(1, TaskInsideQueue::AwaitingSignal);
