@@ -9,6 +9,7 @@ mod harvest_gas;
 mod mine_asteroid;
 mod move_to_entity;
 mod request_access;
+mod undock;
 mod use_gate;
 
 use crate::simulation::prelude::{CurrentSimulationTimestamp, TaskFinishedEvent, TaskQueue};
@@ -17,7 +18,7 @@ use crate::components::InteractionQueue;
 pub use {
     awaiting_signal::AwaitingSignal, dock_at_entity::DockAtEntity, exchange_wares::ExchangeWares,
     harvest_gas::HarvestGas, mine_asteroid::MineAsteroid, move_to_entity::MoveToEntity,
-    request_access::RequestAccess, use_gate::UseGate,
+    request_access::RequestAccess, undock::Undock, use_gate::UseGate,
 };
 
 pub fn send_completion_events<T: Component>(

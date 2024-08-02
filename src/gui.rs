@@ -88,6 +88,7 @@ pub struct UiIcons {
     pub buy: SizedTexture,
     pub sell: SizedTexture,
     pub dock_at: SizedTexture,
+    pub undock: SizedTexture,
 }
 
 impl UiIcons {
@@ -115,6 +116,7 @@ impl UiIcons {
             TaskInsideQueue::AwaitingSignal => self.awaiting_signal,
             TaskInsideQueue::RequestAccess { .. } => self.awaiting_signal,
             TaskInsideQueue::DockAtEntity { .. } => self.dock_at,
+            TaskInsideQueue::Undock { .. } => self.undock,
         }
     }
 }
@@ -133,6 +135,7 @@ pub fn initialize(
     let idle = asset_server.load("ui_icons/idle.png");
     let move_to = asset_server.load("ui_icons/move_to.png");
     let dock_at = asset_server.load("ui_icons/move_to.png"); // TODO
+    let undock = asset_server.load("ui_icons/move_to.png"); // TODO
     let buy = asset_server.load("ui_icons/buy.png");
     let sell = asset_server.load("ui_icons/sell.png");
 
@@ -149,6 +152,7 @@ pub fn initialize(
         idle: SizedTexture::new(contexts.add_image(idle), ICON_SIZE),
         move_to: SizedTexture::new(contexts.add_image(move_to), ICON_SIZE),
         dock_at: SizedTexture::new(contexts.add_image(dock_at), ICON_SIZE),
+        undock: SizedTexture::new(contexts.add_image(undock), ICON_SIZE),
         buy: SizedTexture::new(contexts.add_image(buy), ICON_SIZE),
         sell: SizedTexture::new(contexts.add_image(sell), ICON_SIZE),
     };
@@ -420,6 +424,7 @@ pub fn list_selection_details(
                                     TaskInsideQueue::DockAtEntity { target, .. } => {
                                         format!("Dock at {}", names.get(target.into()).unwrap())
                                     }
+                                    TaskInsideQueue::Undock => "Undock".to_string(),
                                     TaskInsideQueue::ExchangeWares { data, .. } => match data {
                                         ExchangeWareData::Buy(item_id, amount) => {
                                             format!(

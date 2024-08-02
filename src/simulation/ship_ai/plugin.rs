@@ -3,7 +3,7 @@ use crate::simulation::ship_ai::behaviors;
 use crate::simulation::ship_ai::task_finished_event::TaskFinishedEvent;
 use crate::simulation::ship_ai::tasks::{
     AwaitingSignal, DockAtEntity, ExchangeWares, HarvestGas, MineAsteroid, MoveToEntity,
-    RequestAccess, UseGate,
+    RequestAccess, Undock, UseGate,
 };
 use crate::states::SimulationState;
 use bevy::app::App;
@@ -15,6 +15,7 @@ impl Plugin for ShipAiPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<TaskFinishedEvent<MoveToEntity>>();
         app.add_event::<TaskFinishedEvent<DockAtEntity>>();
+        app.add_event::<TaskFinishedEvent<Undock>>();
         app.add_event::<TaskFinishedEvent<ExchangeWares>>();
         app.add_event::<TaskFinishedEvent<UseGate>>();
         app.add_event::<TaskFinishedEvent<MineAsteroid>>();
@@ -28,13 +29,15 @@ impl Plugin for ShipAiPlugin {
                 behaviors::auto_harvest::handle_idle_ships,
                 RequestAccess::run_tasks,
                 AwaitingSignal::complete_tasks.run_if(on_event::<TaskFinishedEvent<AwaitingSignal>>())
-                    .after(ExchangeWares::complete_tasks)  // Should be replaced with undock task
+                    .after(Undock::complete_tasks)  
                     .after(HarvestGas::complete_tasks) // Could be replaced with a more general "disengage orbit" task or something alike
                 ,
                 ExchangeWares::run_tasks,
                 ExchangeWares::complete_tasks.after(ExchangeWares::run_tasks).run_if(on_event::<TaskFinishedEvent<ExchangeWares>>()),
                 DockAtEntity::run_tasks,
                 DockAtEntity::complete_tasks.after(DockAtEntity::run_tasks).run_if(on_event::<TaskFinishedEvent<DockAtEntity>>()),
+                Undock::run_tasks,
+                Undock::complete_tasks.after(Undock::run_tasks).run_if(on_event::<TaskFinishedEvent<Undock>>()),
                 MoveToEntity::run_tasks,
                 MoveToEntity::complete_tasks.after(MoveToEntity::run_tasks).run_if(on_event::<TaskFinishedEvent<MoveToEntity>>()),
                 UseGate::run_tasks,
@@ -48,7 +51,7 @@ impl Plugin for ShipAiPlugin {
         );
         app.add_systems(
             FixedPostUpdate,
-            (ExchangeWares::on_task_creation, UseGate::on_task_creation)
+            (ExchangeWares::on_task_creation, UseGate::on_task_creation, Undock::on_task_creation)
                 .run_if(in_state(SimulationState::Running))
         );
     }

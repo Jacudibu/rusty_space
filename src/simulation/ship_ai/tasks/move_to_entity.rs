@@ -101,6 +101,7 @@ impl MoveToEntity {
         all_transforms: Query<&SimulationTransform>,
     ) {
         let task_completions = Arc::new(Mutex::new(Vec::<TaskFinishedEvent<Self>>::new()));
+        let delta_seconds = time.delta_seconds();
 
         ships
             .par_iter_mut()
@@ -113,7 +114,7 @@ impl MoveToEntity {
                     &all_transforms,
                     engine,
                     &mut velocity,
-                    time.delta_seconds(),
+                    delta_seconds,
                 ) {
                     TaskResult::Ongoing => {}
                     TaskResult::Finished | TaskResult::Aborted => task_completions

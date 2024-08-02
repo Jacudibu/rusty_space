@@ -51,6 +51,7 @@ pub fn draw_selected_ship_task(
                     gizmos.line(current_position, target_position, GIZMO_COLOR);
                     current_position = target_position;
                 }
+                TaskInsideQueue::Undock => {}
             }
         }
     }

@@ -42,6 +42,9 @@ impl TaskSaveData {
             TaskInsideQueue::RequestAccess { .. } => {
                 todo!()
             }
+            TaskInsideQueue::Undock => {
+                todo!()
+            }
         }
     }
 }

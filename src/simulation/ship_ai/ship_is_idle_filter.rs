@@ -16,5 +16,6 @@ pub struct ShipIsIdleFilter {
         Without<tasks::AwaitingSignal>,
         Without<tasks::RequestAccess>,
         Without<tasks::DockAtEntity>,
+        Without<tasks::Undock>,
     ),
 }

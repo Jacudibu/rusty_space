@@ -13,6 +13,7 @@ pub enum TaskInsideQueue {
     DockAtEntity {
         target: TypedEntity,
     },
+    Undock,
     ExchangeWares {
         target: TypedEntity,
         data: ExchangeWareData,
@@ -85,6 +86,9 @@ impl TaskInsideQueue {
             }
             TaskInsideQueue::DockAtEntity { target } => {
                 entity_commands.insert(tasks::DockAtEntity::new(*target));
+            }
+            TaskInsideQueue::Undock => {
+                entity_commands.insert(tasks::Undock::new());
             }
         }
     }

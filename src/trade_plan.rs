@@ -2,10 +2,10 @@ use bevy::prelude::{Entity, Query};
 
 use crate::components::{BuyOrders, InSector, Inventory, Sector, SellOrders, TradeOrder};
 use crate::game_data::ItemId;
-use crate::pathfinding;
 use crate::simulation::ship_ai::{TaskInsideQueue, TaskQueue};
 use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::utils::{ExchangeWareData, SectorEntity, TypedEntity};
+use crate::{constants, pathfinding};
 
 pub struct TradePlan {
     pub item_id: ItemId,
@@ -116,8 +116,6 @@ impl TradePlan {
         best_offer
     }
 
-    const TARGET_DISTANCE_TO_STATION: f32 = 24.0;
-
     pub fn create_tasks_for_purchase(
         &self,
         all_sectors: &Query<&Sector>,
@@ -144,7 +142,7 @@ impl TradePlan {
         queue.push_back(TaskInsideQueue::MoveToEntity {
             target: self.seller,
             stop_at_target: true,
-            distance_to_target: Self::TARGET_DISTANCE_TO_STATION,
+            distance_to_target: constants::DOCKING_DISTANCE_TO_STATION,
         });
         queue.push_back(TaskInsideQueue::RequestAccess {
             target: self.seller,
@@ -156,6 +154,7 @@ impl TradePlan {
             target: self.seller,
             data: ExchangeWareData::Buy(self.item_id, self.amount),
         });
+        queue.push_back(TaskInsideQueue::Undock) // TODO: Ideally that should be added dynamically at the start of MoveToEntity if we are docked
     }
 
     pub fn create_tasks_for_sale(
@@ -182,7 +181,7 @@ impl TradePlan {
         queue.push_back(TaskInsideQueue::MoveToEntity {
             target: self.buyer,
             stop_at_target: true,
-            distance_to_target: Self::TARGET_DISTANCE_TO_STATION,
+            distance_to_target: constants::DOCKING_DISTANCE_TO_STATION,
         });
         queue.push_back(TaskInsideQueue::RequestAccess { target: self.buyer });
         queue.push_back(TaskInsideQueue::DockAtEntity { target: self.buyer });
@@ -190,5 +189,6 @@ impl TradePlan {
             target: self.buyer,
             data: ExchangeWareData::Sell(self.item_id, self.amount),
         });
+        queue.push_back(TaskInsideQueue::Undock) // TODO: Ideally that should be added dynamically at the start of MoveToEntity if we are docked
     }
 }

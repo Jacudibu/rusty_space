@@ -88,8 +88,6 @@ impl ExchangeWares {
         mut all_ships_with_task: Query<(&mut TaskQueue, &Self)>,
         mut all_storages: Query<&mut Inventory>,
         mut event_writer: EventWriter<InventoryUpdateForProductionEvent>,
-        mut interaction_queues: Query<&mut InteractionQueue>,
-        mut signal_writer: EventWriter<TaskFinishedEvent<AwaitingSignal>>,
         simulation_time: Res<SimulationTime>,
     ) {
         let now = simulation_time.now();
@@ -97,12 +95,6 @@ impl ExchangeWares {
         for event in event_reader.read() {
             if let Ok((mut queue, task)) = all_ships_with_task.get_mut(event.entity) {
                 task.complete(event.entity, &mut all_storages, &mut event_writer);
-
-                finish_interaction(
-                    task.target.into(),
-                    &mut interaction_queues,
-                    &mut signal_writer,
-                );
 
                 tasks::remove_task_and_add_next_in_queue::<Self>(
                     &mut commands,
