@@ -1,6 +1,5 @@
 use crate::simulation::prelude::Milliseconds;
 use crate::simulation::time::MILLIS_PER_SECOND;
-use bevy::prelude::{Component, Entity};
 use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
 use std::ops::Add;

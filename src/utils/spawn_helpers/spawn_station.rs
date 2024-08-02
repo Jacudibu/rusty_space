@@ -3,6 +3,7 @@ use crate::components::{
 };
 use crate::game_data::ItemDefinition;
 use crate::persistence::{PersistentStationId, StationIdMap};
+use crate::simulation::prelude::simulation_transform::SimulationScale;
 use crate::simulation::production::{ProductionComponent, ShipyardComponent};
 use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::utils::{SectorEntity, StationEntity};
@@ -82,6 +83,7 @@ pub fn spawn_station(
             ),
             InteractionQueue::new(constants::SIMULTANEOUS_STATION_INTERACTIONS),
             simulation_transform,
+            SimulationScale::default(),
         ))
         .id();
 

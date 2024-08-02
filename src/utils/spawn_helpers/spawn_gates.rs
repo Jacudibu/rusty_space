@@ -6,6 +6,7 @@ use crate::components::{
     SectorStarComponent, SelectableEntity, Star,
 };
 use crate::persistence::{GateIdMap, PersistentGateId};
+use crate::simulation::prelude::simulation_transform::SimulationScale;
 use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::utils::spawn_helpers::helpers;
 use crate::utils::GateEntity;
@@ -111,6 +112,7 @@ fn spawn_gate(
             ..Default::default()
         },
         simulation_transform,
+        SimulationScale::default(),
     ));
 
     if let Some(star) = star {

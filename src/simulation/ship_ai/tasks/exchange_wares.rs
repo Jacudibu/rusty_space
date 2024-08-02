@@ -1,13 +1,11 @@
-use crate::components::{InteractionQueue, Inventory};
-use crate::simulation::prelude::{
-    AwaitingSignal, CurrentSimulationTimestamp, SimulationTime, SimulationTimestamp,
-};
+use crate::components::Inventory;
+use crate::simulation::prelude::{CurrentSimulationTimestamp, SimulationTime, SimulationTimestamp};
 use crate::simulation::production::InventoryUpdateForProductionEvent;
 use crate::simulation::ship_ai::task_finished_event::TaskFinishedEvent;
 use crate::simulation::ship_ai::task_queue::TaskQueue;
 use crate::simulation::ship_ai::task_result::TaskResult;
 use crate::simulation::ship_ai::tasks;
-use crate::simulation::ship_ai::tasks::{finish_interaction, send_completion_events, DockAtEntity};
+use crate::simulation::ship_ai::tasks::{send_completion_events, DockAtEntity};
 use crate::utils::ExchangeWareData;
 use crate::utils::{TradeIntent, TypedEntity};
 use bevy::prelude::{error, Commands, Component, Entity, EventReader, EventWriter, Query, Res};

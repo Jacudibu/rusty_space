@@ -8,7 +8,7 @@ use crate::simulation::ship_ai::task_finished_event::TaskFinishedEvent;
 use crate::simulation::ship_ai::task_queue::TaskQueue;
 use crate::simulation::ship_ai::tasks;
 use crate::simulation::ship_ai::tasks::send_completion_events;
-use crate::simulation::transform::simulation_transform::SimulationTransform;
+use crate::simulation::transform::simulation_transform::SimulationScale;
 use crate::utils::AsteroidEntity;
 use bevy::log::error;
 use bevy::prelude::{Commands, Component, Entity, EventReader, EventWriter, Query, Res, With};
@@ -45,7 +45,7 @@ impl MineAsteroid {
         &mut self,
         inventory: &mut Inventory,
         now: CurrentSimulationTimestamp,
-        all_asteroids: &Query<(&mut Asteroid, &mut SimulationTransform)>,
+        all_asteroids: &Query<(&mut Asteroid, &mut SimulationScale)>,
     ) -> TaskResult {
         if now.has_not_passed(self.next_update) {
             return TaskResult::Skip;
@@ -71,7 +71,7 @@ impl MineAsteroid {
 
     fn did_target_despawn(
         &self,
-        all_asteroids: &Query<(&mut Asteroid, &mut SimulationTransform)>,
+        all_asteroids: &Query<(&mut Asteroid, &mut SimulationScale)>,
     ) -> bool {
         all_asteroids.get(self.target.into()).is_err()
     }
@@ -80,7 +80,7 @@ impl MineAsteroid {
         event_writer: EventWriter<TaskFinishedEvent<Self>>,
         simulation_time: Res<SimulationTime>,
         mut ships: Query<(Entity, &mut Self, &mut Inventory)>,
-        mut all_asteroids: Query<(&mut Asteroid, &mut SimulationTransform)>,
+        mut all_asteroids: Query<(&mut Asteroid, &mut SimulationScale)>,
         mut asteroid_was_fully_mined_event: EventWriter<AsteroidWasFullyMinedEvent>,
     ) {
         let task_completions = Arc::new(Mutex::new(Vec::<TaskFinishedEvent<Self>>::new()));
@@ -118,13 +118,13 @@ impl MineAsteroid {
                 let batch = mined_asteroids.into_inner().unwrap();
                 if !batch.is_empty() {
                     for (asteroid_entity, mined_amount) in batch {
-                        let Ok((mut asteroid, mut transform)) =
+                        let Ok((mut asteroid, mut scale)) =
                             all_asteroids.get_mut(asteroid_entity.into())
                         else {
                             continue; // Must have already despawned
                         };
                         asteroid.ore -= mined_amount;
-                        transform.scale = asteroid.scale_depending_on_current_ore_volume();
+                        scale.scale = asteroid.scale_depending_on_current_ore_volume();
                         if asteroid.ore == 0 {
                             asteroid_was_fully_mined_event.send(AsteroidWasFullyMinedEvent {
                                 asteroid: asteroid_entity,

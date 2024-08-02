@@ -1,6 +1,7 @@
 use crate::components::{Asteroid, SectorAsteroidComponent, SelectableEntity};
 use crate::persistence::{AsteroidIdMap, PersistentAsteroidId};
 use crate::simulation::physics::ConstantVelocity;
+use crate::simulation::prelude::simulation_transform::SimulationScale;
 use crate::simulation::prelude::SimulationTimestamp;
 use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::utils::{AsteroidEntity, AsteroidEntityWithTimestamp, SectorEntity};
@@ -30,11 +31,7 @@ pub fn spawn_asteroid(
     let asteroid_id = PersistentAsteroidId::next();
     let asteroid = Asteroid::new(asteroid_id, ore_current, ore_max, despawn_at);
 
-    let simulation_transform = SimulationTransform::new(
-        global_pos,
-        Rot2::radians(sprite_rotation),
-        asteroid.scale_depending_on_current_ore_volume(),
-    );
+    let simulation_transform = SimulationTransform::new(global_pos, Rot2::radians(sprite_rotation));
 
     let entity = commands
         .spawn((
@@ -51,6 +48,7 @@ pub fn spawn_asteroid(
                 ..Default::default()
             },
             simulation_transform,
+            SimulationScale::default(),
             asteroid,
         ))
         .id();

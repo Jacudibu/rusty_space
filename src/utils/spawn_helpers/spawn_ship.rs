@@ -1,6 +1,7 @@
 use crate::components::{Engine, Inventory, Sector, SelectableEntity, Ship};
 use crate::persistence::{PersistentShipId, ShipIdMap};
 use crate::simulation::physics::ShipVelocity;
+use crate::simulation::prelude::simulation_transform::SimulationScale;
 use crate::simulation::ship_ai::{BehaviorBuilder, TaskQueue};
 use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::utils::{SectorEntity, ShipEntity};
@@ -23,11 +24,8 @@ pub fn spawn_ship(
 ) {
     let mut sector_data = sector_query.get_mut(sector.into()).unwrap();
 
-    let simulation_transform = SimulationTransform::new(
-        sector_data.world_pos + position,
-        Rot2::radians(rotation),
-        1.0,
-    );
+    let simulation_transform =
+        SimulationTransform::new(sector_data.world_pos + position, Rot2::radians(rotation));
 
     let entity = commands
         .spawn((
@@ -44,6 +42,7 @@ pub fn spawn_ship(
                 ..default()
             },
             simulation_transform,
+            SimulationScale::default(),
         ))
         .id();
 

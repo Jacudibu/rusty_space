@@ -3,6 +3,7 @@ use crate::components::{
 };
 use crate::persistence::{AsteroidIdMap, PlanetIdMap, SectorFeatureSaveData};
 use crate::simulation::precomputed_orbit_directions::PrecomputedOrbitDirections;
+use crate::simulation::prelude::simulation_transform::SimulationScale;
 use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::utils::spawn_helpers::spawn_planet::spawn_planet;
 use crate::utils::{spawn_helpers, SectorEntity, StarEntity};
@@ -84,6 +85,7 @@ pub fn spawn_sector(
                     ..Default::default()
                 },
                 simulation_transform,
+                SimulationScale::default(),
             ))
             .id();
 

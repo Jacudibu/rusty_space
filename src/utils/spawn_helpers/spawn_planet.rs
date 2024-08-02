@@ -1,6 +1,7 @@
 use crate::components::{ConstantOrbit, Planet, SelectableEntity};
 use crate::persistence::{PlanetIdMap, PlanetKindSaveData, SectorPlanetSaveData};
 use crate::simulation::precomputed_orbit_directions::PrecomputedOrbitDirections;
+use crate::simulation::prelude::simulation_transform::SimulationScale;
 use crate::simulation::ship_ai::AutoTradeBehavior;
 use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::utils::spawn_helpers::helpers;
@@ -36,7 +37,7 @@ pub fn spawn_planet(
     };
 
     let simulation_transform =
-        SimulationTransform::new(sector_pos + local_position, Rot2::IDENTITY, 1.0);
+        SimulationTransform::new(sector_pos + local_position, Rot2::IDENTITY);
 
     let entity = commands
         .spawn((
@@ -54,6 +55,7 @@ pub fn spawn_planet(
                 ..default()
             },
             simulation_transform,
+            SimulationScale::default(),
             planet,
         ))
         .id();

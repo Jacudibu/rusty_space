@@ -1,11 +1,14 @@
 use crate::components::{Engine, InteractionQueue, IsDocked};
 use crate::constants;
 use crate::simulation::physics::ShipVelocity;
+use crate::simulation::prelude::simulation_transform::SimulationScale;
 use crate::simulation::prelude::SimulationTime;
 use crate::simulation::ship_ai::task_finished_event::TaskFinishedEvent;
 use crate::simulation::ship_ai::task_queue::TaskQueue;
 use crate::simulation::ship_ai::task_result::TaskResult;
-use crate::simulation::ship_ai::tasks::{finish_interaction, send_completion_events};
+use crate::simulation::ship_ai::tasks::{
+    dock_at_entity, finish_interaction, send_completion_events,
+};
 use crate::simulation::ship_ai::{tasks, AwaitingSignal};
 use crate::simulation::transform::simulation_transform::SimulationTransform;
 use bevy::log::error;
@@ -29,17 +32,20 @@ impl Undock {
     fn run(
         &self,
         transform: &SimulationTransform,
+        scale: &mut SimulationScale,
         velocity: &mut ShipVelocity,
         engine: &Engine,
         delta_seconds: f32,
     ) -> TaskResult {
         velocity.accelerate(engine, delta_seconds);
         if let Some(start_position) = self.start_position {
-            if start_position.distance_squared(transform.translation)
-                > constants::DOCKING_DISTANCE_TO_STATION_SQUARED
-            {
+            let ratio = start_position.distance_squared(transform.translation)
+                / constants::DOCKING_DISTANCE_TO_STATION_SQUARED;
+            if ratio > 1.0 {
+                scale.scale = 1.0;
                 TaskResult::Finished
             } else {
+                dock_at_entity::scale_based_on_docking_distance(scale, ratio);
                 TaskResult::Ongoing
             }
         } else {
@@ -55,6 +61,7 @@ impl Undock {
             Entity,
             &Self,
             &SimulationTransform,
+            &mut SimulationScale,
             &Engine,
             &mut ShipVelocity,
         )>,
@@ -62,17 +69,21 @@ impl Undock {
         let task_completions = Arc::new(Mutex::new(Vec::<TaskFinishedEvent<Self>>::new()));
         let delta_seconds = time.delta_seconds();
 
-        ships
-            .par_iter_mut()
-            .for_each(|(entity, task, transform, engine, mut velocity)| {
-                match task.run(transform, &mut velocity, engine, delta_seconds) {
-                    TaskResult::Ongoing => {}
-                    TaskResult::Finished | TaskResult::Aborted => task_completions
-                        .lock()
-                        .unwrap()
-                        .push(TaskFinishedEvent::<Self>::new(entity)),
-                }
-            });
+        ships.par_iter_mut().for_each(
+            |(entity, task, transform, mut scale, engine, mut velocity)| match task.run(
+                transform,
+                &mut scale,
+                &mut velocity,
+                engine,
+                delta_seconds,
+            ) {
+                TaskResult::Ongoing => {}
+                TaskResult::Finished | TaskResult::Aborted => task_completions
+                    .lock()
+                    .unwrap()
+                    .push(TaskFinishedEvent::<Self>::new(entity)),
+            },
+        );
 
         send_completion_events(event_writer, task_completions);
     }
@@ -102,6 +113,7 @@ impl Undock {
 
             *visibility = Visibility::Inherited;
             task.start_position = Some(transform.translation);
+            //transform.scale = constants::DOCKING_SCALE_MIN;
             commands.entity(entity).remove::<IsDocked>();
         }
     }
