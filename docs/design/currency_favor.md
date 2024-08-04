@@ -30,4 +30,4 @@ So if you just purchased *a lot* of super expensive goods and then blow up the s
 
 ## Open Questions
 - How is this supposed to work in multiplayer with different player factions?
-
+    - Could be solved by just using global credits after all, but still use the favor mechanic in the background for standing. Probably easier for the player to understand, too.
