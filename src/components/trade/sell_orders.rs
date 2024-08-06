@@ -31,7 +31,7 @@ impl TradeOrder<SellOrderData> for SellOrders {
 impl OrderData for SellOrderData {
     fn update(&mut self, capacity: u32, inventory_element: Option<&InventoryElement>) {
         let stored_amount = if let Some(inventory_element) = inventory_element {
-            inventory_element.currently_available - inventory_element.planned_selling
+            inventory_element.current - inventory_element.planned_selling
         } else {
             0
         };

@@ -21,7 +21,7 @@ impl BuyOrders {
                     order.update(
                         constants::MOCK_STATION_INVENTORY_SIZE,
                         Some(&InventoryElement {
-                            currently_available: 0,
+                            current: 0,
                             total: 0,
                             ..Default::default()
                         }),
@@ -48,7 +48,7 @@ impl SellOrders {
                     order.update(
                         constants::MOCK_STATION_INVENTORY_SIZE,
                         Some(&InventoryElement {
-                            currently_available: constants::MOCK_STATION_INVENTORY_SIZE,
+                            current: constants::MOCK_STATION_INVENTORY_SIZE,
                             total: constants::MOCK_STATION_INVENTORY_SIZE,
                             ..Default::default()
                         }),

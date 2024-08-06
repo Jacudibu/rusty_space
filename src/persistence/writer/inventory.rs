@@ -7,7 +7,7 @@ impl From<&Inventory> for InventorySaveData {
             items: value
                 .inventory()
                 .iter()
-                .map(|(id, element)| (*id, element.currently_available))
+                .map(|(id, element)| (*id, element.current))
                 .collect(),
         }
     }

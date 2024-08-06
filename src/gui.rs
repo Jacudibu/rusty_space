@@ -319,7 +319,7 @@ pub fn list_selection_details(
                             ui.label(format!(
                                 "{} x {} (+{}, -{}, +{}(Prod))",
                                 item.name,
-                                amount.currently_available,
+                                amount.current,
                                 amount.planned_buying,
                                 amount.planned_selling,
                                 amount.planned_producing

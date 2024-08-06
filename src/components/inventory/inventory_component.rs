@@ -1,47 +1,15 @@
+use crate::components::inventory::inventory_element::InventoryElement;
 use crate::game_data::ItemRecipe;
 use crate::game_data::{ItemId, ItemRecipeElement};
 use crate::utils::TradeIntent;
 use bevy::log::error;
 use bevy::prelude::{warn, Component};
-use bevy::utils::{default, HashMap};
+use bevy::utils::HashMap;
 
 #[derive(Component)]
 pub struct Inventory {
     pub capacity: u32,
     inventory: HashMap<ItemId, InventoryElement>,
-}
-
-#[derive(Default)]
-pub struct InventoryElement {
-    /// How much is actually inside our inventory, right now
-    pub currently_available: u32,
-
-    pub planned_buying: u32,
-    pub planned_selling: u32,
-    pub planned_producing: u32,
-
-    /// Current + Buying + Selling + Producing
-    pub total: u32,
-}
-
-impl InventoryElement {
-    pub fn new(amount: u32) -> Self {
-        Self {
-            currently_available: amount,
-            total: amount,
-            ..default()
-        }
-    }
-
-    pub fn add(&mut self, amount: u32) {
-        self.currently_available += amount;
-        self.total += amount;
-    }
-
-    pub fn remove(&mut self, amount: u32) {
-        self.currently_available -= amount;
-        self.total -= amount;
-    }
 }
 
 impl Inventory {
@@ -59,7 +27,7 @@ impl Inventory {
             result.inventory.insert(
                 item_id,
                 InventoryElement {
-                    currently_available: amount,
+                    current: amount,
                     total: amount,
                     ..Default::default()
                 },
@@ -76,7 +44,7 @@ impl Inventory {
     pub fn used(&self) -> u32 {
         self.inventory
             .iter()
-            .fold(0, |acc, (_, value)| acc + value.currently_available)
+            .fold(0, |acc, (_, value)| acc + value.current)
     }
 
     pub fn ratio(&self) -> f32 {
@@ -124,11 +92,11 @@ impl Inventory {
 
         match intent {
             TradeIntent::Buy => {
-                inventory.currently_available += amount;
+                inventory.current += amount;
                 inventory.planned_buying -= amount;
             }
             TradeIntent::Sell => {
-                inventory.currently_available -= amount;
+                inventory.current -= amount;
                 inventory.planned_selling -= amount;
             }
         }
@@ -145,9 +113,7 @@ impl Inventory {
                 return false;
             };
 
-            if inventory.currently_available - inventory.planned_selling
-                < element.amount * multiplier
-            {
+            if inventory.current - inventory.planned_selling < element.amount * multiplier {
                 return false;
             }
         }
@@ -166,9 +132,7 @@ impl Inventory {
         for element in output {
             total_used_storage += element.amount * multiplier;
             if let Some(inventory) = self.inventory.get(&element.item_id) {
-                if element.amount * multiplier
-                    + inventory.currently_available
-                    + inventory.planned_buying
+                if element.amount * multiplier + inventory.current + inventory.planned_buying
                     > self.capacity
                 {
                     return false;
@@ -228,13 +192,13 @@ impl Inventory {
     pub fn finish_production(&mut self, item_recipe: &ItemRecipe, multiplier: u32) {
         for output in &item_recipe.output {
             if let Some(inventory) = self.inventory.get_mut(&output.item_id) {
-                inventory.currently_available += output.amount * multiplier;
+                inventory.current += output.amount * multiplier;
                 inventory.planned_producing -= output.amount * multiplier;
             } else {
                 warn!("Product inventory entry did not exist on production completion!");
                 let item = InventoryElement {
                     total: output.amount * multiplier,
-                    currently_available: output.amount * multiplier,
+                    current: output.amount * multiplier,
                     ..Default::default()
                 };
                 self.inventory.insert(output.item_id, item);
