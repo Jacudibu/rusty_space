@@ -9,7 +9,7 @@ use crate::simulation::time::SimulationTimestamp;
 use crate::utils::{spawn_helpers, SectorEntity};
 use crate::{constants, SpriteHandles};
 use bevy::ecs::system::SystemParam;
-use bevy::prelude::{Circle, Commands, Res, ShapeSample, Vec2};
+use bevy::prelude::{Circle, Commands, Reflect, Res, ShapeSample, Vec2};
 use hexx::Hex;
 use rand::distributions::Distribution;
 use rand::prelude::StdRng;
@@ -108,12 +108,16 @@ impl SectorAsteroidSaveData {
         mut self,
         sector_hex: Hex,
         amount: usize,
+        universe_seed: u64,
         map_layout: &MapLayout,
     ) -> Self {
         let shape = Circle::new(constants::SECTOR_SIZE * 0.8);
-        let seed = (sector_hex.x * 100000 + sector_hex.y) as u64;
+        let seed = format!("{universe_seed}:{}.{}", sector_hex.x, sector_hex.y)
+            .reflect_hash()
+            .unwrap();
+
         let position_rng = StdRng::seed_from_u64(seed);
-        let mut inner_rng = StdRng::seed_from_u64(seed);
+        let mut inner_rng = StdRng::seed_from_u64(seed + 1);
 
         let sector_pos = map_layout.hex_layout.hex_to_world_pos(sector_hex);
 
