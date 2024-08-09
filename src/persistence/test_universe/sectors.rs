@@ -5,9 +5,10 @@ use crate::persistence::{
     ConstantOrbitSaveData, PlanetKindSaveData, SaveDataCollection, SectorAsteroidSaveData,
     SectorPlanetSaveData, SectorSaveData, SectorStarSaveData,
 };
+use crate::utils::UniverseSeed;
 use bevy::math::Vec2;
 
-const UNIVERSE_SEED: u64 = 42;
+const UNIVERSE_SEED: UniverseSeed = UniverseSeed::from_seed(42);
 
 pub fn create_test_data() -> SaveDataCollection<SectorSaveData> {
     let map_layout = MapLayout::default();
@@ -34,7 +35,7 @@ pub fn create_test_data() -> SaveDataCollection<SectorSaveData> {
             .add_random_live_asteroids(
                 coordinates::TOP_RIGHT,
                 constants::ASTEROID_COUNT,
-                UNIVERSE_SEED,
+                &UNIVERSE_SEED,
                 &map_layout,
             ),
     );
@@ -46,7 +47,7 @@ pub fn create_test_data() -> SaveDataCollection<SectorSaveData> {
                 .add_random_live_asteroids(
                     coordinates::TOP_RIGHT_TOP_RIGHT,
                     constants::ASTEROID_COUNT,
-                    UNIVERSE_SEED,
+                    &UNIVERSE_SEED,
                     &map_layout,
                 ),
         );
