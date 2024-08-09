@@ -1,16 +1,16 @@
 use bevy::app::{App, Plugin};
 mod coordinates;
-mod gates;
-mod sectors;
-mod ships;
-mod stations;
+mod gate_test_data;
+mod sector_test_data;
+mod ship_test_data;
+mod station_test_data;
 
 pub struct TestUniverseDataPlugin;
 impl Plugin for TestUniverseDataPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(sectors::create_test_data());
-        app.insert_resource(gates::create_test_data());
-        app.insert_resource(stations::create_test_data());
-        app.insert_resource(ships::create_test_data());
+        app.insert_resource(sector_test_data::create_test_data());
+        app.insert_resource(gate_test_data::create_test_data());
+        app.insert_resource(station_test_data::create_test_data());
+        app.insert_resource(ship_test_data::create_test_data());
     }
 }

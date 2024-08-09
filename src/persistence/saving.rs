@@ -2,7 +2,7 @@ use crate::components::{
     Asteroid, BuyOrders, Gate, InSector, Inventory, Sector, SellOrders, Ship, Star, Station,
 };
 use crate::persistence::data::v1::*;
-use crate::persistence::writer::sectors::SectorSaveDataQuery;
+use crate::persistence::writer::sector_writer::SectorSaveDataQuery;
 use crate::persistence::AllEntityIdMaps;
 use crate::simulation::physics::{ConstantVelocity, ShipVelocity};
 use crate::simulation::production::{ProductionComponent, ShipyardComponent};

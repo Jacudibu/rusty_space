@@ -1,11 +1,11 @@
 //! This Module provides builder methods for the latest persistent data version.
 //! Can be used for hard-coded maps during debugging and tutorials or tests.
 
-pub mod gate;
-pub mod planet;
-pub mod sector;
-pub mod ship;
-pub mod station;
+pub mod gate_builder;
+pub mod planet_builder;
+pub mod sector_builder;
+pub mod ship_builder;
+pub mod station_builder;
 
 pub use crate::persistence::loading_plugin::UniverseSaveDataLoadingOnStartupPlugin;
 

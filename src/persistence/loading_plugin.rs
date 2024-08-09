@@ -1,5 +1,5 @@
 use crate::initialize_data;
-use crate::persistence::builder::{gate, sector, ship, station};
+use crate::persistence::builder::{gate_builder, sector_builder, ship_builder, station_builder};
 use bevy::app::{App, Plugin, Startup};
 use bevy::prelude::IntoSystemConfigs;
 
@@ -13,10 +13,10 @@ impl Plugin for UniverseSaveDataLoadingOnStartupPlugin {
         app.add_systems(
             Startup,
             (
-                sector::spawn_all,
-                gate::spawn_all,
-                station::spawn_all,
-                ship::spawn_all,
+                sector_builder::spawn_all,
+                gate_builder::spawn_all,
+                station_builder::spawn_all,
+                ship_builder::spawn_all,
             )
                 .after(initialize_data)
                 .chain(),
