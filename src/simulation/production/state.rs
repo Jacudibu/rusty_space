@@ -60,7 +60,6 @@ impl Ord for SingleProductionState {
 
 impl PartialOrd for SingleProductionState {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        // Inverted ordering so heap.max is our min element
-        Some(other.finished_at.cmp(&self.finished_at))
+        Some(self.cmp(other))
     }
 }
