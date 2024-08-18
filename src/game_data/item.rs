@@ -7,7 +7,7 @@ use leafwing_manifest::manifest::{Manifest, ManifestFormat};
 use serde::Deserialize;
 use std::path::PathBuf;
 
-pub type ItemId = Id<ItemDefinition>;
+pub type ItemId = Id<Item>;
 
 const DEBUG_ITEM_STRING_A: &str = "item_a";
 const DEBUG_ITEM_STRING_B: &str = "item_b";
@@ -20,7 +20,7 @@ pub const DEBUG_ITEM_ID_ORE: ItemId = DEBUG_ITEM_ID_A;
 pub const DEBUG_ITEM_ID_GAS: ItemId = DEBUG_ITEM_ID_B;
 
 /// Holds all relevant data for one specific item.
-pub struct ItemDefinition {
+pub struct Item {
     pub id: ItemId,
     pub name: String, // Should be determined through i18n and not stored here to allow language switching without restarts (?).
     pub icon: Handle<Image>,
@@ -30,11 +30,11 @@ pub struct ItemDefinition {
 /// Contains all item data, which will never change during gameplay.
 #[derive(Resource)]
 pub struct ItemManifest {
-    items: HashMap<ItemId, ItemDefinition>,
+    items: HashMap<ItemId, Item>,
 }
 
 #[derive(Deserialize)]
-pub struct RawItemDefinition {
+pub struct RawItem {
     pub id: String,
     pub icon: PathBuf,
     pub price_min: u32,
@@ -44,26 +44,26 @@ pub struct RawItemDefinition {
 /// Contains the raw, unprocessed item data.
 #[derive(Asset, TypePath, Deserialize)]
 pub struct RawItemManifest {
-    items: Vec<RawItemDefinition>,
+    items: Vec<RawItem>,
 }
 
 impl RawItemManifest {
     pub fn mock_data() -> Self {
         Self {
             items: vec![
-                RawItemDefinition {
+                RawItem {
                     id: DEBUG_ITEM_STRING_A.into(),
                     icon: "ui_icons/items/a.png".into(),
                     price_min: 5,
                     price_max: 1000,
                 },
-                RawItemDefinition {
+                RawItem {
                     id: DEBUG_ITEM_STRING_B.into(),
                     icon: "ui_icons/items/b.png".into(),
                     price_min: 5,
                     price_max: 1000,
                 },
-                RawItemDefinition {
+                RawItem {
                     id: DEBUG_ITEM_STRING_C.into(),
                     icon: "ui_icons/items/c.png".into(),
                     price_min: 5,
@@ -76,8 +76,8 @@ impl RawItemManifest {
 
 impl Manifest for ItemManifest {
     type RawManifest = RawItemManifest;
-    type RawItem = RawItemDefinition;
-    type Item = ItemDefinition;
+    type RawItem = RawItem;
+    type Item = Item;
     type ConversionError = std::convert::Infallible;
     const FORMAT: ManifestFormat = ManifestFormat::Custom; // We currently don't parse from filesystem
 
@@ -94,7 +94,7 @@ impl Manifest for ItemManifest {
                 let icon = asset_server.load(raw_item.icon);
                 let id = ItemId::from_name(&raw_item.id);
 
-                let item = ItemDefinition {
+                let item = Item {
                     id,
                     name: raw_item.id,
                     price: PriceRange::new(raw_item.price_min, raw_item.price_max),
@@ -114,7 +114,7 @@ impl Manifest for ItemManifest {
 }
 
 impl ItemManifest {
-    pub fn get_from_ref(&self, id: &ItemId) -> Option<&ItemDefinition> {
+    pub fn get_from_ref(&self, id: &ItemId) -> Option<&Item> {
         self.items.get(id)
     }
 }

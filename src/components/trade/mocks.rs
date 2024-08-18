@@ -3,11 +3,11 @@ use crate::components::{
     BuyOrderData, BuyOrders, OrderData, SellOrderData, SellOrders, TradeOrder,
 };
 use crate::constants;
-use crate::game_data::ItemDefinition;
+use crate::game_data::Item;
 use crate::utils::PriceSetting;
 
 impl BuyOrders {
-    pub fn mock(items: Vec<&ItemDefinition>) -> Self {
+    pub fn mock(items: Vec<&Item>) -> Self {
         BuyOrders::from_vec(
             items
                 .iter()
@@ -34,7 +34,7 @@ impl BuyOrders {
 }
 
 impl SellOrders {
-    pub fn mock(items: Vec<&ItemDefinition>) -> Self {
+    pub fn mock(items: Vec<&Item>) -> Self {
         SellOrders::from_vec(
             items
                 .iter()
