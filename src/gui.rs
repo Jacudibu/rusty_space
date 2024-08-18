@@ -1,12 +1,3 @@
-use bevy::app::App;
-use bevy::prelude::{
-    AppExtStates, AssetServer, Commands, Entity, IntoSystemConfigs, Name, NextState, Plugin,
-    PreUpdate, Query, Res, ResMut, Resource, Startup, State, States, Update, With,
-};
-use bevy_egui::egui::load::SizedTexture;
-use bevy_egui::egui::{Align2, Shadow, Ui};
-use bevy_egui::{egui, EguiContexts, EguiStartupSet};
-
 use crate::components::{
     Asteroid, BuyOrders, Gate, InSector, InteractionQueue, Inventory, SelectableEntity, SellOrders,
     TradeOrder,
@@ -22,6 +13,14 @@ use crate::simulation::ship_ai::TaskInsideQueue;
 use crate::simulation::ship_ai::TaskQueue;
 use crate::utils::ExchangeWareData;
 use crate::SpriteHandles;
+use bevy::app::App;
+use bevy::prelude::{
+    AppExtStates, AssetServer, Commands, Entity, IntoSystemConfigs, Name, NextState, Plugin,
+    PreUpdate, Query, Res, ResMut, Resource, Startup, State, States, Update, With,
+};
+use bevy_egui::egui::load::SizedTexture;
+use bevy_egui::egui::{Align2, Shadow, Ui};
+use bevy_egui::{egui, EguiContexts, EguiStartupSet};
 
 pub struct GUIPlugin;
 impl Plugin for GUIPlugin {
@@ -315,7 +314,7 @@ pub fn list_selection_details(
                         ui.label("Empty");
                     } else {
                         for (item_id, amount) in inventory {
-                            let item = game_data.items.get(item_id).unwrap();
+                            let item = game_data.items.get_from_ref(item_id).unwrap();
                             ui.label(format!(
                                 "{} x {} (+{}, -{}, +{}(Prod))",
                                 item.name,
@@ -360,7 +359,7 @@ pub fn list_selection_details(
                         ui.label(format!(
                             "Buying {}x{} for {}C",
                             data.amount,
-                            game_data.items.get(item_id).unwrap().name,
+                            game_data.items.get_from_ref(item_id).unwrap().name,
                             data.price
                         ));
                     }
@@ -371,7 +370,7 @@ pub fn list_selection_details(
                         ui.label(format!(
                             "Selling {}x{} for {}C",
                             data.amount,
-                            game_data.items.get(item_id).unwrap().name,
+                            game_data.items.get_from_ref(item_id).unwrap().name,
                             data.price
                         ));
                     }
@@ -429,13 +428,13 @@ pub fn list_selection_details(
                                         ExchangeWareData::Buy(item_id, amount) => {
                                             format!(
                                                 "Buy {amount}x{}",
-                                                game_data.items.get(item_id).unwrap().name
+                                                game_data.items.get_from_ref(item_id).unwrap().name
                                             )
                                         }
                                         ExchangeWareData::Sell(item_id, amount) => {
                                             format!(
                                                 "Sell {amount}x{}",
-                                                game_data.items.get(item_id).unwrap().name
+                                                game_data.items.get_from_ref(item_id).unwrap().name
                                             )
                                         }
                                     },
