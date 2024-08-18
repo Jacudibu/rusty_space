@@ -25,7 +25,13 @@ mod test_helpers {
             app.init_resource::<MapLayout>();
             app.init_resource::<SpriteHandles>();
             app.init_resource::<PrecomputedOrbitDirections>();
-            app.insert_resource(GameData::mock_data());
+
+            // all of these are required to get GameData::from_world working
+            app.add_plugins(TaskPoolPlugin::default());
+            app.add_plugins(AssetPlugin::default());
+            app.init_asset::<Image>();
+            app.init_resource::<GameData>();
+
             app.insert_resource(self.sectors);
             app.insert_resource(self.gate_pairs);
             app.insert_resource(self.stations);

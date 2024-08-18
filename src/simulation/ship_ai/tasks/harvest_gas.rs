@@ -1,5 +1,5 @@
 use crate::components::{InteractionQueue, Inventory};
-use crate::game_data::DEBUG_ITEM_ID_ORE;
+use crate::game_data::DEBUG_ITEM_ID_GAS;
 use crate::simulation::prelude::{
     AwaitingSignal, CurrentSimulationTimestamp, Milliseconds, SimulationTime, SimulationTimestamp,
 };
@@ -45,7 +45,7 @@ impl HarvestGas {
         let harvested_amount =
             HARVESTED_AMOUNT_PER_UPDATE.min(inventory.capacity - inventory.used());
 
-        inventory.add_item(DEBUG_ITEM_ID_ORE, harvested_amount);
+        inventory.add_item(DEBUG_ITEM_ID_GAS, harvested_amount);
 
         if inventory.used() == inventory.capacity {
             TaskResult::Finished

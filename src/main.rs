@@ -50,7 +50,7 @@ fn main() {
         simulation::plugin::SimulationPlugin,
         states::StatePlugin,
     ))
-    .insert_resource(GameData::mock_data())
+    .init_resource::<GameData>()
     .insert_resource(SessionData::mock_data())
     .add_systems(Startup, initialize_data);
 
@@ -87,9 +87,6 @@ pub struct SpriteHandles {
     star_selected: Handle<Image>,
     station: Handle<Image>,
     station_selected: Handle<Image>,
-    icon_item_a: Handle<Image>,
-    icon_item_b: Handle<Image>,
-    icon_item_c: Handle<Image>,
     icon_unknown: Handle<Image>,
     icon_ship: Handle<Image>,
 }
@@ -108,9 +105,6 @@ pub fn initialize_data(mut commands: Commands, asset_server: Res<AssetServer>) {
         star_selected: asset_server.load("star_selected.png"),
         station: asset_server.load("station.png"),
         station_selected: asset_server.load("station_selected.png"),
-        icon_item_a: asset_server.load("ui_icons/items/a.png"),
-        icon_item_b: asset_server.load("ui_icons/items/b.png"),
-        icon_item_c: asset_server.load("ui_icons/items/c.png"),
         icon_unknown: asset_server.load("ui_icons/items/unknown.png"),
         icon_ship: asset_server.load("ui_icons/items/ship.png"),
     };
