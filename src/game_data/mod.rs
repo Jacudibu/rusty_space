@@ -8,7 +8,7 @@ use bevy::utils::HashMap;
 use leafwing_manifest::manifest::Manifest;
 pub use {
     item::{
-        ItemDefinition, ItemId, ItemManifest, DEBUG_ITEM_ID_A, DEBUG_ITEM_ID_B, DEBUG_ITEM_ID_C,
+        Item, ItemId, ItemManifest, DEBUG_ITEM_ID_A, DEBUG_ITEM_ID_B, DEBUG_ITEM_ID_C,
         DEBUG_ITEM_ID_GAS, DEBUG_ITEM_ID_ORE,
     },
     item_recipe::*,
