@@ -11,6 +11,7 @@ iyes_perf_ui = "0.3.0"
 rand = "0.8.5"
 serde = { version = "1.0.204", features = ["derive"] }
 serde_json = "1.0.122"
+leafwing_manifest = { version = "0.2.0", features = [] }
 
 [patch.crates-io]
 hexx = { git = "https://github.com/ManevilleF/hexx.git", rev = "35bd74e703925d19160674f7cfe437ce70adec06" }

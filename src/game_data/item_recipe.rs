@@ -1,11 +1,12 @@
 use crate::game_data::ItemId;
 use crate::simulation::prelude::Milliseconds;
+use leafwing_manifest::identifier::Id;
 
-pub type RecipeId = u32;
+pub type RecipeId = Id<ItemRecipe>;
 
-pub const RECIPE_A_ID: RecipeId = 1;
-pub const RECIPE_B_ID: RecipeId = 2;
-pub const RECIPE_C_ID: RecipeId = 3;
+pub const RECIPE_A_ID: RecipeId = RecipeId::from_name("recipe_a");
+pub const RECIPE_B_ID: RecipeId = RecipeId::from_name("recipe_b");
+pub const RECIPE_C_ID: RecipeId = RecipeId::from_name("recipe_c");
 
 pub struct ItemRecipe {
     /// Unique ID to differentiate between recipes

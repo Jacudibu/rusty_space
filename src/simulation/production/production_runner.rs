@@ -115,7 +115,7 @@ fn process_finished_ship_production(
     };
 
     let Some(module) = shipyard.modules.get_mut(module_id) else {
-        error!("Was unable to trigger shipyard construction finish for entity {} and module id {}! Guess it was destroyed?", next.entity, module_id);
+        error!("Was unable to trigger shipyard construction finish for entity {} and module id {:?}! Guess it was destroyed?", next.entity, module_id);
         return;
     };
 
@@ -162,7 +162,7 @@ fn process_finished_item_production(
 
     let Some(module) = production.modules.get_mut(module_id) else {
         error!(
-            "Was unable to trigger production finish for entity {} and module id {}!",
+            "Was unable to trigger production finish for entity {} and module id {:?}!",
             next.entity, module_id
         );
         return;

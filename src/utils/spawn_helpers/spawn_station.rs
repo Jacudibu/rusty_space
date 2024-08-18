@@ -40,6 +40,7 @@ pub fn spawn_station(
         }
         Some(item) => match item.id {
             // somehow matching with aliased-constants doesn't work?
+            // TODO: Just parse this stuff properly already...
             1 => sprites.icon_item_a.clone(),
             2 => sprites.icon_item_b.clone(),
             3 => sprites.icon_item_c.clone(),
