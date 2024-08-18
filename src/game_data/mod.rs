@@ -1,13 +1,12 @@
-mod item;
+mod item_data;
 mod item_recipe;
 mod production_module;
 mod shipyard_module;
 
 use bevy::prelude::{FromWorld, Resource, World};
 use bevy::utils::HashMap;
-use leafwing_manifest::manifest::Manifest;
 pub use {
-    item::{
+    item_data::{
         Item, ItemId, ItemManifest, DEBUG_ITEM_ID_A, DEBUG_ITEM_ID_B, DEBUG_ITEM_ID_C,
         DEBUG_ITEM_ID_GAS, DEBUG_ITEM_ID_ORE,
     },
@@ -27,8 +26,7 @@ pub struct GameData {
 
 impl FromWorld for GameData {
     fn from_world(world: &mut World) -> Self {
-        let items =
-            ItemManifest::from_raw_manifest(item::RawItemManifest::mock_data(), world).unwrap();
+        let items = ItemManifest::from_mock_data(world);
 
         let mut item_recipes = HashMap::new();
         item_recipes.insert(
