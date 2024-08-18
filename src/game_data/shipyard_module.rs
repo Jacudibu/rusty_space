@@ -1,6 +1,8 @@
-pub type ShipyardModuleId = u32;
+use leafwing_manifest::identifier::Id;
 
-pub const SHIPYARD_MODULE_ID: ShipyardModuleId = 1;
+pub type ShipyardModuleId = Id<ShipyardModuleDefinition>;
+
+pub const SHIPYARD_MODULE_ID: ShipyardModuleId = ShipyardModuleId::from_name("shipyard_a");
 
 /// Defines the costs and capabilities of a single ship production line
 pub struct ShipyardModuleDefinition {
