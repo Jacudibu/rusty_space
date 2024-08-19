@@ -8,8 +8,8 @@ use bevy::prelude::{FromWorld, Resource, World};
 use bevy::utils::HashMap;
 pub use {
     item_data::{
-        Item, ItemId, ItemManifest, DEBUG_ITEM_ID_A, DEBUG_ITEM_ID_B, DEBUG_ITEM_ID_C,
-        DEBUG_ITEM_ID_GAS, DEBUG_ITEM_ID_ORE,
+        Item, ItemId, ItemManifest, MOCK_ITEM_ID_A, MOCK_ITEM_ID_B, MOCK_ITEM_ID_C,
+        MOCK_ITEM_ID_GAS, MOCK_ITEM_ID_ORE,
     },
     production_module::*,
     recipe_data::{

@@ -1,5 +1,5 @@
 use crate::game_data::{
-    DEBUG_ITEM_ID_A, DEBUG_ITEM_ID_B, DEBUG_ITEM_ID_C, MOCK_RECIPE_A_ID, MOCK_RECIPE_B_ID,
+    MOCK_ITEM_ID_A, MOCK_ITEM_ID_B, MOCK_ITEM_ID_C, MOCK_RECIPE_A_ID, MOCK_RECIPE_B_ID,
     MOCK_RECIPE_C_ID, PRODUCTION_MODULE_A_ID, PRODUCTION_MODULE_B_ID, PRODUCTION_MODULE_C_ID,
     SHIPYARD_MODULE_ID,
 };
@@ -17,8 +17,8 @@ pub fn create_test_data() -> SaveDataCollection<StationSaveData> {
             "Station A".into(),
         )
         .with_production(1, PRODUCTION_MODULE_A_ID, MOCK_RECIPE_A_ID)
-        .with_buys(vec![DEBUG_ITEM_ID_C])
-        .with_sells(vec![DEBUG_ITEM_ID_A]);
+        .with_buys(vec![MOCK_ITEM_ID_C])
+        .with_sells(vec![MOCK_ITEM_ID_A]);
 
     result
         .add(
@@ -26,8 +26,8 @@ pub fn create_test_data() -> SaveDataCollection<StationSaveData> {
             "Station B".into(),
         )
         .with_production(5, PRODUCTION_MODULE_B_ID, MOCK_RECIPE_B_ID)
-        .with_buys(vec![DEBUG_ITEM_ID_A])
-        .with_sells(vec![DEBUG_ITEM_ID_B]);
+        .with_buys(vec![MOCK_ITEM_ID_A])
+        .with_sells(vec![MOCK_ITEM_ID_B]);
 
     result
         .add(
@@ -35,8 +35,8 @@ pub fn create_test_data() -> SaveDataCollection<StationSaveData> {
             "Station C".into(),
         )
         .with_production(3, PRODUCTION_MODULE_C_ID, MOCK_RECIPE_C_ID)
-        .with_buys(vec![DEBUG_ITEM_ID_B])
-        .with_sells(vec![DEBUG_ITEM_ID_C]);
+        .with_buys(vec![MOCK_ITEM_ID_B])
+        .with_sells(vec![MOCK_ITEM_ID_C]);
 
     result
         .add(
@@ -44,7 +44,7 @@ pub fn create_test_data() -> SaveDataCollection<StationSaveData> {
             "Shipyard".into(),
         )
         .with_shipyard(2, SHIPYARD_MODULE_ID)
-        .with_buys(vec![DEBUG_ITEM_ID_A, DEBUG_ITEM_ID_B, DEBUG_ITEM_ID_C]);
+        .with_buys(vec![MOCK_ITEM_ID_A, MOCK_ITEM_ID_B, MOCK_ITEM_ID_C]);
 
     result
 }
