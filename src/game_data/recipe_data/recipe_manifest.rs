@@ -1,5 +1,5 @@
 use crate::game_data::{
-    Recipe, RecipeElement, RecipeId, DEBUG_ITEM_ID_A, DEBUG_ITEM_ID_B, DEBUG_ITEM_ID_C,
+    Recipe, RecipeElement, RecipeId, MOCK_ITEM_ID_A, MOCK_ITEM_ID_B, MOCK_ITEM_ID_C,
     MOCK_RECIPE_A_ID, MOCK_RECIPE_B_ID, MOCK_RECIPE_C_ID,
 };
 use bevy::prelude::{Asset, Resource, TypePath, World};
@@ -29,11 +29,11 @@ impl RecipeManifest {
                 name: "5C -> 10A".into(),
                 duration: 10000,
                 input: vec![RecipeElement {
-                    item_id: DEBUG_ITEM_ID_C,
+                    item_id: MOCK_ITEM_ID_C,
                     amount: 5,
                 }],
                 output: vec![RecipeElement {
-                    item_id: DEBUG_ITEM_ID_A,
+                    item_id: MOCK_ITEM_ID_A,
                     amount: 10,
                 }],
             },
@@ -45,11 +45,11 @@ impl RecipeManifest {
                 name: "5A -> 13B".into(),
                 duration: 20000,
                 input: vec![RecipeElement {
-                    item_id: DEBUG_ITEM_ID_A,
+                    item_id: MOCK_ITEM_ID_A,
                     amount: 5,
                 }],
                 output: vec![RecipeElement {
-                    item_id: DEBUG_ITEM_ID_B,
+                    item_id: MOCK_ITEM_ID_B,
                     amount: 13,
                 }],
             },
@@ -61,11 +61,11 @@ impl RecipeManifest {
                 name: "5B -> 17C".into(),
                 duration: 30000,
                 input: vec![RecipeElement {
-                    item_id: DEBUG_ITEM_ID_B,
+                    item_id: MOCK_ITEM_ID_B,
                     amount: 5,
                 }],
                 output: vec![RecipeElement {
-                    item_id: DEBUG_ITEM_ID_C,
+                    item_id: MOCK_ITEM_ID_C,
                     amount: 17,
                 }],
             },

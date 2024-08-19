@@ -23,15 +23,15 @@ impl SessionData {
                     duration: 5000,
                     materials: vec![
                         RecipeElement {
-                            item_id: DEBUG_ITEM_ID_A,
+                            item_id: MOCK_ITEM_ID_A,
                             amount: 50,
                         },
                         RecipeElement {
-                            item_id: DEBUG_ITEM_ID_B,
+                            item_id: MOCK_ITEM_ID_B,
                             amount: 23,
                         },
                         RecipeElement {
-                            item_id: DEBUG_ITEM_ID_C,
+                            item_id: MOCK_ITEM_ID_C,
                             amount: 74,
                         },
                     ],
