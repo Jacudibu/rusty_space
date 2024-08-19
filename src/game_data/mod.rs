@@ -1,5 +1,5 @@
 mod item_data;
-mod production_module;
+mod production_data;
 mod recipe_data;
 mod shipyard_module;
 
@@ -11,7 +11,10 @@ pub use {
         Item, ItemId, ItemManifest, MOCK_ITEM_ID_A, MOCK_ITEM_ID_B, MOCK_ITEM_ID_C,
         MOCK_ITEM_ID_GAS, MOCK_ITEM_ID_ORE,
     },
-    production_module::*,
+    production_data::{
+        ProductionModule, ProductionModuleId, ProductionModuleManifest,
+        MOCK_PRODUCTION_MODULE_A_ID, MOCK_PRODUCTION_MODULE_B_ID, MOCK_PRODUCTION_MODULE_C_ID,
+    },
     recipe_data::{
         Recipe, RecipeElement, RecipeId, MOCK_RECIPE_A_ID, MOCK_RECIPE_B_ID, MOCK_RECIPE_C_ID,
     },
@@ -23,39 +26,12 @@ pub use {
 pub struct GameData {
     pub items: ItemManifest,
     pub item_recipes: RecipeManifest,
-    pub production_modules: HashMap<ProductionModuleId, ProductionModuleDefinition>,
+    pub production_modules: ProductionModuleManifest,
     pub shipyard_modules: HashMap<ShipyardModuleId, ShipyardModuleDefinition>,
 }
 
 impl FromWorld for GameData {
     fn from_world(world: &mut World) -> Self {
-        let production_modules = HashMap::from([
-            (
-                PRODUCTION_MODULE_A_ID,
-                ProductionModuleDefinition {
-                    id: PRODUCTION_MODULE_A_ID,
-                    name: "Production Module A".to_string(),
-                    available_recipes: vec![MOCK_RECIPE_A_ID],
-                },
-            ),
-            (
-                PRODUCTION_MODULE_B_ID,
-                ProductionModuleDefinition {
-                    id: PRODUCTION_MODULE_B_ID,
-                    name: "Production Module B".to_string(),
-                    available_recipes: vec![MOCK_RECIPE_B_ID],
-                },
-            ),
-            (
-                PRODUCTION_MODULE_C_ID,
-                ProductionModuleDefinition {
-                    id: PRODUCTION_MODULE_C_ID,
-                    name: "Production Module C".to_string(),
-                    available_recipes: vec![MOCK_RECIPE_C_ID],
-                },
-            ),
-        ]);
-
         let shipyard_modules = HashMap::from([(
             SHIPYARD_MODULE_ID,
             ShipyardModuleDefinition {
@@ -67,7 +43,7 @@ impl FromWorld for GameData {
         Self {
             items: ItemManifest::from_mock_data(world),
             item_recipes: RecipeManifest::from_mock_data(world),
-            production_modules,
+            production_modules: ProductionModuleManifest::from_mock_data(world),
             shipyard_modules,
         }
     }
