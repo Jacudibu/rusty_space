@@ -1,6 +1,6 @@
 use crate::components::inventory::inventory_element::InventoryElement;
-use crate::game_data::ItemRecipe;
-use crate::game_data::{ItemId, ItemRecipeElement};
+use crate::game_data::Recipe;
+use crate::game_data::{ItemId, RecipeElement};
 use crate::utils::TradeIntent;
 use bevy::log::error;
 use bevy::prelude::{warn, Component};
@@ -105,7 +105,7 @@ impl Inventory {
     /// Tests if there are enough items in stock to start a production run
     pub fn has_enough_items_in_inventory(
         &self,
-        input: &Vec<ItemRecipeElement>,
+        input: &Vec<RecipeElement>,
         multiplier: u32,
     ) -> bool {
         for element in input {
@@ -124,7 +124,7 @@ impl Inventory {
     /// Tests if there's enough storage space available to store all production yields.
     pub fn has_enough_storage_for_items(
         &self,
-        output: &Vec<ItemRecipeElement>,
+        output: &Vec<RecipeElement>,
         multiplier: u32,
     ) -> bool {
         let mut total_used_storage = self.used();
@@ -156,7 +156,7 @@ impl Inventory {
 
     /// Removes an item from the inventory.
     /// TODO: Maybe delete the entry if it's now at 0?
-    pub fn remove_items(&mut self, items: &Vec<ItemRecipeElement>, multiplier: u32) {
+    pub fn remove_items(&mut self, items: &Vec<RecipeElement>, multiplier: u32) {
         for item in items {
             let Some(inventory) = self.inventory.get_mut(&item.item_id) else {
                 warn!("Ingredient inventory entry did not exist when requesting removal!");
@@ -170,7 +170,7 @@ impl Inventory {
     /// Removes the items required for a production run, and reserves inventory for the yields.
     pub fn reserve_storage_space_for_production_yield(
         &mut self,
-        item_recipe: &ItemRecipe,
+        item_recipe: &Recipe,
         multiplier: u32,
     ) {
         for output in &item_recipe.output {
@@ -189,7 +189,7 @@ impl Inventory {
         }
     }
 
-    pub fn finish_production(&mut self, item_recipe: &ItemRecipe, multiplier: u32) {
+    pub fn finish_production(&mut self, item_recipe: &Recipe, multiplier: u32) {
         for output in &item_recipe.output {
             if let Some(inventory) = self.inventory.get_mut(&output.item_id) {
                 inventory.current += output.amount * multiplier;
