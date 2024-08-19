@@ -338,7 +338,7 @@ pub fn list_selection_details(
                 if let Some(production) = production_module {
                     ui.heading("Production");
                     for (id, module) in &production.modules {
-                        let definition = game_data.production_modules.get(id).unwrap();
+                        let definition = game_data.production_modules.get_by_ref(id).unwrap();
                         ui.label(format!("  {}x {}", module.amount, definition.name));
                         let recipe = game_data.item_recipes.get_by_ref(&module.recipe).unwrap();
                         ui.label(format!("    Active Recipe: {}", recipe.name));

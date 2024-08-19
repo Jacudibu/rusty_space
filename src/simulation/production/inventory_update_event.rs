@@ -11,7 +11,6 @@ use crate::simulation::production::ProductionComponent;
 use crate::utils;
 use bevy::log::error;
 use bevy::prelude::{Entity, Event, EventReader, EventWriter, Or, Query, Res, With};
-use leafwing_manifest::manifest::Manifest;
 
 /// This event should be sent whenever an entity's inventory is being updated outside the production manager
 ///
