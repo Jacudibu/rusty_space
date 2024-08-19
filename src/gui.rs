@@ -379,7 +379,7 @@ pub fn list_selection_details(
                 if let Some(shipyard) = shipyard {
                     ui.heading("Ship Construction");
                     for (id, module) in &shipyard.modules {
-                        let definition = game_data.shipyard_modules.get(id).unwrap();
+                        let definition = game_data.shipyard_modules.get_by_ref(id).unwrap();
                         ui.label(format!("{}x {}", module.amount, definition.name));
 
                         for order in &module.active {

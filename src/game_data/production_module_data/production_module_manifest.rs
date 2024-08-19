@@ -1,7 +1,7 @@
-use crate::game_data::production_data::MOCK_PRODUCTION_MODULE_A_ID;
+use crate::game_data::production_module_data::MOCK_PRODUCTION_MODULE_A_ID;
 use crate::game_data::{
-    ProductionModule, ProductionModuleId, MOCK_PRODUCTION_MODULE_B_ID, MOCK_PRODUCTION_MODULE_C_ID,
-    MOCK_RECIPE_A_ID, MOCK_RECIPE_B_ID, MOCK_RECIPE_C_ID,
+    ProductionModuleDefinition, ProductionModuleId, MOCK_PRODUCTION_MODULE_B_ID,
+    MOCK_PRODUCTION_MODULE_C_ID, MOCK_RECIPE_A_ID, MOCK_RECIPE_B_ID, MOCK_RECIPE_C_ID,
 };
 use bevy::asset::Asset;
 use bevy::prelude::{Resource, TypePath, World};
@@ -12,12 +12,12 @@ use serde::Deserialize;
 
 #[derive(Resource, Asset, TypePath, Deserialize)]
 pub struct ProductionModuleManifest {
-    productions: HashMap<ProductionModuleId, ProductionModule>,
+    productions: HashMap<ProductionModuleId, ProductionModuleDefinition>,
 }
 
 impl ProductionModuleManifest {
     #[must_use]
-    pub fn get_by_ref(&self, id: &ProductionModuleId) -> Option<&ProductionModule> {
+    pub fn get_by_ref(&self, id: &ProductionModuleId) -> Option<&ProductionModuleDefinition> {
         self.productions.get(id)
     }
 
@@ -26,7 +26,7 @@ impl ProductionModuleManifest {
         let mock_modules = HashMap::from([
             (
                 MOCK_PRODUCTION_MODULE_A_ID,
-                ProductionModule {
+                ProductionModuleDefinition {
                     id: MOCK_PRODUCTION_MODULE_A_ID,
                     name: "Production Module A".to_string(),
                     available_recipes: vec![MOCK_RECIPE_A_ID],
@@ -34,7 +34,7 @@ impl ProductionModuleManifest {
             ),
             (
                 MOCK_PRODUCTION_MODULE_B_ID,
-                ProductionModule {
+                ProductionModuleDefinition {
                     id: MOCK_PRODUCTION_MODULE_B_ID,
                     name: "Production Module B".to_string(),
                     available_recipes: vec![MOCK_RECIPE_B_ID],
@@ -42,7 +42,7 @@ impl ProductionModuleManifest {
             ),
             (
                 MOCK_PRODUCTION_MODULE_C_ID,
-                ProductionModule {
+                ProductionModuleDefinition {
                     id: MOCK_PRODUCTION_MODULE_C_ID,
                     name: "Production Module C".to_string(),
                     available_recipes: vec![MOCK_RECIPE_C_ID],
@@ -61,8 +61,8 @@ impl ProductionModuleManifest {
 
 impl Manifest for ProductionModuleManifest {
     type RawManifest = ProductionModuleManifest;
-    type RawItem = ProductionModule;
-    type Item = ProductionModule;
+    type RawItem = ProductionModuleDefinition;
+    type Item = ProductionModuleDefinition;
     type ConversionError = std::convert::Infallible;
     const FORMAT: ManifestFormat = ManifestFormat::Custom;
 
