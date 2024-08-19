@@ -1,14 +1,11 @@
+use crate::game_data::recipe_data::RecipeId;
 use crate::game_data::ItemId;
 use crate::simulation::prelude::Milliseconds;
-use leafwing_manifest::identifier::Id;
+use serde::Deserialize;
 
-pub type RecipeId = Id<ItemRecipe>;
-
-pub const RECIPE_A_ID: RecipeId = RecipeId::from_name("recipe_a");
-pub const RECIPE_B_ID: RecipeId = RecipeId::from_name("recipe_b");
-pub const RECIPE_C_ID: RecipeId = RecipeId::from_name("recipe_c");
-
-pub struct ItemRecipe {
+/// Defines a single production step.
+#[derive(Deserialize)]
+pub struct Recipe {
     /// Unique ID to differentiate between recipes
     pub id: RecipeId,
     /// Useful to differentiate if an item has multiple recipes
@@ -16,12 +13,13 @@ pub struct ItemRecipe {
     /// How long it will take to process this recipe once, in milliseconds
     pub duration: Milliseconds,
     /// The required ingredients to get production starting
-    pub input: Vec<ItemRecipeElement>,
+    pub input: Vec<RecipeElement>,
     /// Yields of a single production run
-    pub output: Vec<ItemRecipeElement>,
+    pub output: Vec<RecipeElement>,
 }
 
-pub struct ItemRecipeElement {
+#[derive(Deserialize)]
+pub struct RecipeElement {
     pub item_id: ItemId,
     pub amount: u32,
 }

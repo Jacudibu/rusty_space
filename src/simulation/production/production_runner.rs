@@ -168,7 +168,7 @@ fn process_finished_item_production(
         return;
     };
 
-    let recipe = game_data.item_recipes.get(&module.recipe).unwrap();
+    let recipe = game_data.item_recipes.get_by_ref(&module.recipe).unwrap();
     inventory.finish_production(recipe, module.amount);
     module.current_run_finished_at = None;
 }

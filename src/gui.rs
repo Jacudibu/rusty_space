@@ -340,7 +340,7 @@ pub fn list_selection_details(
                     for (id, module) in &production.modules {
                         let definition = game_data.production_modules.get(id).unwrap();
                         ui.label(format!("  {}x {}", module.amount, definition.name));
-                        let recipe = game_data.item_recipes.get(&module.recipe).unwrap();
+                        let recipe = game_data.item_recipes.get_by_ref(&module.recipe).unwrap();
                         ui.label(format!("    Active Recipe: {}", recipe.name));
                         if let Some(finished_at) = module.current_run_finished_at {
                             ui.label(format!(

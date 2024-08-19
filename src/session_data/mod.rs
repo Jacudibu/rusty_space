@@ -22,15 +22,15 @@ impl SessionData {
                     name: "Fancy new ship".into(),
                     duration: 5000,
                     materials: vec![
-                        ItemRecipeElement {
+                        RecipeElement {
                             item_id: DEBUG_ITEM_ID_A,
                             amount: 50,
                         },
-                        ItemRecipeElement {
+                        RecipeElement {
                             item_id: DEBUG_ITEM_ID_B,
                             amount: 23,
                         },
-                        ItemRecipeElement {
+                        RecipeElement {
                             item_id: DEBUG_ITEM_ID_C,
                             amount: 74,
                         },

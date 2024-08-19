@@ -11,6 +11,7 @@ use crate::simulation::production::ProductionComponent;
 use crate::utils;
 use bevy::log::error;
 use bevy::prelude::{Entity, Event, EventReader, EventWriter, Or, Query, Res, With};
+use leafwing_manifest::manifest::Manifest;
 
 /// This event should be sent whenever an entity's inventory is being updated outside the production manager
 ///
@@ -61,7 +62,7 @@ pub fn handle_inventory_updates(
                     continue;
                 }
 
-                let recipe = game_data.item_recipes.get(&module.recipe).unwrap();
+                let recipe = game_data.item_recipes.get_by_ref(&module.recipe).unwrap();
                 if inventory.has_enough_items_in_inventory(&recipe.input, module.amount)
                     && inventory.has_enough_storage_for_items(&recipe.output, module.amount)
                 {
