@@ -1,5 +1,5 @@
 use crate::components::{BuyOrders, Inventory, SellOrders};
-use crate::game_data::{GameData, ShipyardModuleId};
+use crate::game_data::{RecipeManifest, ShipyardModuleId};
 use crate::session_data::{SessionData, ShipConfigId};
 use crate::simulation::prelude::SimulationTime;
 use crate::simulation::production::production_kind::ProductionKind;
@@ -31,7 +31,7 @@ impl InventoryUpdateForProductionEvent {
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
 pub fn handle_inventory_updates(
     simulation_time: Res<SimulationTime>,
-    game_data: Res<GameData>,
+    recipes: Res<RecipeManifest>,
     session_data: Res<SessionData>,
     mut event_reader: EventReader<InventoryUpdateForProductionEvent>,
     mut production_start_event_writer: EventWriter<ProductionStartedEvent>,
@@ -61,7 +61,7 @@ pub fn handle_inventory_updates(
                     continue;
                 }
 
-                let recipe = game_data.item_recipes.get_by_ref(&module.recipe).unwrap();
+                let recipe = recipes.get_by_ref(&module.recipe).unwrap();
                 if inventory.has_enough_items_in_inventory(&recipe.input, module.amount)
                     && inventory.has_enough_storage_for_items(&recipe.output, module.amount)
                 {
