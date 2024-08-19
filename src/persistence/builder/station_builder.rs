@@ -1,6 +1,6 @@
 use crate::components::Sector;
 use crate::game_data::{
-    GameData, ItemData, ItemId, ProductionModuleId, RecipeId, ShipyardModuleId,
+    ItemData, ItemId, ItemManifest, ProductionModuleId, RecipeId, ShipyardModuleId,
 };
 use crate::persistence::data::v1::*;
 use crate::persistence::local_hex_position::LocalHexPosition;
@@ -21,7 +21,7 @@ pub struct Args<'w, 's> {
     sprites: Res<'w, SpriteHandles>,
     sectors: Query<'w, 's, &'static mut Sector>,
     sector_id_map: Res<'w, SectorIdMap>,
-    game_data: Res<'w, GameData>,
+    items: Res<'w, ItemManifest>,
 }
 
 type SaveData = SaveDataCollection<StationSaveData>;
@@ -150,11 +150,11 @@ impl StationSaveData {
         let buys = self
             .buy_orders
             .clone()
-            .map_or_else(Vec::new, |x| x.parse(&args.game_data));
+            .map_or_else(Vec::new, |x| x.parse(&args.items));
         let sells = self
             .sell_orders
             .clone()
-            .map_or_else(Vec::new, |x| x.parse(&args.game_data));
+            .map_or_else(Vec::new, |x| x.parse(&args.items));
 
         let production = self.production_modules.clone().map(|x| x.parse());
         let shipyard = self.shipyard_modules.clone().map(|x| x.parse());
@@ -177,19 +177,19 @@ impl StationSaveData {
 }
 
 impl SerializedBuyOrder {
-    pub fn parse<'a>(&self, game_data: &'a GameData) -> Vec<&'a ItemData> {
+    pub fn parse<'a>(&self, items: &'a ItemManifest) -> Vec<&'a ItemData> {
         self.orders
             .iter()
-            .map(|x| game_data.items.get_from_ref(&x.item_id).unwrap())
+            .map(|x| items.get_from_ref(&x.item_id).unwrap())
             .collect()
     }
 }
 
 impl SerializedSellOrder {
-    pub fn parse<'a>(&self, game_data: &'a GameData) -> Vec<&'a ItemData> {
+    pub fn parse<'a>(&self, items: &'a ItemManifest) -> Vec<&'a ItemData> {
         self.orders
             .iter()
-            .map(|x| game_data.items.get_from_ref(&x.item_id).unwrap())
+            .map(|x| items.get_from_ref(&x.item_id).unwrap())
             .collect()
     }
 }

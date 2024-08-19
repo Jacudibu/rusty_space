@@ -230,7 +230,7 @@ pub fn list_selection_icons_and_counts(
 
 #[allow(clippy::type_complexity)]
 pub fn list_selection_details(
-    game_data: Res<GameData>,
+    game_data: GameData,
     session_data: Res<SessionData>,
     mut context: EguiContexts,
     simulation_time: Res<SimulationTime>,

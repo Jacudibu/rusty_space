@@ -50,9 +50,10 @@ fn main() {
         simulation::plugin::SimulationPlugin,
         states::StatePlugin,
     ))
-    .init_resource::<GameData>()
     .insert_resource(SessionData::mock_data())
     .add_systems(Startup, initialize_data);
+
+    GameData::initialize_mock_data(app.world_mut());
 
     app.run();
 }

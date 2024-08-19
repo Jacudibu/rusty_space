@@ -30,7 +30,8 @@ mod test_helpers {
             app.add_plugins(TaskPoolPlugin::default());
             app.add_plugins(AssetPlugin::default());
             app.init_asset::<Image>();
-            app.init_resource::<GameData>();
+
+            GameData::initialize_mock_data(app.world_mut());
 
             app.insert_resource(self.sectors);
             app.insert_resource(self.gate_pairs);

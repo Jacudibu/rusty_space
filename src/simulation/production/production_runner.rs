@@ -2,7 +2,7 @@ use bevy::log::error;
 use bevy::prelude::{Commands, EventWriter, Mut, Or, Query, Res, ResMut, Transform, With};
 
 use crate::components::{BuyOrders, InSector, Inventory, Sector, SellOrders};
-use crate::game_data::{GameData, ProductionModuleId, ShipyardModuleId};
+use crate::game_data::{ProductionModuleId, RecipeManifest, ShipyardModuleId};
 use crate::persistence::{PersistentShipId, ShipIdMap};
 use crate::session_data::SessionData;
 use crate::simulation::prelude::{CurrentSimulationTimestamp, SimulationTime, SimulationTimestamp};
@@ -22,7 +22,7 @@ pub fn check_if_production_is_finished_and_start_new_one(
     mut ship_id_map: ResMut<ShipIdMap>,
     simulation_time: Res<SimulationTime>,
     mut global_production_state: ResMut<GlobalProductionState>,
-    game_data: Res<GameData>,
+    recipes: Res<RecipeManifest>,
     session_data: Res<SessionData>,
     mut inventory_update_writer: EventWriter<InventoryUpdateForProductionEvent>,
     mut query: Query<
@@ -66,7 +66,7 @@ pub fn check_if_production_is_finished_and_start_new_one(
 
         match next.kind {
             ProductionKind::Item(module_id) => process_finished_item_production(
-                &game_data,
+                &recipes,
                 &next,
                 production,
                 &mut inventory,
@@ -149,7 +149,7 @@ fn process_finished_ship_production(
 
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
 fn process_finished_item_production(
-    game_data: &GameData,
+    recipes: &RecipeManifest,
     next: &SingleProductionState,
     production: Option<Mut<ProductionComponent>>,
     inventory: &mut Inventory,
@@ -168,7 +168,7 @@ fn process_finished_item_production(
         return;
     };
 
-    let recipe = game_data.item_recipes.get_by_ref(&module.recipe).unwrap();
+    let recipe = recipes.get_by_ref(&module.recipe).unwrap();
     inventory.finish_production(recipe, module.amount);
     module.current_run_finished_at = None;
 }
