@@ -3,7 +3,7 @@ use serde::Deserialize;
 
 /// Defines the costs and capabilities of a single ship production line
 #[derive(Deserialize)]
-pub struct ShipyardModuleDefinition {
+pub struct ShipyardModuleData {
     /// Unique ID to differentiate between recipes
     pub id: ShipyardModuleId,
     /// User Facing name thingy

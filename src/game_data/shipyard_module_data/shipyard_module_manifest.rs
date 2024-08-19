@@ -1,4 +1,4 @@
-use crate::game_data::shipyard_module_data::shipyard_module_definition::ShipyardModuleDefinition;
+use crate::game_data::shipyard_module_data::shipyard_module::ShipyardModuleData;
 use crate::game_data::{ShipyardModuleId, MOCK_SHIPYARD_MODULE_ID};
 use bevy::asset::Asset;
 use bevy::prelude::{Resource, TypePath, World};
@@ -9,12 +9,12 @@ use serde::Deserialize;
 
 #[derive(Resource, Asset, TypePath, Deserialize)]
 pub struct ShipyardModuleManifest {
-    shipyards: HashMap<ShipyardModuleId, ShipyardModuleDefinition>,
+    shipyards: HashMap<ShipyardModuleId, ShipyardModuleData>,
 }
 
 impl ShipyardModuleManifest {
     #[must_use]
-    pub fn get_by_ref(&self, id: &ShipyardModuleId) -> Option<&ShipyardModuleDefinition> {
+    pub fn get_by_ref(&self, id: &ShipyardModuleId) -> Option<&ShipyardModuleData> {
         self.shipyards.get(id)
     }
 
@@ -22,7 +22,7 @@ impl ShipyardModuleManifest {
     pub fn from_mock_data(world: &mut World) -> Self {
         let mock_modules = HashMap::from([(
             MOCK_SHIPYARD_MODULE_ID,
-            ShipyardModuleDefinition {
+            ShipyardModuleData {
                 id: MOCK_SHIPYARD_MODULE_ID,
                 name: "Debug Shipyard".to_string(),
             },
@@ -40,8 +40,8 @@ impl ShipyardModuleManifest {
 
 impl Manifest for ShipyardModuleManifest {
     type RawManifest = ShipyardModuleManifest;
-    type RawItem = ShipyardModuleDefinition;
-    type Item = ShipyardModuleDefinition;
+    type RawItem = ShipyardModuleData;
+    type Item = ShipyardModuleData;
     type ConversionError = std::convert::Infallible;
     const FORMAT: ManifestFormat = ManifestFormat::Custom;
 

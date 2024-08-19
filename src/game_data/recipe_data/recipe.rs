@@ -5,7 +5,7 @@ use serde::Deserialize;
 
 /// Defines a single production step.
 #[derive(Deserialize)]
-pub struct Recipe {
+pub struct RecipeData {
     /// Unique ID to differentiate between recipes
     pub id: RecipeId,
     /// Useful to differentiate if an item has multiple recipes

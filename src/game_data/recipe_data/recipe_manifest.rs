@@ -1,5 +1,5 @@
 use crate::game_data::{
-    Recipe, RecipeElement, RecipeId, MOCK_ITEM_ID_A, MOCK_ITEM_ID_B, MOCK_ITEM_ID_C,
+    RecipeData, RecipeElement, RecipeId, MOCK_ITEM_ID_A, MOCK_ITEM_ID_B, MOCK_ITEM_ID_C,
     MOCK_RECIPE_A_ID, MOCK_RECIPE_B_ID, MOCK_RECIPE_C_ID,
 };
 use bevy::prelude::{Asset, Resource, TypePath, World};
@@ -10,12 +10,12 @@ use serde::Deserialize;
 
 #[derive(Resource, Asset, TypePath, Deserialize)]
 pub struct RecipeManifest {
-    recipes: HashMap<RecipeId, Recipe>,
+    recipes: HashMap<RecipeId, RecipeData>,
 }
 
 impl RecipeManifest {
     #[must_use]
-    pub fn get_by_ref(&self, id: &RecipeId) -> Option<&Recipe> {
+    pub fn get_by_ref(&self, id: &RecipeId) -> Option<&RecipeData> {
         self.recipes.get(id)
     }
 
@@ -24,7 +24,7 @@ impl RecipeManifest {
         let mut mock_recipes = HashMap::new();
         mock_recipes.insert(
             MOCK_RECIPE_A_ID,
-            Recipe {
+            RecipeData {
                 id: MOCK_RECIPE_A_ID,
                 name: "5C -> 10A".into(),
                 duration: 10000,
@@ -40,7 +40,7 @@ impl RecipeManifest {
         );
         mock_recipes.insert(
             MOCK_RECIPE_B_ID,
-            Recipe {
+            RecipeData {
                 id: MOCK_RECIPE_B_ID,
                 name: "5A -> 13B".into(),
                 duration: 20000,
@@ -56,7 +56,7 @@ impl RecipeManifest {
         );
         mock_recipes.insert(
             MOCK_RECIPE_C_ID,
-            Recipe {
+            RecipeData {
                 id: MOCK_RECIPE_C_ID,
                 name: "5B -> 17C".into(),
                 duration: 30000,
@@ -83,8 +83,8 @@ impl RecipeManifest {
 
 impl Manifest for RecipeManifest {
     type RawManifest = RecipeManifest;
-    type RawItem = Recipe;
-    type Item = Recipe;
+    type RawItem = RecipeData;
+    type Item = RecipeData;
     type ConversionError = std::convert::Infallible;
     const FORMAT: ManifestFormat = ManifestFormat::Custom;
 

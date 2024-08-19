@@ -1,7 +1,7 @@
 use crate::components::{
     BuyOrders, InteractionQueue, Inventory, Sector, SelectableEntity, SellOrders, Station,
 };
-use crate::game_data::Item;
+use crate::game_data::ItemData;
 use crate::persistence::{PersistentStationId, StationIdMap};
 use crate::simulation::prelude::simulation_transform::SimulationScale;
 use crate::simulation::production::{ProductionComponent, ShipyardComponent};
@@ -23,8 +23,8 @@ pub fn spawn_station(
     name: &str,
     local_pos: Vec2,
     sector_entity: SectorEntity,
-    buys: Vec<&Item>,
-    sells: Vec<&Item>,
+    buys: Vec<&ItemData>,
+    sells: Vec<&ItemData>,
     production: Option<ProductionComponent>,
     shipyard: Option<ShipyardComponent>,
 ) {
