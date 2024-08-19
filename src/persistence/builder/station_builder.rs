@@ -1,5 +1,7 @@
 use crate::components::Sector;
-use crate::game_data::{GameData, Item, ItemId, ProductionModuleId, RecipeId, ShipyardModuleId};
+use crate::game_data::{
+    GameData, ItemData, ItemId, ProductionModuleId, RecipeId, ShipyardModuleId,
+};
 use crate::persistence::data::v1::*;
 use crate::persistence::local_hex_position::LocalHexPosition;
 use crate::persistence::{PersistentStationId, SectorIdMap, StationIdMap};
@@ -175,7 +177,7 @@ impl StationSaveData {
 }
 
 impl SerializedBuyOrder {
-    pub fn parse<'a>(&self, game_data: &'a GameData) -> Vec<&'a Item> {
+    pub fn parse<'a>(&self, game_data: &'a GameData) -> Vec<&'a ItemData> {
         self.orders
             .iter()
             .map(|x| game_data.items.get_from_ref(&x.item_id).unwrap())
@@ -184,7 +186,7 @@ impl SerializedBuyOrder {
 }
 
 impl SerializedSellOrder {
-    pub fn parse<'a>(&self, game_data: &'a GameData) -> Vec<&'a Item> {
+    pub fn parse<'a>(&self, game_data: &'a GameData) -> Vec<&'a ItemData> {
         self.orders
             .iter()
             .map(|x| game_data.items.get_from_ref(&x.item_id).unwrap())

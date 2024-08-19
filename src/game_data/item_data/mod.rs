@@ -5,9 +5,9 @@ mod raw_item_manifest;
 
 use leafwing_manifest::identifier::Id;
 
-pub use item::Item;
+pub use item::ItemData;
 pub use item_manifest::ItemManifest;
-pub type ItemId = Id<Item>;
+pub type ItemId = Id<ItemData>;
 
 const MOCK_ITEM_STRING_A: &str = "item_a";
 const MOCK_ITEM_STRING_B: &str = "item_b";

@@ -1,5 +1,5 @@
 use crate::components::inventory::inventory_element::InventoryElement;
-use crate::game_data::Recipe;
+use crate::game_data::RecipeData;
 use crate::game_data::{ItemId, RecipeElement};
 use crate::utils::TradeIntent;
 use bevy::log::error;
@@ -170,7 +170,7 @@ impl Inventory {
     /// Removes the items required for a production run, and reserves inventory for the yields.
     pub fn reserve_storage_space_for_production_yield(
         &mut self,
-        item_recipe: &Recipe,
+        item_recipe: &RecipeData,
         multiplier: u32,
     ) {
         for output in &item_recipe.output {
@@ -189,7 +189,7 @@ impl Inventory {
         }
     }
 
-    pub fn finish_production(&mut self, item_recipe: &Recipe, multiplier: u32) {
+    pub fn finish_production(&mut self, item_recipe: &RecipeData, multiplier: u32) {
         for output in &item_recipe.output {
             if let Some(inventory) = self.inventory.get_mut(&output.item_id) {
                 inventory.current += output.amount * multiplier;

@@ -2,7 +2,7 @@ use serde::Deserialize;
 use std::path::PathBuf;
 
 #[derive(Deserialize)]
-pub struct RawItem {
+pub struct RawItemData {
     pub id: String,
     pub icon: PathBuf,
     pub price_min: u32,

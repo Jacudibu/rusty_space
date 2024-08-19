@@ -4,7 +4,7 @@ use serde::Deserialize;
 
 /// Defines the costs and capabilities of a single Production Line
 #[derive(Deserialize)]
-pub struct ProductionModuleDefinition {
+pub struct ProductionModuleData {
     /// Unique ID to differentiate between recipes
     pub id: ProductionModuleId,
     /// User Facing name thingy

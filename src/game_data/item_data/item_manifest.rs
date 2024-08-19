@@ -1,6 +1,6 @@
-use crate::game_data::item_data::raw_item::RawItem;
+use crate::game_data::item_data::raw_item::RawItemData;
 use crate::game_data::item_data::raw_item_manifest::RawItemManifest;
-use crate::game_data::{Item, ItemId};
+use crate::game_data::{ItemData, ItemId};
 use crate::utils::PriceRange;
 use bevy::asset::AssetServer;
 use bevy::prelude::{Resource, World};
@@ -11,12 +11,12 @@ use leafwing_manifest::manifest::{Manifest, ManifestFormat};
 /// Contains all item data, which will never change during gameplay.
 #[derive(Resource)]
 pub struct ItemManifest {
-    items: HashMap<ItemId, Item>,
+    items: HashMap<ItemId, ItemData>,
 }
 
 impl ItemManifest {
     #[must_use]
-    pub fn get_from_ref(&self, id: &ItemId) -> Option<&Item> {
+    pub fn get_from_ref(&self, id: &ItemId) -> Option<&ItemData> {
         self.items.get(id)
     }
 
@@ -28,8 +28,8 @@ impl ItemManifest {
 
 impl Manifest for ItemManifest {
     type RawManifest = RawItemManifest;
-    type RawItem = RawItem;
-    type Item = Item;
+    type RawItem = RawItemData;
+    type Item = ItemData;
     type ConversionError = std::convert::Infallible;
     const FORMAT: ManifestFormat = ManifestFormat::Custom; // We currently don't parse from filesystem
 
@@ -46,7 +46,7 @@ impl Manifest for ItemManifest {
                 let icon = asset_server.load(raw_item.icon);
                 let id = ItemId::from_name(&raw_item.id);
 
-                let item = Item {
+                let item = ItemData {
                     id,
                     name: raw_item.id,
                     price: PriceRange::new(raw_item.price_min, raw_item.price_max),

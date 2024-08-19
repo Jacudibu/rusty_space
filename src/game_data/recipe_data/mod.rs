@@ -5,7 +5,7 @@ use leafwing_manifest::identifier::Id;
 
 pub use {recipe::*, recipe_manifest::*};
 
-pub type RecipeId = Id<Recipe>;
+pub type RecipeId = Id<RecipeData>;
 
 const RECIPE_A_STRING: &str = "recipe_a";
 const RECIPE_B_STRING: &str = "recipe_b";

@@ -7,18 +7,18 @@ use crate::game_data::recipe_data::RecipeManifest;
 use bevy::prelude::{FromWorld, Resource, World};
 pub use {
     item_data::{
-        Item, ItemId, ItemManifest, MOCK_ITEM_ID_A, MOCK_ITEM_ID_B, MOCK_ITEM_ID_C,
+        ItemData, ItemId, ItemManifest, MOCK_ITEM_ID_A, MOCK_ITEM_ID_B, MOCK_ITEM_ID_C,
         MOCK_ITEM_ID_GAS, MOCK_ITEM_ID_ORE,
     },
     production_module_data::{
-        ProductionModuleDefinition, ProductionModuleId, ProductionModuleManifest,
+        ProductionModuleData, ProductionModuleId, ProductionModuleManifest,
         MOCK_PRODUCTION_MODULE_A_ID, MOCK_PRODUCTION_MODULE_B_ID, MOCK_PRODUCTION_MODULE_C_ID,
     },
     recipe_data::{
-        Recipe, RecipeElement, RecipeId, MOCK_RECIPE_A_ID, MOCK_RECIPE_B_ID, MOCK_RECIPE_C_ID,
+        RecipeData, RecipeElement, RecipeId, MOCK_RECIPE_A_ID, MOCK_RECIPE_B_ID, MOCK_RECIPE_C_ID,
     },
     shipyard_module_data::{
-        ShipyardModuleDefinition, ShipyardModuleId, ShipyardModuleManifest, MOCK_SHIPYARD_MODULE_ID,
+        ShipyardModuleData, ShipyardModuleId, ShipyardModuleManifest, MOCK_SHIPYARD_MODULE_ID,
     },
 };
 
