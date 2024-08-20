@@ -231,7 +231,7 @@ pub fn list_selection_icons_and_counts(
 #[allow(clippy::type_complexity)]
 pub fn list_selection_details(
     game_data: GameData,
-    session_data: Res<SessionData>,
+    session_data: SessionData,
     mut context: EguiContexts,
     simulation_time: Res<SimulationTime>,
     images: Res<UiIcons>,
@@ -385,7 +385,7 @@ pub fn list_selection_details(
                         for order in &module.active {
                             let definition = session_data
                                 .ship_configurations
-                                .get(&order.ship_config)
+                                .get_by_id(&order.ship_config)
                                 .unwrap();
 
                             ui.label(format!(

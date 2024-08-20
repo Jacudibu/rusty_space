@@ -1,42 +1,22 @@
-use bevy::prelude::Resource;
-use bevy::utils::HashMap;
+use bevy::ecs::system::SystemParam;
+use bevy::prelude::{Res, World};
 
-mod ship_configuration;
+mod ship_configs;
 
-use crate::game_data::*;
-pub use ship_configuration::*;
+pub use ship_configs::{
+    ShipConfigId, ShipConfiguration, ShipConfigurationManifest, ShipConfigurationVersions,
+    DEBUG_SHIP_CONFIG,
+};
 
 /// Data that's dynamically created and indexed whilst playing and needs to be persisted in between sessions.
-#[derive(Resource, Default)]
-pub struct SessionData {
-    pub ship_configurations: HashMap<ShipConfigId, ShipConfiguration>,
+#[derive(SystemParam)]
+pub struct SessionData<'w> {
+    pub ship_configurations: Res<'w, ShipConfigurationManifest>,
 }
 
-impl SessionData {
-    pub fn mock_data() -> Self {
-        Self {
-            ship_configurations: HashMap::from([(
-                DEBUG_SHIP_CONFIG,
-                ShipConfiguration {
-                    id: DEBUG_SHIP_CONFIG,
-                    name: "Fancy new ship".into(),
-                    duration: 5000,
-                    materials: vec![
-                        RecipeElement {
-                            item_id: MOCK_ITEM_ID_A,
-                            amount: 50,
-                        },
-                        RecipeElement {
-                            item_id: MOCK_ITEM_ID_B,
-                            amount: 23,
-                        },
-                        RecipeElement {
-                            item_id: MOCK_ITEM_ID_C,
-                            amount: 74,
-                        },
-                    ],
-                },
-            )]),
-        }
+impl<'w> SessionData<'w> {
+    pub fn initialize_mock_data(world: &mut World) {
+        let ship_configs = ShipConfigurationManifest::mock_data(world);
+        world.insert_resource(ship_configs);
     }
 }

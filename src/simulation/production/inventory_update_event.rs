@@ -1,6 +1,8 @@
 use crate::components::{BuyOrders, Inventory, SellOrders};
 use crate::game_data::{RecipeManifest, ShipyardModuleId};
-use crate::session_data::{SessionData, ShipConfigId};
+use crate::session_data::{
+    SessionData, ShipConfigId, ShipConfiguration, ShipConfigurationManifest,
+};
 use crate::simulation::prelude::SimulationTime;
 use crate::simulation::production::production_kind::ProductionKind;
 use crate::simulation::production::production_started_event::ProductionStartedEvent;
@@ -32,7 +34,7 @@ impl InventoryUpdateForProductionEvent {
 pub fn handle_inventory_updates(
     simulation_time: Res<SimulationTime>,
     recipes: Res<RecipeManifest>,
-    session_data: Res<SessionData>,
+    ship_configs: Res<ShipConfigurationManifest>,
     mut event_reader: EventReader<InventoryUpdateForProductionEvent>,
     mut production_start_event_writer: EventWriter<ProductionStartedEvent>,
     mut query: Query<
@@ -107,9 +109,8 @@ pub fn handle_inventory_updates(
                 .iter()
                 .enumerate()
                 .filter_map(|(index, config_id)| {
-                    let Some(configuration) = session_data.ship_configurations.get(config_id)
-                    else {
-                        error!("Was unable to find a configuration with id {config_id}");
+                    let Some(configuration) = ship_configs.get_by_id(config_id) else {
+                        error!("Was unable to find a configuration with id {config_id:?}");
                         return None;
                     };
 
@@ -134,10 +135,8 @@ pub fn handle_inventory_updates(
                 let module_id = *available_module_ids.first().unwrap();
                 let module = shipyard.modules.get_mut(&module_id).unwrap();
 
-                let Some(configuration) =
-                    session_data.ship_configurations.get(&next_ship_config_id)
-                else {
-                    error!("Was unable to find a configuration with id {next_ship_config_id}?! This should seriously never happen at this point.");
+                let Some(configuration) = ship_configs.get_by_id(&next_ship_config_id) else {
+                    error!("Was unable to find a configuration with id {next_ship_config_id:?}?! This should seriously never happen at this point.");
                     continue;
                 };
 
@@ -157,7 +156,7 @@ pub fn handle_inventory_updates(
                         return false;
                     }
 
-                    let config = &session_data.ship_configurations[config];
+                    let config = ship_configs.get_by_id(config).unwrap();
                     inventory.has_enough_items_in_inventory(&config.materials, 1)
                 });
                 shipyard.queue.remove(next_index);
