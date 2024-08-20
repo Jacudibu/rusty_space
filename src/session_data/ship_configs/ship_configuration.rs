@@ -1,13 +1,12 @@
 use crate::game_data::RecipeElement;
+use crate::session_data::ShipConfigId;
 use crate::simulation::prelude::Milliseconds;
-
-pub type ShipConfigId = u32;
-
-pub const DEBUG_SHIP_CONFIG: ShipConfigId = 1;
+use serde::Deserialize;
 
 /// Defines the individual parts from which a ship is built.
 ///
-/// Multiple ships can share the same configuration through its ID field.
+/// Multiple ships can share the same configuration through their ID field.
+#[derive(Deserialize)]
 pub struct ShipConfiguration {
     pub id: ShipConfigId,
     pub name: String,

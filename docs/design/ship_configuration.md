@@ -94,6 +94,7 @@ Increases the amount of drones this ship can launch. Costs Power and CPU.
 
 # In-Game Configurator
 - Ship Icon can be freely set (and combined with small icons) by the player
+- Ships can be upgraded to different configurations.
 
 I'm envisioning a fancy editor window split into three panels
 - Left Side: Configuration. 

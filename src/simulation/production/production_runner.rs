@@ -4,7 +4,7 @@ use bevy::prelude::{Commands, EventWriter, Mut, Or, Query, Res, ResMut, Transfor
 use crate::components::{BuyOrders, InSector, Inventory, Sector, SellOrders};
 use crate::game_data::{ProductionModuleId, RecipeManifest, ShipyardModuleId};
 use crate::persistence::{PersistentShipId, ShipIdMap};
-use crate::session_data::SessionData;
+use crate::session_data::{SessionData, ShipConfiguration, ShipConfigurationManifest};
 use crate::simulation::prelude::{CurrentSimulationTimestamp, SimulationTime, SimulationTimestamp};
 use crate::simulation::production::production_kind::ProductionKind;
 use crate::simulation::production::shipyard_component::ShipyardComponent;
@@ -23,7 +23,7 @@ pub fn check_if_production_is_finished_and_start_new_one(
     simulation_time: Res<SimulationTime>,
     mut global_production_state: ResMut<GlobalProductionState>,
     recipes: Res<RecipeManifest>,
-    session_data: Res<SessionData>,
+    ship_configs: Res<ShipConfigurationManifest>,
     mut inventory_update_writer: EventWriter<InventoryUpdateForProductionEvent>,
     mut query: Query<
         (
@@ -77,7 +77,7 @@ pub fn check_if_production_is_finished_and_start_new_one(
                 &sprites,
                 &mut sector_query,
                 &mut ship_id_map,
-                &session_data,
+                &ship_configs,
                 now,
                 &next,
                 shipyard,
@@ -98,7 +98,7 @@ fn process_finished_ship_production(
     sprites: &SpriteHandles,
     sector_query: &mut Query<&mut Sector>,
     ship_id_map: &mut ResMut<ShipIdMap>,
-    session_data: &SessionData,
+    ship_configs: &ShipConfigurationManifest,
     now: CurrentSimulationTimestamp,
     next: &SingleProductionState,
     shipyard: Option<Mut<ShipyardComponent>>,
@@ -126,10 +126,7 @@ fn process_finished_ship_production(
         .unwrap();
     let order = module.active.remove(position);
 
-    let definition = session_data
-        .ship_configurations
-        .get(&order.ship_config)
-        .unwrap();
+    let definition = ship_configs.get_by_id(&order.ship_config).unwrap();
 
     spawn_helpers::spawn_ship(
         commands,
