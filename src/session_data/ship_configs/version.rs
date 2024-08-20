@@ -9,9 +9,9 @@ pub struct Version {
 
 impl Version {
     #[must_use]
-    pub fn from_predecessor(predecessor: Version) -> Self {
+    pub fn next(&self) -> Self {
         Self {
-            version: predecessor.version + 1,
+            version: self.version + 1,
         }
     }
 }

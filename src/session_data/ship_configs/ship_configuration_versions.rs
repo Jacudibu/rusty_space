@@ -8,6 +8,9 @@ use serde::Deserialize;
 #[derive(Deserialize)]
 pub struct ShipConfigurationVersions {
     versions: HashMap<Version, ShipConfiguration>,
+
+    // TODO: Might wanna split latest into "active" and "max" in the future - if versions can be deleted, latest might be deleted as well.
+    //       Or a different version might be selected as the "active" one, causing max != latest.
     latest: Version,
 }
 
@@ -36,7 +39,7 @@ impl ShipConfigurationVersions {
     #[inline]
     #[must_use]
     pub fn next_version(&self) -> Version {
-        Version::from_predecessor(self.latest)
+        self.latest.next()
     }
 }
 
