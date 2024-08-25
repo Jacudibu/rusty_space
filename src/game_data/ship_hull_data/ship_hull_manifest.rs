@@ -32,7 +32,7 @@ impl FromMockData for ShipHullManifest {
                 id: MOCK_SHIP_HULL_A_ID,
                 name: MOCK_SHIP_HULL_A_NAME.into(),
                 ship_size: ShipSize::S,
-                inventory_size: 500,
+                inventory_size: 100,
                 build_time: 5000,
                 required_materials: vec![
                     RecipeElement {

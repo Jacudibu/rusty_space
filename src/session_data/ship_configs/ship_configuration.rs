@@ -44,6 +44,8 @@ impl ShipConfigurationParts {
             inventory_size: hull.inventory_size,
             build_time: hull.build_time,
             required_materials: hull.required_materials.clone(),
+            asteroid_mining_amount: Some(10),
+            gas_harvesting_amount: Some(10),
         }
     }
 }
@@ -54,4 +56,6 @@ pub struct ShipConfigurationComputedStats {
     pub build_time: Milliseconds,
     pub required_materials: Vec<RecipeElement>,
     pub inventory_size: u32,
+    pub asteroid_mining_amount: Option<u32>,
+    pub gas_harvesting_amount: Option<u32>,
 }

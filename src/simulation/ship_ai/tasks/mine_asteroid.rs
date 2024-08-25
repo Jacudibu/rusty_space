@@ -1,5 +1,6 @@
-use crate::components::{Asteroid, Inventory};
+use crate::components::{Asteroid, Inventory, Ship};
 use crate::game_data::MOCK_ITEM_ID_ORE;
+use crate::session_data::{ShipConfiguration, ShipConfigurationManifest};
 use crate::simulation::asteroids::AsteroidWasFullyMinedEvent;
 use crate::simulation::prelude::{
     CurrentSimulationTimestamp, Milliseconds, SimulationTime, SimulationTimestamp,
@@ -15,7 +16,6 @@ use bevy::prelude::{Commands, Component, Entity, EventReader, EventWriter, Query
 use std::sync::{Arc, Mutex};
 
 pub const TIME_BETWEEN_MINING_UPDATES: Milliseconds = 1000;
-pub const MINED_AMOUNT_PER_UPDATE: u32 = 10;
 
 enum TaskResult {
     Skip,
@@ -46,12 +46,16 @@ impl MineAsteroid {
         inventory: &mut Inventory,
         now: CurrentSimulationTimestamp,
         all_asteroids: &Query<(&mut Asteroid, &mut SimulationScale)>,
+        config: &ShipConfiguration,
     ) -> TaskResult {
         if now.has_not_passed(self.next_update) {
             return TaskResult::Skip;
         }
 
-        let mined_amount = MINED_AMOUNT_PER_UPDATE
+        let mined_amount = config
+            .computed_stats
+            .asteroid_mining_amount
+            .unwrap()
             .min(inventory.capacity - inventory.used())
             .min(self.reserved_ore_amount);
 
@@ -79,7 +83,8 @@ impl MineAsteroid {
     pub fn run_tasks(
         event_writer: EventWriter<TaskFinishedEvent<Self>>,
         simulation_time: Res<SimulationTime>,
-        mut ships: Query<(Entity, &mut Self, &mut Inventory)>,
+        configs: Res<ShipConfigurationManifest>,
+        mut ships: Query<(Entity, &Ship, &mut Self, &mut Inventory)>,
         mut all_asteroids: Query<(&mut Asteroid, &mut SimulationScale)>,
         mut asteroid_was_fully_mined_event: EventWriter<AsteroidWasFullyMinedEvent>,
     ) {
@@ -89,8 +94,9 @@ impl MineAsteroid {
 
         ships
             .par_iter_mut()
-            .for_each(|(entity, mut task, mut inventory)| {
-                match task.run(&mut inventory, now, &all_asteroids) {
+            .for_each(|(entity, ship, mut task, mut inventory)| {
+                let config = configs.get_by_id(&ship.config_id()).unwrap(); // TODO: Should probably be cached within an AsteroidHarvesterComponent
+                match task.run(&mut inventory, now, &all_asteroids, config) {
                     TaskResult::Skip => {}
                     TaskResult::Ongoing { mined_amount } => {
                         mined_asteroids
