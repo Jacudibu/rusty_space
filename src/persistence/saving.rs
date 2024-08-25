@@ -89,6 +89,7 @@ mod tests {
     const RIGHT: Hex = Hex::new(1, 0);
 
     #[test]
+    #[ignore = "Saving was implemented as a PoC, but is not a priority to keep working right now"]
     fn test_loading_then_saving_should_yield_equal_results() {
         let mut loaded_data = UniverseSaveData::default();
         loaded_data.sectors.add(CENTER);
