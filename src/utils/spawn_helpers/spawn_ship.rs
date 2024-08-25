@@ -1,5 +1,6 @@
 use crate::components::{
-    AsteroidMiningComponent, Engine, Inventory, Sector, SelectableEntity, Ship,
+    AsteroidMiningComponent, Engine, GasHarvestingComponent, Inventory, Sector, SelectableEntity,
+    Ship,
 };
 use crate::persistence::{PersistentShipId, ShipIdMap};
 use crate::session_data::ShipConfiguration;
@@ -52,6 +53,12 @@ pub fn spawn_ship(
     if let Some(asteroid_mining_amount) = ship_configuration.computed_stats.asteroid_mining_amount {
         entity_commands.insert(AsteroidMiningComponent {
             amount_per_second: asteroid_mining_amount,
+        });
+    }
+
+    if let Some(gas_harvesting_amount) = ship_configuration.computed_stats.gas_harvesting_amount {
+        entity_commands.insert(GasHarvestingComponent {
+            amount_per_second: gas_harvesting_amount,
         });
     }
 

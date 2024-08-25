@@ -1,5 +1,4 @@
 mod asteroid;
-mod asteroid_mining_component;
 mod constant_orbit;
 mod engine;
 mod gate;
@@ -11,12 +10,13 @@ mod planet;
 mod sector;
 mod selectable_entity;
 mod ship;
+mod ship_components;
 mod star;
 mod station;
 mod trade;
 
 pub use {
-    asteroid::*, asteroid_mining_component::*, constant_orbit::*, engine::Engine, gate::*,
-    gate_connection::*, interaction_queue::*, inventory::Inventory, is_docked::*, planet::*,
-    sector::*, selectable_entity::*, ship::*, star::*, station::*, trade::*,
+    asteroid::*, constant_orbit::*, engine::Engine, gate::*, gate_connection::*,
+    interaction_queue::*, inventory::Inventory, is_docked::*, planet::*, sector::*,
+    selectable_entity::*, ship::*, ship_components::*, star::*, station::*, trade::*,
 };

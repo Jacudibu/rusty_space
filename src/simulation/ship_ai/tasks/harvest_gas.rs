@@ -1,7 +1,8 @@
-use crate::components::{InteractionQueue, Inventory};
+use crate::components::{GasHarvestingComponent, InteractionQueue, Inventory};
+use crate::constants;
 use crate::game_data::MOCK_ITEM_ID_GAS;
 use crate::simulation::prelude::{
-    AwaitingSignal, CurrentSimulationTimestamp, Milliseconds, SimulationTime, SimulationTimestamp,
+    AwaitingSignal, CurrentSimulationTimestamp, SimulationTime, SimulationTimestamp,
 };
 use crate::simulation::ship_ai::task_finished_event::TaskFinishedEvent;
 use crate::simulation::ship_ai::task_queue::TaskQueue;
@@ -11,9 +12,6 @@ use crate::utils::PlanetEntity;
 use bevy::log::error;
 use bevy::prelude::{Commands, Component, Entity, EventReader, EventWriter, Query, Res};
 use std::sync::{Arc, Mutex};
-
-pub const TIME_BETWEEN_UPDATES: Milliseconds = 1000;
-pub const HARVESTED_AMOUNT_PER_UPDATE: u32 = 10;
 
 enum TaskResult {
     Skip,
@@ -31,26 +29,33 @@ impl HarvestGas {
     pub fn new(target: PlanetEntity, now: CurrentSimulationTimestamp) -> Self {
         Self {
             target,
-            next_update: now.add_milliseconds(TIME_BETWEEN_UPDATES),
+            next_update: now.add_milliseconds(constants::ONE_SECOND_IN_MILLISECONDS),
         }
     }
 }
 
 impl HarvestGas {
-    fn run(&mut self, inventory: &mut Inventory, now: CurrentSimulationTimestamp) -> TaskResult {
+    fn run(
+        &mut self,
+        inventory: &mut Inventory,
+        now: CurrentSimulationTimestamp,
+        harvesting_component: &GasHarvestingComponent,
+    ) -> TaskResult {
         if now.has_not_passed(self.next_update) {
             return TaskResult::Skip;
         }
 
-        let harvested_amount =
-            HARVESTED_AMOUNT_PER_UPDATE.min(inventory.capacity - inventory.used());
+        let harvested_amount = harvesting_component
+            .amount_per_second
+            .min(inventory.capacity - inventory.used());
 
         inventory.add_item(MOCK_ITEM_ID_GAS, harvested_amount);
 
         if inventory.used() == inventory.capacity {
             TaskResult::Finished
         } else {
-            self.next_update.add_milliseconds(TIME_BETWEEN_UPDATES);
+            self.next_update
+                .add_milliseconds(constants::ONE_SECOND_IN_MILLISECONDS);
             TaskResult::Ongoing
         }
     }
@@ -58,23 +63,23 @@ impl HarvestGas {
     pub fn run_tasks(
         event_writer: EventWriter<TaskFinishedEvent<Self>>,
         simulation_time: Res<SimulationTime>,
-        mut ships: Query<(Entity, &mut Self, &mut Inventory)>,
+        mut ships: Query<(Entity, &mut Self, &mut Inventory, &GasHarvestingComponent)>,
     ) {
         let task_completions = Arc::new(Mutex::new(Vec::<TaskFinishedEvent<Self>>::new()));
         let now = simulation_time.now();
 
         ships
             .par_iter_mut()
-            .for_each(
-                |(entity, mut task, mut inventory)| match task.run(&mut inventory, now) {
+            .for_each(|(entity, mut task, mut inventory, harvesting_component)| {
+                match task.run(&mut inventory, now, harvesting_component) {
                     TaskResult::Skip => {}
                     TaskResult::Ongoing => {}
                     TaskResult::Finished => task_completions
                         .lock()
                         .unwrap()
                         .push(TaskFinishedEvent::<Self>::new(entity)),
-                },
-            );
+                }
+            });
 
         send_completion_events(event_writer, task_completions);
     }
