@@ -1,3 +1,4 @@
+use crate::game_data::from_mock_data::FromMockData;
 use crate::game_data::production_module_data::MOCK_PRODUCTION_MODULE_A_ID;
 use crate::game_data::{
     ProductionModuleData, ProductionModuleId, MOCK_PRODUCTION_MODULE_B_ID,
@@ -20,9 +21,11 @@ impl ProductionModuleManifest {
     pub fn get_by_ref(&self, id: &ProductionModuleId) -> Option<&ProductionModuleData> {
         self.productions.get(id)
     }
+}
 
+impl FromMockData for ProductionModuleManifest {
     #[must_use]
-    pub fn from_mock_data(world: &mut World) -> Self {
+    fn from_mock_data(world: &mut World) -> Self {
         let mock_modules = HashMap::from([
             (
                 MOCK_PRODUCTION_MODULE_A_ID,
@@ -55,7 +58,7 @@ impl ProductionModuleManifest {
             },
             world,
         )
-        .unwrap()
+            .unwrap()
     }
 }
 

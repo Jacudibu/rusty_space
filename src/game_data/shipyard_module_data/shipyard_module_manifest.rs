@@ -1,3 +1,4 @@
+use crate::game_data::from_mock_data::FromMockData;
 use crate::game_data::shipyard_module_data::shipyard_module::ShipyardModuleData;
 use crate::game_data::{ShipyardModuleId, MOCK_SHIPYARD_MODULE_ID};
 use bevy::asset::Asset;
@@ -17,9 +18,11 @@ impl ShipyardModuleManifest {
     pub fn get_by_ref(&self, id: &ShipyardModuleId) -> Option<&ShipyardModuleData> {
         self.shipyards.get(id)
     }
+}
 
+impl FromMockData for ShipyardModuleManifest {
     #[must_use]
-    pub fn from_mock_data(world: &mut World) -> Self {
+    fn from_mock_data(world: &mut World) -> Self {
         let mock_modules = HashMap::from([(
             MOCK_SHIPYARD_MODULE_ID,
             ShipyardModuleData {
@@ -34,7 +37,7 @@ impl ShipyardModuleManifest {
             },
             world,
         )
-        .unwrap()
+            .unwrap()
     }
 }
 

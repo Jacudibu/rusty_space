@@ -1,3 +1,4 @@
+use crate::game_data::from_mock_data::FromMockData;
 use crate::game_data::item_data::raw_item::RawItemData;
 use crate::game_data::item_data::raw_item_manifest::RawItemManifest;
 use crate::game_data::{ItemData, ItemId};
@@ -19,9 +20,11 @@ impl ItemManifest {
     pub fn get_from_ref(&self, id: &ItemId) -> Option<&ItemData> {
         self.items.get(id)
     }
+}
 
+impl FromMockData for ItemManifest {
     #[must_use]
-    pub fn from_mock_data(world: &mut World) -> Self {
+    fn from_mock_data(world: &mut World) -> Self {
         Self::from_raw_manifest(RawItemManifest::mock_data(), world).unwrap()
     }
 }

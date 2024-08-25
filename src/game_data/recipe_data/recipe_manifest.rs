@@ -1,3 +1,4 @@
+use crate::game_data::from_mock_data::FromMockData;
 use crate::game_data::{
     RecipeData, RecipeElement, RecipeId, MOCK_ITEM_ID_A, MOCK_ITEM_ID_B, MOCK_ITEM_ID_C,
     MOCK_RECIPE_A_ID, MOCK_RECIPE_B_ID, MOCK_RECIPE_C_ID,
@@ -18,9 +19,11 @@ impl RecipeManifest {
     pub fn get_by_ref(&self, id: &RecipeId) -> Option<&RecipeData> {
         self.recipes.get(id)
     }
+}
 
+impl FromMockData for RecipeManifest {
     #[must_use]
-    pub fn from_mock_data(world: &mut World) -> Self {
+    fn from_mock_data(world: &mut World) -> Self {
         let mut mock_recipes = HashMap::new();
         mock_recipes.insert(
             MOCK_RECIPE_A_ID,
@@ -77,7 +80,7 @@ impl RecipeManifest {
             },
             world,
         )
-        .unwrap()
+            .unwrap()
     }
 }
 
