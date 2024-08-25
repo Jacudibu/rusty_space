@@ -2,6 +2,7 @@ use crate::persistence::data::v1::inventory_save_data::InventorySaveData;
 use crate::persistence::data::v1::task_save_data::TaskSaveData;
 use crate::persistence::local_hex_position::LocalHexPosition;
 use crate::persistence::PersistentShipId;
+use crate::session_data::ShipConfigId;
 use crate::simulation::prelude::SimulationTimestamp;
 use crate::simulation::ship_ai::AutoMineState;
 use serde::{Deserialize, Serialize};
@@ -10,6 +11,7 @@ use serde::{Deserialize, Serialize};
 #[cfg_attr(test, derive(Clone, Debug, PartialEq))]
 pub struct ShipSaveData {
     pub id: PersistentShipId,
+    pub config_id: ShipConfigId,
     pub name: String,
     pub position: LocalHexPosition,
     pub forward_velocity: f32,

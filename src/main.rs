@@ -37,8 +37,11 @@ fn main() {
                 ..Default::default()
             })
             .set(ImagePlugin::default_nearest()),
-    )
-    .add_plugins((
+    );
+
+    GameData::initialize_mock_data(app.world_mut());
+
+    app.add_plugins((
         bevy_egui::EguiPlugin,
         camera::CameraControllerPlugin,
         diagnostics::DiagnosticsPlugin,
@@ -51,9 +54,6 @@ fn main() {
         states::StatePlugin,
     ))
     .add_systems(Startup, initialize_data);
-
-    GameData::initialize_mock_data(app.world_mut());
-    SessionData::initialize_mock_data(app.world_mut());
 
     app.run();
 }

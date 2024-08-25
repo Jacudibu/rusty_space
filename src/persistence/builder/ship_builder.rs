@@ -2,6 +2,8 @@ use crate::components::Sector;
 use crate::persistence::data::v1::*;
 use crate::persistence::local_hex_position::LocalHexPosition;
 use crate::persistence::{PersistentShipId, SectorIdMap, ShipIdMap};
+use crate::session_data::{ShipConfigId, ShipConfigurationManifest};
+use crate::simulation::prelude::ShipVelocity;
 use crate::simulation::ship_ai::BehaviorBuilder;
 use crate::utils::spawn_helpers;
 use crate::SpriteHandles;
@@ -16,6 +18,7 @@ pub struct Args<'w, 's> {
     sprites: Res<'w, SpriteHandles>,
     sectors: Query<'w, 's, &'static mut Sector>,
     sector_id_map: Res<'w, SectorIdMap>,
+    ship_configurations: Res<'w, ShipConfigurationManifest>,
 }
 
 pub fn spawn_all(data: Res<SaveData>, mut args: Args) {
@@ -31,6 +34,7 @@ pub fn spawn_all(data: Res<SaveData>, mut args: Args) {
 impl SaveData {
     pub fn add(
         &mut self,
+        config_id: ShipConfigId,
         position: LocalHexPosition,
         rotation: f32,
         name: String,
@@ -38,6 +42,7 @@ impl SaveData {
     ) -> &mut ShipSaveData {
         self.data.push(ShipSaveData {
             id: PersistentShipId::next(),
+            config_id,
             name,
             position,
             rotation_degrees: rotation,
@@ -63,8 +68,13 @@ impl ShipSaveData {
             sector_entity,
             self.position.position,
             self.rotation_degrees,
+            ShipVelocity {
+                forward: self.forward_velocity,
+                angular: self.angular_velocity,
+            },
             &BehaviorBuilder::from(self.behavior),
             ship_id_map,
+            args.ship_configurations.get_by_id(&self.config_id).unwrap(),
         );
     }
 }

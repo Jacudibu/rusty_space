@@ -5,6 +5,7 @@ use crate::components::{BuyOrders, InSector, Inventory, Sector, SellOrders};
 use crate::game_data::{ProductionModuleId, RecipeManifest, ShipyardModuleId};
 use crate::persistence::{PersistentShipId, ShipIdMap};
 use crate::session_data::{SessionData, ShipConfiguration, ShipConfigurationManifest};
+use crate::simulation::physics::ShipVelocity;
 use crate::simulation::prelude::{CurrentSimulationTimestamp, SimulationTime, SimulationTimestamp};
 use crate::simulation::production::production_kind::ProductionKind;
 use crate::simulation::production::shipyard_component::ShipyardComponent;
@@ -126,21 +127,23 @@ fn process_finished_ship_production(
         .unwrap();
     let order = module.active.remove(position);
 
-    let definition = ship_configs.get_by_id(&order.ship_config).unwrap();
+    let ship_configuration = ship_configs.get_by_id(&order.ship_config).unwrap();
 
     spawn_helpers::spawn_ship(
         commands,
         sprites,
         PersistentShipId::next(),
-        definition.name.clone(),
+        ship_configuration.name.clone(),
         sector_query,
         in_sector.get(),
         transform.translation.truncate(),
         0.0,
+        ShipVelocity::default(),
         &BehaviorBuilder::AutoTrade {
             next_idle_update: SimulationTimestamp::MIN,
         },
         ship_id_map,
+        ship_configuration,
     );
 }
 

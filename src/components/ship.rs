@@ -1,16 +1,23 @@
 use crate::persistence::{ComponentWithPersistentId, PersistentShipId};
+use crate::session_data::ShipConfigId;
 use bevy::prelude::Component;
 
 /// Marker Component for Ships
 #[derive(Component)]
 pub struct Ship {
     id: PersistentShipId,
+    config_id: ShipConfigId,
 }
 
 impl Ship {
     #[inline]
-    pub fn new(id: PersistentShipId) -> Self {
-        Self { id }
+    pub fn new(id: PersistentShipId, config_id: ShipConfigId) -> Self {
+        Self { id, config_id }
+    }
+
+    #[inline]
+    pub fn config_id(&self) -> ShipConfigId {
+        self.config_id
     }
 }
 

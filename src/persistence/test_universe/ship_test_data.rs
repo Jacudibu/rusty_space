@@ -2,6 +2,7 @@ use crate::constants;
 use crate::persistence::local_hex_position::LocalHexPosition;
 use crate::persistence::test_universe::coordinates::CENTER;
 use crate::persistence::{SaveDataCollection, ShipBehaviorSaveData, ShipSaveData};
+use crate::session_data::DEBUG_SHIP_CONFIG;
 use crate::simulation::prelude::{Milliseconds, SimulationTimestamp};
 use crate::simulation::ship_ai::AutoMineState;
 use hexx::Vec2;
@@ -12,6 +13,7 @@ pub fn create_test_data() -> SaveDataCollection<ShipSaveData> {
     let rotation_factor = (std::f32::consts::PI * 2.0) / constants::TRADE_SHIP_COUNT as f32;
     for i in 0..constants::TRADE_SHIP_COUNT {
         result.add(
+            DEBUG_SHIP_CONFIG,
             LocalHexPosition::new(CENTER, Vec2::ZERO),
             rotation_factor * (i as f32),
             format!("Trade Ship {i}"),
@@ -24,6 +26,7 @@ pub fn create_test_data() -> SaveDataCollection<ShipSaveData> {
     let rotation_factor = (std::f32::consts::PI * 2.0) / constants::MINING_SHIP_COUNT as f32;
     for i in 0..constants::MINING_SHIP_COUNT {
         result.add(
+            DEBUG_SHIP_CONFIG,
             LocalHexPosition::new(CENTER, Vec2::ZERO),
             rotation_factor * (i as f32),
             format!("Mining Ship {i}"),
@@ -37,6 +40,7 @@ pub fn create_test_data() -> SaveDataCollection<ShipSaveData> {
     let rotation_factor = (std::f32::consts::PI * 2.0) / constants::HARVESTING_SHIP_COUNT as f32;
     for i in 0..constants::HARVESTING_SHIP_COUNT {
         result.add(
+            DEBUG_SHIP_CONFIG,
             LocalHexPosition::new(CENTER, Vec2::ZERO),
             rotation_factor * (i as f32),
             format!("Harvesting Ship {i}"),

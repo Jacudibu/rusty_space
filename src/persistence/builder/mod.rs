@@ -15,6 +15,7 @@ mod test_helpers {
     use crate::game_data::GameData;
     use crate::map_layout::MapLayout;
     use crate::persistence::data::v1::UniverseSaveData;
+    use crate::session_data::SessionData;
     use crate::simulation::precomputed_orbit_directions::PrecomputedOrbitDirections;
     use crate::SpriteHandles;
     use bevy::prelude::*;
@@ -32,6 +33,7 @@ mod test_helpers {
             app.init_asset::<Image>();
 
             GameData::initialize_mock_data(app.world_mut());
+            SessionData::initialize_mock_data(app.world_mut());
 
             app.insert_resource(self.sectors);
             app.insert_resource(self.gate_pairs);

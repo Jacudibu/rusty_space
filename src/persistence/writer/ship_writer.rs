@@ -26,6 +26,7 @@ impl ShipSaveData {
     ) -> Self {
         Self {
             id: ship.id(),
+            config_id: ship.config_id(),
             name: name.to_string(),
             position: LocalHexPosition::from_in_sector(in_sector, transform, sectors),
             forward_velocity: velocity.forward,

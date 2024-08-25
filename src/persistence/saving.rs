@@ -99,6 +99,7 @@ mod tests {
             LocalHexPosition::new(RIGHT, Vec2::NEG_X),
         );
         loaded_data.ships.add(
+            todo!(),
             LocalHexPosition::new(CENTER, Vec2::Y),
             2.0,
             String::from("Fancy test ship"),
