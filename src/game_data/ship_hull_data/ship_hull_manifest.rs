@@ -1,7 +1,8 @@
 use crate::game_data::from_mock_data::FromMockData;
 use crate::game_data::ship_hull_data::{
-    ShipHullData, ShipHullId, MOCK_SHIP_A_ID, MOCK_SHIP_A_NAME,
+    ShipHullData, ShipHullId, MOCK_SHIP_HULL_A_ID, MOCK_SHIP_HULL_A_NAME,
 };
+use crate::game_data::{RecipeElement, MOCK_ITEM_ID_A, MOCK_ITEM_ID_B, MOCK_ITEM_ID_C};
 use crate::utils::ShipSize;
 use bevy::asset::Asset;
 use bevy::prelude::{Resource, TypePath, World};
@@ -15,18 +16,38 @@ pub struct ShipHullManifest {
     ship_hulls: HashMap<ShipHullId, ShipHullData>,
 }
 
+impl ShipHullManifest {
+    pub fn get_by_ref(&self, id: &ShipHullId) -> Option<&ShipHullData> {
+        self.ship_hulls.get(id)
+    }
+}
+
 impl FromMockData for ShipHullManifest {
     fn from_mock_data(world: &mut World) -> Self {
         let mut mock_hulls = HashMap::new();
 
         mock_hulls.insert(
-            MOCK_SHIP_A_ID,
+            MOCK_SHIP_HULL_A_ID,
             ShipHullData {
-                id: MOCK_SHIP_A_ID,
-                name: MOCK_SHIP_A_NAME.into(),
+                id: MOCK_SHIP_HULL_A_ID,
+                name: MOCK_SHIP_HULL_A_NAME.into(),
                 ship_size: ShipSize::S,
-                cargo_space: 500,
-                required_materials: Vec::new(),
+                inventory_size: 500,
+                build_time: 5000,
+                required_materials: vec![
+                    RecipeElement {
+                        item_id: MOCK_ITEM_ID_A,
+                        amount: 50,
+                    },
+                    RecipeElement {
+                        item_id: MOCK_ITEM_ID_B,
+                        amount: 23,
+                    },
+                    RecipeElement {
+                        item_id: MOCK_ITEM_ID_C,
+                        amount: 74,
+                    },
+                ],
             },
         );
 
@@ -36,7 +57,7 @@ impl FromMockData for ShipHullManifest {
             },
             world,
         )
-            .unwrap()
+        .unwrap()
     }
 }
 

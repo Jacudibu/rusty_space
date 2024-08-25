@@ -1,4 +1,8 @@
-use crate::game_data::{RecipeElement, MOCK_ITEM_ID_A, MOCK_ITEM_ID_B, MOCK_ITEM_ID_C};
+use crate::game_data::{
+    RecipeElement, ShipHullData, ShipHullManifest, MOCK_ITEM_ID_A, MOCK_ITEM_ID_B, MOCK_ITEM_ID_C,
+    MOCK_SHIP_HULL_A_ID,
+};
+use crate::session_data::ship_configs::ship_configuration::ShipConfigurationParts;
 use crate::session_data::ship_configs::versioned_id::VersionedId;
 use crate::session_data::ship_configs::DEBUG_SHIP_CONFIG_NAME;
 use crate::session_data::{
@@ -29,29 +33,20 @@ impl ShipConfigurationManifest {
 
     #[must_use]
     pub fn mock_data(world: &mut World) -> Self {
+        let hulls = world.get_resource::<ShipHullManifest>().unwrap();
+
         let mut mock_data = HashMap::new();
         let id = VersionedId::from_name(DEBUG_SHIP_CONFIG_NAME);
         mock_data.insert(
             id.id,
-            ShipConfigurationVersions::new(ShipConfiguration {
-                id: DEBUG_SHIP_CONFIG,
-                name: "Fancy new ship".into(),
-                duration: 5000,
-                materials: vec![
-                    RecipeElement {
-                        item_id: MOCK_ITEM_ID_A,
-                        amount: 50,
-                    },
-                    RecipeElement {
-                        item_id: MOCK_ITEM_ID_B,
-                        amount: 23,
-                    },
-                    RecipeElement {
-                        item_id: MOCK_ITEM_ID_C,
-                        amount: 74,
-                    },
-                ],
-            }),
+            ShipConfigurationVersions::new(ShipConfiguration::from(
+                DEBUG_SHIP_CONFIG,
+                "Fancy new ship".into(),
+                ShipConfigurationParts {
+                    hull: MOCK_SHIP_HULL_A_ID,
+                },
+                hulls,
+            )),
         );
 
         Self::from_raw_manifest(ShipConfigurationManifest { items: mock_data }, world).unwrap()

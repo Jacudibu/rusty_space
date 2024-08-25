@@ -8,5 +8,5 @@ pub struct ShipyardModuleData {
     pub id: ShipyardModuleId,
     /// User Facing name thingy
     pub name: String,
-    // TODO: Settings to only allow certain ship types should be defined here.
+    // TODO: Settings to only allow certain ship types should be defined here, maybe with build speed modifiers.
 }

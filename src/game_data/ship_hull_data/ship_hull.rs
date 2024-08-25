@@ -1,5 +1,6 @@
 use crate::game_data::ship_hull_data::ShipHullId;
 use crate::game_data::RecipeElement;
+use crate::simulation::prelude::Milliseconds;
 use crate::utils::ShipSize;
 use serde::Deserialize;
 
@@ -16,8 +17,11 @@ pub struct ShipHullData {
     pub ship_size: ShipSize,
 
     /// How many items fit into this ship by default.
-    pub cargo_space: u32,
+    pub inventory_size: u32,
 
     /// Bill of materials required to build this, without modules.
     pub required_materials: Vec<RecipeElement>,
+
+    /// How long this hull takes to build.
+    pub build_time: Milliseconds,
 }

@@ -114,7 +114,10 @@ pub fn handle_inventory_updates(
                         return None;
                     };
 
-                    if inventory.has_enough_items_in_inventory(&configuration.materials, 1) {
+                    if inventory.has_enough_items_in_inventory(
+                        &configuration.computed_stats.required_materials,
+                        1,
+                    ) {
                         Some((index, *config_id))
                     } else {
                         None
@@ -140,7 +143,8 @@ pub fn handle_inventory_updates(
                     continue;
                 };
 
-                let finish_timestamp = now.add_milliseconds(configuration.duration);
+                let finish_timestamp =
+                    now.add_milliseconds(configuration.computed_stats.build_time);
                 module.active.push(OngoingShipConstructionOrder {
                     ship_config: next_ship_config_id,
                     finished_at: finish_timestamp,
@@ -150,14 +154,15 @@ pub fn handle_inventory_updates(
                     available_module_ids.retain(|x| x != &module_id)
                 }
 
-                inventory.remove_items(&configuration.materials, 1);
+                inventory.remove_items(&configuration.computed_stats.required_materials, 1);
                 affordable_ships_from_queue.retain(|(index, config)| {
                     if index == &next_index {
                         return false;
                     }
 
                     let config = ship_configs.get_by_id(config).unwrap();
-                    inventory.has_enough_items_in_inventory(&config.materials, 1)
+                    inventory
+                        .has_enough_items_in_inventory(&config.computed_stats.required_materials, 1)
                 });
                 shipyard.queue.remove(next_index);
                 ships_built_this_frame += 1;

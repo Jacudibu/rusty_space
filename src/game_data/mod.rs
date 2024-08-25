@@ -21,7 +21,7 @@ pub use {
         RecipeData, RecipeElement, RecipeId, RecipeManifest, MOCK_RECIPE_A_ID, MOCK_RECIPE_B_ID,
         MOCK_RECIPE_C_ID,
     },
-    ship_hull_data::{ShipHullData, ShipHullId, ShipHullManifest, MOCK_SHIP_A_ID},
+    ship_hull_data::{ShipHullData, ShipHullId, ShipHullManifest, MOCK_SHIP_HULL_A_ID},
     shipyard_module_data::{
         ShipyardModuleData, ShipyardModuleId, ShipyardModuleManifest, MOCK_SHIPYARD_MODULE_ID,
     },

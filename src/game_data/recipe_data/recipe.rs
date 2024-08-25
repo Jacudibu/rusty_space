@@ -18,7 +18,7 @@ pub struct RecipeData {
     pub output: Vec<RecipeElement>,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Copy, Clone)]
 pub struct RecipeElement {
     pub item_id: ItemId,
     pub amount: u32,
