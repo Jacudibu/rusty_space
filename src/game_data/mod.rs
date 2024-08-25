@@ -1,8 +1,11 @@
+mod from_mock_data;
 mod item_data;
 mod production_module_data;
 mod recipe_data;
+mod ship_hull_data;
 mod shipyard_module_data;
 
+use crate::game_data::from_mock_data::FromMockData;
 use bevy::ecs::system::SystemParam;
 use bevy::prelude::{Res, World};
 pub use {
@@ -18,6 +21,7 @@ pub use {
         RecipeData, RecipeElement, RecipeId, RecipeManifest, MOCK_RECIPE_A_ID, MOCK_RECIPE_B_ID,
         MOCK_RECIPE_C_ID,
     },
+    ship_hull_data::{ShipHullData, ShipHullId, ShipHullManifest, MOCK_SHIP_A_ID},
     shipyard_module_data::{
         ShipyardModuleData, ShipyardModuleId, ShipyardModuleManifest, MOCK_SHIPYARD_MODULE_ID,
     },
@@ -29,6 +33,7 @@ pub struct GameData<'w> {
     pub items: Res<'w, ItemManifest>,
     pub item_recipes: Res<'w, RecipeManifest>,
     pub production_modules: Res<'w, ProductionModuleManifest>,
+    pub ship_hulls: Res<'w, ShipHullManifest>,
     pub shipyard_modules: Res<'w, ShipyardModuleManifest>,
 }
 
@@ -37,11 +42,13 @@ impl<'w> GameData<'w> {
         let items = ItemManifest::from_mock_data(world);
         let item_recipes = RecipeManifest::from_mock_data(world);
         let production_modules = ProductionModuleManifest::from_mock_data(world);
+        let ship_hulls = ShipHullManifest::from_mock_data(world);
         let shipyard_modules = ShipyardModuleManifest::from_mock_data(world);
 
         world.insert_resource(items);
         world.insert_resource(item_recipes);
         world.insert_resource(production_modules);
+        world.insert_resource(ship_hulls);
         world.insert_resource(shipyard_modules);
     }
 }
