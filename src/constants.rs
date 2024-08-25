@@ -53,3 +53,5 @@ pub mod z_layers {
     /// Sadly linestrip depth seems to be ignored by 2D Cameras. Right now this constant purely exists to avoid magic numbers.
     pub const GATE_CONNECTION: f32 = 0.0;
 }
+
+pub const ONE_SECOND_IN_MILLISECONDS: Milliseconds = 1000;

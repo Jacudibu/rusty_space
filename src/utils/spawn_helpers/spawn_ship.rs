@@ -1,4 +1,6 @@
-use crate::components::{Engine, Inventory, Sector, SelectableEntity, Ship};
+use crate::components::{
+    AsteroidMiningComponent, Engine, Inventory, Sector, SelectableEntity, Ship,
+};
 use crate::persistence::{PersistentShipId, ShipIdMap};
 use crate::session_data::ShipConfiguration;
 use crate::simulation::physics::ShipVelocity;
@@ -30,24 +32,30 @@ pub fn spawn_ship(
     let simulation_transform =
         SimulationTransform::new(sector_data.world_pos + position, Rot2::radians(rotation));
 
-    let entity = commands
-        .spawn((
-            Name::new(name),
-            Ship::new(id, ship_configuration.id),
-            SelectableEntity::Ship,
-            Engine::default(),
-            velocity,
-            Inventory::new(ship_configuration.computed_stats.inventory_size),
-            TaskQueue::new(),
-            SpriteBundle {
-                texture: sprites.ship.clone(),
-                transform: simulation_transform.as_transform(constants::z_layers::SHIP),
-                ..default()
-            },
-            simulation_transform,
-            SimulationScale::default(),
-        ))
-        .id();
+    let mut entity_commands = commands.spawn((
+        Name::new(name),
+        Ship::new(id, ship_configuration.id),
+        SelectableEntity::Ship,
+        Engine::default(),
+        velocity,
+        Inventory::new(ship_configuration.computed_stats.inventory_size),
+        TaskQueue::new(),
+        SpriteBundle {
+            texture: sprites.ship.clone(),
+            transform: simulation_transform.as_transform(constants::z_layers::SHIP),
+            ..default()
+        },
+        simulation_transform,
+        SimulationScale::default(),
+    ));
+
+    if let Some(asteroid_mining_amount) = ship_configuration.computed_stats.asteroid_mining_amount {
+        entity_commands.insert(AsteroidMiningComponent {
+            amount_per_second: asteroid_mining_amount,
+        });
+    }
+
+    let entity = entity_commands.id();
 
     ship_id_map.insert(id, ShipEntity::from(entity));
     behavior.build_and_add_default_component(commands.entity(entity));

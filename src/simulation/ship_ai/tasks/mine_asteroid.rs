@@ -1,6 +1,7 @@
-use crate::components::{Asteroid, Inventory, Ship};
+use crate::components::{Asteroid, AsteroidMiningComponent, Inventory};
+use crate::constants;
 use crate::game_data::MOCK_ITEM_ID_ORE;
-use crate::session_data::{ShipConfiguration, ShipConfigurationManifest};
+use crate::session_data::ShipConfigurationManifest;
 use crate::simulation::asteroids::AsteroidWasFullyMinedEvent;
 use crate::simulation::prelude::{
     CurrentSimulationTimestamp, Milliseconds, SimulationTime, SimulationTimestamp,
@@ -14,8 +15,6 @@ use crate::utils::AsteroidEntity;
 use bevy::log::error;
 use bevy::prelude::{Commands, Component, Entity, EventReader, EventWriter, Query, Res, With};
 use std::sync::{Arc, Mutex};
-
-pub const TIME_BETWEEN_MINING_UPDATES: Milliseconds = 1000;
 
 enum TaskResult {
     Skip,
@@ -34,7 +33,7 @@ impl MineAsteroid {
     pub fn new(target: AsteroidEntity, now: CurrentSimulationTimestamp, reserved: u32) -> Self {
         Self {
             target,
-            next_update: now.add_milliseconds(TIME_BETWEEN_MINING_UPDATES),
+            next_update: now.add_milliseconds(constants::ONE_SECOND_IN_MILLISECONDS),
             reserved_ore_amount: reserved,
         }
     }
@@ -46,16 +45,14 @@ impl MineAsteroid {
         inventory: &mut Inventory,
         now: CurrentSimulationTimestamp,
         all_asteroids: &Query<(&mut Asteroid, &mut SimulationScale)>,
-        config: &ShipConfiguration,
+        mining_component: &AsteroidMiningComponent,
     ) -> TaskResult {
         if now.has_not_passed(self.next_update) {
             return TaskResult::Skip;
         }
 
-        let mined_amount = config
-            .computed_stats
-            .asteroid_mining_amount
-            .unwrap()
+        let mined_amount = mining_component
+            .amount_per_second
             .min(inventory.capacity - inventory.used())
             .min(self.reserved_ore_amount);
 
@@ -68,7 +65,7 @@ impl MineAsteroid {
             TaskResult::Finished { mined_amount: 0 }
         } else {
             self.next_update
-                .add_milliseconds(TIME_BETWEEN_MINING_UPDATES);
+                .add_milliseconds(constants::ONE_SECOND_IN_MILLISECONDS);
             TaskResult::Ongoing { mined_amount }
         }
     }
@@ -83,8 +80,7 @@ impl MineAsteroid {
     pub fn run_tasks(
         event_writer: EventWriter<TaskFinishedEvent<Self>>,
         simulation_time: Res<SimulationTime>,
-        configs: Res<ShipConfigurationManifest>,
-        mut ships: Query<(Entity, &Ship, &mut Self, &mut Inventory)>,
+        mut ships: Query<(Entity, &mut Self, &mut Inventory, &AsteroidMiningComponent)>,
         mut all_asteroids: Query<(&mut Asteroid, &mut SimulationScale)>,
         mut asteroid_was_fully_mined_event: EventWriter<AsteroidWasFullyMinedEvent>,
     ) {
@@ -94,9 +90,8 @@ impl MineAsteroid {
 
         ships
             .par_iter_mut()
-            .for_each(|(entity, ship, mut task, mut inventory)| {
-                let config = configs.get_by_id(&ship.config_id()).unwrap(); // TODO: Should probably be cached within an AsteroidHarvesterComponent
-                match task.run(&mut inventory, now, &all_asteroids, config) {
+            .for_each(|(entity, mut task, mut inventory, mining_component)| {
+                match task.run(&mut inventory, now, &all_asteroids, mining_component) {
                     TaskResult::Skip => {}
                     TaskResult::Ongoing { mined_amount } => {
                         mined_asteroids
