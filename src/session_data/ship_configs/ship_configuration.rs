@@ -1,4 +1,4 @@
-use crate::game_data::{RecipeElement, ShipHullId, ShipHullManifest};
+use crate::game_data::{RecipeElement, ShipHullData, ShipHullId, ShipHullManifest};
 use crate::session_data::ShipConfigId;
 use crate::simulation::prelude::Milliseconds;
 use serde::Deserialize;
@@ -12,6 +12,7 @@ pub struct ShipConfiguration {
     pub name: String,
     pub parts: ShipConfigurationParts,
     pub computed_stats: ShipConfigurationComputedStats,
+    pub engine_tuning: EngineTuning,
 }
 
 impl ShipConfiguration {
@@ -21,23 +22,30 @@ impl ShipConfiguration {
         parts: ShipConfigurationParts,
         ship_hulls: &ShipHullManifest,
     ) -> Self {
-        let computed_stats = parts.compute_stats(ship_hulls);
+        let engine_tuning = EngineTuning::default();
+        let computed_stats = parts.compute_stats(&engine_tuning, ship_hulls);
         Self {
             id,
             name,
             parts,
+            engine_tuning,
             computed_stats,
         }
     }
 }
 
+/// The individual parts making up a ShipConfiguration.
 #[derive(Deserialize)]
 pub struct ShipConfigurationParts {
     pub hull: ShipHullId,
 }
 
 impl ShipConfigurationParts {
-    pub fn compute_stats(&self, ship_hulls: &ShipHullManifest) -> ShipConfigurationComputedStats {
+    pub fn compute_stats(
+        &self,
+        tuning: &EngineTuning,
+        ship_hulls: &ShipHullManifest,
+    ) -> ShipConfigurationComputedStats {
         let hull = ship_hulls.get_by_ref(&self.hull).unwrap();
 
         ShipConfigurationComputedStats {
@@ -46,16 +54,83 @@ impl ShipConfigurationParts {
             required_materials: hull.required_materials.clone(),
             asteroid_mining_amount: Some(10),
             gas_harvesting_amount: Some(10),
+            engine: EngineStats::compute_from(hull, tuning),
         }
     }
 }
 
+/// The accumulated stats based on the given ConfigurationParts. Created by calling [`ShipConfiguration::compute_stats`].
 // TODO: Shouldn't be (de-)serialized, instead parsed from raw ship config data
 #[derive(Deserialize)]
 pub struct ShipConfigurationComputedStats {
     pub build_time: Milliseconds,
     pub required_materials: Vec<RecipeElement>,
     pub inventory_size: u32,
+    pub engine: EngineStats,
     pub asteroid_mining_amount: Option<u32>,
     pub gas_harvesting_amount: Option<u32>,
+}
+
+// TODO: Shouldn't be (de-)serialized, instead parsed from raw ship config data
+#[derive(Deserialize)]
+pub struct EngineStats {
+    pub max_speed: f32,
+    pub acceleration: f32,
+    pub deceleration: f32,
+
+    pub max_angular_speed: f32,
+    pub angular_acceleration: f32,
+}
+
+impl EngineStats {
+    pub fn compute_from(hull: &ShipHullData, tuning: &EngineTuning) -> Self {
+        Self {
+            max_speed: hull.maneuverability.max_speed
+                * Self::tuning_value_to_multiplier(tuning.max_speed),
+            acceleration: hull.maneuverability.acceleration
+                * Self::tuning_value_to_multiplier(tuning.acceleration),
+            deceleration: hull.maneuverability.deceleration
+                * Self::tuning_value_to_multiplier(tuning.acceleration),
+            max_angular_speed: hull.maneuverability.max_angular_speed
+                * Self::tuning_value_to_multiplier(tuning.turning),
+            angular_acceleration: hull.maneuverability.angular_acceleration
+                * Self::tuning_value_to_multiplier(tuning.turning),
+        }
+    }
+
+    /// `value` should be in [0, 6].
+    ///
+    /// ## Returns
+    /// `value` scaled to [0.9, 1.1].
+    fn tuning_value_to_multiplier(value: u8) -> f32 {
+        0.9 + (value as f32 / 6.0) * 0.2
+    }
+}
+
+#[derive(Deserialize)]
+pub struct EngineTuning {
+    pub acceleration: u8,
+    pub max_speed: u8,
+    pub turning: u8,
+}
+
+impl Default for EngineTuning {
+    fn default() -> Self {
+        Self {
+            turning: 6,
+            max_speed: 6,
+            acceleration: 6,
+        }
+    }
+}
+
+mod test {
+    use super::*;
+
+    #[test]
+    fn tuning_value_to_multiplier() {
+        assert_eq!(0.9, EngineStats::tuning_value_to_multiplier(0));
+        assert_eq!(1.0, EngineStats::tuning_value_to_multiplier(3));
+        assert_eq!(1.1, EngineStats::tuning_value_to_multiplier(6));
+    }
 }

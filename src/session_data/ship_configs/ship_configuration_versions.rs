@@ -48,7 +48,7 @@ mod test {
     use super::*;
     use crate::game_data::MOCK_SHIP_HULL_A_ID;
     use crate::session_data::ship_configs::ship_configuration::{
-        ShipConfigurationComputedStats, ShipConfigurationParts,
+        EngineStats, EngineTuning, ShipConfigurationComputedStats, ShipConfigurationParts,
     };
     use crate::session_data::ShipConfigId;
 
@@ -63,6 +63,15 @@ mod test {
             build_time: 5,
             required_materials: Vec::new(),
             inventory_size: 10,
+            engine: EngineStats {
+                max_speed: 100.0,
+                acceleration: 10.0,
+                deceleration: 30.0,
+                max_angular_speed: 1.0,
+                angular_acceleration: 1.0,
+            },
+            asteroid_mining_amount: None,
+            gas_harvesting_amount: None,
         }
     }
 
@@ -74,6 +83,7 @@ mod test {
             id: ShipConfigId::from_name(name),
             name: "Test".into(),
             parts: mock_parts(),
+            engine_tuning: EngineTuning::default(),
             computed_stats: mock_stats(),
         });
 
@@ -82,6 +92,7 @@ mod test {
             id: ShipConfigId::from_name_and_version(name, next_version),
             name: "Test".into(),
             parts: mock_parts(),
+            engine_tuning: EngineTuning::default(),
             computed_stats: mock_stats(),
         });
 

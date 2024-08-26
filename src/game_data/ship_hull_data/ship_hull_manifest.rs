@@ -1,4 +1,5 @@
 use crate::game_data::from_mock_data::FromMockData;
+use crate::game_data::ship_hull_data::ship_hull::ShipManeuverability;
 use crate::game_data::ship_hull_data::{
     ShipHullData, ShipHullId, MOCK_SHIP_HULL_A_ID, MOCK_SHIP_HULL_A_NAME,
 };
@@ -34,6 +35,13 @@ impl FromMockData for ShipHullManifest {
                 ship_size: ShipSize::S,
                 inventory_size: 100,
                 build_time: 5000,
+                maneuverability: ShipManeuverability {
+                    max_speed: 100.0,
+                    acceleration: 10.0,
+                    deceleration: 30.0,
+                    max_angular_speed: 1.0,
+                    angular_acceleration: 1.0,
+                },
                 required_materials: vec![
                     RecipeElement {
                         item_id: MOCK_ITEM_ID_A,

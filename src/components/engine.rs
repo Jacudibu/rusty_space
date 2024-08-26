@@ -1,3 +1,4 @@
+use crate::session_data::ship_configs::EngineStats;
 use bevy::prelude::Component;
 
 #[derive(Component)]
@@ -10,14 +11,14 @@ pub struct Engine {
     pub angular_acceleration: f32,
 }
 
-impl Default for Engine {
-    fn default() -> Self {
+impl From<&EngineStats> for Engine {
+    fn from(value: &EngineStats) -> Self {
         Self {
-            max_speed: 100.0,
-            acceleration: 10.0,
-            deceleration: 30.0,
-            max_angular_speed: 1.0,
-            angular_acceleration: 1.0,
+            max_speed: value.max_speed,
+            acceleration: value.acceleration,
+            deceleration: value.deceleration,
+            max_angular_speed: value.max_angular_speed,
+            angular_acceleration: value.angular_acceleration,
         }
     }
 }

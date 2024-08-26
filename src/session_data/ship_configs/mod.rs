@@ -6,6 +6,7 @@ mod versioned_id;
 
 use crate::session_data::ship_configs::versioned_id::VersionedId;
 pub use {
+    ship_configuration::EngineStats, ship_configuration::EngineTuning,
     ship_configuration::ShipConfiguration, ship_configuration_manifest::ShipConfigurationManifest,
     ship_configuration_versions::ShipConfigurationVersions,
 };

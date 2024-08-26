@@ -37,7 +37,7 @@ pub fn spawn_ship(
         Name::new(name),
         Ship::new(id, ship_configuration.id),
         SelectableEntity::Ship,
-        Engine::default(),
+        Engine::from(&ship_configuration.computed_stats.engine),
         velocity,
         Inventory::new(ship_configuration.computed_stats.inventory_size),
         TaskQueue::new(),

@@ -43,7 +43,7 @@ Damage Types:
 
 Health Types: Shield + Armor, maybe Hull?
 
-## Chassis 
+## Hull 
 Defines general specs of the ships and limits what can be done with it by only providing a certain number of slots for turrets / engines.
 
 Specs:
@@ -53,8 +53,22 @@ Specs:
 - High Power Slots (For weapons and some strong, passive boosts)
 - Utility Slots (Mix of EVE Medium and Low power utilities)
 - Shield Config (Slider: Capacity <--> Recharge. Or let the player pick between three variants)
-- Engine Config (Slider: Turning <--> Max Speed. Or let the player pick between three variants. Combined X4 Engine + Thruster.)
+- Engine Config (Triangle Slider: Turning <--> Acceleration <--> Max Speed. Or let the player pick between multiple variants. Combined X4 Engine + Thruster.)
 - Mod Slots (Optional Late Game stuff. Basically EVE Rigging slots but with a fancier name)
+
+
+Triangle Slider for engine config
+```
+Distance to center for A + B + C must be <= 1.0.
+There's no benefit to being < 1.0, so maybe don't allow that either.
+
+        Accelleration
+            /.\
+           // \\
+          /.___.\
+         /_______\
+Max Speed         Turning
+```
 
 ## Slots
 

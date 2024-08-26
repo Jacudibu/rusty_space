@@ -1,7 +1,7 @@
 use bevy::ecs::system::SystemParam;
 use bevy::prelude::{Res, World};
 
-mod ship_configs;
+pub mod ship_configs;
 
 pub use ship_configs::{
     ShipConfigId, ShipConfiguration, ShipConfigurationManifest, ShipConfigurationVersions,
