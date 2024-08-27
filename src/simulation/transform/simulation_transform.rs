@@ -30,6 +30,15 @@ impl Default for SimulationScale {
     }
 }
 
+impl From<f32> for SimulationScale {
+    fn from(value: f32) -> Self {
+        Self {
+            scale: value,
+            last_scale: value,
+        }
+    }
+}
+
 impl SimulationTransform {
     pub fn from_translation(translation: Vec2) -> Self {
         Self {
@@ -63,6 +72,7 @@ impl SimulationTransform {
 
     /// Returns the current forward direction, depending on the current rotation.
     #[inline]
+    #[must_use]
     pub fn forward(&self) -> Dir2 {
         self.rotation * Dir2::Y
     }
@@ -75,11 +85,19 @@ impl SimulationTransform {
 
     /// Crate a 3D Transform based on self, with the z position set to the provided z_layer.
     #[inline]
+    #[must_use]
     pub fn as_transform(&self, z_layer: f32) -> Transform {
+        self.as_scaled_transform(z_layer, 1.0)
+    }
+
+    /// Crate a 3D Transform based on self, with the z position set to the provided z_layer.
+    #[inline]
+    #[must_use]
+    pub fn as_scaled_transform(&self, z_layer: f32, scale: f32) -> Transform {
         Transform {
             translation: self.translation.extend(z_layer),
             rotation: Quat::from_rotation_z(self.rotation.as_radians()),
-            scale: Vec3::splat(1.0),
+            scale: Vec3::splat(scale),
         }
     }
 

@@ -30,6 +30,7 @@ pub fn spawn_asteroid(
 ) -> AsteroidEntity {
     let asteroid_id = PersistentAsteroidId::next();
     let asteroid = Asteroid::new(asteroid_id, ore_current, ore_max, despawn_at);
+    let scale = asteroid.scale_depending_on_current_ore_volume();
 
     let simulation_transform = SimulationTransform::new(global_pos, Rot2::radians(sprite_rotation));
 
@@ -40,7 +41,8 @@ pub fn spawn_asteroid(
             ConstantVelocity::new(velocity, angular_velocity),
             SpriteBundle {
                 texture: sprites.asteroid.clone(),
-                transform: simulation_transform.as_transform(constants::z_layers::ASTEROID),
+                transform: simulation_transform
+                    .as_scaled_transform(constants::z_layers::ASTEROID, scale),
                 sprite: Sprite {
                     color: Color::linear_rgba(1.0, 1.0, 1.0, if fading_in { 0.0 } else { 1.0 }),
                     ..Default::default()
@@ -48,7 +50,7 @@ pub fn spawn_asteroid(
                 ..Default::default()
             },
             simulation_transform,
-            SimulationScale::default(),
+            SimulationScale::from(scale),
             asteroid,
         ))
         .id();
