@@ -3,6 +3,7 @@ mod item_data;
 mod production_module_data;
 mod recipe_data;
 mod ship_hull_data;
+mod ship_weapon_data;
 mod shipyard_module_data;
 
 use crate::game_data::from_mock_data::FromMockData;
@@ -22,6 +23,10 @@ pub use {
         MOCK_RECIPE_C_ID,
     },
     ship_hull_data::{ShipHullData, ShipHullId, ShipHullManifest, MOCK_SHIP_HULL_A_ID},
+    ship_weapon_data::{
+        ShipWeaponData, ShipWeaponId, ShipWeaponManifest, MOCK_SHIP_WEAPON_GAS_COLLECTOR_ID,
+        MOCK_SHIP_WEAPON_ORE_MINING_LASER_ID,
+    },
     shipyard_module_data::{
         ShipyardModuleData, ShipyardModuleId, ShipyardModuleManifest, MOCK_SHIPYARD_MODULE_ID,
     },

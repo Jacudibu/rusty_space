@@ -18,6 +18,8 @@ pub struct ShipHullManifest {
 }
 
 impl ShipHullManifest {
+    #[inline]
+    #[must_use]
     pub fn get_by_ref(&self, id: &ShipHullId) -> Option<&ShipHullData> {
         self.ship_hulls.get(id)
     }
@@ -80,7 +82,7 @@ impl Manifest for ShipHullManifest {
         raw_manifest: Self::RawManifest,
         _world: &mut World,
     ) -> Result<Self, Self::ConversionError> {
-        Ok(ShipHullManifest {
+        Ok(Self {
             ship_hulls: raw_manifest.ship_hulls,
         })
     }
