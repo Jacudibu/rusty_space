@@ -13,5 +13,13 @@ pub use {
 
 pub type ShipConfigId = VersionedId<ShipConfigurationVersions>;
 
-const DEBUG_SHIP_CONFIG_NAME: &str = "config_a";
-pub const DEBUG_SHIP_CONFIG: ShipConfigId = ShipConfigId::from_name(DEBUG_SHIP_CONFIG_NAME);
+const MOCK_TRANSPORT_SHIP_CONFIG_NAME: &str = "transport";
+const MOCK_MINING_SHIP_CONFIG_NAME: &str = "miner";
+const MOCK_HARVESTING_SHIP_CONFIG_NAME: &str = "harvester";
+
+pub const MOCK_TRANSPORT_SHIP_CONFIG: ShipConfigId =
+    ShipConfigId::from_name(MOCK_TRANSPORT_SHIP_CONFIG_NAME);
+pub const MOCK_MINING_SHIP_CONFIG: ShipConfigId =
+    ShipConfigId::from_name(MOCK_MINING_SHIP_CONFIG_NAME);
+pub const MOCK_HARVESTING_SHIP_CONFIG: ShipConfigId =
+    ShipConfigId::from_name(MOCK_HARVESTING_SHIP_CONFIG_NAME);

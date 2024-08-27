@@ -32,8 +32,8 @@ impl FromMockData for ShipWeaponManifest {
             ShipWeaponData {
                 energy_cost: 5,
                 cpu_cost: 5,
-                gas_harvesting_strength: Some(10),
-                asteroid_mining_strength: None,
+                gas_harvesting_strength: None,
+                asteroid_mining_strength: Some(10),
                 required_materials: vec![RecipeElement {
                     item_id: MOCK_ITEM_ID_A,
                     amount: 5,

@@ -5,10 +5,11 @@ use crate::game_data::{
 };
 use crate::session_data::ship_configs::ship_configuration::ShipConfigurationParts;
 use crate::session_data::ship_configs::versioned_id::VersionedId;
-use crate::session_data::ship_configs::DEBUG_SHIP_CONFIG_NAME;
-use crate::session_data::{
-    ShipConfigId, ShipConfiguration, ShipConfigurationVersions, DEBUG_SHIP_CONFIG,
+use crate::session_data::ship_configs::{
+    MOCK_HARVESTING_SHIP_CONFIG, MOCK_HARVESTING_SHIP_CONFIG_NAME, MOCK_MINING_SHIP_CONFIG,
+    MOCK_MINING_SHIP_CONFIG_NAME, MOCK_TRANSPORT_SHIP_CONFIG, MOCK_TRANSPORT_SHIP_CONFIG_NAME,
 };
+use crate::session_data::{ShipConfigId, ShipConfiguration, ShipConfigurationVersions};
 use bevy::asset::Asset;
 use bevy::prelude::{Resource, TypePath, World};
 use bevy::utils::HashMap;
@@ -38,16 +39,46 @@ impl ShipConfigurationManifest {
         let weapons = world.get_resource::<ShipWeaponManifest>().unwrap();
 
         let mut mock_data = HashMap::new();
-        let id = VersionedId::from_name(DEBUG_SHIP_CONFIG_NAME);
         mock_data.insert(
-            id.id,
+            VersionedId::from_name(MOCK_TRANSPORT_SHIP_CONFIG_NAME).id,
             ShipConfigurationVersions::new(ShipConfiguration::from(
-                DEBUG_SHIP_CONFIG,
-                "Fancy new ship".into(),
+                MOCK_TRANSPORT_SHIP_CONFIG,
+                "Transport".into(),
+                ShipConfigurationParts {
+                    hull: MOCK_SHIP_HULL_A_ID,
+                    weapons: vec![],
+                },
+                hulls,
+                weapons,
+            )),
+        );
+
+        mock_data.insert(
+            VersionedId::from_name(MOCK_MINING_SHIP_CONFIG_NAME).id,
+            ShipConfigurationVersions::new(ShipConfiguration::from(
+                MOCK_MINING_SHIP_CONFIG,
+                "Miner".into(),
                 ShipConfigurationParts {
                     hull: MOCK_SHIP_HULL_A_ID,
                     weapons: vec![
                         MOCK_SHIP_WEAPON_ORE_MINING_LASER_ID,
+                        MOCK_SHIP_WEAPON_ORE_MINING_LASER_ID,
+                    ],
+                },
+                hulls,
+                weapons,
+            )),
+        );
+
+        mock_data.insert(
+            VersionedId::from_name(MOCK_HARVESTING_SHIP_CONFIG_NAME).id,
+            ShipConfigurationVersions::new(ShipConfiguration::from(
+                MOCK_HARVESTING_SHIP_CONFIG,
+                "Harvester".into(),
+                ShipConfigurationParts {
+                    hull: MOCK_SHIP_HULL_A_ID,
+                    weapons: vec![
+                        MOCK_SHIP_WEAPON_GAS_COLLECTOR_ID,
                         MOCK_SHIP_WEAPON_GAS_COLLECTOR_ID,
                     ],
                 },

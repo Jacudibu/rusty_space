@@ -5,7 +5,6 @@ pub mod ship_configs;
 
 pub use ship_configs::{
     ShipConfigId, ShipConfiguration, ShipConfigurationManifest, ShipConfigurationVersions,
-    DEBUG_SHIP_CONFIG,
 };
 
 /// Data that's dynamically created and indexed whilst playing and needs to be persisted in between sessions.
