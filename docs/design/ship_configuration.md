@@ -72,17 +72,17 @@ Max Speed         Turning
 
 ## Slots
 
-### High Power
+### Weapon Slots
 #### Mining Laser
 Only ships equipped with mining lasers can mine asteroids. Those are too weak to deal any significant damage to properly armored or shielded ships, but perfect for cutting defenseless rocks floating through space.
 
 #### Gas Collector
 Functioning like a vacuum cleaner, only ships equipped with a gas collector can harvest from gas giants.
 
-#### TODO: Weapons
+#### TODO: Actual Weapons
 Pew Pew!
 
-### Utility
+### Hull Modifications Slots
 #### Cargo Bays
 Increases the amount of cargo this ship can carry at the cost of maneuverability.
 

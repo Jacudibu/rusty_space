@@ -35,6 +35,7 @@ impl FromMockData for ShipHullManifest {
                 id: MOCK_SHIP_HULL_A_ID,
                 name: MOCK_SHIP_HULL_A_NAME.into(),
                 ship_size: ShipSize::S,
+                weapon_slots: 2,
                 inventory_size: 100,
                 build_time: 5000,
                 maneuverability: ShipManeuverability {

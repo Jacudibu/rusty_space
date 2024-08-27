@@ -1,4 +1,7 @@
-use crate::game_data::{RecipeElement, ShipHullData, ShipHullId, ShipHullManifest};
+use crate::game_data::{
+    RecipeElement, ShipHullData, ShipHullId, ShipHullManifest, ShipWeaponData, ShipWeaponId,
+    ShipWeaponManifest,
+};
 use crate::session_data::ShipConfigId;
 use crate::simulation::prelude::Milliseconds;
 use serde::Deserialize;
@@ -21,9 +24,10 @@ impl ShipConfiguration {
         name: String,
         parts: ShipConfigurationParts,
         ship_hulls: &ShipHullManifest,
+        ship_weapons: &ShipWeaponManifest,
     ) -> Self {
         let engine_tuning = EngineTuning::default();
-        let computed_stats = parts.compute_stats(&engine_tuning, ship_hulls);
+        let computed_stats = parts.compute_stats(&engine_tuning, ship_hulls, ship_weapons);
         Self {
             id,
             name,
@@ -38,6 +42,7 @@ impl ShipConfiguration {
 #[derive(Deserialize)]
 pub struct ShipConfigurationParts {
     pub hull: ShipHullId,
+    pub weapons: Vec<ShipWeaponId>,
 }
 
 impl ShipConfigurationParts {
@@ -45,16 +50,34 @@ impl ShipConfigurationParts {
         &self,
         tuning: &EngineTuning,
         ship_hulls: &ShipHullManifest,
+        ship_weapons: &ShipWeaponManifest,
     ) -> ShipConfigurationComputedStats {
         let hull = ship_hulls.get_by_ref(&self.hull).unwrap();
+        let weapons: Vec<_> = self
+            .weapons
+            .iter()
+            .filter_map(|x| ship_weapons.get_by_ref(x))
+            .collect();
 
         ShipConfigurationComputedStats {
             inventory_size: hull.inventory_size,
             build_time: hull.build_time,
-            required_materials: hull.required_materials.clone(),
-            asteroid_mining_amount: Some(10),
-            gas_harvesting_amount: Some(10),
+            required_materials: hull.required_materials.clone(), // TODO: sum up all materials
+            asteroid_mining_amount: Self::sum_strength(&weapons, |x| x.asteroid_mining_strength),
+            gas_harvesting_amount: Self::sum_strength(&weapons, |x| x.gas_harvesting_strength),
             engine: EngineStats::compute_from(hull, tuning),
+        }
+    }
+
+    fn sum_strength<X, T>(items: &[&X], value_getter: T) -> Option<u32>
+    where
+        T: Fn(&&X) -> Option<u32>,
+    {
+        let result = items.iter().filter_map(value_getter).sum();
+        if result > 0 {
+            Some(result)
+        } else {
+            None
         }
     }
 }

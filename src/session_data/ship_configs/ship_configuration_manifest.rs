@@ -1,6 +1,7 @@
 use crate::game_data::{
-    RecipeElement, ShipHullData, ShipHullManifest, MOCK_ITEM_ID_A, MOCK_ITEM_ID_B, MOCK_ITEM_ID_C,
-    MOCK_SHIP_HULL_A_ID,
+    RecipeElement, ShipHullData, ShipHullManifest, ShipWeaponManifest, MOCK_ITEM_ID_A,
+    MOCK_ITEM_ID_B, MOCK_ITEM_ID_C, MOCK_SHIP_HULL_A_ID, MOCK_SHIP_WEAPON_GAS_COLLECTOR_ID,
+    MOCK_SHIP_WEAPON_ORE_MINING_LASER_ID,
 };
 use crate::session_data::ship_configs::ship_configuration::ShipConfigurationParts;
 use crate::session_data::ship_configs::versioned_id::VersionedId;
@@ -34,6 +35,7 @@ impl ShipConfigurationManifest {
     #[must_use]
     pub fn mock_data(world: &mut World) -> Self {
         let hulls = world.get_resource::<ShipHullManifest>().unwrap();
+        let weapons = world.get_resource::<ShipWeaponManifest>().unwrap();
 
         let mut mock_data = HashMap::new();
         let id = VersionedId::from_name(DEBUG_SHIP_CONFIG_NAME);
@@ -44,8 +46,13 @@ impl ShipConfigurationManifest {
                 "Fancy new ship".into(),
                 ShipConfigurationParts {
                     hull: MOCK_SHIP_HULL_A_ID,
+                    weapons: vec![
+                        MOCK_SHIP_WEAPON_ORE_MINING_LASER_ID,
+                        MOCK_SHIP_WEAPON_GAS_COLLECTOR_ID,
+                    ],
                 },
                 hulls,
+                weapons,
             )),
         );
 

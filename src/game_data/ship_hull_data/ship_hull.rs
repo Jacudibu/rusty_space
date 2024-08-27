@@ -22,6 +22,9 @@ pub struct ShipHullData {
     /// Base values for the general maneuverability of a ship hull.
     pub maneuverability: ShipManeuverability,
 
+    /// The amount of weapons which can be fitted onto this hull.
+    pub weapon_slots: u8,
+
     /// Bill of materials required to build this, without modules.
     pub required_materials: Vec<RecipeElement>,
 

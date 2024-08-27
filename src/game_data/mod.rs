@@ -48,12 +48,14 @@ impl<'w> GameData<'w> {
         let item_recipes = RecipeManifest::from_mock_data(world);
         let production_modules = ProductionModuleManifest::from_mock_data(world);
         let ship_hulls = ShipHullManifest::from_mock_data(world);
+        let ship_weapons = ShipWeaponManifest::from_mock_data(world);
         let shipyard_modules = ShipyardModuleManifest::from_mock_data(world);
 
         world.insert_resource(items);
         world.insert_resource(item_recipes);
         world.insert_resource(production_modules);
         world.insert_resource(ship_hulls);
+        world.insert_resource(ship_weapons);
         world.insert_resource(shipyard_modules);
     }
 }
