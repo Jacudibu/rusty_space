@@ -55,6 +55,7 @@ mod test {
     fn mock_parts() -> ShipConfigurationParts {
         ShipConfigurationParts {
             hull: MOCK_SHIP_HULL_A_ID,
+            weapons: vec![],
         }
     }
 
