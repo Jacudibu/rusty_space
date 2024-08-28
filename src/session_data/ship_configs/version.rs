@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use std::fmt::{Display, Formatter};
 
 pub const INITIAL_VERSION: Version = Version { version: 1 };
 
@@ -19,5 +20,11 @@ impl Version {
 impl Default for Version {
     fn default() -> Self {
         INITIAL_VERSION
+    }
+}
+
+impl Display for Version {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        self.version.fmt(f)
     }
 }

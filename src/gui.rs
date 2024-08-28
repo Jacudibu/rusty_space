@@ -1,11 +1,11 @@
 use crate::components::{
     Asteroid, BuyOrders, Gate, InSector, InteractionQueue, Inventory, SelectableEntity, SellOrders,
-    TradeOrder,
+    Ship, TradeOrder,
 };
 use crate::entity_selection::{MouseCursor, Selected};
 use crate::game_data::GameData;
 use crate::map_layout::MapLayout;
-use crate::session_data::SessionData;
+use crate::session_data::{SessionData, ShipConfiguration};
 use crate::simulation::physics::ShipVelocity;
 use crate::simulation::prelude::SimulationTime;
 use crate::simulation::production::{ProductionComponent, ShipyardComponent};
@@ -240,6 +240,7 @@ pub fn list_selection_details(
             Entity,
             &SelectableEntity,
             &Name,
+            Option<&Ship>,
             Option<&Inventory>,
             Option<&Asteroid>,
             Option<&ShipVelocity>,
@@ -276,6 +277,7 @@ pub fn list_selection_details(
                     _,
                     selectable,
                     name,
+                    ship,
                     inventory,
                     asteroid,
                     velocity,
@@ -400,6 +402,16 @@ pub fn list_selection_details(
                     }
                 }
 
+                if let Some(ship) = ship {
+                    draw_ship_config_stats(
+                        ui,
+                        session_data
+                            .ship_configurations
+                            .get_by_id(&ship.config_id())
+                            .unwrap(),
+                    )
+                }
+
                 if let Some(task_queue) = task_queue {
                     ui.heading("Tasks");
 
@@ -470,7 +482,7 @@ pub fn list_selection_details(
         .resizable(false)
         .vscroll(true)
         .show(context.ctx_mut(), |ui| {
-            for (_, selectable, name, storage, _, velocity, task_queue, _, _, _, _, _, _, _) in
+            for (_, selectable, name, _, storage, _, velocity, task_queue, _, _, _, _, _, _, _) in
                 selected.iter()
             {
                 draw_ship_summary_row(&images, ui, selectable, name, storage, velocity, task_queue);
@@ -515,6 +527,32 @@ fn draw_ship_summary_row(
             ui.label(format!("{:.0}u/s", velocity.forward));
         }
     });
+}
+
+fn draw_ship_config_stats(ui: &mut Ui, config: &ShipConfiguration) {
+    ui.heading("Stats");
+    ui.label(format!(
+        "Ship Config: {} (v{})",
+        config.name, config.id.version
+    ));
+    ui.label(format!(
+        "Inventory Size: {}",
+        config.computed_stats.inventory_size
+    ));
+    ui.label(format!(
+        "Engine: Fw{}|Acc{}|Rot{}|RotAcc{}",
+        config.computed_stats.engine.max_speed,
+        config.computed_stats.engine.acceleration,
+        config.computed_stats.engine.max_angular_speed,
+        config.computed_stats.engine.angular_acceleration,
+    ));
+
+    if let Some(ore_miner) = config.computed_stats.asteroid_mining_amount {
+        ui.label(format!("Ore Mining Strength: {}", ore_miner));
+    }
+    if let Some(gas_harvester) = config.computed_stats.gas_harvesting_amount {
+        ui.label(format!("Gas Harvesting Strength: {}", gas_harvester));
+    }
 }
 
 #[derive(Debug, Clone, Copy, Default, Eq, PartialEq, Hash, States)]
