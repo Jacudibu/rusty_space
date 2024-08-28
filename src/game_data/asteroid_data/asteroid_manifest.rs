@@ -2,23 +2,14 @@ use crate::game_data::asteroid_data::asteroid_data_struct::AsteroidData;
 use crate::game_data::asteroid_data::raw_asteroid_data::RawAsteroidData;
 use crate::game_data::asteroid_data::raw_asteroid_manifest::RawAsteroidManifest;
 use crate::game_data::asteroid_data::AsteroidDataId;
-use bevy::prelude::{AssetServer, Resource, World};
+use crate::game_data::generic_manifest::GenericManifest;
+use bevy::prelude::{AssetServer, World};
 use bevy::utils::HashMap;
 use leafwing_manifest::identifier::Id;
 use leafwing_manifest::manifest::{Manifest, ManifestFormat};
 
-#[derive(Resource)]
-pub struct AsteroidManifest {
-    items: HashMap<AsteroidDataId, AsteroidData>,
-}
-
-impl AsteroidManifest {
-    #[must_use]
-    #[inline]
-    pub fn get_from_ref(&self, id: &AsteroidDataId) -> Option<&AsteroidData> {
-        self.items.get(id)
-    }
-}
+/// Contains the parsed definitions and spawn instructions for all kinds of asteroids.
+type AsteroidManifest = GenericManifest<AsteroidData>;
 
 impl Manifest for AsteroidManifest {
     type RawManifest = RawAsteroidManifest;
@@ -47,10 +38,10 @@ impl Manifest for AsteroidManifest {
             })
             .collect();
 
-        Ok(Self { items })
+        Ok(Self::from(items))
     }
 
     fn get(&self, id: Id<Self::Item>) -> Option<&Self::Item> {
-        self.items.get(&id)
+        self.get_by_ref(&id)
     }
 }

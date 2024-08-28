@@ -1,5 +1,7 @@
 mod asteroid_data;
 mod from_mock_data;
+mod generic_manifest;
+mod generic_manifest_without_raw_data;
 mod item_data;
 mod production_module_data;
 mod recipe_data;

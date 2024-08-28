@@ -180,7 +180,7 @@ impl SerializedBuyOrder {
     pub fn parse<'a>(&self, items: &'a ItemManifest) -> Vec<&'a ItemData> {
         self.orders
             .iter()
-            .map(|x| items.get_from_ref(&x.item_id).unwrap())
+            .map(|x| items.get_by_ref(&x.item_id).unwrap())
             .collect()
     }
 }
@@ -189,7 +189,7 @@ impl SerializedSellOrder {
     pub fn parse<'a>(&self, items: &'a ItemManifest) -> Vec<&'a ItemData> {
         self.orders
             .iter()
-            .map(|x| items.get_from_ref(&x.item_id).unwrap())
+            .map(|x| items.get_by_ref(&x.item_id).unwrap())
             .collect()
     }
 }

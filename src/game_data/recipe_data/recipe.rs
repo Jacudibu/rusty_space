@@ -1,10 +1,12 @@
+use crate::game_data::generic_manifest_without_raw_data::DataCanBeUsedAsRawData;
 use crate::game_data::recipe_data::RecipeId;
 use crate::game_data::ItemId;
 use crate::simulation::prelude::Milliseconds;
+use bevy::prelude::TypePath;
 use serde::Deserialize;
 
 /// Defines a single production step.
-#[derive(Deserialize)]
+#[derive(TypePath, Deserialize)]
 pub struct RecipeData {
     /// Unique ID to differentiate between recipes
     pub id: RecipeId,
@@ -17,6 +19,8 @@ pub struct RecipeData {
     /// Yields of a single production run
     pub output: Vec<RecipeElement>,
 }
+
+impl DataCanBeUsedAsRawData for RecipeData {}
 
 #[derive(Deserialize, Copy, Clone)]
 pub struct RecipeElement {

@@ -1,26 +1,17 @@
 use crate::game_data::from_mock_data::FromMockData;
+use crate::game_data::generic_manifest::GenericManifest;
 use crate::game_data::item_data::raw_item::RawItemData;
 use crate::game_data::item_data::raw_item_manifest::RawItemManifest;
 use crate::game_data::{ItemData, ItemId};
 use crate::utils::PriceRange;
 use bevy::asset::AssetServer;
-use bevy::prelude::{Resource, World};
+use bevy::prelude::World;
 use bevy::utils::HashMap;
 use leafwing_manifest::identifier::Id;
 use leafwing_manifest::manifest::{Manifest, ManifestFormat};
 
-/// Contains all item data, which will never change during gameplay.
-#[derive(Resource)]
-pub struct ItemManifest {
-    items: HashMap<ItemId, ItemData>,
-}
-
-impl ItemManifest {
-    #[must_use]
-    pub fn get_from_ref(&self, id: &ItemId) -> Option<&ItemData> {
-        self.items.get(id)
-    }
-}
+/// Contains all parsed item data, which will never change during gameplay.
+pub type ItemManifest = GenericManifest<ItemData>;
 
 impl FromMockData for ItemManifest {
     #[must_use]
@@ -60,11 +51,12 @@ impl Manifest for ItemManifest {
             })
             .collect();
 
-        Ok(ItemManifest { items })
+        Ok(Self::from(items))
     }
 
     #[must_use]
+    #[inline]
     fn get(&self, id: Id<Self::Item>) -> Option<&Self::Item> {
-        self.items.get(&id)
+        self.get_by_ref(&id)
     }
 }

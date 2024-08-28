@@ -1,11 +1,13 @@
+use crate::game_data::generic_manifest_without_raw_data::DataCanBeUsedAsRawData;
 use crate::game_data::ship_hull_data::ShipHullId;
 use crate::game_data::RecipeElement;
 use crate::simulation::prelude::Milliseconds;
 use crate::utils::ShipSize;
+use bevy::prelude::TypePath;
 use serde::Deserialize;
 
 /// Defines the base of a ship.
-#[derive(Deserialize)]
+#[derive(TypePath, Deserialize)]
 pub struct ShipHullData {
     /// Unique ID to differentiate between recipes
     pub id: ShipHullId,
@@ -31,6 +33,8 @@ pub struct ShipHullData {
     /// How long this hull takes to build.
     pub build_time: Milliseconds,
 }
+
+impl DataCanBeUsedAsRawData for ShipHullData {}
 
 /// Base values for the engine strength of a ship hull.
 #[derive(Deserialize)]
