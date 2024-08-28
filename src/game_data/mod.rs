@@ -1,3 +1,4 @@
+mod asteroid_data;
 mod from_mock_data;
 mod item_data;
 mod production_module_data;
