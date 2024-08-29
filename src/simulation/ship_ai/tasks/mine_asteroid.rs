@@ -1,6 +1,6 @@
 use crate::components::{Asteroid, AsteroidMiningComponent, Inventory};
 use crate::constants;
-use crate::game_data::MOCK_ITEM_ID_ORE;
+use crate::game_data::MOCK_ITEM_ORE_ID;
 use crate::session_data::ShipConfigurationManifest;
 use crate::simulation::asteroids::AsteroidWasFullyMinedEvent;
 use crate::simulation::prelude::{
@@ -56,7 +56,7 @@ impl MineAsteroid {
             .min(inventory.capacity - inventory.used())
             .min(self.reserved_ore_amount);
 
-        inventory.add_item(MOCK_ITEM_ID_ORE, mined_amount);
+        inventory.add_item(MOCK_ITEM_ORE_ID, mined_amount);
         self.reserved_ore_amount -= mined_amount;
 
         if self.reserved_ore_amount == 0 || inventory.used() == inventory.capacity {

@@ -5,12 +5,7 @@ mod ship_weapon_manifest;
 
 pub type ShipWeaponId = Id<ShipWeaponData>;
 
+use crate::create_id_constants;
 pub use {ship_weapon::ShipWeaponData, ship_weapon_manifest::ShipWeaponManifest};
 
-const MOCK_SHIP_WEAPON_ORE_MINING_LASER_NAME: &str = "Mining Laser";
-pub const MOCK_SHIP_WEAPON_ORE_MINING_LASER_ID: ShipWeaponId =
-    ShipWeaponId::from_name(MOCK_SHIP_WEAPON_ORE_MINING_LASER_NAME);
-
-const MOCK_SHIP_WEAPON_GAS_COLLECTOR_NAME: &str = "Gas Collector";
-pub const MOCK_SHIP_WEAPON_GAS_COLLECTOR_ID: ShipWeaponId =
-    ShipWeaponId::from_name(MOCK_SHIP_WEAPON_GAS_COLLECTOR_NAME);
+create_id_constants!(ShipWeaponId, ORE_MINING_LASER, GAS_COLLECTOR);

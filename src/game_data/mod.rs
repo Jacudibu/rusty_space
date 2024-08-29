@@ -1,4 +1,5 @@
 mod asteroid_data;
+mod create_id_constants;
 mod from_mock_data;
 mod generic_manifest;
 mod generic_manifest_without_raw_data;
@@ -14,8 +15,8 @@ use bevy::ecs::system::SystemParam;
 use bevy::prelude::{Res, World};
 pub use {
     item_data::{
-        ItemData, ItemId, ItemManifest, MOCK_ITEM_ID_A, MOCK_ITEM_ID_B, MOCK_ITEM_ID_C,
-        MOCK_ITEM_ID_GAS, MOCK_ITEM_ID_ORE,
+        ItemData, ItemId, ItemManifest, MOCK_ITEM_A_ID, MOCK_ITEM_B_ID, MOCK_ITEM_C_ID,
+        MOCK_ITEM_GAS_ID, MOCK_ITEM_ORE_ID,
     },
     production_module_data::{
         ProductionModuleData, ProductionModuleId, ProductionModuleManifest,
@@ -27,8 +28,7 @@ pub use {
     },
     ship_hull_data::{ShipHullData, ShipHullId, ShipHullManifest, MOCK_SHIP_HULL_A_ID},
     ship_weapon_data::{
-        ShipWeaponData, ShipWeaponId, ShipWeaponManifest, MOCK_SHIP_WEAPON_GAS_COLLECTOR_ID,
-        MOCK_SHIP_WEAPON_ORE_MINING_LASER_ID,
+        ShipWeaponData, ShipWeaponId, ShipWeaponManifest, GAS_COLLECTOR_ID, ORE_MINING_LASER_ID,
     },
     shipyard_module_data::{
         ShipyardModuleData, ShipyardModuleId, ShipyardModuleManifest, MOCK_SHIPYARD_MODULE_ID,

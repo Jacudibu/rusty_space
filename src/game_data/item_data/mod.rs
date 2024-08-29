@@ -5,17 +5,13 @@ mod raw_item_manifest;
 
 use leafwing_manifest::identifier::Id;
 
+use crate::create_id_constants;
 pub use item::ItemData;
 pub use item_manifest::ItemManifest;
+
 pub type ItemId = Id<ItemData>;
 
-const MOCK_ITEM_STRING_A: &str = "item_a";
-const MOCK_ITEM_STRING_B: &str = "item_b";
-const MOCK_ITEM_STRING_C: &str = "item_c";
+pub const MOCK_ITEM_ORE_ID: ItemId = MOCK_ITEM_A_ID;
+pub const MOCK_ITEM_GAS_ID: ItemId = MOCK_ITEM_B_ID;
 
-pub const MOCK_ITEM_ID_A: ItemId = ItemId::from_name(MOCK_ITEM_STRING_A);
-pub const MOCK_ITEM_ID_B: ItemId = ItemId::from_name(MOCK_ITEM_STRING_B);
-pub const MOCK_ITEM_ID_C: ItemId = ItemId::from_name(MOCK_ITEM_STRING_C);
-
-pub const MOCK_ITEM_ID_ORE: ItemId = MOCK_ITEM_ID_A;
-pub const MOCK_ITEM_ID_GAS: ItemId = MOCK_ITEM_ID_B;
+create_id_constants!(ItemId, MOCK_ITEM_A, MOCK_ITEM_B, MOCK_ITEM_C);

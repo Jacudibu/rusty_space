@@ -2,7 +2,7 @@ use crate::game_data::from_mock_data::FromMockData;
 use crate::game_data::generic_manifest_without_raw_data::GenericManifestWithoutRawData;
 use crate::game_data::ship_hull_data::ship_hull::ShipManeuverability;
 use crate::game_data::ship_hull_data::{ShipHullData, MOCK_SHIP_HULL_A_ID, MOCK_SHIP_HULL_A_NAME};
-use crate::game_data::{RecipeElement, MOCK_ITEM_ID_A, MOCK_ITEM_ID_B, MOCK_ITEM_ID_C};
+use crate::game_data::{RecipeElement, MOCK_ITEM_A_ID, MOCK_ITEM_B_ID, MOCK_ITEM_C_ID};
 use crate::utils::ShipSize;
 use bevy::prelude::World;
 use bevy::utils::HashMap;
@@ -32,15 +32,15 @@ impl FromMockData for ShipHullManifest {
                 },
                 required_materials: vec![
                     RecipeElement {
-                        item_id: MOCK_ITEM_ID_A,
+                        item_id: MOCK_ITEM_A_ID,
                         amount: 50,
                     },
                     RecipeElement {
-                        item_id: MOCK_ITEM_ID_B,
+                        item_id: MOCK_ITEM_B_ID,
                         amount: 23,
                     },
                     RecipeElement {
-                        item_id: MOCK_ITEM_ID_C,
+                        item_id: MOCK_ITEM_C_ID,
                         amount: 74,
                     },
                 ],

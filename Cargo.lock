@@ -966,6 +966,7 @@ dependencies = [
  "hexx",
  "iyes_perf_ui",
  "leafwing_manifest",
+ "paste",
  "rand",
  "serde",
  "serde_json",

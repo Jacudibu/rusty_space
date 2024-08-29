@@ -4,6 +4,7 @@ mod ship_configuration_versions;
 mod version;
 mod versioned_id;
 
+use crate::create_id_constants;
 use crate::session_data::ship_configs::versioned_id::VersionedId;
 pub use {
     ship_configuration::EngineStats, ship_configuration::EngineTuning,
@@ -13,13 +14,9 @@ pub use {
 
 pub type ShipConfigId = VersionedId<ShipConfigurationVersions>;
 
-const MOCK_TRANSPORT_SHIP_CONFIG_NAME: &str = "transport";
-const MOCK_MINING_SHIP_CONFIG_NAME: &str = "miner";
-const MOCK_HARVESTING_SHIP_CONFIG_NAME: &str = "harvester";
-
-pub const MOCK_TRANSPORT_SHIP_CONFIG: ShipConfigId =
-    ShipConfigId::from_name(MOCK_TRANSPORT_SHIP_CONFIG_NAME);
-pub const MOCK_MINING_SHIP_CONFIG: ShipConfigId =
-    ShipConfigId::from_name(MOCK_MINING_SHIP_CONFIG_NAME);
-pub const MOCK_HARVESTING_SHIP_CONFIG: ShipConfigId =
-    ShipConfigId::from_name(MOCK_HARVESTING_SHIP_CONFIG_NAME);
+create_id_constants!(
+    ShipConfigId,
+    MOCK_TRANSPORT_SHIP_CONFIG,
+    MOCK_MINING_SHIP_CONFIG,
+    MOCK_HARVESTING_SHIP_CONFIG
+);
