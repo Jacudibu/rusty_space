@@ -330,10 +330,24 @@ pub fn list_selection_details(
                 }
 
                 if let Some(asteroid) = asteroid {
-                    ui.label(format!("Ore: {}", asteroid.ore));
                     ui.label(format!(
-                        "Reserved: {}",
-                        asteroid.ore - asteroid.remaining_after_reservations
+                        "Material: {}",
+                        game_data
+                            .items
+                            .get_by_ref(&asteroid.ore_item_id)
+                            .unwrap()
+                            .name
+                    ));
+                    let reserved = asteroid.ore - asteroid.remaining_after_reservations;
+
+                    ui.label(format!(
+                        "Amount: {}{}",
+                        asteroid.ore,
+                        if reserved > 0 {
+                            format!(" ({} Reserved)", reserved)
+                        } else {
+                            String::new()
+                        }
                     ));
                 }
 
