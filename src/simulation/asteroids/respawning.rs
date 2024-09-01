@@ -21,38 +21,47 @@ pub fn respawn_asteroids(
     let now = simulation_time.now();
 
     for (sector_entity, sector, mut asteroid_component) in sectors_with_asteroids.iter_mut() {
-        while let Some(next) = asteroid_component.asteroid_respawns.peek() {
-            if now.has_not_passed(next.0.timestamp) {
-                break;
-            }
+        for ore_item_id in asteroid_component.asteroid_types().clone() {
+            while let Some(next) = asteroid_component.asteroid_respawns[&ore_item_id].peek() {
+                if now.has_not_passed(next.0.timestamp) {
+                    break;
+                }
 
-            let next = asteroid_component.asteroid_respawns.pop().unwrap().0;
+                let next = asteroid_component
+                    .asteroid_respawns
+                    .get_mut(&ore_item_id)
+                    .unwrap()
+                    .pop()
+                    .unwrap()
+                    .0;
 
-            let millis_until_asteroid_leaves_again =
-                helpers::calculate_milliseconds_until_asteroid_leaves_hexagon(
-                    map_layout.hex_edge_vertices,
-                    next.local_respawn_position,
+                let millis_until_asteroid_leaves_again =
+                    helpers::calculate_milliseconds_until_asteroid_leaves_hexagon(
+                        map_layout.hex_edge_vertices,
+                        next.local_respawn_position,
+                        next.velocity,
+                    );
+
+                let asteroid_entity = spawn_helpers::spawn_asteroid(
+                    &mut commands,
+                    &mut asteroid_id_map,
+                    &sprites,
+                    "Asteroid".to_string(),
+                    next.local_respawn_position + sector.world_pos,
+                    &mut asteroid_component,
+                    sector_entity.into(),
                     next.velocity,
+                    ore_item_id,
+                    next.ore_max,
+                    next.ore_max,
+                    next.angular_velocity * std::f32::consts::PI * 1000.0,
+                    next.angular_velocity,
+                    next.timestamp + millis_until_asteroid_leaves_again,
+                    true,
                 );
 
-            let asteroid_entity = spawn_helpers::spawn_asteroid(
-                &mut commands,
-                &mut asteroid_id_map,
-                &sprites,
-                "Asteroid".to_string(),
-                next.local_respawn_position + sector.world_pos,
-                &mut asteroid_component,
-                sector_entity.into(),
-                next.velocity,
-                next.ore_max,
-                next.ore_max,
-                next.angular_velocity * std::f32::consts::PI * 1000.0,
-                next.angular_velocity,
-                next.timestamp + millis_until_asteroid_leaves_again,
-                true,
-            );
-
-            fading_asteroids.asteroids.insert(asteroid_entity);
+                fading_asteroids.asteroids.insert(asteroid_entity);
+            }
         }
     }
 }

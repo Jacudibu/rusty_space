@@ -47,7 +47,12 @@ pub fn on_asteroid_was_fully_mined(
         };
 
         // Asteroid might have already started despawning naturally if it wasn't removed...
-        if asteroid_component.asteroids.remove(&asteroid_entity) {
+        if asteroid_component
+            .asteroids
+            .get_mut(&asteroid.ore_item_id)
+            .unwrap()
+            .remove(&asteroid_entity)
+        {
             let local_respawn_position =
                 respawning::calculate_local_asteroid_respawn_position_asteroid_was_mined(
                     map_layout.hex_edge_vertices,
@@ -78,28 +83,36 @@ pub fn make_asteroids_disappear_when_they_leave_sector(
     let now = simulation_time.now();
 
     for (sector, mut asteroid_component) in sector_asteroids.iter_mut() {
-        while let Some(next) = asteroid_component.asteroids.first() {
-            if now.has_not_passed(next.timestamp) {
-                break;
-            }
+        for item_id in &asteroid_component.asteroid_types().clone() {
+            while let Some(next) = asteroid_component.asteroids[item_id].first() {
+                if now.has_not_passed(next.timestamp) {
+                    break;
+                }
 
-            let asteroid_entity = asteroid_component.asteroids.pop_first().unwrap();
-            let (asteroid, velocity, transform) =
-                asteroids.get(asteroid_entity.entity.into()).unwrap();
+                let asteroid_entity = asteroid_component
+                    .asteroids
+                    .get_mut(item_id)
+                    .unwrap()
+                    .pop_first()
+                    .unwrap();
 
-            let local_respawn_position =
-                respawning::calculate_local_asteroid_respawn_position_asteroid_left_sector(
-                    transform.translation - sector.world_pos,
+                let (asteroid, velocity, transform) =
+                    asteroids.get(asteroid_entity.entity.into()).unwrap();
+
+                let local_respawn_position =
+                    respawning::calculate_local_asteroid_respawn_position_asteroid_left_sector(
+                        transform.translation - sector.world_pos,
+                    );
+
+                initiate_despawn_animation(
+                    &mut fading_asteroids,
+                    asteroid_entity,
+                    &mut asteroid_component,
+                    asteroid,
+                    velocity,
+                    local_respawn_position,
                 );
-
-            initiate_despawn_animation(
-                &mut fading_asteroids,
-                asteroid_entity,
-                &mut asteroid_component,
-                asteroid,
-                velocity,
-                local_respawn_position,
-            );
+            }
         }
     }
 }
@@ -114,6 +127,8 @@ fn initiate_despawn_animation(
 ) {
     feature
         .asteroid_respawns
+        .get_mut(&asteroid.ore_item_id)
+        .unwrap()
         .push(std::cmp::Reverse(RespawningAsteroidData::new(
             asteroid,
             velocity,

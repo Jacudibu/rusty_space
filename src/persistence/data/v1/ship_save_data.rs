@@ -1,3 +1,4 @@
+use crate::game_data::ItemId;
 use crate::persistence::data::v1::inventory_save_data::InventorySaveData;
 use crate::persistence::data::v1::task_save_data::TaskSaveData;
 use crate::persistence::local_hex_position::LocalHexPosition;
@@ -30,6 +31,7 @@ pub enum ShipBehaviorSaveData {
     },
     AutoMine {
         next_idle_update: SimulationTimestamp,
+        mined_ore_id: ItemId,
         state: AutoMineState,
     },
     AutoHarvest {

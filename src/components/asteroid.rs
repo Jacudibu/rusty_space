@@ -1,4 +1,5 @@
 use crate::constants;
+use crate::game_data::ItemId;
 use crate::persistence::{ComponentWithPersistentId, PersistentAsteroidId};
 use crate::simulation::prelude::SimulationTimestamp;
 use bevy::prelude::{Component, FloatExt};
@@ -8,6 +9,7 @@ pub struct Asteroid {
     id: PersistentAsteroidId,
     pub ore_max: u32,
     pub ore: u32,
+    pub ore_item_id: ItemId,
     pub remaining_after_reservations: u32,
     pub despawn_timestamp: SimulationTimestamp,
 }
@@ -22,6 +24,7 @@ impl ComponentWithPersistentId<Asteroid> for Asteroid {
 impl Asteroid {
     pub fn new(
         id: PersistentAsteroidId,
+        ore_item_id: ItemId,
         ore: u32,
         ore_max: u32,
         despawn_timestamp: SimulationTimestamp,
@@ -30,6 +33,7 @@ impl Asteroid {
             id,
             ore,
             ore_max,
+            ore_item_id,
             remaining_after_reservations: ore,
             despawn_timestamp,
         }

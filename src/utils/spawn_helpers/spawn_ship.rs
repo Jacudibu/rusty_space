@@ -24,7 +24,7 @@ pub fn spawn_ship(
     position: Vec2,
     rotation: f32,
     velocity: ShipVelocity,
-    behavior: &BehaviorBuilder,
+    behavior: BehaviorBuilder,
     ship_id_map: &mut ShipIdMap,
     ship_configuration: &ShipConfiguration,
 ) {

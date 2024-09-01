@@ -1,4 +1,5 @@
 use crate::constants;
+use crate::game_data::MOCK_ITEM_ORE_ID;
 use crate::persistence::local_hex_position::LocalHexPosition;
 use crate::persistence::test_universe::coordinates::CENTER;
 use crate::persistence::{SaveDataCollection, ShipBehaviorSaveData, ShipSaveData};
@@ -34,6 +35,7 @@ pub fn create_test_data() -> SaveDataCollection<ShipSaveData> {
             format!("Mining Ship {i}"),
             ShipBehaviorSaveData::AutoMine {
                 next_idle_update: SimulationTimestamp::from(i as Milliseconds % 1000),
+                mined_ore_id: MOCK_ITEM_ORE_ID,
                 state: AutoMineState::Mining,
             },
         );

@@ -9,7 +9,7 @@ use leafwing_manifest::identifier::Id;
 use leafwing_manifest::manifest::{Manifest, ManifestFormat};
 
 /// Contains the parsed definitions and spawn instructions for all kinds of asteroids.
-type AsteroidManifest = GenericManifest<AsteroidData>;
+pub type AsteroidManifest = GenericManifest<AsteroidData>;
 
 impl Manifest for AsteroidManifest {
     type RawManifest = RawAsteroidManifest;

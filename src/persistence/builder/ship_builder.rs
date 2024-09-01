@@ -72,7 +72,7 @@ impl ShipSaveData {
                 forward: self.forward_velocity,
                 angular: self.angular_velocity,
             },
-            &BehaviorBuilder::from(self.behavior),
+            BehaviorBuilder::from(self.behavior),
             ship_id_map,
             args.ship_configurations.get_by_id(&self.config_id).unwrap(),
         );
@@ -87,9 +87,11 @@ impl From<ShipBehaviorSaveData> for BehaviorBuilder {
             }
             ShipBehaviorSaveData::AutoMine {
                 next_idle_update,
+                mined_ore_id,
                 state,
             } => BehaviorBuilder::AutoMine {
                 next_idle_update,
+                mined_ore_id,
                 state,
             },
             ShipBehaviorSaveData::AutoHarvest {

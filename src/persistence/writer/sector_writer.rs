@@ -14,6 +14,7 @@ impl AsteroidSaveData {
     ) -> Self {
         Self {
             id: asteroid.id(),
+            ore_item_id: asteroid.ore_item_id,
             ore_current: asteroid.ore,
             ore_max: asteroid.ore_max,
             position: transform.translation,
@@ -43,24 +44,25 @@ impl SectorAsteroidSaveData {
         asteroid_component: &SectorAsteroidComponent,
         asteroid_query: &Query<(&Asteroid, &SimulationTransform, &ConstantVelocity)>,
     ) -> Self {
-        let live_asteroids = asteroid_component
-            .asteroids
-            .iter()
-            .map(|x| asteroid_query.get(x.entity.into()).unwrap())
-            .map(AsteroidSaveData::from)
-            .collect();
-
-        let respawning_asteroids = asteroid_component
-            .asteroid_respawns
-            .iter()
-            .map(|x| AsteroidRespawnSaveData::from_respawn(x.0))
-            .collect();
-
-        Self {
-            average_velocity: asteroid_component.average_velocity,
-            live_asteroids,
-            respawning_asteroids,
-        }
+        todo!();
+        // let live_asteroids = asteroid_component
+        //     .asteroids
+        //     .iter()
+        //     .map(|x| asteroid_query.get(x.entity.into()).unwrap())
+        //     .map(AsteroidSaveData::from)
+        //     .collect();
+        //
+        // let respawning_asteroids = asteroid_component
+        //     .asteroid_respawns
+        //     .iter()
+        //     .map(|x| AsteroidRespawnSaveData::from_respawn(x.0))
+        //     .collect();
+        //
+        // Self {
+        //     average_velocity: asteroid_component.average_velocity,
+        //     live_asteroids,
+        //     respawning_asteroids,
+        // }
     }
 }
 

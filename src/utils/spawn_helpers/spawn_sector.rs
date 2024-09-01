@@ -39,11 +39,10 @@ pub fn spawn_sector(
     let sector = SectorEntity::from(sector_entity);
 
     if let Some(asteroids) = &features.asteroids {
-        let mut component = SectorAsteroidComponent {
-            average_velocity: asteroids.average_velocity,
-            asteroids: Default::default(),
-            asteroid_respawns: Default::default(),
-        };
+        let mut component = SectorAsteroidComponent::new(
+            asteroids.average_velocity,
+            asteroids.asteroid_types.clone(),
+        );
 
         for x in &asteroids.live_asteroids {
             spawn_helpers::spawn_asteroid(
@@ -55,6 +54,7 @@ pub fn spawn_sector(
                 &mut component,
                 sector,
                 x.velocity,
+                x.ore_item_id,
                 x.ore_current,
                 x.ore_max,
                 x.rotation_degrees,

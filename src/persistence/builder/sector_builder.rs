@@ -1,3 +1,4 @@
+use crate::game_data::ItemId;
 use crate::map_layout::MapLayout;
 use crate::persistence::data::v1::{SaveDataCollection, SectorAsteroidSaveData, SectorSaveData};
 use crate::persistence::{
@@ -93,9 +94,15 @@ impl SectorAsteroidSaveData {
     pub fn new() -> Self {
         Self {
             average_velocity: Vec2::ONE,
+            asteroid_types: Vec::new(),
             live_asteroids: Vec::new(),
             respawning_asteroids: Vec::new(),
         }
+    }
+
+    pub fn with_asteroid_types(mut self, asteroid_types: Vec<ItemId>) -> Self {
+        self.asteroid_types = asteroid_types;
+        self
     }
 
     pub fn with_average_velocity(mut self, velocity: Vec2) -> Self {
@@ -106,10 +113,15 @@ impl SectorAsteroidSaveData {
     pub fn add_random_live_asteroids(
         mut self,
         sector_hex: Hex,
+        ore_type: ItemId,
         amount: usize,
         universe_seed: &UniverseSeed,
         map_layout: &MapLayout,
     ) -> Self {
+        if self.asteroid_types.is_empty() {
+            panic!("asteroid_types was empty.")
+        }
+
         let shape = Circle::new(constants::SECTOR_SIZE * 0.8);
         let position_rng = universe_seed.for_sector(sector_hex, "positions");
         let mut inner_rng = universe_seed.for_sector(sector_hex, "everything_else");
@@ -138,6 +150,7 @@ impl SectorAsteroidSaveData {
                 velocity,
                 rotation_degrees: rotation * std::f32::consts::PI * 1000.0,
                 angular_velocity: rotation,
+                ore_item_id: ore_type,
                 ore_current: ore,
                 ore_max: ore,
                 lifetime: SimulationTimestamp::from(despawn_after),

@@ -1,6 +1,7 @@
 use crate::components::{
     Asteroid, BuyOrders, InSector, Inventory, Sector, SectorAsteroidComponent,
 };
+use crate::game_data::ItemId;
 use crate::pathfinding;
 use crate::simulation::prelude::{SimulationTime, SimulationTimestamp};
 use crate::simulation::ship_ai::ship_is_idle_filter::ShipIsIdleFilter;
@@ -35,14 +36,16 @@ impl AutoMineState {
 #[derive(Component)]
 pub struct AutoMineBehavior {
     pub next_idle_update: SimulationTimestamp,
+    pub mined_ore_id: ItemId,
     pub state: AutoMineState,
 }
 
-impl Default for AutoMineBehavior {
-    fn default() -> Self {
+impl AutoMineBehavior {
+    pub fn new(ore_type: ItemId) -> Self {
         Self {
             next_idle_update: SimulationTimestamp::MIN,
             state: AutoMineState::Mining,
+            mined_ore_id: ore_type,
         }
     }
 }
@@ -84,9 +87,12 @@ pub fn handle_idle_ships(
                         let ship_pos = all_transforms.get(ship_entity).unwrap().translation;
 
                         // TODO: Also Test whether asteroid_data contains the requested asteroid type
+                        //          all_asteroids needs to be split by the item in order for this to work efficiently
                         if let Some(closest_asteroid) = asteroid_component
                             .asteroids
+                            .get(&behavior.mined_ore_id)
                             .iter()
+                            .flat_map(|x| x.iter())
                             .filter(|x| max_asteroid_age.has_not_passed(&x.timestamp))
                             .filter(|x| {
                                 all_asteroids
@@ -126,6 +132,7 @@ pub fn handle_idle_ships(
                         &all_sectors_with_asteroids,
                         &all_sectors,
                         in_sector,
+                        &behavior.mined_ore_id,
                     ) {
                         Some(value) => value,
                         None => {
@@ -175,6 +182,7 @@ fn find_nearby_sector_with_asteroids(
     all_sectors_with_asteroids: &Query<&SectorAsteroidComponent>,
     all_sectors: &Query<&Sector>,
     in_sector: &InSector,
+    requested_material: &ItemId,
 ) -> Option<SectorEntity> {
     let nearby_sectors_with_asteroids =
         pathfinding::surrounding_sector_search::surrounding_sector_search(
@@ -189,7 +197,7 @@ fn find_nearby_sector_with_asteroids(
     let target_sector = nearby_sectors_with_asteroids.iter().min_by_key(|item| {
         let asteroid_data = all_sectors_with_asteroids.get(item.sector.into()).unwrap();
 
-        let health = asteroid_data.remaining_percentage();
+        let health = asteroid_data.remaining_percentage(requested_material);
 
         if health > 0.4 {
             item.distance as u16

@@ -1,3 +1,4 @@
+use crate::game_data::ItemId;
 use crate::simulation::prelude::SimulationTimestamp;
 use crate::simulation::ship_ai::behaviors::auto_harvest::AutoHarvestBehavior;
 use crate::simulation::ship_ai::{AutoMineBehavior, AutoMineState, AutoTradeBehavior};
@@ -13,6 +14,7 @@ pub enum BehaviorBuilder {
     },
     AutoMine {
         next_idle_update: SimulationTimestamp,
+        mined_ore_id: ItemId,
         state: AutoMineState,
     },
     AutoHarvest {
@@ -25,26 +27,26 @@ impl BehaviorBuilder {
     // if we ever need to use something similar at multiple locations, there is an example
     // on how to generically implement this as an EntityCommands trait over at
     // the end of https://github.com/bevyengine/bevy/discussions/11409
-    pub fn build_and_add_default_component(&self, mut entity_commands: EntityCommands) {
+    pub fn build_and_add_default_component(self, mut entity_commands: EntityCommands) {
         match self {
             BehaviorBuilder::AutoTrade { next_idle_update } => {
-                entity_commands.insert(AutoTradeBehavior {
-                    next_idle_update: *next_idle_update,
-                })
+                entity_commands.insert(AutoTradeBehavior { next_idle_update })
             }
             BehaviorBuilder::AutoMine {
                 next_idle_update,
+                mined_ore_id,
                 state,
             } => entity_commands.insert(AutoMineBehavior {
-                next_idle_update: *next_idle_update,
-                state: *state,
+                next_idle_update,
+                mined_ore_id,
+                state,
             }),
             BehaviorBuilder::AutoHarvest {
                 next_idle_update,
                 state,
             } => entity_commands.insert(AutoHarvestBehavior {
-                next_idle_update: *next_idle_update,
-                state: *state,
+                next_idle_update,
+                state,
             }),
         };
     }

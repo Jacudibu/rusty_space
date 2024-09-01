@@ -1,4 +1,5 @@
 use crate::constants;
+use crate::game_data::{MOCK_ASTEROID_ID, MOCK_ITEM_ORE_ID};
 use crate::map_layout::MapLayout;
 use crate::persistence::test_universe::coordinates;
 use crate::persistence::{
@@ -31,9 +32,12 @@ pub fn create_test_data() -> SaveDataCollection<SectorSaveData> {
 
     sectors.add(coordinates::TOP_RIGHT).with_asteroids(
         SectorAsteroidSaveData::new()
+            // TODO: This should be rewritten to instead be fed AsteroidData, random_live_asteroids spawning can then just use that data.
+            .with_asteroid_types(vec![MOCK_ITEM_ORE_ID])
             .with_average_velocity(Vec2::splat(1.5))
             .add_random_live_asteroids(
                 coordinates::TOP_RIGHT,
+                MOCK_ITEM_ORE_ID,
                 constants::ASTEROID_COUNT,
                 &UNIVERSE_SEED,
                 &map_layout,
@@ -43,9 +47,12 @@ pub fn create_test_data() -> SaveDataCollection<SectorSaveData> {
         .add(coordinates::TOP_RIGHT_TOP_RIGHT)
         .with_asteroids(
             SectorAsteroidSaveData::new()
+                // TODO: This should be rewritten to instead be fed AsteroidData
+                .with_asteroid_types(vec![MOCK_ITEM_ORE_ID])
                 .with_average_velocity(Vec2::new(-0.5, -1.3))
                 .add_random_live_asteroids(
                     coordinates::TOP_RIGHT_TOP_RIGHT,
+                    MOCK_ITEM_ORE_ID,
                     constants::ASTEROID_COUNT,
                     &UNIVERSE_SEED,
                     &map_layout,

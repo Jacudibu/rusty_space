@@ -139,7 +139,7 @@ fn process_finished_ship_production(
         transform.translation.truncate(),
         0.0,
         ShipVelocity::default(),
-        &BehaviorBuilder::AutoTrade {
+        BehaviorBuilder::AutoTrade {
             next_idle_update: SimulationTimestamp::MIN,
         },
         ship_id_map,
