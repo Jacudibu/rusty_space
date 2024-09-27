@@ -4,15 +4,12 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-bevy = { version = "0.14.1", features = ["trace"] }
-bevy_egui = "0.28.0"
-hexx = { version = "0.17.0", features = ["serde"] }
+bevy = { version = "0.14.2", features = ["trace"] }
+bevy_egui = "0.29.0"
+hexx = { version = "0.18.0", features = ["serde"] }
 iyes_perf_ui = "0.3.0"
 rand = "0.8.5"
-serde = { version = "1.0.204", features = ["derive"] }
+serde = { version = "1.0.210", features = ["derive"] }
 serde_json = "1.0.122"
 leafwing_manifest = { version = "0.2.0", features = [] }
 paste = "1.0.15"
-
-[patch.crates-io]
-hexx = { git = "https://github.com/ManevilleF/hexx.git", rev = "35bd74e703925d19160674f7cfe437ce70adec06" }
