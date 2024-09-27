@@ -12,7 +12,7 @@ use crate::simulation::production::shipyard_component::ShipyardComponent;
 use crate::simulation::production::state::{GlobalProductionState, SingleProductionState};
 use crate::simulation::production::{InventoryUpdateForProductionEvent, ProductionComponent};
 use crate::simulation::ship_ai::BehaviorBuilder;
-use crate::utils::spawn_helpers;
+use crate::utils::entity_spawners;
 use crate::{utils, SpriteHandles};
 
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
@@ -129,7 +129,7 @@ fn process_finished_ship_production(
 
     let ship_configuration = ship_configs.get_by_id(&order.ship_config).unwrap();
 
-    spawn_helpers::spawn_ship(
+    entity_spawners::spawn_ship(
         commands,
         sprites,
         PersistentShipId::next(),

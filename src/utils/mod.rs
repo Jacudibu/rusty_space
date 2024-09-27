@@ -1,4 +1,5 @@
 mod celestial_mass;
+pub mod entity_spawners;
 mod entity_wrappers;
 mod exchange_ware_data;
 pub mod interpolation;
@@ -7,7 +8,6 @@ mod price_range;
 mod price_setting;
 mod sector_position;
 mod ship_size;
-pub mod spawn_helpers;
 mod trade_intent;
 mod transaction;
 mod universe_seed;

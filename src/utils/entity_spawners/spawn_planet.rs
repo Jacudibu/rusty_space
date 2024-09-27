@@ -4,7 +4,7 @@ use crate::simulation::precomputed_orbit_directions::PrecomputedOrbitDirections;
 use crate::simulation::prelude::simulation_transform::SimulationScale;
 use crate::simulation::ship_ai::AutoTradeBehavior;
 use crate::simulation::transform::simulation_transform::SimulationTransform;
-use crate::utils::spawn_helpers::helpers;
+use crate::utils::entity_spawners::shared_logic;
 use crate::utils::{PlanetEntity, SectorEntity, SolarMass};
 use crate::{components, constants, SpriteHandles};
 use bevy::core::Name;
@@ -31,7 +31,7 @@ pub fn spawn_planet(
     );
 
     let velocity = if let Some(orbit_mass) = orbit_mass {
-        helpers::calculate_orbit_velocity(planet_data.orbit.radius, orbit_mass)
+        shared_logic::calculate_orbit_velocity(planet_data.orbit.radius, orbit_mass)
     } else {
         0.0
     };

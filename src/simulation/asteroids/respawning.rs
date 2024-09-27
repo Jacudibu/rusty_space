@@ -4,7 +4,7 @@ use crate::persistence::AsteroidIdMap;
 use crate::simulation::asteroids::fading::FadingAsteroidsIn;
 use crate::simulation::asteroids::helpers;
 use crate::simulation::prelude::SimulationTime;
-use crate::utils::spawn_helpers;
+use crate::utils::entity_spawners;
 use crate::SpriteHandles;
 use bevy::math::Vec2;
 use bevy::prelude::{Commands, Entity, Query, Res, ResMut};
@@ -42,7 +42,7 @@ pub fn respawn_asteroids(
                         next.velocity,
                     );
 
-                let asteroid_entity = spawn_helpers::spawn_asteroid(
+                let asteroid_entity = entity_spawners::spawn_asteroid(
                     &mut commands,
                     &mut asteroid_id_map,
                     &sprites,

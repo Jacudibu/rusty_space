@@ -9,7 +9,7 @@ use crate::simulation::production::{
     OngoingShipConstructionOrder, ProductionComponent, ProductionModule, ShipyardComponent,
     ShipyardModule,
 };
-use crate::utils::{spawn_helpers, PriceRange, PriceSetting};
+use crate::utils::{entity_spawners, PriceRange, PriceSetting};
 use crate::{constants, SpriteHandles};
 use bevy::ecs::system::SystemParam;
 use bevy::prelude::{Commands, Query, Res};
@@ -159,7 +159,7 @@ impl StationSaveData {
         let production = self.production_modules.clone().map(|x| x.parse());
         let shipyard = self.shipyard_modules.clone().map(|x| x.parse());
 
-        spawn_helpers::spawn_station(
+        entity_spawners::spawn_station(
             &mut args.commands,
             &mut args.sectors,
             station_id_map,

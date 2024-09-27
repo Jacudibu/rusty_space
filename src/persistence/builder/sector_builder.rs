@@ -7,7 +7,7 @@ use crate::persistence::{
 };
 use crate::simulation::precomputed_orbit_directions::PrecomputedOrbitDirections;
 use crate::simulation::time::SimulationTimestamp;
-use crate::utils::{spawn_helpers, SectorEntity, UniverseSeed};
+use crate::utils::{entity_spawners, SectorEntity, UniverseSeed};
 use crate::{constants, SpriteHandles};
 use bevy::ecs::system::SystemParam;
 use bevy::prelude::{Circle, Commands, Res, ShapeSample, Vec2};
@@ -58,7 +58,7 @@ impl SectorSaveData {
         asteroid_id_map: &mut AsteroidIdMap,
         planet_id_map: &mut PlanetIdMap,
     ) -> SectorEntity {
-        spawn_helpers::spawn_sector(
+        entity_spawners::spawn_sector(
             &mut args.commands,
             &args.map_layout.hex_layout,
             self.coordinate,

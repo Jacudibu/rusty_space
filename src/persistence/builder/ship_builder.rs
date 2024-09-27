@@ -5,7 +5,7 @@ use crate::persistence::{PersistentShipId, SectorIdMap, ShipIdMap};
 use crate::session_data::{ShipConfigId, ShipConfigurationManifest};
 use crate::simulation::prelude::ShipVelocity;
 use crate::simulation::ship_ai::BehaviorBuilder;
-use crate::utils::spawn_helpers;
+use crate::utils::entity_spawners;
 use crate::SpriteHandles;
 use bevy::ecs::system::SystemParam;
 use bevy::prelude::{Commands, Query, Res};
@@ -59,7 +59,7 @@ impl SaveData {
 impl ShipSaveData {
     pub fn build(&self, args: &mut Args, ship_id_map: &mut ShipIdMap) {
         let sector_entity = args.sector_id_map.id_to_entity()[&self.position.sector];
-        spawn_helpers::spawn_ship(
+        entity_spawners::spawn_ship(
             &mut args.commands,
             &args.sprites,
             self.id,

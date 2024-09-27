@@ -8,7 +8,7 @@ use crate::components::{
 use crate::persistence::{GateIdMap, PersistentGateId};
 use crate::simulation::prelude::simulation_transform::SimulationScale;
 use crate::simulation::transform::simulation_transform::SimulationTransform;
-use crate::utils::spawn_helpers::helpers;
+use crate::utils::entity_spawners::shared_logic;
 use crate::utils::GateEntity;
 use crate::utils::SectorPosition;
 use crate::{constants, SpriteHandles};
@@ -120,7 +120,7 @@ fn spawn_gate(
         entity_commands.insert(ConstantOrbit::new(
             pos.local_position.to_angle(),
             radius,
-            helpers::calculate_orbit_velocity(radius, star.mass),
+            shared_logic::calculate_orbit_velocity(radius, star.mass),
         ));
     }
 
