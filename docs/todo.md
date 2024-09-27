@@ -1,8 +1,10 @@
-Too lazy to manage a whole kanban board and issues for these things yet. Roughly sorted by priority. The further down we go, the less refined these get.
+Too lazy to manage a whole kanban board and issues for these things yet. Roughly sorted by priority. The further down we go, the less refined these get. Recently completed stuff is ~~striked through~~ and eventually deleted during cleanups.
 
 Current performance goal: 
 1 Million Ships getting processed across the universe and 100k of them actively rendered @30 FPS on my Ryzen 7 5700X
 If my machine can handle that, I'd assume a potato can run 10% of that smoothly, which is the real goal here.
+
+(These goals will probably get lowered a little downwards as soon as combat gets implemented, but only time will tell.)
 
 # Improved Trading
 
@@ -18,8 +20,8 @@ If my machine can handle that, I'd assume a potato can run 10% of that smoothly,
 
 # Less Debug Values
 
-- Probably easier with `leafwing_manifest` and maybe also `bevy_common_assets` 
-- Add parsing for data files, remove hardcoded Items
+- ~~Probably easier with `leafwing_manifest` and maybe also `bevy_common_assets`~~ 
+- ~~Add parsing for data files, remove hardcoded Items~~ (debug stuff will remain in-code, at least until we got around to make leafwing_manifest support a folder with files instead of one single big file. Can be serialized with serde later on.)
 - Change items and recipes to stuff that makes sense
 - Spawn one station for every production module & recipe
 
@@ -48,7 +50,7 @@ demands.
 
 ## Planets
 
-- Gas giants serve as a reliable source of certain raw resources
+- ~~Gas giants serve as a reliable source of certain raw resources~~
 - Some Production (mainly Energy Cell) may depend on available solar power in sector
 - Solid planets can be colonized by the sector owner for additional resources, but usually it should be both cheaper and more efficient to just harvest more asteroids rather than bothering with the extra costs from dealing with various atmospheres and gravitation. However, once the entire Universe is colonized and borders are well established in between factions and resources grow sparse, they might be a way to unlock additional resource production over time.
 
@@ -111,7 +113,7 @@ Attack Target
 # Persistence
 
 - Saving UniverseSaveData to file
-- Saving occurs in the background, without interrupting gameplay (similar to render extract phase)
+- Saving occurs in the background, without interrupting gameplay (data collected similar to render extract phase, then yeeted into separate thread for background write operation)
 - Loading UniverseSaveData from file
 
 # Multiplayer
