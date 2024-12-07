@@ -21,6 +21,6 @@ pub fn draw_orbit_circles(
 
         gizmos
             .circle_2d(center, orbit.radius, bevy::color::palettes::css::INDIGO)
-            .resolution(32 + (orbit.radius / 5.0) as usize);
+            .resolution(32 + (orbit.radius / 5.0) as u32);
     }
 }

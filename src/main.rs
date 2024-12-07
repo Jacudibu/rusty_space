@@ -2,10 +2,9 @@ use crate::game_data::GameData;
 use bevy::asset::AssetServer;
 use bevy::core::Name;
 use bevy::prelude::{
-    App, Camera2dBundle, Commands, Handle, Image, ImagePlugin, PluginGroup, Res, Resource, Startup,
-    Window, WindowPlugin,
+    App, Camera2d, Commands, Handle, Image, ImagePlugin, OrthographicProjection, PluginGroup, Res,
+    Resource, Startup, Window, WindowPlugin,
 };
-use bevy::render::camera::ScalingMode;
 use bevy::DefaultPlugins;
 mod camera;
 mod components;
@@ -110,11 +109,9 @@ pub fn initialize_data(mut commands: Commands, asset_server: Res<AssetServer>) {
     };
     commands.insert_resource(sprites);
 
-    let mut camera_bundle = Camera2dBundle::default();
-    camera_bundle.projection.scaling_mode = ScalingMode::WindowSize(1.0);
     commands.spawn((
-        Name::new("Camera"),
+        Name::new("Main Camera"),
+        Camera2d,
         camera::MainCameraBundle::default(),
-        camera_bundle,
     ));
 }

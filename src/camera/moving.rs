@@ -34,7 +34,7 @@ pub fn move_camera(
 
     let (mut smooth_moving, projection) = query.get_single_mut().unwrap();
     let zoom_factor = 1.0 / projection.scale;
-    smooth_moving.target += ((dir * CAMERA_SPEED) / zoom_factor) * time.delta_seconds();
+    smooth_moving.target += ((dir * CAMERA_SPEED) / zoom_factor) * time.delta_secs();
 }
 
 pub fn animate_smooth_camera_movement(
@@ -46,7 +46,7 @@ pub fn animate_smooth_camera_movement(
         return;
     }
 
-    let t = time.delta_seconds() * MOVEMENT_SLOWDOWN;
+    let t = time.delta_secs() * MOVEMENT_SLOWDOWN;
     transform.translation = if t < 1.0 {
         transform.translation.lerp(smooth_move.target, t)
     } else {

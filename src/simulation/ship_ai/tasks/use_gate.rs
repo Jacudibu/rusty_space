@@ -109,7 +109,7 @@ impl UseGate {
         transit_curve_query: Query<&Gate>,
     ) {
         let task_completions = Arc::new(Mutex::new(Vec::<TaskFinishedEvent<Self>>::new()));
-        let delta_travel = time.delta_seconds() / constants::SECONDS_TO_TRAVEL_THROUGH_GATE;
+        let delta_travel = time.delta_secs() / constants::SECONDS_TO_TRAVEL_THROUGH_GATE;
 
         ships
             .par_iter_mut()

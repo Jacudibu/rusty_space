@@ -7,7 +7,7 @@ pub fn stop_idle_ships(
     mut idle_ships: Query<(&Engine, &mut ShipVelocity), (Without<IsDocked>, ShipIsIdleFilter)>,
     time: Res<Time>,
 ) {
-    let delta_seconds = time.delta_seconds();
+    let delta_seconds = time.delta_secs();
 
     idle_ships
         .par_iter_mut()

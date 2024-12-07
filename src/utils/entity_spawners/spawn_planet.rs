@@ -9,7 +9,8 @@ use crate::utils::{PlanetEntity, SectorEntity, SolarMass};
 use crate::{components, constants, SpriteHandles};
 use bevy::core::Name;
 use bevy::math::Vec2;
-use bevy::prelude::{default, Commands, Rot2, SpriteBundle};
+use bevy::prelude::{Commands, Rot2};
+use bevy::sprite::Sprite;
 
 #[allow(clippy::too_many_arguments)]
 pub fn spawn_planet(
@@ -49,11 +50,8 @@ pub fn spawn_planet(
                 planet_data.orbit.radius,
                 velocity,
             ),
-            SpriteBundle {
-                texture: sprites.planet.clone(),
-                transform: simulation_transform.as_transform(constants::z_layers::PLANET_AND_STARS),
-                ..default()
-            },
+            Sprite::from_image(sprites.planet.clone()),
+            simulation_transform.as_transform(constants::z_layers::PLANET_AND_STARS),
             simulation_transform,
             SimulationScale::default(),
             planet,

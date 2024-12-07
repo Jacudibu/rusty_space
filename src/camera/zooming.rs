@@ -30,7 +30,7 @@ pub fn zoom_camera_with_buttons(
 
     let mut zoom_factor = query.get_single_mut().unwrap();
 
-    zoom_factor.target += dir * time.delta_seconds() * ZOOM_SPEED_KEYBOARD;
+    zoom_factor.target += dir * time.delta_secs() * ZOOM_SPEED_KEYBOARD;
     zoom_factor.target = zoom_factor.target.clamp(MIN_ZOOM, MAX_ZOOM);
 }
 
@@ -54,7 +54,7 @@ pub fn animate_smooth_camera_zoom(
         return;
     }
 
-    let t = time.delta_seconds() * ZOOM_SLOWDOWN;
+    let t = time.delta_secs() * ZOOM_SLOWDOWN;
     projection.scale = if t < 1.0 {
         projection.scale.lerp(smooth_zoom.target, t)
     } else {

@@ -16,7 +16,11 @@ pub fn update_mouse_cursor_position(
         let world_pos = camera.viewport_to_world_2d(transform, position);
 
         cursor.screen_space = Some(position);
-        cursor.world_space = world_pos;
+        cursor.world_space = if let Ok(world_pos) = world_pos {
+            Some(world_pos)
+        } else {
+            None
+        }
     } else {
         cursor.screen_space = None;
         cursor.world_space = None;

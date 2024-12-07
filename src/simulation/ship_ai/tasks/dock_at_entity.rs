@@ -76,7 +76,7 @@ impl DockAtEntity {
                     &all_transforms,
                     engine,
                     &mut velocity,
-                    time.delta_seconds(),
+                    time.delta_secs(),
                 ) {
                     TaskResult::Ongoing => {
                         task.scale_based_on_distance(entity, &all_transforms, &mut scale);

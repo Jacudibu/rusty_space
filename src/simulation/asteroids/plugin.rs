@@ -25,7 +25,7 @@ impl Plugin for AsteroidPlugin {
                 (
                     despawning::make_asteroids_disappear_when_they_leave_sector,
                     despawning::on_asteroid_was_fully_mined
-                        .run_if(on_event::<AsteroidWasFullyMinedEvent>()),
+                        .run_if(on_event::<AsteroidWasFullyMinedEvent>),
                     respawning::respawn_asteroids,
                     //draw_asteroid_debug_gizmos,
                 )

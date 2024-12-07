@@ -28,10 +28,10 @@ fn move_ships(
     >,
 ) {
     ships.par_iter_mut().for_each(|(mut transform, velocity)| {
-        transform.rotate(velocity.angular * time.delta_seconds());
+        transform.rotate(velocity.angular * time.delta_secs());
 
         let forward = transform.forward();
-        transform.translation += forward * velocity.forward * time.delta_seconds();
+        transform.translation += forward * velocity.forward * time.delta_secs();
     });
 }
 
@@ -40,7 +40,7 @@ fn move_constant_stuff(
     mut items: Query<(&mut SimulationTransform, &ConstantVelocity)>,
 ) {
     items.par_iter_mut().for_each(|(mut transform, velocity)| {
-        transform.rotate(velocity.sprite_rotation() * time.delta_seconds());
-        transform.translation += velocity.velocity() * time.delta_seconds();
+        transform.rotate(velocity.sprite_rotation() * time.delta_secs());
+        transform.translation += velocity.velocity() * time.delta_secs();
     });
 }

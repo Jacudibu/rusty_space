@@ -12,7 +12,7 @@ use crate::utils::{SectorEntity, ShipEntity};
 use crate::{constants, SpriteHandles};
 use bevy::core::Name;
 use bevy::math::Vec2;
-use bevy::prelude::{default, Commands, Query, Rot2, SpriteBundle};
+use bevy::prelude::{Commands, Query, Rot2, Sprite};
 
 pub fn spawn_ship(
     commands: &mut Commands,
@@ -41,11 +41,8 @@ pub fn spawn_ship(
         velocity,
         Inventory::new(ship_configuration.computed_stats.inventory_size),
         TaskQueue::new(),
-        SpriteBundle {
-            texture: sprites.ship.clone(),
-            transform: simulation_transform.as_transform(constants::z_layers::SHIP),
-            ..default()
-        },
+        Sprite::from_image(sprites.ship.clone()),
+        simulation_transform.as_transform(constants::z_layers::SHIP),
         simulation_transform,
         SimulationScale::default(),
     ));

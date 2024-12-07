@@ -28,7 +28,7 @@ pub fn fade_asteroids_out_and_despawn_entities(
     for entity in &fading_asteroids.asteroids {
         let mut sprite = asteroid_query.get_mut(entity.into()).unwrap();
 
-        let new_alpha = sprite.color.alpha() - time.delta_seconds();
+        let new_alpha = sprite.color.alpha() - time.delta_secs();
         if new_alpha > 0.0 {
             sprite.color.set_alpha(new_alpha);
         } else {
@@ -52,7 +52,7 @@ pub fn fade_asteroids_in(
     for entity in &fading_asteroids.asteroids {
         let mut sprite = asteroid_query.get_mut(entity.into()).unwrap();
 
-        let new_alpha = sprite.color.alpha() + time.delta_seconds();
+        let new_alpha = sprite.color.alpha() + time.delta_secs();
         if new_alpha < 1.0 {
             sprite.color.set_alpha(new_alpha);
         } else {

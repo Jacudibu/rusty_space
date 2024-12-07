@@ -9,8 +9,7 @@ use crate::utils::entity_spawners::spawn_planet::spawn_planet;
 use crate::utils::{entity_spawners, SectorEntity, StarEntity};
 use crate::{components, constants, SpriteHandles};
 use bevy::core::Name;
-use bevy::prelude::{Commands, Vec2};
-use bevy::sprite::SpriteBundle;
+use bevy::prelude::{Commands, Sprite, Vec2};
 use hexx::{Hex, HexLayout};
 
 pub fn spawn_sector(
@@ -78,12 +77,8 @@ pub fn spawn_sector(
                 components::Star::new(coordinate, star.mass),
                 InSector { sector },
                 SelectableEntity::Star,
-                SpriteBundle {
-                    transform: simulation_transform
-                        .as_transform(constants::z_layers::PLANET_AND_STARS),
-                    texture: sprites.star.clone(),
-                    ..Default::default()
-                },
+                Sprite::from_image(sprites.star.clone()),
+                simulation_transform.as_transform(constants::z_layers::PLANET_AND_STARS),
                 simulation_transform,
                 SimulationScale::default(),
             ))

@@ -1,5 +1,4 @@
-use bevy::prelude::Resource;
-use bevy::reflect::Reflect;
+use bevy::prelude::{PartialReflect, Resource};
 use hexx::Hex;
 use rand::prelude::StdRng;
 use rand::SeedableRng;

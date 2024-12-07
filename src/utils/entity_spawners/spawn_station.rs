@@ -11,7 +11,7 @@ use crate::{constants, SpriteHandles};
 use bevy::color::Color;
 use bevy::core::Name;
 use bevy::math::Vec2;
-use bevy::prelude::{default, Commands, Query, Sprite, SpriteBundle};
+use bevy::prelude::{default, Commands, Query, Sprite};
 
 #[allow(clippy::too_many_arguments)] // It's hopeless... :')
 pub fn spawn_station(
@@ -46,15 +46,12 @@ pub fn spawn_station(
     let _icon_entity = commands
         .spawn((
             Name::new(format!("{name} (Icon)")),
-            SpriteBundle {
-                texture: icon_sprite,
-                transform: simulation_transform.as_transform(constants::z_layers::STATION_ICON),
-                sprite: Sprite {
-                    color: Color::linear_rgb(0.0, 0.0, 0.0),
-                    ..default()
-                },
+            Sprite {
+                image: icon_sprite,
+                color: Color::linear_rgb(0.0, 0.0, 0.0),
                 ..default()
             },
+            simulation_transform.as_transform(constants::z_layers::STATION_ICON),
         ))
         .id();
 
@@ -63,11 +60,9 @@ pub fn spawn_station(
             Name::new(name.to_string()),
             SelectableEntity::Station,
             Station::new(id),
-            SpriteBundle {
-                texture: sprites.station.clone(),
-                transform: simulation_transform.as_transform(constants::z_layers::STATION),
-                ..default()
-            },
+            Sprite::from_image(sprites.station.clone()),
+            simulation_transform.as_transform(constants::z_layers::STATION),
+            simulation_transform,
             Inventory::new_with_content(
                 constants::MOCK_STATION_INVENTORY_SIZE,
                 sells
@@ -76,7 +71,6 @@ pub fn spawn_station(
                     .collect(),
             ),
             InteractionQueue::new(constants::SIMULTANEOUS_STATION_INTERACTIONS),
-            simulation_transform,
             SimulationScale::default(),
         ))
         .id();

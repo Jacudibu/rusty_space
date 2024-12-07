@@ -10,7 +10,7 @@ use crate::{constants, SpriteHandles};
 use bevy::color::Color;
 use bevy::core::Name;
 use bevy::math::Vec2;
-use bevy::prelude::{Commands, Rot2, Sprite, SpriteBundle};
+use bevy::prelude::{Commands, Rot2, Sprite};
 
 #[allow(clippy::too_many_arguments)]
 pub fn spawn_asteroid(
@@ -41,16 +41,12 @@ pub fn spawn_asteroid(
             Name::new(name),
             SelectableEntity::Asteroid,
             ConstantVelocity::new(velocity, angular_velocity),
-            SpriteBundle {
-                texture: sprites.asteroid.clone(),
-                transform: simulation_transform
-                    .as_scaled_transform(constants::z_layers::ASTEROID, scale),
-                sprite: Sprite {
-                    color: Color::linear_rgba(1.0, 1.0, 1.0, if fading_in { 0.0 } else { 1.0 }),
-                    ..Default::default()
-                },
+            Sprite {
+                image: sprites.asteroid.clone(),
+                color: Color::linear_rgba(1.0, 1.0, 1.0, if fading_in { 0.0 } else { 1.0 }),
                 ..Default::default()
             },
+            simulation_transform.as_scaled_transform(constants::z_layers::ASTEROID, scale),
             simulation_transform,
             SimulationScale::from(scale),
             asteroid,

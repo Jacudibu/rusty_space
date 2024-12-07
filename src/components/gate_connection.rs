@@ -60,6 +60,8 @@ impl GateConnectionComponent {
     }
 
     fn create_curve(a: Vec2, a_curve: Vec2, b_curve: Vec2, b: Vec2) -> CubicCurve<Vec2> {
-        CubicBezier::new([[a, a_curve, b_curve, b]]).to_curve()
+        CubicBezier::new([[a, a_curve, b_curve, b]])
+            .to_curve()
+            .unwrap()
     }
 }

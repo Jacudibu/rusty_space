@@ -101,7 +101,7 @@ impl MoveToEntity {
         all_transforms: Query<&SimulationTransform>,
     ) {
         let task_completions = Arc::new(Mutex::new(Vec::<TaskFinishedEvent<Self>>::new()));
-        let delta_seconds = time.delta_seconds();
+        let delta_seconds = time.delta_secs();
 
         ships
             .par_iter_mut()

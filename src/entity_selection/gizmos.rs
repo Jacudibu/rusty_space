@@ -1,7 +1,7 @@
 use crate::components::{SelectableEntity, RADIUS_CURSOR};
 use crate::entity_selection::mouse_interaction::MouseInteraction;
 use bevy::math::Rot2;
-use bevy::prelude::{GizmoConfigGroup, Gizmos, GlobalTransform, Query, Reflect, Res};
+use bevy::prelude::{GizmoConfigGroup, Gizmos, GlobalTransform, Isometry2d, Query, Reflect, Res};
 
 #[derive(Default, Reflect, GizmoConfigGroup)]
 pub struct MouseInteractionGizmos;
@@ -22,8 +22,7 @@ pub fn draw_mouse_interactions(
     let origin = mouse_interaction.origin - size * 0.5;
 
     gizmos.rect_2d(
-        origin,
-        Rot2::default(),
+        Isometry2d::new(origin, Rot2::default()),
         size,
         bevy::color::palettes::css::YELLOW_GREEN,
     );

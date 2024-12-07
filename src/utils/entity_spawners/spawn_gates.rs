@@ -1,5 +1,5 @@
 use bevy::core::Name;
-use bevy::prelude::{Commands, CubicCurve, Query, SpriteBundle, Vec2};
+use bevy::prelude::{Commands, CubicCurve, Query, Sprite, Vec2};
 
 use crate::components::{
     ConstantOrbit, Gate, GateConnectionComponent, MovingGateConnection, Sector,
@@ -106,11 +106,8 @@ fn spawn_gate(
         )),
         Gate::new(id, ship_curve),
         SelectableEntity::Gate,
-        SpriteBundle {
-            transform: simulation_transform.as_transform(constants::z_layers::GATE),
-            texture: sprites.gate.clone(),
-            ..Default::default()
-        },
+        Sprite::from_image(sprites.gate.clone()),
+        simulation_transform.as_transform(constants::z_layers::GATE),
         simulation_transform,
         SimulationScale::default(),
     ));

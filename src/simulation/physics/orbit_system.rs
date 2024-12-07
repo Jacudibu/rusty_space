@@ -9,7 +9,7 @@ pub fn orbit_system(
     mut orbits: Query<(&mut ConstantOrbit, &mut SimulationTransform, &InSector)>,
     sectors: Query<&Sector>,
 ) {
-    let delta = time.delta_seconds();
+    let delta = time.delta_secs();
 
     orbits
         .par_iter_mut()
