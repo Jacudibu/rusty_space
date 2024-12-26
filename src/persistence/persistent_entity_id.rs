@@ -20,84 +20,6 @@ pub enum PersistentEntityId {
     Sector(Hex),
 }
 
-impl From<PersistentAsteroidId> for PersistentEntityId {
-    fn from(value: PersistentAsteroidId) -> Self {
-        Self::Asteroid(value)
-    }
-}
-
-impl From<&PersistentAsteroidId> for PersistentEntityId {
-    fn from(value: &PersistentAsteroidId) -> Self {
-        Self::Asteroid(*value)
-    }
-}
-
-impl From<PersistentGateId> for PersistentEntityId {
-    fn from(value: PersistentGateId) -> Self {
-        Self::Gate(value)
-    }
-}
-impl From<&PersistentGateId> for PersistentEntityId {
-    fn from(value: &PersistentGateId) -> Self {
-        Self::Gate(*value)
-    }
-}
-
-impl From<PersistentPlanetId> for PersistentEntityId {
-    fn from(value: PersistentPlanetId) -> Self {
-        Self::Planet(value)
-    }
-}
-impl From<&PersistentPlanetId> for PersistentEntityId {
-    fn from(value: &PersistentPlanetId) -> Self {
-        Self::Planet(*value)
-    }
-}
-
-impl From<PersistentShipId> for PersistentEntityId {
-    fn from(value: PersistentShipId) -> Self {
-        Self::Ship(value)
-    }
-}
-impl From<&PersistentShipId> for PersistentEntityId {
-    fn from(value: &PersistentShipId) -> Self {
-        Self::Ship(*value)
-    }
-}
-
-impl From<PersistentStationId> for PersistentEntityId {
-    fn from(value: PersistentStationId) -> Self {
-        Self::Station(value)
-    }
-}
-
-impl From<&PersistentStationId> for PersistentEntityId {
-    fn from(value: &PersistentStationId) -> Self {
-        Self::Station(*value)
-    }
-}
-
-impl From<Hex> for PersistentEntityId {
-    fn from(value: Hex) -> Self {
-        Self::Sector(value)
-    }
-}
-
-/// A [PersistentEntityId] for [Asteroid]s.
-pub type PersistentAsteroidId = TypedPersistentEntityId<Asteroid>;
-
-/// A [PersistentEntityId] for [Gate]s.
-pub type PersistentGateId = TypedPersistentEntityId<Gate>;
-
-/// A [PersistentEntityId] for [Planet]s.
-pub type PersistentPlanetId = TypedPersistentEntityId<Planet>;
-
-/// A [PersistentEntityId] for [Ship]s.
-pub type PersistentShipId = TypedPersistentEntityId<Ship>;
-
-/// A [PersistentEntityId] for [Station]s.
-pub type PersistentStationId = TypedPersistentEntityId<Station>;
-
 #[derive(Serialize, Deserialize)]
 pub struct TypedPersistentEntityId<T: Component>(u32, PhantomData<T>);
 
@@ -105,43 +27,60 @@ pub trait ComponentWithPersistentId<T: Component> {
     fn id(&self) -> TypedPersistentEntityId<T>;
 }
 
-static NEXT_ASTEROID_ID: AtomicU32 = AtomicU32::new(0);
-impl TypedPersistentEntityId<Asteroid> {
-    pub fn next() -> Self {
-        Self(
-            NEXT_ASTEROID_ID.fetch_add(1, Ordering::Relaxed),
-            PhantomData,
-        )
-    }
+macro_rules! impl_typed_persistent_entity_id {
+    ($entity_type:ty, $name:ident) => {
+        static $name: AtomicU32 = AtomicU32::new(0);
+
+        impl TypedPersistentEntityId<$entity_type> {
+            pub fn next() -> Self {
+                Self($name.fetch_add(1, Ordering::Relaxed), PhantomData)
+            }
+        }
+    };
 }
 
-static NEXT_GATE_ID: AtomicU32 = AtomicU32::new(0);
-impl TypedPersistentEntityId<Gate> {
-    pub fn next() -> Self {
-        Self(NEXT_GATE_ID.fetch_add(1, Ordering::Relaxed), PhantomData)
-    }
+macro_rules! impl_traits {
+    ($entity_type:ty, $variant:ident) => {
+        impl From<$entity_type> for PersistentEntityId {
+            fn from(value: $entity_type) -> Self {
+                Self::$variant(value)
+            }
+        }
+
+        impl From<&$entity_type> for PersistentEntityId {
+            fn from(value: &$entity_type) -> Self {
+                Self::$variant(*value)
+            }
+        }
+    };
 }
 
-static NEXT_PLANET_ID: AtomicU32 = AtomicU32::new(0);
-impl TypedPersistentEntityId<Planet> {
-    pub fn next() -> Self {
-        Self(NEXT_PLANET_ID.fetch_add(1, Ordering::Relaxed), PhantomData)
-    }
-}
+/// A [PersistentEntityId] for [Asteroid]s.
+pub type PersistentAsteroidId = TypedPersistentEntityId<Asteroid>;
+impl_traits!(PersistentAsteroidId, Asteroid);
+impl_typed_persistent_entity_id!(Asteroid, NEXT_ASTEROID_ID);
 
-static NEXT_SHIP_ID: AtomicU32 = AtomicU32::new(0);
-impl TypedPersistentEntityId<Ship> {
-    pub fn next() -> Self {
-        Self(NEXT_SHIP_ID.fetch_add(1, Ordering::Relaxed), PhantomData)
-    }
-}
+/// A [PersistentEntityId] for [Gate]s.
+pub type PersistentGateId = TypedPersistentEntityId<Gate>;
+impl_traits!(PersistentGateId, Gate);
+impl_typed_persistent_entity_id!(Gate, NEXT_GATE_ID);
 
-static NEXT_STATION_ID: AtomicU32 = AtomicU32::new(0);
-impl TypedPersistentEntityId<Station> {
-    pub fn next() -> Self {
-        Self(NEXT_STATION_ID.fetch_add(1, Ordering::Relaxed), PhantomData)
-    }
-}
+/// A [PersistentEntityId] for [Planet]s.
+pub type PersistentPlanetId = TypedPersistentEntityId<Planet>;
+impl_traits!(PersistentPlanetId, Planet);
+impl_typed_persistent_entity_id!(Planet, NEXT_PLANET_ID);
+
+/// A [PersistentEntityId] for [Ship]s.
+pub type PersistentShipId = TypedPersistentEntityId<Ship>;
+impl_traits!(PersistentShipId, Ship);
+impl_typed_persistent_entity_id!(Ship, NEXT_SHIP_ID);
+
+/// A [PersistentEntityId] for [Station]s.
+pub type PersistentStationId = TypedPersistentEntityId<Station>;
+impl_traits!(PersistentStationId, Station);
+impl_typed_persistent_entity_id!(Station, NEXT_STATION_ID);
+
+impl_traits!(Hex, Sector);
 
 impl<T: Component> Copy for TypedPersistentEntityId<T> {}
 impl<T: Component> Clone for TypedPersistentEntityId<T> {
