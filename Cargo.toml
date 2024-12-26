@@ -6,14 +6,13 @@ edition = "2021"
 [dependencies]
 bevy = { version = "0.15.0", features = ["trace"] }
 bevy_egui = "0.31.1"
-hexx = { version = "0.18.0", features = ["serde"] }
+hexx = { version = "0.19.1", features = ["serde"] }
 iyes_perf_ui = "0.4.0"
 rand = "0.8.5"
-serde = { version = "1.0.215", features = ["derive"] }
-serde_json = "1.0.133"
+serde = { version = "1.0.216", features = ["derive"] }
+serde_json = "1.0.134"
 leafwing_manifest = { version = "0.3.0", features = [] }
 paste = "1.0.15"
 
 [patch.crates-io]
 iyes_perf_ui = { git = "https://github.com/Affinator/iyes_perf_ui.git", rev = "cec8ff80a33dae570eb9af59b60b5c298e192f80" }
-hexx = { git = "https://github.com/ManevilleF/hexx.git", rev = "f2222dd49c5a3e85cefd74d708b0bf93eb978414" }
