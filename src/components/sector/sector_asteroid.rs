@@ -1,6 +1,6 @@
 use crate::components::{Asteroid, InSector};
 use crate::constants;
-use crate::game_data::ItemId;
+use crate::game_data::{AsteroidDataId, ItemId};
 use crate::persistence::{ComponentWithPersistentId, PersistentAsteroidId};
 use crate::simulation::physics::ConstantVelocity;
 use crate::simulation::prelude::SimulationTimestamp;
@@ -16,28 +16,32 @@ use std::collections::{BTreeSet, BinaryHeap};
 pub struct SectorAsteroidComponent {
     average_velocity: Vec2,
 
-    /// The kind of asteroids that can be found within this sector. These should never change during runtime.
-    asteroid_types: Vec<ItemId>,
+    /// The kind of materials which can be found in asteroids within this sector. These should never change during runtime.
+    asteroid_materials: Vec<ItemId>,
 
-    /// Contains individual collections of the "live" asteroids for all `asteroid_types`
+    /// Contains individual collections of the "live" asteroids for all `asteroid_materials`
     pub asteroids: HashMap<ItemId, BTreeSet<AsteroidEntityWithTimestamp>>,
 
-    /// Contains individual collections of the respawning asteroids for all `asteroid_types`
+    /// Contains individual collections of the respawning asteroids for all `asteroid_materials`
     pub asteroid_respawns: HashMap<ItemId, BinaryHeap<std::cmp::Reverse<RespawningAsteroidData>>>,
 }
 
 impl SectorAsteroidComponent {
     #[must_use]
-    pub fn new(average_velocity: Vec2, asteroid_types: Vec<ItemId>) -> Self {
+    pub fn new(average_velocity: Vec2, asteroid_materials: Vec<ItemId>) -> Self {
         Self {
             average_velocity,
             asteroids: HashMap::from_iter(
-                asteroid_types.iter().map(|id| (*id, Default::default())),
+                asteroid_materials
+                    .iter()
+                    .map(|id| (*id, Default::default())),
             ),
             asteroid_respawns: HashMap::from_iter(
-                asteroid_types.iter().map(|id| (*id, Default::default())),
+                asteroid_materials
+                    .iter()
+                    .map(|id| (*id, Default::default())),
             ),
-            asteroid_types,
+            asteroid_materials,
         }
     }
 
@@ -50,7 +54,7 @@ impl SectorAsteroidComponent {
     #[inline]
     #[must_use]
     pub fn asteroid_types(&self) -> &Vec<ItemId> {
-        &self.asteroid_types
+        &self.asteroid_materials
     }
 
     /// How "Healthy" the asteroid field of this sector is... as in how many of its asteroids are currently spawned, in Range [0,1].
@@ -82,6 +86,7 @@ impl SectorAsteroidComponent {
 #[derive(Copy, Clone)]
 pub struct RespawningAsteroidData {
     pub id: PersistentAsteroidId,
+    pub item_id: AsteroidDataId,
     pub ore_max: u32,
     pub local_respawn_position: Vec2,
     pub velocity: Vec2,
@@ -97,6 +102,7 @@ impl RespawningAsteroidData {
     ) -> Self {
         Self {
             id: value.id(),
+            item_id: value.manifest_id(),
             ore_max: value.ore_max,
             local_respawn_position,
             timestamp: value.despawn_timestamp + constants::ASTEROID_RESPAWN_TIME,

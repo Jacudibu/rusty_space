@@ -14,6 +14,7 @@ impl AsteroidSaveData {
     ) -> Self {
         Self {
             id: asteroid.id(),
+            manifest_id: asteroid.manifest_id(),
             ore_item_id: asteroid.ore_item_id,
             ore_current: asteroid.ore,
             ore_max: asteroid.ore_max,

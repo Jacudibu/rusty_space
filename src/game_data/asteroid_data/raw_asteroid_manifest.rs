@@ -1,5 +1,7 @@
 use crate::game_data::asteroid_data::raw_asteroid_data::RawAsteroidData;
+use crate::game_data::asteroid_data::MOCK_ASTEROID_NAME;
 use crate::game_data::MOCK_ITEM_ORE_ID;
+use bevy::color::Color;
 use bevy::prelude::{Asset, TypePath};
 use serde::Deserialize;
 
@@ -9,14 +11,16 @@ pub struct RawAsteroidManifest {
 }
 
 impl RawAsteroidManifest {
-    fn from_mock_data() -> Self {
-        let raw_data = vec![RawAsteroidData {
-            material: MOCK_ITEM_ORE_ID,
-            amount_min: 200,
-            amount_max: 500,
-            sprite: "asteroid.png".into(),
-        }];
-
-        Self { raw_data }
+    pub fn mock_data() -> Self {
+        Self {
+            raw_data: vec![RawAsteroidData {
+                name: MOCK_ASTEROID_NAME.into(),
+                material: MOCK_ITEM_ORE_ID,
+                amount_min: 200,
+                amount_max: 500,
+                sprite: "asteroid.png".into(),
+                sprite_color: Color::WHITE,
+            }],
+        }
     }
 }

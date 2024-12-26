@@ -1,4 +1,4 @@
-use crate::game_data::ItemId;
+use crate::game_data::{AsteroidDataId, ItemId};
 use crate::persistence::{PersistentAsteroidId, SectorPlanetSaveData};
 use crate::simulation::prelude::SimulationTimestamp;
 use crate::utils::SolarMass;
@@ -10,6 +10,7 @@ use serde::{Deserialize, Serialize};
 #[cfg_attr(test, derive(Clone, Debug, PartialEq))]
 pub struct AsteroidSaveData {
     pub id: PersistentAsteroidId,
+    pub manifest_id: AsteroidDataId,
     pub ore_item_id: ItemId,
     pub ore_current: u32,
     pub ore_max: u32,
@@ -35,7 +36,7 @@ pub struct AsteroidRespawnSaveData {
 #[cfg_attr(test, derive(Debug, PartialEq, Clone))]
 pub struct SectorAsteroidSaveData {
     pub average_velocity: Vec2,
-    pub asteroid_types: Vec<ItemId>,
+    pub asteroid_materials: Vec<ItemId>,
     pub live_asteroids: Vec<AsteroidSaveData>,
     pub respawning_asteroids: Vec<AsteroidRespawnSaveData>,
 }

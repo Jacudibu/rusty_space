@@ -8,7 +8,7 @@ use std::hash::{Hash, Hasher};
 use std::marker::PhantomData;
 use std::sync::atomic::{AtomicU32, Ordering};
 /// A unique ID that's the same between session and across different clients in multiplayer sessions.
-/// (Sectors are just represented as Hex coordinates)
+/// Should be used for persistence and networking.
 #[derive(Serialize, Deserialize)]
 #[cfg_attr(test, derive(Clone, Debug, PartialEq))]
 pub enum PersistentEntityId {
@@ -83,10 +83,19 @@ impl From<Hex> for PersistentEntityId {
     }
 }
 
+/// A [PersistentEntityId] for [Asteroid]s.
 pub type PersistentAsteroidId = TypedPersistentEntityId<Asteroid>;
+
+/// A [PersistentEntityId] for [Gate]s.
 pub type PersistentGateId = TypedPersistentEntityId<Gate>;
+
+/// A [PersistentEntityId] for [Planet]s.
 pub type PersistentPlanetId = TypedPersistentEntityId<Planet>;
+
+/// A [PersistentEntityId] for [Ship]s.
 pub type PersistentShipId = TypedPersistentEntityId<Ship>;
+
+/// A [PersistentEntityId] for [Station]s.
 pub type PersistentStationId = TypedPersistentEntityId<Station>;
 
 #[derive(Serialize, Deserialize)]

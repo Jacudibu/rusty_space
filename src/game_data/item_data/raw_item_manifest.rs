@@ -15,19 +15,19 @@ impl RawItemManifest {
         Self {
             items: vec![
                 RawItemData {
-                    id: MOCK_ITEM_A_NAME.into(),
+                    name: MOCK_ITEM_A_NAME.into(),
                     icon: "ui_icons/items/a.png".into(),
                     price_min: 5,
                     price_max: 1000,
                 },
                 RawItemData {
-                    id: MOCK_ITEM_B_NAME.into(),
+                    name: MOCK_ITEM_B_NAME.into(),
                     icon: "ui_icons/items/b.png".into(),
                     price_min: 5,
                     price_max: 1000,
                 },
                 RawItemData {
-                    id: MOCK_ITEM_C_NAME.into(),
+                    name: MOCK_ITEM_C_NAME.into(),
                     icon: "ui_icons/items/c.png".into(),
                     price_min: 5,
                     price_max: 1000,

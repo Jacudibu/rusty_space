@@ -2,8 +2,8 @@ use crate::game_data::GameData;
 use bevy::asset::AssetServer;
 use bevy::core::Name;
 use bevy::prelude::{
-    App, Camera2d, Commands, Handle, Image, ImagePlugin, OrthographicProjection, PluginGroup, Res,
-    Resource, Startup, Window, WindowPlugin,
+    App, Camera2d, Commands, Handle, Image, ImagePlugin, PluginGroup, Res, Resource, Startup,
+    Window, WindowPlugin,
 };
 use bevy::DefaultPlugins;
 mod camera;

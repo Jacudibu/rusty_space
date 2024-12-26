@@ -54,6 +54,7 @@ impl<'w> GameData<'w> {
         let ship_hulls = ShipHullManifest::from_mock_data(world);
         let ship_weapons = ShipWeaponManifest::from_mock_data(world);
         let shipyard_modules = ShipyardModuleManifest::from_mock_data(world);
+        let asteroids = AsteroidManifest::from_mock_data(world);
 
         world.insert_resource(items);
         world.insert_resource(item_recipes);
@@ -61,5 +62,6 @@ impl<'w> GameData<'w> {
         world.insert_resource(ship_hulls);
         world.insert_resource(ship_weapons);
         world.insert_resource(shipyard_modules);
+        world.insert_resource(asteroids);
     }
 }

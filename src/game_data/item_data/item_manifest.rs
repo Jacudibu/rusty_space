@@ -37,14 +37,13 @@ impl Manifest for ItemManifest {
             .items
             .into_iter()
             .map(|raw_item| {
-                let icon = asset_server.load(raw_item.icon);
-                let id = ItemId::from_name(&raw_item.id);
+                let id = ItemId::from_name(&raw_item.name);
 
                 let item = ItemData {
                     id,
-                    name: raw_item.id,
+                    name: raw_item.name,
                     price: PriceRange::new(raw_item.price_min, raw_item.price_max),
-                    icon,
+                    icon: asset_server.load(raw_item.icon),
                 };
 
                 (id, item)

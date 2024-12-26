@@ -1,6 +1,7 @@
 use crate::components::{
     InSector, Sector, SectorAsteroidComponent, SectorStarComponent, SelectableEntity,
 };
+use crate::game_data::AsteroidManifest;
 use crate::persistence::{AsteroidIdMap, PlanetIdMap, SectorFeatureSaveData};
 use crate::simulation::precomputed_orbit_directions::PrecomputedOrbitDirections;
 use crate::simulation::prelude::simulation_transform::SimulationScale;
@@ -21,6 +22,7 @@ pub fn spawn_sector(
     asteroid_id_map: &mut AsteroidIdMap,
     planet_id_map: &mut PlanetIdMap,
     orbit_directions: &PrecomputedOrbitDirections,
+    asteroid_manifest: &AsteroidManifest,
 ) -> SectorEntity {
     let position = layout.hex_to_world_pos(coordinate);
 
@@ -40,20 +42,19 @@ pub fn spawn_sector(
     if let Some(asteroids) = &features.asteroids {
         let mut component = SectorAsteroidComponent::new(
             asteroids.average_velocity,
-            asteroids.asteroid_types.clone(),
+            asteroids.asteroid_materials.clone(),
         );
 
         for x in &asteroids.live_asteroids {
             entity_spawners::spawn_asteroid(
                 commands,
                 asteroid_id_map,
-                sprites,
-                "Asteroid".to_string(),
+                x.manifest_id,
+                asteroid_manifest,
                 x.position,
                 &mut component,
                 sector,
                 x.velocity,
-                x.ore_item_id,
                 x.ore_current,
                 x.ore_max,
                 x.rotation_degrees,

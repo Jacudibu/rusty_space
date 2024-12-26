@@ -1,4 +1,5 @@
 use crate::components::{Sector, SectorAsteroidComponent};
+use crate::game_data::AsteroidManifest;
 use crate::map_layout::MapLayout;
 use crate::persistence::AsteroidIdMap;
 use crate::simulation::asteroids::fading::FadingAsteroidsIn;
@@ -12,7 +13,7 @@ use bevy::prelude::{Commands, Entity, Query, Res, ResMut};
 pub fn respawn_asteroids(
     mut commands: Commands,
     mut asteroid_id_map: ResMut<AsteroidIdMap>,
-    sprites: Res<SpriteHandles>,
+    asteroid_manifest: Res<AsteroidManifest>,
     mut fading_asteroids: ResMut<FadingAsteroidsIn>,
     mut sectors_with_asteroids: Query<(Entity, &Sector, &mut SectorAsteroidComponent)>,
     simulation_time: Res<SimulationTime>,
@@ -45,13 +46,12 @@ pub fn respawn_asteroids(
                 let asteroid_entity = entity_spawners::spawn_asteroid(
                     &mut commands,
                     &mut asteroid_id_map,
-                    &sprites,
-                    "Asteroid".to_string(),
+                    next.item_id,
+                    &asteroid_manifest,
                     next.local_respawn_position + sector.world_pos,
                     &mut asteroid_component,
                     sector_entity.into(),
                     next.velocity,
-                    ore_item_id,
                     next.ore_max,
                     next.ore_max,
                     next.angular_velocity * std::f32::consts::PI * 1000.0,
