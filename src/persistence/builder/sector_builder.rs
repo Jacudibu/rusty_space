@@ -10,7 +10,7 @@ use crate::simulation::time::SimulationTimestamp;
 use crate::utils::{entity_spawners, SectorEntity, UniverseSeed};
 use crate::{constants, SpriteHandles};
 use bevy::ecs::system::SystemParam;
-use bevy::prelude::{warn, Circle, Commands, Res, ShapeSample, Vec2};
+use bevy::prelude::{Circle, Commands, Res, ShapeSample, Vec2};
 use hexx::Hex;
 use leafwing_manifest::manifest::Manifest;
 use rand::distributions::Distribution;

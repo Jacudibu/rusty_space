@@ -39,6 +39,7 @@ impl SimulationTime {
 
     /// Returns the current tick - a counter for how many FixedUpdate schedules have been run in total within this simulation.
     #[inline]
+    #[allow(dead_code)]
     pub fn tick(&self) -> u32 {
         self.tick
     }

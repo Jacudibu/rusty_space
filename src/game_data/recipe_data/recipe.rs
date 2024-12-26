@@ -7,6 +7,7 @@ use serde::Deserialize;
 
 /// Defines a single production step.
 #[derive(TypePath, Deserialize)]
+#[allow(dead_code)]
 pub struct RecipeData {
     /// Unique ID to differentiate between recipes
     pub id: RecipeId,

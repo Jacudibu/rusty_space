@@ -12,6 +12,7 @@ impl Plugin for StatePlugin {
 
 #[derive(Debug, Clone, Copy, Default, Eq, PartialEq, Hash, States)]
 pub enum ApplicationState {
+    #[allow(dead_code)]
     Menu,
     #[default]
     InGame,

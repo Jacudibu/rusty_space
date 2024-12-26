@@ -1,8 +1,6 @@
 use crate::components::{BuyOrders, Inventory, SellOrders};
 use crate::game_data::{RecipeManifest, ShipyardModuleId};
-use crate::session_data::{
-    SessionData, ShipConfigId, ShipConfiguration, ShipConfigurationManifest,
-};
+use crate::session_data::{ShipConfigId, ShipConfigurationManifest};
 use crate::simulation::prelude::SimulationTime;
 use crate::simulation::production::production_kind::ProductionKind;
 use crate::simulation::production::production_started_event::ProductionStartedEvent;

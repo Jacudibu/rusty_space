@@ -13,6 +13,8 @@ mod shipyard_module_data;
 use crate::game_data::from_mock_data::FromMockData;
 use bevy::ecs::system::SystemParam;
 use bevy::prelude::{Res, World};
+
+#[allow(unused)]
 pub use {
     asteroid_data::{AsteroidDataId, AsteroidManifest, MOCK_ASTEROID_ID},
     item_data::{
@@ -36,17 +38,20 @@ pub use {
     },
 };
 
-/// A collection of all constant game data.
+/// A collection of all constant game data#
+#[allow(dead_code)]
 #[derive(SystemParam)]
 pub struct GameData<'w> {
     pub items: Res<'w, ItemManifest>,
     pub item_recipes: Res<'w, RecipeManifest>,
     pub production_modules: Res<'w, ProductionModuleManifest>,
     pub ship_hulls: Res<'w, ShipHullManifest>,
+    pub ship_weapons: Res<'w, ShipWeaponManifest>,
     pub shipyard_modules: Res<'w, ShipyardModuleManifest>,
+    pub asteroids: Res<'w, AsteroidManifest>,
 }
 
-impl<'w> GameData<'w> {
+impl GameData<'_> {
     pub fn initialize_mock_data(world: &mut World) {
         let items = ItemManifest::from_mock_data(world);
         let item_recipes = RecipeManifest::from_mock_data(world);

@@ -77,12 +77,6 @@ impl SimulationTransform {
         self.rotation * Dir2::Y
     }
 
-    #[inline]
-    pub fn set_translation_and_skip_interpolation(&mut self, translation: Vec2) {
-        self.translation = translation;
-        self.last_translation = translation;
-    }
-
     /// Crate a 3D Transform based on self, with the z position set to the provided z_layer.
     #[inline]
     #[must_use]

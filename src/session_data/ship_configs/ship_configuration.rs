@@ -1,6 +1,5 @@
 use crate::game_data::{
-    RecipeElement, ShipHullData, ShipHullId, ShipHullManifest, ShipWeaponData, ShipWeaponId,
-    ShipWeaponManifest,
+    RecipeElement, ShipHullData, ShipHullId, ShipHullManifest, ShipWeaponId, ShipWeaponManifest,
 };
 use crate::session_data::ShipConfigId;
 use crate::simulation::prelude::Milliseconds;
@@ -148,7 +147,8 @@ impl Default for EngineTuning {
 }
 
 mod test {
-    use super::*;
+    #[allow(unused)] // No clue why it complains about this...?
+    use super::EngineStats;
 
     #[test]
     fn tuning_value_to_multiplier() {

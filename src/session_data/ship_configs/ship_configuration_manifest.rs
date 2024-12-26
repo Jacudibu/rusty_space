@@ -1,6 +1,6 @@
 use crate::game_data::{
-    RecipeElement, ShipHullData, ShipHullManifest, ShipWeaponManifest, GAS_COLLECTOR_ID,
-    MOCK_ITEM_A_ID, MOCK_ITEM_B_ID, MOCK_ITEM_C_ID, MOCK_SHIP_HULL_A_ID, ORE_MINING_LASER_ID,
+    ShipHullManifest, ShipWeaponManifest, GAS_COLLECTOR_ID, MOCK_SHIP_HULL_A_ID,
+    ORE_MINING_LASER_ID,
 };
 use crate::session_data::ship_configs::ship_configuration::ShipConfigurationParts;
 use crate::session_data::ship_configs::versioned_id::VersionedId;
@@ -28,6 +28,7 @@ impl ShipConfigurationManifest {
     }
 
     #[must_use]
+    #[allow(dead_code)]
     pub fn get_latest(&self, version: &ShipConfigId) -> Option<&ShipConfiguration> {
         Some(self.items.get(&version.id)?.latest())
     }

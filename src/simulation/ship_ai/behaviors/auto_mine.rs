@@ -40,16 +40,6 @@ pub struct AutoMineBehavior {
     pub state: AutoMineState,
 }
 
-impl AutoMineBehavior {
-    pub fn new(ore_type: ItemId) -> Self {
-        Self {
-            next_idle_update: SimulationTimestamp::MIN,
-            state: AutoMineState::Mining,
-            mined_ore_id: ore_type,
-        }
-    }
-}
-
 #[allow(clippy::too_many_arguments)]
 pub fn handle_idle_ships(
     mut commands: Commands,

@@ -23,16 +23,6 @@ impl SectorPlanetSaveData {
         }
     }
 
-    pub fn with_name(mut self, name: String) -> Self {
-        self.name = name;
-        self
-    }
-
-    pub fn with_mass(mut self, mass: EarthMass) -> Self {
-        self.mass = mass;
-        self
-    }
-
     pub fn with_kind(mut self, kind: PlanetKindSaveData) -> Self {
         self.kind = kind;
         self

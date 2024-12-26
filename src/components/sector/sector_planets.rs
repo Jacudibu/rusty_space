@@ -10,12 +10,6 @@ pub struct SectorPlanets {
 }
 
 impl SectorPlanets {
-    pub fn new() -> Self {
-        Self {
-            planets: Default::default(),
-        }
-    }
-
     /// Adds the given `planet_entity` and inserts the [InSector] component to it.
     pub fn add_planet(
         &mut self,

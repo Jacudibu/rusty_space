@@ -6,7 +6,6 @@ use crate::simulation::asteroids::fading::FadingAsteroidsIn;
 use crate::simulation::asteroids::helpers;
 use crate::simulation::prelude::SimulationTime;
 use crate::utils::entity_spawners;
-use crate::SpriteHandles;
 use bevy::math::Vec2;
 use bevy::prelude::{Commands, Entity, Query, Res, ResMut};
 

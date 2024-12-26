@@ -13,6 +13,7 @@ use std::collections::{BTreeSet, BinaryHeap};
 
 /// A sector with this component features small asteroids floating through it.
 #[derive(Component)]
+#[allow(dead_code)]
 pub struct SectorAsteroidComponent {
     average_velocity: Vec2,
 
@@ -47,6 +48,7 @@ impl SectorAsteroidComponent {
 
     #[inline]
     #[must_use]
+    #[allow(dead_code)]
     pub fn average_velocity(&self) -> &Vec2 {
         &self.average_velocity
     }

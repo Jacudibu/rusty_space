@@ -1,11 +1,8 @@
 use crate::components::{Asteroid, AsteroidMiningComponent, Inventory};
 use crate::constants;
 use crate::game_data::MOCK_ITEM_ORE_ID;
-use crate::session_data::ShipConfigurationManifest;
 use crate::simulation::asteroids::AsteroidWasFullyMinedEvent;
-use crate::simulation::prelude::{
-    CurrentSimulationTimestamp, Milliseconds, SimulationTime, SimulationTimestamp,
-};
+use crate::simulation::prelude::{CurrentSimulationTimestamp, SimulationTime, SimulationTimestamp};
 use crate::simulation::ship_ai::task_finished_event::TaskFinishedEvent;
 use crate::simulation::ship_ai::task_queue::TaskQueue;
 use crate::simulation::ship_ai::tasks;

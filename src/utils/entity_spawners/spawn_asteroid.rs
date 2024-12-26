@@ -1,6 +1,6 @@
 use crate::components::{Asteroid, SectorAsteroidComponent, SelectableEntity};
 use crate::constants;
-use crate::game_data::{AsteroidDataId, AsteroidManifest, ItemId};
+use crate::game_data::{AsteroidDataId, AsteroidManifest};
 use crate::persistence::{AsteroidIdMap, PersistentAsteroidId};
 use crate::simulation::physics::ConstantVelocity;
 use crate::simulation::prelude::simulation_transform::SimulationScale;

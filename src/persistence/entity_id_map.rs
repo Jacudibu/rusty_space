@@ -23,7 +23,7 @@ pub struct AllEntityIdMaps<'w> {
     pub stations: Res<'w, StationIdMap>,
 }
 
-impl<'w> AllEntityIdMaps<'w> {
+impl AllEntityIdMaps<'_> {
     /// # Panics
     /// If no id is found for the given entity
     pub fn get_typed_id_unchecked(&self, typed_entity: &TypedEntity) -> PersistentEntityId {
@@ -102,6 +102,7 @@ where
     }
 
     #[inline]
+    #[allow(dead_code)]
     pub fn remove_by_id(&mut self, id: &TId) {
         if let Some(entity) = self.id_to_entity.remove(id) {
             self.entity_to_id.remove(&entity);
@@ -132,7 +133,7 @@ mod tests {
     use bevy::prelude::Entity;
 
     #[test]
-    fn inserting_getting_data() {
+    fn inserting_and_getting_data() {
         let id1 = PersistentGateId::next();
         let id2 = PersistentGateId::next();
 
@@ -148,5 +149,29 @@ mod tests {
 
         assert_eq!(&entity1, map.get_entity(&id1).unwrap());
         assert_eq!(&entity2, map.get_entity(&id2).unwrap());
+    }
+
+    #[test]
+    fn removing_data() {
+        let id1 = PersistentGateId::next();
+        let id2 = PersistentGateId::next();
+
+        let entity1 = GateEntity::from(Entity::from_raw(1));
+        let entity2 = GateEntity::from(Entity::from_raw(2));
+
+        let mut map = GateIdMap::new();
+        map.insert(id1, entity1);
+        map.insert(id2, entity2);
+
+        map.remove_by_id(&id1);
+
+        assert_eq!(1, map.id_to_entity.len());
+        assert_eq!(1, map.entity_to_id.len());
+
+        assert_eq!(None, map.get_entity(&id1));
+        assert_eq!(None, map.get_id(&entity1));
+
+        assert_eq!(&entity2, map.get_entity(&id2).unwrap());
+        assert_eq!(&id2, map.get_id(&entity2).unwrap());
     }
 }

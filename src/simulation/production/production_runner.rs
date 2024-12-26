@@ -4,7 +4,7 @@ use bevy::prelude::{Commands, EventWriter, Mut, Or, Query, Res, ResMut, Transfor
 use crate::components::{BuyOrders, InSector, Inventory, Sector, SellOrders};
 use crate::game_data::{ProductionModuleId, RecipeManifest, ShipyardModuleId};
 use crate::persistence::{PersistentShipId, ShipIdMap};
-use crate::session_data::{SessionData, ShipConfiguration, ShipConfigurationManifest};
+use crate::session_data::ShipConfigurationManifest;
 use crate::simulation::physics::ShipVelocity;
 use crate::simulation::prelude::{CurrentSimulationTimestamp, SimulationTime, SimulationTimestamp};
 use crate::simulation::production::production_kind::ProductionKind;
