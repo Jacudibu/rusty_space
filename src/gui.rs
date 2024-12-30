@@ -3,7 +3,7 @@ use crate::components::{
     Ship, TradeOrder,
 };
 use crate::entity_selection::{MouseCursor, Selected};
-use crate::game_data::{AsteroidManifest, GameData, MOCK_ASTEROID_ID};
+use crate::game_data::{AsteroidDataId, AsteroidManifest, GameData, MOCK_ASTEROID_ID};
 use crate::map_layout::MapLayout;
 use crate::session_data::{SessionData, ShipConfiguration};
 use crate::simulation::physics::ShipVelocity;
@@ -18,10 +18,10 @@ use bevy::prelude::{
     AppExtStates, AssetServer, Commands, Entity, IntoSystemConfigs, Name, NextState, Plugin,
     PreUpdate, Query, Res, ResMut, Resource, Startup, State, States, Update, With,
 };
+use bevy::utils::HashMap;
 use bevy_egui::egui::load::SizedTexture;
 use bevy_egui::egui::{Align2, Shadow, Ui};
 use bevy_egui::{egui, EguiContexts, EguiStartupSet};
-use leafwing_manifest::manifest::Manifest;
 
 pub struct GUIPlugin;
 impl Plugin for GUIPlugin {
@@ -45,9 +45,8 @@ impl Plugin for GUIPlugin {
     }
 }
 
-#[derive(Default)]
 struct SelectableCount {
-    pub asteroids: u32,
+    pub asteroids: HashMap<AsteroidDataId, u32>,
     pub gates: u32,
     pub stations: u32,
     pub ships: u32,
@@ -56,13 +55,29 @@ struct SelectableCount {
 }
 
 impl SelectableCount {
+    pub fn new(asteroid_manifest: &AsteroidManifest) -> Self {
+        Self {
+            asteroids: asteroid_manifest.iter().map(|(id, _)| (*id, 0)).collect(),
+            gates: 0,
+            ships: 0,
+            stations: 0,
+            planets: 0,
+            stars: 0,
+        }
+    }
+
     pub fn total(&self) -> u32 {
-        self.stations + self.ships + self.gates + self.asteroids + self.stars + self.planets
+        self.stations
+            + self.ships
+            + self.gates
+            + self.asteroids.values().sum::<u32>()
+            + self.stars
+            + self.planets
     }
 
     pub fn add(mut self, selectable_entity: &SelectableEntity) -> Self {
         match selectable_entity {
-            SelectableEntity::Asteroid(_) => self.asteroids += 1,
+            SelectableEntity::Asteroid(id) => *self.asteroids.get_mut(id).unwrap() += 1,
             SelectableEntity::Gate => self.gates += 1,
             SelectableEntity::Planet => self.planets += 1,
             SelectableEntity::Ship => self.ships += 1,
@@ -75,7 +90,7 @@ impl SelectableCount {
 
 #[derive(Resource)]
 pub struct UiIcons {
-    pub asteroid: SizedTexture,
+    pub asteroids: HashMap<AsteroidDataId, SizedTexture>,
     pub gate: SizedTexture,
     pub planet: SizedTexture,
     pub ship: SizedTexture,
@@ -94,7 +109,7 @@ pub struct UiIcons {
 impl UiIcons {
     pub fn get_selectable(&self, selectable: &SelectableEntity) -> SizedTexture {
         match selectable {
-            SelectableEntity::Asteroid(_) => self.asteroid,
+            SelectableEntity::Asteroid(id) => self.asteroids[id],
             SelectableEntity::Gate => self.gate,
             SelectableEntity::Planet => self.planet,
             SelectableEntity::Ship => self.ship,
@@ -111,7 +126,7 @@ impl UiIcons {
                 ExchangeWareData::Buy(_, _) => self.buy,
                 ExchangeWareData::Sell(_, _) => self.sell,
             },
-            TaskInsideQueue::MineAsteroid { .. } => self.asteroid,
+            TaskInsideQueue::MineAsteroid { .. } => *self.asteroids.get(&MOCK_ASTEROID_ID).unwrap(),
             TaskInsideQueue::HarvestGas { .. } => self.planet,
             TaskInsideQueue::AwaitingSignal => self.awaiting_signal,
             TaskInsideQueue::RequestAccess { .. } => self.awaiting_signal,
@@ -143,16 +158,15 @@ pub fn initialize(
     const ICON_SIZE: [f32; 2] = [16.0, 16.0];
 
     let icons = UiIcons {
-        asteroid: SizedTexture::new(
-            contexts.add_image(
-                asteroid_manifest
-                    .get(MOCK_ASTEROID_ID)
-                    .unwrap()
-                    .sprite
-                    .clone(),
-            ),
-            ICON_SIZE,
-        ),
+        asteroids: asteroid_manifest
+            .iter()
+            .map(|(id, data)| {
+                (
+                    *id,
+                    SizedTexture::new(contexts.add_image(data.sprite.clone()), ICON_SIZE),
+                )
+            })
+            .collect(),
         gate: SizedTexture::new(contexts.add_image(sprites.gate.clone()), ICON_SIZE),
         planet: SizedTexture::new(contexts.add_image(sprites.planet.clone()), ICON_SIZE),
         ship: SizedTexture::new(contexts.add_image(sprites.ship.clone()), ICON_SIZE),
@@ -195,10 +209,13 @@ pub fn list_selection_icons_and_counts(
     mut context: EguiContexts,
     images: Res<UiIcons>,
     selected: Query<&SelectableEntity, With<Selected>>,
+    asteroid_manifest: Res<AsteroidManifest>,
 ) {
     let counts = selected
         .iter()
-        .fold(SelectableCount::default(), |acc, x| acc.add(x));
+        .fold(SelectableCount::new(&asteroid_manifest), |acc, x| {
+            acc.add(x)
+        });
 
     if counts.total() == 0 {
         return;
@@ -231,9 +248,13 @@ pub fn list_selection_icons_and_counts(
                     ui.image(images.gate);
                     ui.label(format!("x {}", counts.gates));
                 }
-                if counts.asteroids > 0 {
-                    ui.image(images.asteroid);
-                    ui.label(format!("x {}", counts.asteroids));
+                for (id, count) in &counts.asteroids {
+                    if count == &0 {
+                        continue;
+                    }
+
+                    ui.image(images.asteroids[id]);
+                    ui.label(format!("x {}", count));
                 }
             });
         });
@@ -270,7 +291,9 @@ pub fn list_selection_details(
 ) {
     let counts = selected
         .iter()
-        .fold(SelectableCount::default(), |acc, x| acc.add(x.1));
+        .fold(SelectableCount::new(&game_data.asteroids), |acc, x| {
+            acc.add(x.1)
+        });
 
     if counts.total() == 0 {
         return;

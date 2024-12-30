@@ -1,4 +1,5 @@
 use bevy::prelude::Resource;
+use bevy::utils::hashbrown::hash_map::Iter;
 use bevy::utils::HashMap;
 use leafwing_manifest::identifier::Id;
 
@@ -12,6 +13,12 @@ impl<Data> GenericManifest<Data> {
     #[inline]
     pub fn get_by_ref(&self, id: &Id<Data>) -> Option<&Data> {
         self.items.get(id)
+    }
+
+    #[must_use]
+    #[inline]
+    pub fn iter(&self) -> Iter<'_, Id<Data>, Data> {
+        self.items.iter()
     }
 }
 
