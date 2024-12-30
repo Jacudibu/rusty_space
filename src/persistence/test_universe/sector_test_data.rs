@@ -1,5 +1,5 @@
 use crate::constants;
-use crate::game_data::{AsteroidManifest, MOCK_ASTEROID_ID};
+use crate::game_data::{AsteroidManifest, MOCK_ASTEROID_ID, SILICON_ASTEROID_ID};
 use crate::map_layout::MapLayout;
 use crate::persistence::test_universe::coordinates;
 use crate::persistence::{
@@ -55,7 +55,7 @@ pub fn create_test_data(
                     &UNIVERSE_SEED,
                     &map_layout,
                     asteroid_manifest,
-                    MOCK_ASTEROID_ID,
+                    SILICON_ASTEROID_ID,
                 ),
         );
     sectors.add(coordinates::BOTTOM_LEFT);

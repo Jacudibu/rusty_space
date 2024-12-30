@@ -3,7 +3,7 @@ use crate::components::{
     Ship, TradeOrder,
 };
 use crate::entity_selection::{MouseCursor, Selected};
-use crate::game_data::GameData;
+use crate::game_data::{AsteroidManifest, GameData, MOCK_ASTEROID_ID};
 use crate::map_layout::MapLayout;
 use crate::session_data::{SessionData, ShipConfiguration};
 use crate::simulation::physics::ShipVelocity;
@@ -21,6 +21,7 @@ use bevy::prelude::{
 use bevy_egui::egui::load::SizedTexture;
 use bevy_egui::egui::{Align2, Shadow, Ui};
 use bevy_egui::{egui, EguiContexts, EguiStartupSet};
+use leafwing_manifest::manifest::Manifest;
 
 pub struct GUIPlugin;
 impl Plugin for GUIPlugin {
@@ -61,7 +62,7 @@ impl SelectableCount {
 
     pub fn add(mut self, selectable_entity: &SelectableEntity) -> Self {
         match selectable_entity {
-            SelectableEntity::Asteroid => self.asteroids += 1,
+            SelectableEntity::Asteroid(_) => self.asteroids += 1,
             SelectableEntity::Gate => self.gates += 1,
             SelectableEntity::Planet => self.planets += 1,
             SelectableEntity::Ship => self.ships += 1,
@@ -93,7 +94,7 @@ pub struct UiIcons {
 impl UiIcons {
     pub fn get_selectable(&self, selectable: &SelectableEntity) -> SizedTexture {
         match selectable {
-            SelectableEntity::Asteroid => self.asteroid,
+            SelectableEntity::Asteroid(_) => self.asteroid,
             SelectableEntity::Gate => self.gate,
             SelectableEntity::Planet => self.planet,
             SelectableEntity::Ship => self.ship,
@@ -125,6 +126,7 @@ pub fn initialize(
     mut contexts: EguiContexts,
     sprites: Res<SpriteHandles>,
     asset_server: Res<AssetServer>,
+    asteroid_manifest: Res<AsteroidManifest>,
 ) {
     contexts
         .ctx_mut()
@@ -141,7 +143,16 @@ pub fn initialize(
     const ICON_SIZE: [f32; 2] = [16.0, 16.0];
 
     let icons = UiIcons {
-        asteroid: SizedTexture::new(contexts.add_image(sprites.asteroid.clone()), ICON_SIZE),
+        asteroid: SizedTexture::new(
+            contexts.add_image(
+                asteroid_manifest
+                    .get(MOCK_ASTEROID_ID)
+                    .unwrap()
+                    .sprite
+                    .clone(),
+            ),
+            ICON_SIZE,
+        ),
         gate: SizedTexture::new(contexts.add_image(sprites.gate.clone()), ICON_SIZE),
         planet: SizedTexture::new(contexts.add_image(sprites.planet.clone()), ICON_SIZE),
         ship: SizedTexture::new(contexts.add_image(sprites.ship.clone()), ICON_SIZE),

@@ -1,9 +1,10 @@
+use crate::game_data::AsteroidDataId;
 use bevy::prelude::Component;
 
 /// Marker component for anything interactable.
 #[derive(Component, Eq, PartialEq)]
 pub enum SelectableEntity {
-    Asteroid,
+    Asteroid(AsteroidDataId),
     Gate,
     Planet,
     Ship,
@@ -22,7 +23,7 @@ const RADIUS_ASTEROID: f32 = 8.0;
 impl SelectableEntity {
     pub fn radius(&self) -> f32 {
         match self {
-            SelectableEntity::Asteroid => RADIUS_ASTEROID,
+            SelectableEntity::Asteroid(_) => RADIUS_ASTEROID,
             SelectableEntity::Gate => RADIUS_GATE,
             SelectableEntity::Planet => RADIUS_PLANET,
             SelectableEntity::Ship => RADIUS_SHIP,

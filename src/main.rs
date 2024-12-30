@@ -74,8 +74,6 @@ fn get_window_title() -> String {
 #[derive(Resource)]
 #[cfg_attr(test, derive(Default))]
 pub struct SpriteHandles {
-    asteroid: Handle<Image>,
-    asteroid_selected: Handle<Image>,
     gate: Handle<Image>,
     gate_selected: Handle<Image>,
     planet: Handle<Image>,
@@ -92,8 +90,6 @@ pub struct SpriteHandles {
 
 pub fn initialize_data(mut commands: Commands, asset_server: Res<AssetServer>) {
     let sprites = SpriteHandles {
-        asteroid: asset_server.load("asteroid.png"),
-        asteroid_selected: asset_server.load("asteroid_selected.png"),
         gate: asset_server.load("gate.png"),
         gate_selected: asset_server.load("gate_selected.png"),
         planet: asset_server.load("planet.png"),

@@ -10,5 +10,6 @@ pub struct AsteroidData {
     pub material: ItemId,
     pub amount: Range<u32>,
     pub sprite: Handle<Image>,
+    pub sprite_selected: Handle<Image>,
     pub sprite_color: Color,
 }

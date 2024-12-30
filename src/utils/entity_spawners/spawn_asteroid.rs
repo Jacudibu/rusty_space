@@ -47,7 +47,7 @@ pub fn spawn_asteroid(
     let entity = commands
         .spawn((
             Name::new(manifest.name.clone()),
-            SelectableEntity::Asteroid,
+            SelectableEntity::Asteroid(asteroid_data_id),
             ConstantVelocity::new(velocity, angular_velocity),
             Sprite {
                 image: manifest.sprite.clone(),

@@ -43,6 +43,7 @@ impl Manifest for AsteroidManifest {
                     material: raw_item.material,
                     amount: raw_item.amount_min..raw_item.amount_max,
                     sprite: asset_server.load(raw_item.sprite),
+                    sprite_selected: asset_server.load(raw_item.sprite_selected),
                     sprite_color: raw_item.sprite_color,
                 };
 

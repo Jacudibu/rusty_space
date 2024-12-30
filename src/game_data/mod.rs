@@ -16,7 +16,7 @@ use bevy::prelude::{Res, World};
 
 #[allow(unused)]
 pub use {
-    asteroid_data::{AsteroidDataId, AsteroidManifest, MOCK_ASTEROID_ID},
+    asteroid_data::{AsteroidDataId, AsteroidManifest, MOCK_ASTEROID_ID, SILICON_ASTEROID_ID},
     item_data::{
         ItemData, ItemId, ItemManifest, MOCK_ITEM_A_ID, MOCK_ITEM_B_ID, MOCK_ITEM_C_ID,
         MOCK_ITEM_GAS_ID, MOCK_ITEM_ORE_ID,
