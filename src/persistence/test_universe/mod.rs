@@ -1,6 +1,8 @@
 use crate::game_data::AsteroidManifest;
+use crate::initialize_data;
 use crate::session_data::SessionData;
 use bevy::app::{App, Plugin};
+use bevy::prelude::{IntoSystemConfigs, Startup, World};
 
 mod coordinates;
 mod gate_test_data;
@@ -11,15 +13,19 @@ mod station_test_data;
 pub struct TestUniverseDataPlugin;
 impl Plugin for TestUniverseDataPlugin {
     fn build(&self, app: &mut App) {
-        SessionData::initialize_mock_data(app.world_mut());
-
-        app.insert_resource(sector_test_data::create_test_data(
-            app.world()
-                .get_resource::<AsteroidManifest>()
-                .expect("Manifests should be parsed before TestUniversePlugin is added!"),
-        ));
-        app.insert_resource(gate_test_data::create_test_data());
-        app.insert_resource(station_test_data::create_test_data());
-        app.insert_resource(ship_test_data::create_test_data());
+        app.add_systems(Startup, load_test_universe.after(initialize_data));
     }
+}
+
+pub fn load_test_universe(world: &mut World) {
+    SessionData::initialize_mock_data(world);
+
+    world.insert_resource(sector_test_data::create_test_data(
+        world
+            .get_resource::<AsteroidManifest>()
+            .expect("Manifests should be parsed before TestUniversePlugin is added!"),
+    ));
+    world.insert_resource(gate_test_data::create_test_data());
+    world.insert_resource(station_test_data::create_test_data());
+    world.insert_resource(ship_test_data::create_test_data());
 }

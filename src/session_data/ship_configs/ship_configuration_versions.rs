@@ -3,15 +3,22 @@ use crate::session_data::ship_configs::version::Version;
 use crate::session_data::ShipConfiguration;
 use bevy::utils::HashMap;
 use serde::Deserialize;
+use std::hash::{Hash, Hasher};
 
 /// Keeps track of all versions which have been created over time. Older versions which are no longer in use can be deleted without anything breaking.
 #[derive(Deserialize)]
 pub struct ShipConfigurationVersions {
-    versions: HashMap<Version, ShipConfiguration>,
+    pub versions: HashMap<Version, ShipConfiguration>,
 
     // TODO: Might wanna split latest into "active" and "max" in the future - if versions can be deleted, latest might be deleted as well.
     //       Or a different version might be selected as the "active" one, causing max != latest.
     latest: Version,
+}
+
+impl Hash for ShipConfigurationVersions {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.latest.hash(state);
+    }
 }
 
 impl ShipConfigurationVersions {
@@ -23,6 +30,7 @@ impl ShipConfigurationVersions {
         self.versions.get(version)
     }
 
+    /// Crates a new [ShipConfigurationVersions] collection from a given [ShipConfiguration]
     pub fn new(first_version: ShipConfiguration) -> Self {
         Self {
             versions: HashMap::from([(version::INITIAL_VERSION, first_version)]),
@@ -30,6 +38,7 @@ impl ShipConfigurationVersions {
         }
     }
 
+    /// Adds a new [ShipConfiguration] to the collection and sets it as the latest version.
     pub fn add_as_latest(&mut self, value: ShipConfiguration) {
         let version = self.next_version();
         self.versions.insert(version, value);

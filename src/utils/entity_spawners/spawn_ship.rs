@@ -35,7 +35,7 @@ pub fn spawn_ship(
     let mut entity_commands = commands.spawn((
         Name::new(name),
         Ship::new(id, ship_configuration.id),
-        SelectableEntity::Ship,
+        SelectableEntity::Ship(ship_configuration.id),
         Engine::from(&ship_configuration.computed_stats.engine),
         velocity,
         Inventory::new(ship_configuration.computed_stats.inventory_size),

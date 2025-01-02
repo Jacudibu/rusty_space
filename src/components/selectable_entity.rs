@@ -1,4 +1,5 @@
 use crate::game_data::AsteroidDataId;
+use crate::session_data::ShipConfigId;
 use bevy::prelude::Component;
 
 /// Marker component for anything interactable.
@@ -7,7 +8,7 @@ pub enum SelectableEntity {
     Asteroid(AsteroidDataId),
     Gate,
     Planet,
-    Ship,
+    Ship(ShipConfigId),
     Star,
     Station,
 }
@@ -26,7 +27,7 @@ impl SelectableEntity {
             SelectableEntity::Asteroid(_) => RADIUS_ASTEROID,
             SelectableEntity::Gate => RADIUS_GATE,
             SelectableEntity::Planet => RADIUS_PLANET,
-            SelectableEntity::Ship => RADIUS_SHIP,
+            SelectableEntity::Ship(_) => RADIUS_SHIP,
             SelectableEntity::Star => RADIUS_STAR,
             SelectableEntity::Station => RADIUS_STATION,
         }

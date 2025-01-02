@@ -50,6 +50,7 @@ fn main() {
         persistence::test_universe::TestUniverseDataPlugin,
         simulation::plugin::SimulationPlugin,
         states::StatePlugin,
+        session_data::SessionDataPlugin,
     ))
     .add_systems(Startup, initialize_data);
 
@@ -78,7 +79,6 @@ pub struct SpriteHandles {
     gate_selected: Handle<Image>,
     planet: Handle<Image>,
     planet_selected: Handle<Image>,
-    ship: Handle<Image>,
     ship_selected: Handle<Image>,
     star: Handle<Image>,
     star_selected: Handle<Image>,
@@ -94,7 +94,6 @@ pub fn initialize_data(mut commands: Commands, asset_server: Res<AssetServer>) {
         gate_selected: asset_server.load("gate_selected.png"),
         planet: asset_server.load("planet.png"),
         planet_selected: asset_server.load("planet_selected.png"),
-        ship: asset_server.load("ship.png"),
         ship_selected: asset_server.load("ship_selected.png"),
         star: asset_server.load("star.png"),
         star_selected: asset_server.load("star_selected.png"),

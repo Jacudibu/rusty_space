@@ -10,7 +10,9 @@ use crate::session_data::ship_configs::versioned_id::VersionedId;
 #[allow(unused)]
 pub use {
     ship_configuration::EngineStats, ship_configuration::EngineTuning,
-    ship_configuration::ShipConfiguration, ship_configuration_manifest::ShipConfigurationManifest,
+    ship_configuration::ShipConfiguration,
+    ship_configuration_manifest::ShipConfigurationAddedEvent,
+    ship_configuration_manifest::ShipConfigurationManifest,
     ship_configuration_versions::ShipConfigurationVersions,
 };
 

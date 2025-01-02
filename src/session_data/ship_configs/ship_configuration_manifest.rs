@@ -5,12 +5,13 @@ use crate::game_data::{
 use crate::session_data::ship_configs::ship_configuration::ShipConfigurationParts;
 use crate::session_data::ship_configs::versioned_id::VersionedId;
 use crate::session_data::ship_configs::{
-    MOCK_HARVESTING_SHIP_CONFIG_ID, MOCK_HARVESTING_SHIP_CONFIG_NAME, MOCK_MINING_SHIP_CONFIG_ID,
-    MOCK_MINING_SHIP_CONFIG_NAME, MOCK_TRANSPORT_SHIP_CONFIG_ID, MOCK_TRANSPORT_SHIP_CONFIG_NAME,
+    version, MOCK_HARVESTING_SHIP_CONFIG_ID, MOCK_HARVESTING_SHIP_CONFIG_NAME,
+    MOCK_MINING_SHIP_CONFIG_ID, MOCK_MINING_SHIP_CONFIG_NAME, MOCK_TRANSPORT_SHIP_CONFIG_ID,
+    MOCK_TRANSPORT_SHIP_CONFIG_NAME,
 };
 use crate::session_data::{ShipConfigId, ShipConfiguration, ShipConfigurationVersions};
 use bevy::asset::Asset;
-use bevy::prelude::{Resource, TypePath, World};
+use bevy::prelude::{Event, EventWriter, Resource, TypePath, World};
 use bevy::utils::HashMap;
 use leafwing_manifest::identifier::Id;
 use leafwing_manifest::manifest::{Manifest, ManifestFormat};
@@ -19,6 +20,11 @@ use serde::Deserialize;
 #[derive(Resource, Asset, TypePath, Deserialize, Default)]
 pub struct ShipConfigurationManifest {
     items: HashMap<Id<ShipConfigurationVersions>, ShipConfigurationVersions>,
+}
+
+#[derive(Event)]
+pub struct ShipConfigurationAddedEvent {
+    pub(crate) id: ShipConfigId,
 }
 
 impl ShipConfigurationManifest {
@@ -31,6 +37,26 @@ impl ShipConfigurationManifest {
     #[allow(dead_code)]
     pub fn get_latest(&self, version: &ShipConfigId) -> Option<&ShipConfiguration> {
         Some(self.items.get(&version.id)?.latest())
+    }
+
+    /// Inserts a new [ShipConfiguration] into this collection.
+    #[allow(dead_code)]
+    pub fn insert_new(
+        &mut self,
+        name: &str,
+        initial_configuration: ShipConfiguration,
+        mut added_events: EventWriter<ShipConfigurationAddedEvent>,
+    ) {
+        let id = VersionedId::from_name(name).id;
+        self.items
+            .insert(id, ShipConfigurationVersions::new(initial_configuration));
+
+        added_events.send(ShipConfigurationAddedEvent {
+            id: ShipConfigId {
+                id,
+                version: version::INITIAL_VERSION,
+            },
+        });
     }
 
     #[must_use]
@@ -94,11 +120,25 @@ impl Manifest for ShipConfigurationManifest {
 
     fn from_raw_manifest(
         raw_manifest: Self::RawManifest,
-        _world: &mut World,
+        world: &mut World,
     ) -> Result<Self, Self::ConversionError> {
-        Ok(Self {
-            items: raw_manifest.items,
-        })
+        let mut result = Self::default();
+        let mut events = Vec::new();
+
+        for (id, configs) in raw_manifest.items {
+            events.extend(configs.versions.iter().map(|(version, _)| {
+                ShipConfigurationAddedEvent {
+                    id: ShipConfigId {
+                        id,
+                        version: *version,
+                    },
+                }
+            }));
+            result.items.insert(id, configs);
+        }
+
+        world.send_event_batch(events);
+        Ok(result)
     }
 
     #[must_use]

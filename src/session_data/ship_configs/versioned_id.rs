@@ -3,6 +3,7 @@ use leafwing_manifest::identifier::Id;
 use serde::ser::SerializeStruct;
 use serde::{Deserialize, Serialize, Serializer};
 use std::fmt::{Debug, Formatter};
+use std::hash::{Hash, Hasher};
 
 #[derive(Deserialize)]
 pub struct VersionedId<T> {
@@ -25,6 +26,13 @@ impl<T> VersionedId<T> {
             id: Id::from_name(name),
             version,
         }
+    }
+}
+
+impl<T> Hash for VersionedId<T> {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.id.hash(state);
+        self.version.hash(state);
     }
 }
 
