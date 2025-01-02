@@ -2,6 +2,7 @@ use crate::components::{
     AsteroidMiningComponent, Engine, GasHarvestingComponent, Inventory, Sector, SelectableEntity,
     Ship,
 };
+use crate::constants;
 use crate::persistence::{PersistentShipId, ShipIdMap};
 use crate::session_data::ShipConfiguration;
 use crate::simulation::physics::ShipVelocity;
@@ -9,14 +10,12 @@ use crate::simulation::prelude::simulation_transform::SimulationScale;
 use crate::simulation::ship_ai::{BehaviorBuilder, TaskQueue};
 use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::utils::{SectorEntity, ShipEntity};
-use crate::{constants, SpriteHandles};
 use bevy::core::Name;
 use bevy::math::Vec2;
 use bevy::prelude::{Commands, Query, Rot2, Sprite};
 
 pub fn spawn_ship(
     commands: &mut Commands,
-    sprites: &SpriteHandles,
     id: PersistentShipId,
     name: String,
     sector_query: &mut Query<&mut Sector>,
@@ -41,7 +40,7 @@ pub fn spawn_ship(
         velocity,
         Inventory::new(ship_configuration.computed_stats.inventory_size),
         TaskQueue::new(),
-        Sprite::from_image(sprites.ship.clone()),
+        Sprite::from_image(ship_configuration.sprite.clone()),
         simulation_transform.as_transform(constants::z_layers::SHIP),
         simulation_transform,
         SimulationScale::default(),

@@ -3,6 +3,7 @@ use crate::game_data::{
 };
 use crate::session_data::ShipConfigId;
 use crate::simulation::prelude::Milliseconds;
+use bevy::prelude::{Handle, Image};
 use serde::Deserialize;
 
 /// Defines the individual parts from which a ship is built.
@@ -15,6 +16,10 @@ pub struct ShipConfiguration {
     pub parts: ShipConfigurationParts,
     pub computed_stats: ShipConfigurationComputedStats,
     pub engine_tuning: EngineTuning,
+
+    // TODO: should be customizable by the user to some degree
+    #[serde(skip)]
+    pub sprite: Handle<Image>,
 }
 
 impl ShipConfiguration {
@@ -29,6 +34,7 @@ impl ShipConfiguration {
         let computed_stats = parts.compute_stats(&engine_tuning, ship_hulls, ship_weapons);
         Self {
             id,
+            sprite: ship_hulls.get_by_ref(&parts.hull).unwrap().sprite.clone(),
             name,
             parts,
             engine_tuning,

@@ -6,7 +6,6 @@ use crate::session_data::{ShipConfigId, ShipConfigurationManifest};
 use crate::simulation::prelude::ShipVelocity;
 use crate::simulation::ship_ai::BehaviorBuilder;
 use crate::utils::entity_spawners;
-use crate::SpriteHandles;
 use bevy::ecs::system::SystemParam;
 use bevy::prelude::{Commands, Query, Res};
 
@@ -15,7 +14,6 @@ type SaveData = SaveDataCollection<ShipSaveData>;
 #[derive(SystemParam)]
 pub struct Args<'w, 's> {
     commands: Commands<'w, 's>,
-    sprites: Res<'w, SpriteHandles>,
     sectors: Query<'w, 's, &'static mut Sector>,
     sector_id_map: Res<'w, SectorIdMap>,
     ship_configurations: Res<'w, ShipConfigurationManifest>,
@@ -61,7 +59,6 @@ impl ShipSaveData {
         let sector_entity = args.sector_id_map.id_to_entity()[&self.position.sector];
         entity_spawners::spawn_ship(
             &mut args.commands,
-            &args.sprites,
             self.id,
             self.name.clone(),
             &mut args.sectors,

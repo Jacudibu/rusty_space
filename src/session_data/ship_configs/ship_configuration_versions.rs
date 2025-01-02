@@ -86,6 +86,7 @@ mod test {
             parts: mock_parts(),
             engine_tuning: EngineTuning::default(),
             computed_stats: mock_stats(),
+            sprite: Default::default(),
         });
 
         let next_version = versions.next_version();
@@ -95,6 +96,7 @@ mod test {
             parts: mock_parts(),
             engine_tuning: EngineTuning::default(),
             computed_stats: mock_stats(),
+            sprite: Default::default(),
         });
 
         assert_eq!(next_version, versions.latest().id.version);

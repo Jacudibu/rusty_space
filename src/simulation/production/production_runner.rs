@@ -12,13 +12,12 @@ use crate::simulation::production::shipyard_component::ShipyardComponent;
 use crate::simulation::production::state::{GlobalProductionState, SingleProductionState};
 use crate::simulation::production::{InventoryUpdateForProductionEvent, ProductionComponent};
 use crate::simulation::ship_ai::BehaviorBuilder;
+use crate::utils;
 use crate::utils::entity_spawners;
-use crate::{utils, SpriteHandles};
 
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
 pub fn check_if_production_is_finished_and_start_new_one(
     mut commands: Commands,
-    sprites: Res<SpriteHandles>,
     mut sector_query: Query<&mut Sector>,
     mut ship_id_map: ResMut<ShipIdMap>,
     simulation_time: Res<SimulationTime>,
@@ -75,7 +74,6 @@ pub fn check_if_production_is_finished_and_start_new_one(
             ),
             ProductionKind::Shipyard(module_id) => process_finished_ship_production(
                 &mut commands,
-                &sprites,
                 &mut sector_query,
                 &mut ship_id_map,
                 &ship_configs,
@@ -96,7 +94,6 @@ pub fn check_if_production_is_finished_and_start_new_one(
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
 fn process_finished_ship_production(
     commands: &mut Commands,
-    sprites: &SpriteHandles,
     sector_query: &mut Query<&mut Sector>,
     ship_id_map: &mut ResMut<ShipIdMap>,
     ship_configs: &ShipConfigurationManifest,
@@ -131,7 +128,6 @@ fn process_finished_ship_production(
 
     entity_spawners::spawn_ship(
         commands,
-        sprites,
         PersistentShipId::next(),
         ship_configuration.name.clone(),
         sector_query,
