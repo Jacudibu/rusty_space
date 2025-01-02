@@ -1,5 +1,7 @@
 use leafwing_manifest::identifier::Id;
 
+mod raw_ship_hull;
+mod raw_ship_hull_manifest;
 mod ship_hull;
 mod ship_hull_manifest;
 
