@@ -10,4 +10,5 @@ pub use {ship_hull::ShipHullData, ship_hull_manifest::ShipHullManifest};
 
 pub type ShipHullId = Id<ShipHullData>;
 
-create_id_constants!(ShipHullId, MOCK_SHIP_HULL_A);
+create_id_constants!(ShipHullId, SHIP_HULL_TRANSPORT);
+create_id_constants!(ShipHullId, SHIP_HULL_MINER);

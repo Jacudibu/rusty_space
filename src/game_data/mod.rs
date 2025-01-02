@@ -29,7 +29,9 @@ pub use {
         RecipeData, RecipeElement, RecipeId, RecipeManifest, MOCK_RECIPE_A_ID, MOCK_RECIPE_B_ID,
         MOCK_RECIPE_C_ID,
     },
-    ship_hull_data::{ShipHullData, ShipHullId, ShipHullManifest, MOCK_SHIP_HULL_A_ID},
+    ship_hull_data::{
+        ShipHullData, ShipHullId, ShipHullManifest, SHIP_HULL_MINER_ID, SHIP_HULL_TRANSPORT_ID,
+    },
     ship_weapon_data::{
         ShipWeaponData, ShipWeaponId, ShipWeaponManifest, GAS_COLLECTOR_ID, ORE_MINING_LASER_ID,
     },

@@ -55,7 +55,7 @@ impl ShipConfigurationVersions {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::game_data::MOCK_SHIP_HULL_A_ID;
+    use crate::game_data::SHIP_HULL_TRANSPORT_ID;
     use crate::session_data::ship_configs::ship_configuration::{
         EngineStats, EngineTuning, ShipConfigurationComputedStats, ShipConfigurationParts,
     };
@@ -63,7 +63,7 @@ mod test {
 
     fn mock_parts() -> ShipConfigurationParts {
         ShipConfigurationParts {
-            hull: MOCK_SHIP_HULL_A_ID,
+            hull: SHIP_HULL_TRANSPORT_ID,
             weapons: vec![],
         }
     }

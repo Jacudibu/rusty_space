@@ -1,6 +1,6 @@
 use crate::game_data::{
-    ShipHullManifest, ShipWeaponManifest, GAS_COLLECTOR_ID, MOCK_SHIP_HULL_A_ID,
-    ORE_MINING_LASER_ID,
+    ShipHullManifest, ShipWeaponManifest, GAS_COLLECTOR_ID, ORE_MINING_LASER_ID,
+    SHIP_HULL_MINER_ID, SHIP_HULL_TRANSPORT_ID,
 };
 use crate::session_data::ship_configs::ship_configuration::ShipConfigurationParts;
 use crate::session_data::ship_configs::versioned_id::VersionedId;
@@ -71,7 +71,7 @@ impl ShipConfigurationManifest {
                 MOCK_TRANSPORT_SHIP_CONFIG_ID,
                 "Transport".into(),
                 ShipConfigurationParts {
-                    hull: MOCK_SHIP_HULL_A_ID,
+                    hull: SHIP_HULL_TRANSPORT_ID,
                     weapons: vec![],
                 },
                 hulls,
@@ -85,7 +85,7 @@ impl ShipConfigurationManifest {
                 MOCK_MINING_SHIP_CONFIG_ID,
                 "Miner".into(),
                 ShipConfigurationParts {
-                    hull: MOCK_SHIP_HULL_A_ID,
+                    hull: SHIP_HULL_MINER_ID,
                     weapons: vec![ORE_MINING_LASER_ID, ORE_MINING_LASER_ID],
                 },
                 hulls,
@@ -99,7 +99,7 @@ impl ShipConfigurationManifest {
                 MOCK_HARVESTING_SHIP_CONFIG_ID,
                 "Harvester".into(),
                 ShipConfigurationParts {
-                    hull: MOCK_SHIP_HULL_A_ID,
+                    hull: SHIP_HULL_MINER_ID,
                     weapons: vec![GAS_COLLECTOR_ID, GAS_COLLECTOR_ID],
                 },
                 hulls,
