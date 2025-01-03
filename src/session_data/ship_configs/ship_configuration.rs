@@ -1,12 +1,11 @@
 use crate::game_data::{
     RecipeElement, ShipHullData, ShipHullId, ShipHullManifest, ShipWeaponId, ShipWeaponManifest,
 };
+use crate::image_generator;
 use crate::session_data::ShipConfigId;
 use crate::simulation::prelude::Milliseconds;
-use crate::sprite_generator;
 use bevy::prelude::{Assets, Handle, Image};
 use serde::Deserialize;
-use std::path::Path;
 
 /// Defines the individual parts from which a ship is built.
 ///
@@ -19,7 +18,7 @@ pub struct ShipConfiguration {
     pub computed_stats: ShipConfigurationComputedStats,
     pub engine_tuning: EngineTuning,
 
-    // TODO: sprites should be customizable per config by the user to some degree
+    // TODO: These sprites should be customizable per config by the user to some degree
     #[serde(skip)]
     pub sprite: Handle<Image>,
     #[serde(skip)]
@@ -39,9 +38,10 @@ impl ShipConfiguration {
         let computed_stats = parts.compute_stats(&engine_tuning, ship_hulls, ship_weapons);
 
         let sprite = ship_hulls.get_by_ref(&parts.hull).unwrap().sprite.clone();
-        let path = Path::new("assets").join(sprite.path().unwrap().path());
-        let sprite_selected =
-            sprite_generator::generate_image_with_highlighted_corners(path, image_assets);
+        let sprite_selected = image_generator::generate_image_with_highlighted_corners_from_handle(
+            &sprite,
+            image_assets,
+        );
 
         Self {
             id,

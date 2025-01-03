@@ -2,8 +2,8 @@ use crate::game_data::GameData;
 use bevy::asset::AssetServer;
 use bevy::core::Name;
 use bevy::prelude::{
-    App, Camera2d, Commands, Handle, Image, ImagePlugin, PluginGroup, Res, Resource, Startup,
-    Window, WindowPlugin,
+    App, Assets, Camera2d, Commands, Handle, Image, ImagePlugin, PluginGroup, Res, ResMut,
+    Resource, Startup, Window, WindowPlugin,
 };
 use bevy::DefaultPlugins;
 mod camera;
@@ -14,12 +14,12 @@ mod entity_selection;
 mod game_data;
 mod gizmos;
 mod gui;
+mod image_generator;
 mod map_layout;
 mod pathfinding;
 mod persistence;
 mod session_data;
 mod simulation;
-mod sprite_generator;
 mod states;
 mod trade_plan;
 mod utils;
@@ -88,16 +88,32 @@ pub struct SpriteHandles {
     icon_ship: Handle<Image>,
 }
 
-pub fn initialize_data(mut commands: Commands, asset_server: Res<AssetServer>) {
+pub fn initialize_data(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut image_assets: ResMut<Assets<Image>>,
+) {
     let sprites = SpriteHandles {
         gate: asset_server.load("gate.png"),
-        gate_selected: asset_server.load("gate_selected.png"),
+        gate_selected: image_generator::generate_image_with_highlighted_corners_from_asset_path(
+            "gate.png",
+            &mut image_assets,
+        ),
         planet: asset_server.load("planet.png"),
-        planet_selected: asset_server.load("planet_selected.png"),
+        planet_selected: image_generator::generate_image_with_highlighted_corners_from_asset_path(
+            "planet.png",
+            &mut image_assets,
+        ),
         star: asset_server.load("star.png"),
-        star_selected: asset_server.load("star_selected.png"),
+        star_selected: image_generator::generate_image_with_highlighted_corners_from_asset_path(
+            "star.png",
+            &mut image_assets,
+        ),
         station: asset_server.load("station.png"),
-        station_selected: asset_server.load("station_selected.png"),
+        station_selected: image_generator::generate_image_with_highlighted_corners_from_asset_path(
+            "station.png",
+            &mut image_assets,
+        ),
         icon_unknown: asset_server.load("ui_icons/items/unknown.png"),
         icon_ship: asset_server.load("ui_icons/items/ship.png"),
     };

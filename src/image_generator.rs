@@ -29,12 +29,38 @@ fn is_in_corner(
         || is_on_edge(y, x, height, width, offset_to_corner, corner_length)
 }
 
-/// Generates an [Image] with highlighted corners from an image file at the provided path and returns the strong [Handle] to it.
+/// Generates an [Image] with highlighted corners from the provided path inside the assets folder and returns the strong [Handle] to it.
 #[must_use]
-pub fn generate_image_with_highlighted_corners<P>(
+pub fn generate_image_with_highlighted_corners_from_asset_path<P>(
     path: P,
     assets: &mut Assets<Image>,
 ) -> Handle<Image>
+where
+    P: AsRef<Path>,
+{
+    generate_image_with_highlighted_corners(Path::new("assets").join(path), assets)
+}
+
+/// Generates an [Image] with highlighted corners from the provided Handle<Image>'s path and returns the strong [Handle] to it.
+#[must_use]
+pub fn generate_image_with_highlighted_corners_from_handle(
+    handle: &Handle<Image>,
+    assets: &mut Assets<Image>,
+) -> Handle<Image> {
+    generate_image_with_highlighted_corners(
+        Path::new("assets").join(
+            handle
+                .path()
+                .expect("Handle must be strongly typed!")
+                .path(),
+        ),
+        assets,
+    )
+}
+
+/// Generates an [Image] with highlighted corners from an image file at the provided path and returns the strong [Handle] to it.
+#[must_use]
+fn generate_image_with_highlighted_corners<P>(path: P, assets: &mut Assets<Image>) -> Handle<Image>
 where
     P: AsRef<Path>,
 {

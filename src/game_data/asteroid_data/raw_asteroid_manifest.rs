@@ -21,7 +21,6 @@ impl RawAsteroidManifest {
                     amount_min: 200,
                     amount_max: 500,
                     sprite: "asteroid.png".into(),
-                    sprite_selected: "asteroid_selected.png".into(),
                     sprite_color: Color::WHITE,
                 },
                 RawAsteroidData {
@@ -30,7 +29,6 @@ impl RawAsteroidManifest {
                     amount_min: 200,
                     amount_max: 500,
                     sprite: "asteroid_silicon.png".into(),
-                    sprite_selected: "asteroid_silicon_selected.png".into(),
                     sprite_color: Color::WHITE,
                 },
             ],

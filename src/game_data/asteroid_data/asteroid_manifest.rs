@@ -4,7 +4,11 @@ use crate::game_data::asteroid_data::raw_asteroid_manifest::RawAsteroidManifest;
 use crate::game_data::asteroid_data::AsteroidDataId;
 use crate::game_data::from_mock_data::FromMockData;
 use crate::game_data::generic_manifest::GenericManifest;
-use bevy::prelude::{AssetServer, World};
+use crate::image_generator;
+use bevy::asset::Assets;
+use bevy::ecs::system::SystemState;
+use bevy::image::Image;
+use bevy::prelude::{AssetServer, Res, ResMut, World};
 use bevy::utils::HashMap;
 use leafwing_manifest::identifier::Id;
 use leafwing_manifest::manifest::{Manifest, ManifestFormat};
@@ -30,7 +34,10 @@ impl Manifest for AsteroidManifest {
         raw_manifest: Self::RawManifest,
         world: &mut World,
     ) -> Result<Self, Self::ConversionError> {
-        let asset_server = world.resource::<AssetServer>();
+        let mut system_state: SystemState<(ResMut<Assets<Image>>, Res<AssetServer>)> =
+            SystemState::new(world);
+
+        let (mut image_assets, asset_server) = system_state.get_mut(world);
 
         let items: HashMap<_, _> = raw_manifest
             .raw_data
@@ -42,8 +49,12 @@ impl Manifest for AsteroidManifest {
                     name: raw_item.name,
                     material: raw_item.material,
                     amount: raw_item.amount_min..raw_item.amount_max,
+                    sprite_selected:
+                        image_generator::generate_image_with_highlighted_corners_from_asset_path(
+                            &raw_item.sprite,
+                            &mut image_assets,
+                        ),
                     sprite: asset_server.load(raw_item.sprite),
-                    sprite_selected: asset_server.load(raw_item.sprite_selected),
                     sprite_color: raw_item.sprite_color,
                 };
 
