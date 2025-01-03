@@ -38,7 +38,9 @@ pub fn on_selection_changed(
                     .clone(),
                 SelectableEntity::Gate => sprite_handles.gate_selected.clone(),
                 SelectableEntity::Planet => sprite_handles.planet_selected.clone(),
-                SelectableEntity::Ship(_) => sprite_handles.ship_selected.clone(),
+                SelectableEntity::Ship(id) => {
+                    ship_configs.get_by_id(id).unwrap().sprite_selected.clone()
+                }
                 SelectableEntity::Star => sprite_handles.star_selected.clone(),
                 SelectableEntity::Station => sprite_handles.station_selected.clone(),
             }

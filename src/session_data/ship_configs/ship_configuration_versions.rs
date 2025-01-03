@@ -96,6 +96,7 @@ mod test {
             engine_tuning: EngineTuning::default(),
             computed_stats: mock_stats(),
             sprite: Default::default(),
+            sprite_selected: Default::default(),
         });
 
         let next_version = versions.next_version();
@@ -106,6 +107,7 @@ mod test {
             engine_tuning: EngineTuning::default(),
             computed_stats: mock_stats(),
             sprite: Default::default(),
+            sprite_selected: Default::default(),
         });
 
         assert_eq!(next_version, versions.latest().id.version);

@@ -11,7 +11,8 @@ use crate::session_data::ship_configs::{
 };
 use crate::session_data::{ShipConfigId, ShipConfiguration, ShipConfigurationVersions};
 use bevy::asset::Asset;
-use bevy::prelude::{Event, EventWriter, Resource, TypePath, World};
+use bevy::ecs::system::SystemState;
+use bevy::prelude::{Assets, Event, EventWriter, Image, Res, ResMut, Resource, TypePath, World};
 use bevy::utils::HashMap;
 use leafwing_manifest::identifier::Id;
 use leafwing_manifest::manifest::{Manifest, ManifestFormat};
@@ -61,8 +62,13 @@ impl ShipConfigurationManifest {
 
     #[must_use]
     pub fn mock_data(world: &mut World) -> Self {
-        let hulls = world.get_resource::<ShipHullManifest>().unwrap();
-        let weapons = world.get_resource::<ShipWeaponManifest>().unwrap();
+        let mut system_state: SystemState<(
+            ResMut<Assets<Image>>,
+            Res<ShipHullManifest>,
+            Res<ShipWeaponManifest>,
+        )> = SystemState::new(world);
+
+        let (mut image_assets, hulls, weapons) = system_state.get_mut(world);
 
         let mut mock_data = HashMap::new();
         mock_data.insert(
@@ -74,8 +80,9 @@ impl ShipConfigurationManifest {
                     hull: SHIP_HULL_TRANSPORT_ID,
                     weapons: vec![],
                 },
-                hulls,
-                weapons,
+                &hulls,
+                &weapons,
+                &mut image_assets,
             )),
         );
 
@@ -88,8 +95,9 @@ impl ShipConfigurationManifest {
                     hull: SHIP_HULL_MINER_ID,
                     weapons: vec![ORE_MINING_LASER_ID, ORE_MINING_LASER_ID],
                 },
-                hulls,
-                weapons,
+                &hulls,
+                &weapons,
+                &mut image_assets,
             )),
         );
 
@@ -102,8 +110,9 @@ impl ShipConfigurationManifest {
                     hull: SHIP_HULL_MINER_ID,
                     weapons: vec![GAS_COLLECTOR_ID, GAS_COLLECTOR_ID],
                 },
-                hulls,
-                weapons,
+                &hulls,
+                &weapons,
+                &mut image_assets,
             )),
         );
 
