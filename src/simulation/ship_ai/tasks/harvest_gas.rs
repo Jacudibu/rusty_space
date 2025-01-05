@@ -1,6 +1,6 @@
 use crate::components::{GasHarvestingComponent, InteractionQueue, Inventory};
 use crate::constants;
-use crate::game_data::MOCK_ITEM_GAS_ID;
+use crate::game_data::HYDROGEN_ITEM_ID;
 use crate::simulation::prelude::{
     AwaitingSignal, CurrentSimulationTimestamp, SimulationTime, SimulationTimestamp,
 };
@@ -49,7 +49,7 @@ impl HarvestGas {
             .amount_per_second
             .min(inventory.capacity - inventory.used());
 
-        inventory.add_item(MOCK_ITEM_GAS_ID, harvested_amount);
+        inventory.add_item(HYDROGEN_ITEM_ID, harvested_amount);
 
         if inventory.used() == inventory.capacity {
             TaskResult::Finished

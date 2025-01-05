@@ -1,8 +1,9 @@
 use crate::game_data::from_mock_data::FromMockData;
 use crate::game_data::generic_manifest_without_raw_data::GenericManifestWithoutRawData;
 use crate::game_data::{
-    RecipeData, RecipeElement, MOCK_ITEM_A_ID, MOCK_ITEM_B_ID, MOCK_ITEM_C_ID, MOCK_RECIPE_A_ID,
-    MOCK_RECIPE_B_ID, MOCK_RECIPE_C_ID,
+    RecipeData, RecipeElement, CRYSTAL_ORE_ITEM_ID, HYDROGEN_ITEM_ID, IRON_ORE_ITEM_ID,
+    REFINED_METALS_ITEM_ID, REFINED_METALS_RECIPE_ID, SILICA_ITEM_ID, SILICA_RECIPE_ID,
+    WAFERS_RECIPE_ID, WAFER_ITEM_ID,
 };
 use bevy::prelude::World;
 use bevy::utils::HashMap;
@@ -15,50 +16,56 @@ impl FromMockData for RecipeManifest {
     fn from_mock_data(_world: &mut World) -> Self {
         let mut mock_recipes = HashMap::new();
         mock_recipes.insert(
-            MOCK_RECIPE_A_ID,
+            SILICA_RECIPE_ID,
             RecipeData {
-                id: MOCK_RECIPE_A_ID,
-                name: "5C -> 10A".into(),
+                id: SILICA_RECIPE_ID,
+                name: "5 CRY -> 10 SIL".into(),
                 duration: 10000,
                 input: vec![RecipeElement {
-                    item_id: MOCK_ITEM_C_ID,
+                    item_id: CRYSTAL_ORE_ITEM_ID,
                     amount: 5,
                 }],
                 output: vec![RecipeElement {
-                    item_id: MOCK_ITEM_A_ID,
+                    item_id: SILICA_ITEM_ID,
                     amount: 10,
                 }],
             },
         );
         mock_recipes.insert(
-            MOCK_RECIPE_B_ID,
+            REFINED_METALS_RECIPE_ID,
             RecipeData {
-                id: MOCK_RECIPE_B_ID,
-                name: "5A -> 13B".into(),
+                id: REFINED_METALS_RECIPE_ID,
+                name: "5 ORE -> 13 RM".into(),
                 duration: 20000,
                 input: vec![RecipeElement {
-                    item_id: MOCK_ITEM_A_ID,
+                    item_id: IRON_ORE_ITEM_ID,
                     amount: 5,
                 }],
                 output: vec![RecipeElement {
-                    item_id: MOCK_ITEM_B_ID,
+                    item_id: REFINED_METALS_ITEM_ID,
                     amount: 13,
                 }],
             },
         );
         mock_recipes.insert(
-            MOCK_RECIPE_C_ID,
+            WAFERS_RECIPE_ID,
             RecipeData {
-                id: MOCK_RECIPE_C_ID,
-                name: "5B -> 17C".into(),
+                id: WAFERS_RECIPE_ID,
+                name: "5 SIL + 5 H -> 5 WAF".into(),
                 duration: 30000,
-                input: vec![RecipeElement {
-                    item_id: MOCK_ITEM_B_ID,
-                    amount: 5,
-                }],
+                input: vec![
+                    RecipeElement {
+                        item_id: SILICA_ITEM_ID,
+                        amount: 5,
+                    },
+                    RecipeElement {
+                        item_id: HYDROGEN_ITEM_ID,
+                        amount: 5,
+                    },
+                ],
                 output: vec![RecipeElement {
-                    item_id: MOCK_ITEM_C_ID,
-                    amount: 17,
+                    item_id: WAFER_ITEM_ID,
+                    amount: 5,
                 }],
             },
         );

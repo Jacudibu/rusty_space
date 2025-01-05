@@ -3,7 +3,7 @@ use crate::components::{
     Ship, TradeOrder,
 };
 use crate::entity_selection::{MouseCursor, Selected};
-use crate::game_data::{AsteroidDataId, AsteroidManifest, GameData, MOCK_ASTEROID_ID};
+use crate::game_data::{AsteroidDataId, AsteroidManifest, GameData, IRON_ASTEROID_ID};
 use crate::map_layout::MapLayout;
 use crate::session_data::ship_configs::ShipConfigurationAddedEvent;
 use crate::session_data::{
@@ -135,7 +135,7 @@ impl UiIcons {
                 ExchangeWareData::Buy(_, _) => self.buy,
                 ExchangeWareData::Sell(_, _) => self.sell,
             },
-            TaskInsideQueue::MineAsteroid { .. } => *self.asteroids.get(&MOCK_ASTEROID_ID).unwrap(),
+            TaskInsideQueue::MineAsteroid { .. } => *self.asteroids.get(&IRON_ASTEROID_ID).unwrap(),
             TaskInsideQueue::HarvestGas { .. } => self.planet,
             TaskInsideQueue::AwaitingSignal => self.awaiting_signal,
             TaskInsideQueue::RequestAccess { .. } => self.awaiting_signal,
@@ -158,13 +158,13 @@ pub fn initialize(
         .ctx_mut()
         .style_mut(|style| style.visuals.window_shadow = Shadow::NONE);
 
-    let awaiting_signal = asset_server.load("ui_icons/awaiting_signal.png");
-    let idle = asset_server.load("ui_icons/idle.png");
-    let move_to = asset_server.load("ui_icons/move_to.png");
-    let dock_at = asset_server.load("ui_icons/move_to.png"); // TODO
-    let undock = asset_server.load("ui_icons/move_to.png"); // TODO
-    let buy = asset_server.load("ui_icons/buy.png");
-    let sell = asset_server.load("ui_icons/sell.png");
+    let awaiting_signal = asset_server.load("sprites/task_icons/awaiting_signal.png");
+    let idle = asset_server.load("sprites/task_icons/idle.png");
+    let move_to = asset_server.load("sprites/task_icons/move_to.png");
+    let dock_at = asset_server.load("sprites/task_icons/move_to.png"); // TODO
+    let undock = asset_server.load("sprites/task_icons/move_to.png"); // TODO
+    let buy = asset_server.load("sprites/task_icons/buy.png");
+    let sell = asset_server.load("sprites/task_icons/sell.png");
 
     let icons = UiIcons {
         asteroids: asteroid_manifest

@@ -1,9 +1,12 @@
 use crate::game_data::from_mock_data::FromMockData;
 use crate::game_data::generic_manifest_without_raw_data::GenericManifestWithoutRawData;
-use crate::game_data::production_module_data::MOCK_PRODUCTION_MODULE_A_ID;
+use crate::game_data::production_module_data::{
+    REFINED_METALS_PRODUCTION_MODULE_NAME, SILICA_PRODUCTION_MODULE_ID,
+    SILICA_PRODUCTION_MODULE_NAME, WAFERS_PRODUCTION_MODULE_NAME,
+};
 use crate::game_data::{
-    ProductionModuleData, MOCK_PRODUCTION_MODULE_B_ID, MOCK_PRODUCTION_MODULE_C_ID,
-    MOCK_RECIPE_A_ID, MOCK_RECIPE_B_ID, MOCK_RECIPE_C_ID,
+    ProductionModuleData, REFINED_METALS_PRODUCTION_MODULE_ID, REFINED_METALS_RECIPE_ID,
+    SILICA_RECIPE_ID, WAFERS_PRODUCTION_MODULE_ID, WAFERS_RECIPE_ID,
 };
 use bevy::prelude::World;
 use bevy::utils::HashMap;
@@ -16,27 +19,27 @@ impl FromMockData for ProductionModuleManifest {
     fn from_mock_data(_world: &mut World) -> Self {
         let mock_modules = HashMap::from([
             (
-                MOCK_PRODUCTION_MODULE_A_ID,
+                SILICA_PRODUCTION_MODULE_ID,
                 ProductionModuleData {
-                    id: MOCK_PRODUCTION_MODULE_A_ID,
-                    name: "Production Module A".to_string(),
-                    available_recipes: vec![MOCK_RECIPE_A_ID],
+                    id: SILICA_PRODUCTION_MODULE_ID,
+                    name: SILICA_PRODUCTION_MODULE_NAME.into(),
+                    available_recipes: vec![SILICA_RECIPE_ID],
                 },
             ),
             (
-                MOCK_PRODUCTION_MODULE_B_ID,
+                REFINED_METALS_PRODUCTION_MODULE_ID,
                 ProductionModuleData {
-                    id: MOCK_PRODUCTION_MODULE_B_ID,
-                    name: "Production Module B".to_string(),
-                    available_recipes: vec![MOCK_RECIPE_B_ID],
+                    id: REFINED_METALS_PRODUCTION_MODULE_ID,
+                    name: REFINED_METALS_PRODUCTION_MODULE_NAME.into(),
+                    available_recipes: vec![REFINED_METALS_RECIPE_ID],
                 },
             ),
             (
-                MOCK_PRODUCTION_MODULE_C_ID,
+                WAFERS_PRODUCTION_MODULE_ID,
                 ProductionModuleData {
-                    id: MOCK_PRODUCTION_MODULE_C_ID,
-                    name: "Production Module C".to_string(),
-                    available_recipes: vec![MOCK_RECIPE_C_ID],
+                    id: WAFERS_PRODUCTION_MODULE_ID,
+                    name: WAFERS_PRODUCTION_MODULE_NAME.into(),
+                    available_recipes: vec![WAFERS_RECIPE_ID],
                 },
             ),
         ]);

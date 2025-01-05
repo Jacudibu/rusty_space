@@ -10,7 +10,7 @@ pub type ProductionModuleId = Id<ProductionModuleData>;
 
 create_id_constants!(
     ProductionModuleId,
-    MOCK_PRODUCTION_MODULE_A,
-    MOCK_PRODUCTION_MODULE_B,
-    MOCK_PRODUCTION_MODULE_C
+    SILICA_PRODUCTION_MODULE,
+    REFINED_METALS_PRODUCTION_MODULE,
+    WAFERS_PRODUCTION_MODULE
 );

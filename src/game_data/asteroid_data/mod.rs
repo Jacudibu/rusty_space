@@ -10,5 +10,5 @@ pub use {asteroid_data_struct::AsteroidData, asteroid_manifest::AsteroidManifest
 
 pub type AsteroidDataId = Id<AsteroidData>;
 
-create_id_constants!(AsteroidDataId, MOCK_ASTEROID);
-create_id_constants!(AsteroidDataId, SILICON_ASTEROID);
+create_id_constants!(AsteroidDataId, IRON_ASTEROID);
+create_id_constants!(AsteroidDataId, CRYSTAL_ASTEROID);

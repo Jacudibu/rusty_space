@@ -16,18 +16,19 @@ use bevy::prelude::{Res, World};
 
 #[allow(unused)]
 pub use {
-    asteroid_data::{AsteroidDataId, AsteroidManifest, MOCK_ASTEROID_ID, SILICON_ASTEROID_ID},
+    asteroid_data::{AsteroidDataId, AsteroidManifest, CRYSTAL_ASTEROID_ID, IRON_ASTEROID_ID},
     item_data::{
-        ItemData, ItemId, ItemManifest, MOCK_ITEM_A_ID, MOCK_ITEM_B_ID, MOCK_ITEM_C_ID,
-        MOCK_ITEM_GAS_ID, MOCK_ITEM_ORE_ID,
+        ItemData, ItemId, ItemManifest, CRYSTAL_ORE_ITEM_ID, HYDROGEN_ITEM_ID, IRON_ORE_ITEM_ID,
+        REFINED_METALS_ITEM_ID, SILICA_ITEM_ID, WAFER_ITEM_ID,
     },
     production_module_data::{
         ProductionModuleData, ProductionModuleId, ProductionModuleManifest,
-        MOCK_PRODUCTION_MODULE_A_ID, MOCK_PRODUCTION_MODULE_B_ID, MOCK_PRODUCTION_MODULE_C_ID,
+        REFINED_METALS_PRODUCTION_MODULE_ID, SILICA_PRODUCTION_MODULE_ID,
+        WAFERS_PRODUCTION_MODULE_ID,
     },
     recipe_data::{
-        RecipeData, RecipeElement, RecipeId, RecipeManifest, MOCK_RECIPE_A_ID, MOCK_RECIPE_B_ID,
-        MOCK_RECIPE_C_ID,
+        RecipeData, RecipeElement, RecipeId, RecipeManifest, REFINED_METALS_RECIPE_ID,
+        SILICA_RECIPE_ID, WAFERS_RECIPE_ID,
     },
     ship_hull_data::{
         ShipHullData, ShipHullId, ShipHullManifest, SHIP_HULL_MINER_ID, SHIP_HULL_TRANSPORT_ID,

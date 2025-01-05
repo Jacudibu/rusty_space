@@ -8,7 +8,6 @@ use crate::simulation::production::{ProductionComponent, ShipyardComponent};
 use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::utils::{SectorEntity, StationEntity};
 use crate::{constants, SpriteHandles};
-use bevy::color::Color;
 use bevy::core::Name;
 use bevy::math::Vec2;
 use bevy::prelude::{default, Commands, Query, Sprite};
@@ -48,7 +47,6 @@ pub fn spawn_station(
             Name::new(format!("{name} (Icon)")),
             Sprite {
                 image: icon_sprite,
-                color: Color::linear_rgb(0.0, 0.0, 0.0),
                 ..default()
             },
             simulation_transform.as_transform(constants::z_layers::STATION_ICON),

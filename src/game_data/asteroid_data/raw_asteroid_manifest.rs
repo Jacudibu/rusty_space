@@ -1,7 +1,7 @@
 use crate::game_data::asteroid_data::raw_asteroid_data::RawAsteroidData;
-use crate::game_data::asteroid_data::{MOCK_ASTEROID_NAME, SILICON_ASTEROID_NAME};
-use crate::game_data::item_data::MOCK_ITEM_ORE_SILICON_ID;
-use crate::game_data::MOCK_ITEM_ORE_ID;
+use crate::game_data::asteroid_data::{CRYSTAL_ASTEROID_NAME, IRON_ASTEROID_NAME};
+use crate::game_data::item_data::CRYSTAL_ORE_ITEM_ID;
+use crate::game_data::IRON_ORE_ITEM_ID;
 use bevy::color::Color;
 use bevy::prelude::{Asset, TypePath};
 use serde::Deserialize;
@@ -16,19 +16,19 @@ impl RawAsteroidManifest {
         Self {
             raw_data: vec![
                 RawAsteroidData {
-                    name: MOCK_ASTEROID_NAME.into(),
-                    material: MOCK_ITEM_ORE_ID,
+                    name: IRON_ASTEROID_NAME.into(),
+                    material: IRON_ORE_ITEM_ID,
                     amount_min: 200,
                     amount_max: 500,
-                    sprite: "asteroid.png".into(),
+                    sprite: "sprites/asteroids/iron_asteroid.png".into(),
                     sprite_color: Color::WHITE,
                 },
                 RawAsteroidData {
-                    name: SILICON_ASTEROID_NAME.into(),
-                    material: MOCK_ITEM_ORE_SILICON_ID,
+                    name: CRYSTAL_ASTEROID_NAME.into(),
+                    material: CRYSTAL_ORE_ITEM_ID,
                     amount_min: 200,
                     amount_max: 500,
-                    sprite: "asteroid_silicon.png".into(),
+                    sprite: "sprites/asteroids/crystal_asteroid.png".into(),
                     sprite_color: Color::WHITE,
                 },
             ],

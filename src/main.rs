@@ -94,28 +94,28 @@ pub fn initialize_data(
     mut image_assets: ResMut<Assets<Image>>,
 ) {
     let sprites = SpriteHandles {
-        gate: asset_server.load("gate.png"),
+        gate: asset_server.load("sprites/gate.png"),
         gate_selected: image_generator::generate_image_with_highlighted_corners_from_asset_path(
-            "gate.png",
+            "sprites/gate.png",
             &mut image_assets,
         ),
-        planet: asset_server.load("planet.png"),
+        planet: asset_server.load("sprites/planet.png"),
         planet_selected: image_generator::generate_image_with_highlighted_corners_from_asset_path(
-            "planet.png",
+            "sprites/planet.png",
             &mut image_assets,
         ),
-        star: asset_server.load("star.png"),
+        star: asset_server.load("sprites/star.png"),
         star_selected: image_generator::generate_image_with_highlighted_corners_from_asset_path(
-            "star.png",
+            "sprites/star.png",
             &mut image_assets,
         ),
-        station: asset_server.load("station.png"),
+        station: asset_server.load("sprites/station.png"),
         station_selected: image_generator::generate_image_with_highlighted_corners_from_asset_path(
-            "station.png",
+            "sprites/station.png",
             &mut image_assets,
         ),
-        icon_unknown: asset_server.load("ui_icons/items/unknown.png"),
-        icon_ship: asset_server.load("ui_icons/items/ship.png"),
+        icon_unknown: asset_server.load("sprites/unknown.png"),
+        icon_ship: asset_server.load("sprites/ships/ship_fighter.png"),
     };
     commands.insert_resource(sprites);
 

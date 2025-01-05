@@ -8,4 +8,9 @@ pub use {recipe::*, recipe_manifest::*};
 
 pub type RecipeId = Id<RecipeData>;
 
-create_id_constants!(RecipeId, MOCK_RECIPE_A, MOCK_RECIPE_B, MOCK_RECIPE_C);
+create_id_constants!(
+    RecipeId,
+    SILICA_RECIPE,
+    REFINED_METALS_RECIPE,
+    WAFERS_RECIPE
+);

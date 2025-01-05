@@ -1,6 +1,6 @@
 use crate::game_data::ship_hull_data::raw_ship_hull::{RawShipHullData, ShipManeuverability};
 use crate::game_data::ship_hull_data::{SHIP_HULL_MINER_NAME, SHIP_HULL_TRANSPORT_NAME};
-use crate::game_data::{RecipeElement, MOCK_ITEM_A_ID, MOCK_ITEM_B_ID, MOCK_ITEM_C_ID};
+use crate::game_data::{RecipeElement, REFINED_METALS_ITEM_ID, WAFER_ITEM_ID};
 use crate::utils::ShipSize;
 use bevy::asset::Asset;
 use bevy::prelude::TypePath;
@@ -17,7 +17,7 @@ impl RawShipHullManifest {
             raw_data: vec![
                 RawShipHullData {
                     name: SHIP_HULL_TRANSPORT_NAME.into(),
-                    sprite: "ship_transport.png".into(),
+                    sprite: "sprites/ships/ship_civilian.png".into(),
                     ship_size: ShipSize::S,
                     weapon_slots: 0,
                     inventory_size: 100,
@@ -31,22 +31,18 @@ impl RawShipHullManifest {
                     },
                     required_materials: vec![
                         RecipeElement {
-                            item_id: MOCK_ITEM_A_ID,
+                            item_id: REFINED_METALS_ITEM_ID,
                             amount: 50,
                         },
                         RecipeElement {
-                            item_id: MOCK_ITEM_B_ID,
-                            amount: 23,
-                        },
-                        RecipeElement {
-                            item_id: MOCK_ITEM_C_ID,
+                            item_id: WAFER_ITEM_ID,
                             amount: 74,
                         },
                     ],
                 },
                 RawShipHullData {
                     name: SHIP_HULL_MINER_NAME.into(),
-                    sprite: "ship.png".into(),
+                    sprite: "sprites/ships/ship_fighter.png".into(),
                     ship_size: ShipSize::S,
                     weapon_slots: 2,
                     inventory_size: 100,
@@ -60,15 +56,11 @@ impl RawShipHullManifest {
                     },
                     required_materials: vec![
                         RecipeElement {
-                            item_id: MOCK_ITEM_A_ID,
+                            item_id: REFINED_METALS_ITEM_ID,
                             amount: 50,
                         },
                         RecipeElement {
-                            item_id: MOCK_ITEM_B_ID,
-                            amount: 23,
-                        },
-                        RecipeElement {
-                            item_id: MOCK_ITEM_C_ID,
+                            item_id: WAFER_ITEM_ID,
                             amount: 74,
                         },
                     ],

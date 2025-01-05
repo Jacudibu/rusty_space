@@ -2,7 +2,7 @@ use crate::game_data::from_mock_data::FromMockData;
 use crate::game_data::generic_manifest_without_raw_data::GenericManifestWithoutRawData;
 use crate::game_data::ship_weapon_data::ship_weapon::ShipWeaponData;
 use crate::game_data::ship_weapon_data::{GAS_COLLECTOR_ID, ORE_MINING_LASER_ID};
-use crate::game_data::{RecipeElement, MOCK_ITEM_A_ID, MOCK_ITEM_B_ID};
+use crate::game_data::{RecipeElement, REFINED_METALS_ITEM_ID, SILICA_ITEM_ID};
 use bevy::prelude::World;
 use bevy::utils::HashMap;
 
@@ -21,7 +21,7 @@ impl FromMockData for ShipWeaponManifest {
                 gas_harvesting_strength: None,
                 asteroid_mining_strength: Some(10),
                 required_materials: vec![RecipeElement {
-                    item_id: MOCK_ITEM_A_ID,
+                    item_id: REFINED_METALS_ITEM_ID,
                     amount: 5,
                 }],
             },
@@ -34,7 +34,7 @@ impl FromMockData for ShipWeaponManifest {
                 gas_harvesting_strength: Some(10),
                 asteroid_mining_strength: None,
                 required_materials: vec![RecipeElement {
-                    item_id: MOCK_ITEM_B_ID,
+                    item_id: SILICA_ITEM_ID,
                     amount: 5,
                 }],
             },
