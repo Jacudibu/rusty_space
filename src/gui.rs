@@ -534,8 +534,12 @@ pub fn list_selection_details(
                                     TaskInsideQueue::MineAsteroid { target, .. } => {
                                         format!("Mining {}", names.get(target.into()).unwrap())
                                     }
-                                    TaskInsideQueue::HarvestGas { target } => {
-                                        format!("Harvesting {}", names.get(target.into()).unwrap())
+                                    TaskInsideQueue::HarvestGas { target, gas } => {
+                                        format!(
+                                            "Harvesting {} from {}",
+                                            game_data.items.get_by_ref(gas).unwrap().name,
+                                            names.get(target.into()).unwrap()
+                                        )
                                     }
                                     TaskInsideQueue::AwaitingSignal => {
                                         "Awaiting Signal".to_string()

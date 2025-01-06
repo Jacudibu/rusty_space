@@ -14,12 +14,13 @@ pub enum BehaviorBuilder {
     },
     AutoMine {
         next_idle_update: SimulationTimestamp,
-        mined_ore_id: ItemId,
+        mined_ore: ItemId,
         state: AutoMineState,
     },
     AutoHarvest {
         next_idle_update: SimulationTimestamp,
         state: AutoMineState,
+        harvested_gas: ItemId,
     },
 }
 
@@ -34,19 +35,21 @@ impl BehaviorBuilder {
             }
             BehaviorBuilder::AutoMine {
                 next_idle_update,
-                mined_ore_id,
+                mined_ore,
                 state,
             } => entity_commands.insert(AutoMineBehavior {
                 next_idle_update,
-                mined_ore_id,
+                mined_ore,
                 state,
             }),
             BehaviorBuilder::AutoHarvest {
                 next_idle_update,
                 state,
+                harvested_gas,
             } => entity_commands.insert(AutoHarvestBehavior {
                 next_idle_update,
                 state,
+                harvested_gas,
             }),
         };
     }

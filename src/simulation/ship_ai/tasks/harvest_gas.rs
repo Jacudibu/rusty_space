@@ -1,6 +1,6 @@
 use crate::components::{GasHarvestingComponent, InteractionQueue, Inventory};
 use crate::constants;
-use crate::game_data::HYDROGEN_ITEM_ID;
+use crate::game_data::ItemId;
 use crate::simulation::prelude::{
     AwaitingSignal, CurrentSimulationTimestamp, SimulationTime, SimulationTimestamp,
 };
@@ -22,13 +22,15 @@ enum TaskResult {
 #[derive(Component)]
 pub struct HarvestGas {
     pub target: PlanetEntity,
+    pub gas: ItemId,
     next_update: SimulationTimestamp,
 }
 
 impl HarvestGas {
-    pub fn new(target: PlanetEntity, now: CurrentSimulationTimestamp) -> Self {
+    pub fn new(target: PlanetEntity, gas: ItemId, now: CurrentSimulationTimestamp) -> Self {
         Self {
             target,
+            gas,
             next_update: now.add_milliseconds(constants::ONE_SECOND_IN_MILLISECONDS),
         }
     }
@@ -49,7 +51,7 @@ impl HarvestGas {
             .amount_per_second
             .min(inventory.capacity - inventory.used());
 
-        inventory.add_item(HYDROGEN_ITEM_ID, harvested_amount);
+        inventory.add_item(self.gas, harvested_amount);
 
         if inventory.used() == inventory.capacity {
             TaskResult::Finished

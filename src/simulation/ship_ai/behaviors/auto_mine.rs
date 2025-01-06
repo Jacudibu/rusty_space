@@ -36,7 +36,7 @@ impl AutoMineState {
 #[derive(Component)]
 pub struct AutoMineBehavior {
     pub next_idle_update: SimulationTimestamp,
-    pub mined_ore_id: ItemId,
+    pub mined_ore: ItemId,
     pub state: AutoMineState,
 }
 
@@ -80,7 +80,7 @@ pub fn handle_idle_ships(
                         //          all_asteroids needs to be split by the item in order for this to work efficiently
                         if let Some(closest_asteroid) = asteroid_component
                             .asteroids
-                            .get(&behavior.mined_ore_id)
+                            .get(&behavior.mined_ore)
                             .iter()
                             .flat_map(|x| x.iter())
                             .filter(|x| max_asteroid_age.has_not_passed(&x.timestamp))
@@ -122,7 +122,7 @@ pub fn handle_idle_ships(
                         &all_sectors_with_asteroids,
                         &all_sectors,
                         in_sector,
-                        &behavior.mined_ore_id,
+                        &behavior.mined_ore,
                     ) {
                         Some(value) => value,
                         None => {

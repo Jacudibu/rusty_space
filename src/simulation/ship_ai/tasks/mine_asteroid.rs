@@ -1,6 +1,5 @@
 use crate::components::{Asteroid, AsteroidMiningComponent, Inventory};
 use crate::constants;
-use crate::game_data::IRON_ORE_ITEM_ID;
 use crate::simulation::asteroids::AsteroidWasFullyMinedEvent;
 use crate::simulation::prelude::{CurrentSimulationTimestamp, SimulationTime, SimulationTimestamp};
 use crate::simulation::ship_ai::task_finished_event::TaskFinishedEvent;
@@ -48,30 +47,26 @@ impl MineAsteroid {
             return TaskResult::Skip;
         }
 
+        let Ok((asteroid, _)) = all_asteroids.get(self.target.into()) else {
+            // Asteroid must have despawned
+            return TaskResult::Finished { mined_amount: 0 };
+        };
+
         let mined_amount = mining_component
             .amount_per_second
             .min(inventory.capacity - inventory.used())
             .min(self.reserved_ore_amount);
 
-        inventory.add_item(IRON_ORE_ITEM_ID, mined_amount);
+        inventory.add_item(asteroid.ore_item_id, mined_amount);
         self.reserved_ore_amount -= mined_amount;
 
         if self.reserved_ore_amount == 0 || inventory.used() == inventory.capacity {
             TaskResult::Finished { mined_amount }
-        } else if self.did_target_despawn(all_asteroids) {
-            TaskResult::Finished { mined_amount: 0 }
         } else {
             self.next_update
                 .add_milliseconds(constants::ONE_SECOND_IN_MILLISECONDS);
             TaskResult::Ongoing { mined_amount }
         }
-    }
-
-    fn did_target_despawn(
-        &self,
-        all_asteroids: &Query<(&mut Asteroid, &mut SimulationScale)>,
-    ) -> bool {
-        all_asteroids.get(self.target.into()).is_err()
     }
 
     pub fn run_tasks(

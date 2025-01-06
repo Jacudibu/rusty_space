@@ -84,18 +84,20 @@ impl From<ShipBehaviorSaveData> for BehaviorBuilder {
             }
             ShipBehaviorSaveData::AutoMine {
                 next_idle_update,
-                mined_ore_id,
+                mined_ore,
                 state,
             } => BehaviorBuilder::AutoMine {
                 next_idle_update,
-                mined_ore_id,
+                mined_ore,
                 state,
             },
             ShipBehaviorSaveData::AutoHarvest {
                 next_idle_update,
+                harvested_gas,
                 state,
             } => BehaviorBuilder::AutoHarvest {
                 next_idle_update,
+                harvested_gas,
                 state,
             },
         }

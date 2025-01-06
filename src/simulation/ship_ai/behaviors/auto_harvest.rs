@@ -1,4 +1,5 @@
 use crate::components::{BuyOrders, GasGiant, InSector, Inventory, Sector, SectorPlanets};
+use crate::game_data::ItemId;
 use crate::pathfinding;
 use crate::simulation::prelude::{SimulationTime, SimulationTimestamp};
 use crate::simulation::ship_ai::behaviors::auto_mine;
@@ -11,18 +12,10 @@ use bevy::prelude::{Commands, Component, Entity, Query, Res};
 
 #[derive(Component)]
 pub struct AutoHarvestBehavior {
-    // TODO: Could just be AutoMineBehavior<T> with T: MineAsteroid | HarvestGas
+    // TODO: Maybe(?) could just be AutoMineBehavior<T> with T: MineAsteroid | HarvestGas
     pub next_idle_update: SimulationTimestamp,
     pub state: auto_mine::AutoMineState,
-}
-
-impl Default for AutoHarvestBehavior {
-    fn default() -> Self {
-        Self {
-            next_idle_update: SimulationTimestamp::MIN,
-            state: auto_mine::AutoMineState::Mining,
-        }
-    }
+    pub harvested_gas: ItemId,
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -60,6 +53,7 @@ pub fn handle_idle_ships(
                     {
                         let ship_pos = all_transforms.get(ship_entity).unwrap().translation;
 
+                        // TODO: Check if planet has the requested gas
                         if let Some(closest_planet) = sector_planets
                             .planets
                             .iter()
@@ -82,6 +76,7 @@ pub fn handle_idle_ships(
                             });
                             queue.push_back(TaskInsideQueue::HarvestGas {
                                 target: *closest_planet,
+                                gas: behavior.harvested_gas,
                             });
 
                             queue.apply(&mut commands, now, ship_entity);
@@ -90,6 +85,7 @@ pub fn handle_idle_ships(
                     }
 
                     // No planets available in current sector, go somewhere else!
+                    // TODO: Filter for gas giants containing the requested gas type
                     let target_sector = match find_nearby_sector_with_gas_giants(
                         &all_gas_giants,
                         &all_sectors_with_gas_giants,

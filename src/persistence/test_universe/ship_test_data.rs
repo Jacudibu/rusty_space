@@ -1,5 +1,5 @@
 use crate::constants;
-use crate::game_data::IRON_ORE_ITEM_ID;
+use crate::game_data::{HYDROGEN_ITEM_ID, IRON_ORE_ITEM_ID};
 use crate::persistence::local_hex_position::LocalHexPosition;
 use crate::persistence::test_universe::coordinates::CENTER;
 use crate::persistence::{SaveDataCollection, ShipBehaviorSaveData, ShipSaveData};
@@ -35,7 +35,7 @@ pub fn create_test_data() -> SaveDataCollection<ShipSaveData> {
             format!("Mining Ship {i}"),
             ShipBehaviorSaveData::AutoMine {
                 next_idle_update: SimulationTimestamp::from(i as Milliseconds % 1000),
-                mined_ore_id: IRON_ORE_ITEM_ID,
+                mined_ore: IRON_ORE_ITEM_ID,
                 state: AutoMineState::Mining,
             },
         );
@@ -50,6 +50,7 @@ pub fn create_test_data() -> SaveDataCollection<ShipSaveData> {
             format!("Harvesting Ship {i}"),
             ShipBehaviorSaveData::AutoHarvest {
                 next_idle_update: SimulationTimestamp::from(i as Milliseconds % 1000),
+                harvested_gas: HYDROGEN_ITEM_ID,
                 state: AutoMineState::Mining,
             },
         );

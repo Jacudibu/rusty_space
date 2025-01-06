@@ -27,6 +27,7 @@ pub enum TaskSaveData {
     },
     HarvestGas {
         target: PersistentPlanetId,
+        gas: ItemId,
     },
 }
 

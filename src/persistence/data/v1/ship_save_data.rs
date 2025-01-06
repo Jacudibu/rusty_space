@@ -31,11 +31,12 @@ pub enum ShipBehaviorSaveData {
     },
     AutoMine {
         next_idle_update: SimulationTimestamp,
-        mined_ore_id: ItemId,
+        mined_ore: ItemId,
         state: AutoMineState,
     },
     AutoHarvest {
         next_idle_update: SimulationTimestamp,
+        harvested_gas: ItemId,
         state: AutoMineState,
     },
 }
