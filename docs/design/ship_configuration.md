@@ -85,6 +85,7 @@ Pew Pew!
 ### Hull Modifications Slots
 #### Cargo Bays
 Increases the amount of cargo this ship can carry at the cost of maneuverability.
+- Differentiate between "General Cargo Bays" and "Specialized Cargo Bays" for Ore or Gas. Specialized ones can only hold certain items, but a lot more of them, whereas general ones can hold pretty much everything. 
 
 #### Shield Generator
 Increases available shield capacity at the cost of energy.

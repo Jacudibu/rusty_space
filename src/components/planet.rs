@@ -1,3 +1,4 @@
+use crate::game_data::ItemId;
 use crate::persistence::PersistentPlanetId;
 use crate::utils::EarthMass;
 use bevy::prelude::Component;
@@ -17,4 +18,6 @@ impl Planet {
 
 /// Marker Component for Planets with harvestable gases
 #[derive(Component)]
-pub struct GasGiant {}
+pub struct GasGiant {
+    pub resources: Vec<ItemId>,
+}

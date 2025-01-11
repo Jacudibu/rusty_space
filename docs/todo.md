@@ -10,7 +10,7 @@ Too lazy to manage a whole kanban board and issues for these things yet. Roughly
 
 - ~~Probably easier with `leafwing_manifest` and maybe also `bevy_common_assets`~~ 
 - ~~Add parsing for data files, remove hardcoded Items~~ (debug stuff will remain in-code, at least until we (or someone else) got around to make `leafwing_manifest` support a folder with files instead of one single big file ([related issue](https://github.com/Leafwing-Studios/leafwing_manifest/issues/2)). Can be serialized with serde later on and is useful for debugging right now.)
-- Change items and recipes to stuff that makes sense instead of calling them "item A"
+- ~~Change items and recipes to stuff that makes sense instead of calling them "item A"~~
 
 # Improved Inventories
 - Individual inventory capacities for each item
@@ -42,7 +42,7 @@ Modules:
 Sectors have different resource distributions, requiring either trade or expansion to fix local scarcity and rising
 demands.
 
-- Asteroid Density and yields depend on sector values. Wouldn't bother with station collisions, though extra protective measurements could be a nice excuse to make stations more expensive in these sectors.
+- Asteroid Density and yields depend on sector values. Wouldn't bother with station collisions, though extra protective measurements could be a nice excuse to make stations more expensive in these sectors, maybe including some running costs too. On the other hand side, a station equipped with an anti-asteroid weapon could passively harvest asteroids?
 
 # Multiple Stations
 

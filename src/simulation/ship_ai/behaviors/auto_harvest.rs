@@ -53,7 +53,6 @@ pub fn handle_idle_ships(
                     {
                         let ship_pos = all_transforms.get(ship_entity).unwrap().translation;
 
-                        // TODO: Check if planet has the requested gas
                         if let Some(closest_planet) = sector_planets
                             .planets
                             .iter()
@@ -85,12 +84,12 @@ pub fn handle_idle_ships(
                     }
 
                     // No planets available in current sector, go somewhere else!
-                    // TODO: Filter for gas giants containing the requested gas type
                     let target_sector = match find_nearby_sector_with_gas_giants(
                         &all_gas_giants,
                         &all_sectors_with_gas_giants,
                         &all_sectors,
                         in_sector,
+                        &behavior.harvested_gas,
                     ) {
                         Some(value) => value,
                         None => {
@@ -142,6 +141,7 @@ fn find_nearby_sector_with_gas_giants(
     all_sectors_with_planets: &Query<&SectorPlanets>,
     all_sectors: &Query<&Sector>,
     in_sector: &InSector,
+    gas: &ItemId,
 ) -> Option<SectorEntity> {
     let nearby_sectors_with_asteroids =
         pathfinding::surrounding_sector_search::surrounding_sector_search(
@@ -151,9 +151,13 @@ fn find_nearby_sector_with_gas_giants(
             u8::MAX, // TODO: Should be limited
             all_sectors_with_planets,
             |x| {
-                x.planets
-                    .iter()
-                    .any(|x| all_gas_giants.get(x.into()).is_ok())
+                x.planets.iter().any(|x| {
+                    if let Ok(gas_giant) = all_gas_giants.get(x.into()) {
+                        gas_giant.resources.contains(gas)
+                    } else {
+                        false
+                    }
+                })
             },
         );
 

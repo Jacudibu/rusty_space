@@ -1,3 +1,4 @@
+use crate::game_data::ItemId;
 use crate::persistence::PersistentPlanetId;
 use crate::utils::EarthMass;
 use serde::{Deserialize, Serialize};
@@ -23,5 +24,5 @@ pub struct ConstantOrbitSaveData {
 #[cfg_attr(test, derive(Clone, Debug, PartialEq))]
 pub enum PlanetKindSaveData {
     Terrestrial,
-    GasGiant,
+    GasGiant { resources: Vec<ItemId> },
 }

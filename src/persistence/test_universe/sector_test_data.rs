@@ -1,5 +1,5 @@
 use crate::constants;
-use crate::game_data::{AsteroidManifest, CRYSTAL_ASTEROID_ID, IRON_ASTEROID_ID};
+use crate::game_data::{AsteroidManifest, CRYSTAL_ASTEROID_ID, HYDROGEN_ITEM_ID, IRON_ASTEROID_ID};
 use crate::map_layout::MapLayout;
 use crate::persistence::test_universe::coordinates;
 use crate::persistence::{
@@ -28,8 +28,11 @@ pub fn create_test_data(
             ConstantOrbitSaveData::new(200.0).with_current_rotational_fraction(0.7),
         ))
         .with_planet(
-            SectorPlanetSaveData::new(ConstantOrbitSaveData::new(400.0))
-                .with_kind(PlanetKindSaveData::GasGiant),
+            SectorPlanetSaveData::new(ConstantOrbitSaveData::new(400.0)).with_kind(
+                PlanetKindSaveData::GasGiant {
+                    resources: vec![HYDROGEN_ITEM_ID],
+                },
+            ),
         );
 
     sectors.add(coordinates::TOP_RIGHT).with_asteroids(

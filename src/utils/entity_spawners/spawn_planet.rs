@@ -58,11 +58,13 @@ pub fn spawn_planet(
         ))
         .id();
 
-    match planet_data.kind {
+    match &planet_data.kind {
         PlanetKindSaveData::Terrestrial => {}
-        PlanetKindSaveData::GasGiant => {
+        PlanetKindSaveData::GasGiant { resources } => {
             commands.entity(entity).insert((
-                components::GasGiant {},
+                components::GasGiant {
+                    resources: resources.clone(),
+                },
                 components::InteractionQueue::new(constants::SIMULTANEOUS_PLANET_INTERACTIONS),
             ));
         }
