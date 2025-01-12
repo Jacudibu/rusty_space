@@ -89,7 +89,7 @@ pub fn check_if_production_is_finished_and_start_new_one(
         }
 
         inventory_update_writer.send(InventoryUpdateForProductionEvent::new(next.entity));
-        utils::update_orders(&inventory, buy_orders, sell_orders);
+        utils::update_orders(&inventory, buy_orders, sell_orders, &item_manifest);
     }
 }
 

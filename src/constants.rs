@@ -13,7 +13,7 @@ pub const ASTEROID_COUNT: usize = 400;
 /// Lower values here mean ships will spread out more when buying / selling things, but also come to a halt much sooner,
 /// as prices reach an equilibrium and resource consumption just isn't high enough yet.
 #[cfg(debug_assertions)]
-pub const MOCK_STATION_INVENTORY_SIZE: u32 = 5000;
+pub const MOCK_STATION_INVENTORY_SIZE: u32 = 50000;
 #[cfg(not(debug_assertions))]
 pub const MOCK_STATION_INVENTORY_SIZE: u32 = 39000000;
 

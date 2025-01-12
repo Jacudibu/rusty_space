@@ -54,6 +54,8 @@ pub fn spawn_station(
         ))
         .id();
 
+    let buy_and_sell_count = (buys.len() + sells.len()) as u32;
+
     let entity = commands
         .spawn((
             Name::new(name.to_string()),
@@ -66,7 +68,12 @@ pub fn spawn_station(
                 constants::MOCK_STATION_INVENTORY_SIZE,
                 sells
                     .iter()
-                    .map(|x| (x.id, constants::MOCK_STATION_INVENTORY_SIZE))
+                    .map(|x| {
+                        (
+                            x.id,
+                            constants::MOCK_STATION_INVENTORY_SIZE / buy_and_sell_count / x.size,
+                        )
+                    })
                     .collect(),
                 item_manifest,
             ),
@@ -76,10 +83,14 @@ pub fn spawn_station(
         .id();
 
     if !buys.is_empty() {
-        commands.entity(entity).insert(BuyOrders::mock(buys));
+        commands
+            .entity(entity)
+            .insert(BuyOrders::mock(&buys, &sells));
     }
     if !sells.is_empty() {
-        commands.entity(entity).insert(SellOrders::mock(sells));
+        commands
+            .entity(entity)
+            .insert(SellOrders::mock(&buys, &sells));
     }
 
     if let Some(production) = production {

@@ -29,7 +29,7 @@ impl TradeOrder<BuyOrderData> for BuyOrders {
 }
 
 impl OrderData for BuyOrderData {
-    fn update(&mut self, capacity: u32, inventory_element: Option<&InventoryElement>) {
+    fn update(&mut self, item_capacity: u32, inventory_element: Option<&InventoryElement>) {
         let stored_amount = if let Some(inventory_element) = inventory_element {
             inventory_element.current + inventory_element.planned_buying
         } else {
@@ -41,7 +41,9 @@ impl OrderData for BuyOrderData {
             self.price = 0;
         } else {
             self.amount = self.buy_up_to - stored_amount;
-            self.price = self.price_setting.calculate_price(stored_amount, capacity);
+            self.price = self
+                .price_setting
+                .calculate_price(stored_amount, self.buy_up_to);
         }
     }
 }

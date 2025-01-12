@@ -48,13 +48,12 @@ impl HarvestGas {
             return TaskResult::Skip;
         }
 
-        let harvested_amount = harvesting_component
-            .amount_per_second
-            .min(inventory.remaining_space_for(&self.gas, item_manifest));
+        let remaining_space = inventory.remaining_space_for(&self.gas, item_manifest);
+        let harvested_amount = harvesting_component.amount_per_second.min(remaining_space);
 
         inventory.add_item(self.gas, harvested_amount, item_manifest);
 
-        if inventory.total_used_space() == inventory.capacity {
+        if remaining_space == harvested_amount {
             TaskResult::Finished
         } else {
             self.next_update

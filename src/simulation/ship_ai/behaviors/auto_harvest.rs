@@ -41,11 +41,13 @@ pub fn handle_idle_ships(
         .filter(|(_, _, behavior, _)| now.has_passed(behavior.next_idle_update))
         .for_each(|(ship_entity, mut queue, mut behavior, in_sector)| {
             let ship_inventory = inventories.get_mut(ship_entity).unwrap();
-            let used_inventory_space = ship_inventory.total_used_space();
+            let used_space = ship_inventory.total_used_space();
+            let remaining_space =
+                ship_inventory.remaining_space_for(&behavior.harvested_gas, &item_manifest);
 
             behavior
                 .state
-                .flip_task_depending_on_inventory(used_inventory_space, ship_inventory.capacity);
+                .flip_task_depending_on_inventory(used_space, remaining_space);
 
             match behavior.state {
                 auto_mine::AutoMineState::Mining => {

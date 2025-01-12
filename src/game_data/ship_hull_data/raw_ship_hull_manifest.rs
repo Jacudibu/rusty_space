@@ -20,7 +20,7 @@ impl RawShipHullManifest {
                     sprite: "sprites/ships/ship_civilian.png".into(),
                     ship_size: ShipSize::S,
                     weapon_slots: 0,
-                    inventory_size: 100,
+                    inventory_size: 500,
                     build_time: 5000,
                     maneuverability: ShipManeuverability {
                         max_speed: 100.0,

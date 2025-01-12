@@ -42,7 +42,7 @@ pub fn handle_idle_ships(
         .for_each(|(ship_entity, mut queue, mut behavior, ship_sector)| {
             let inventory = inventories.get(ship_entity).unwrap();
             let plan = TradePlan::search_for_trade_run(
-                inventory.remaining_space(),
+                inventory,
                 &buy_orders,
                 &sell_orders,
                 &item_manifest,
@@ -86,18 +86,21 @@ pub fn handle_idle_ships(
                 &this_inventory,
                 &mut buy_orders,
                 &mut sell_orders,
+                &item_manifest,
             );
             update_buy_and_sell_orders_for_entity(
                 plan.buyer,
                 &buyer_inventory,
                 &mut buy_orders,
                 &mut sell_orders,
+                &item_manifest,
             );
             update_buy_and_sell_orders_for_entity(
                 plan.seller,
                 &seller_inventory,
                 &mut buy_orders,
                 &mut sell_orders,
+                &item_manifest,
             );
 
             plan.create_tasks_for_purchase(
@@ -118,11 +121,12 @@ fn update_buy_and_sell_orders_for_entity(
     inventory: &Inventory,
     buy_orders: &mut Query<(Entity, &mut BuyOrders, &InSector)>,
     sell_orders: &mut Query<(Entity, &mut SellOrders, &InSector)>,
+    item_manifest: &ItemManifest,
 ) {
     if let Ok(mut buy_orders) = buy_orders.get_mut(entity.into()) {
-        buy_orders.1.update(inventory);
+        buy_orders.1.update(inventory, item_manifest);
     }
     if let Ok(mut sell_orders) = sell_orders.get_mut(entity.into()) {
-        sell_orders.1.update(inventory);
+        sell_orders.1.update(inventory, item_manifest);
     }
 }

@@ -8,9 +8,11 @@ pub enum PriceSetting {
 }
 
 impl PriceSetting {
-    pub fn calculate_price(&self, storage: u32, capacity: u32) -> u32 {
+    pub fn calculate_price(&self, currently_in_storage: u32, item_capacity: u32) -> u32 {
         match self {
-            PriceSetting::Dynamic(range) => range.calculate(storage as f32 / capacity as f32),
+            PriceSetting::Dynamic(range) => {
+                range.calculate(currently_in_storage as f32 / item_capacity as f32)
+            }
         }
     }
 }

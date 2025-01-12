@@ -19,7 +19,7 @@ pub struct TradePlan {
 
 impl TradePlan {
     pub fn search_for_trade_run(
-        storage_capacity: u32,
+        inventory: &Inventory,
         buy_orders: &Query<(Entity, &mut BuyOrders, &InSector)>,
         sell_orders: &Query<(Entity, &mut SellOrders, &InSector)>,
         item_manifest: &ItemManifest,
@@ -38,8 +38,10 @@ impl TradePlan {
                             continue;
                         }
 
-                        let amount = (storage_capacity / item_manifest[item_id].size)
-                            .min(buy_order.amount.min(sell_order.amount));
+                        let amount = inventory
+                            .remaining_space_for(item_id, item_manifest)
+                            .min(buy_order.amount)
+                            .min(sell_order.amount);
                         if amount == 0 {
                             // TODO: Add custom defined minimum amount so the player has an option to tell ships to not ferry around 1 item
                             continue;

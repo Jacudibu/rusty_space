@@ -29,7 +29,7 @@ impl TradeOrder<SellOrderData> for SellOrders {
 }
 
 impl OrderData for SellOrderData {
-    fn update(&mut self, capacity: u32, inventory_element: Option<&InventoryElement>) {
+    fn update(&mut self, item_capacity: u32, inventory_element: Option<&InventoryElement>) {
         let stored_amount = if let Some(inventory_element) = inventory_element {
             inventory_element.current - inventory_element.planned_selling
         } else {
@@ -38,10 +38,13 @@ impl OrderData for SellOrderData {
 
         if stored_amount < self.keep_at_least {
             self.amount = 0;
-            self.price = self.price_setting.calculate_price(0, capacity) + 1;
+            self.price = u32::MAX;
         } else {
             self.amount = stored_amount - self.keep_at_least;
-            self.price = self.price_setting.calculate_price(stored_amount, capacity);
+            // TODO: Capacity is weird here. Would be better to have a fixed inventory reservation for these and use that here.
+            self.price = self
+                .price_setting
+                .calculate_price(stored_amount, item_capacity);
         }
     }
 }

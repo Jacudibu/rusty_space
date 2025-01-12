@@ -54,15 +54,16 @@ impl MineAsteroid {
             return TaskResult::Finished { mined_amount: 0 };
         };
 
+        let remaining_space = inventory.remaining_space_for(&asteroid.ore_item_id, item_manifest);
         let mined_amount = mining_component
             .amount_per_second
-            .min(inventory.remaining_space_for(&asteroid.ore_item_id, item_manifest))
+            .min(remaining_space)
             .min(self.reserved_ore_amount);
 
         inventory.add_item(asteroid.ore_item_id, mined_amount, item_manifest);
         self.reserved_ore_amount -= mined_amount;
 
-        if self.reserved_ore_amount == 0 || inventory.total_used_space() == inventory.capacity {
+        if self.reserved_ore_amount == 0 || remaining_space == mined_amount {
             TaskResult::Finished { mined_amount }
         } else {
             self.next_update

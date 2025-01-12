@@ -9,7 +9,7 @@ use bevy::utils::HashMap;
 #[derive(Component)]
 pub struct Inventory {
     /// Total storage capacity for this inventory
-    pub capacity: u32,
+    capacity: u32,
 
     /// Space that's occupied by items which are inside our inventory right now
     used_space: u32,

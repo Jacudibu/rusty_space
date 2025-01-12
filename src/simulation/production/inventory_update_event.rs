@@ -198,7 +198,7 @@ pub fn handle_inventory_updates(
             }
         }
 
-        utils::update_orders(&inventory, buy_orders, sell_orders);
+        utils::update_orders(&inventory, buy_orders, sell_orders, &item_manifest);
     }
 }
 
@@ -230,13 +230,13 @@ fn has_enough_storage_for_yields(
     multiplier: u32,
     item_manifest: &ItemManifest,
 ) -> bool {
-    let mut total_used_storage = inventory.total_used_space();
+    let mut required_extra_space = 0;
 
     for element in output {
-        total_used_storage += element.amount * multiplier * item_manifest[element.item_id].size;
+        required_extra_space += element.amount * multiplier * item_manifest[element.item_id].size;
     }
 
-    total_used_storage <= inventory.capacity
+    required_extra_space <= inventory.remaining_space()
 }
 
 /// Removes all ingredients for a recipe from this inventory

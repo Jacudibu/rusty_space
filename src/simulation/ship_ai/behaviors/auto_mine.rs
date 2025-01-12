@@ -23,9 +23,9 @@ impl AutoMineState {
     pub fn flip_task_depending_on_inventory(
         &mut self,
         used_inventory_space: u32,
-        inventory_capacity: u32,
+        remaining_space_for_target_item: u32,
     ) {
-        if self == &AutoMineState::Mining && used_inventory_space == inventory_capacity {
+        if self == &AutoMineState::Mining && remaining_space_for_target_item == 0 {
             *self = AutoMineState::Trading;
         } else if self == &AutoMineState::Trading && used_inventory_space == 0 {
             *self = AutoMineState::Mining;
@@ -64,11 +64,13 @@ pub fn handle_idle_ships(
         .filter(|(_, _, behavior, _)| now.has_passed(behavior.next_idle_update))
         .for_each(|(ship_entity, mut queue, mut behavior, in_sector)| {
             let ship_inventory = inventories.get_mut(ship_entity).unwrap();
-            let used_inventory_space = ship_inventory.total_used_space();
+            let used_space = ship_inventory.total_used_space();
+            let remaining_space =
+                ship_inventory.remaining_space_for(&behavior.mined_ore, &item_manifest);
 
             behavior
                 .state
-                .flip_task_depending_on_inventory(used_inventory_space, ship_inventory.capacity);
+                .flip_task_depending_on_inventory(used_space, remaining_space);
 
             match behavior.state {
                 AutoMineState::Mining => {
@@ -100,8 +102,7 @@ pub fn handle_idle_ships(
                                 .get_mut(closest_asteroid.entity.into())
                                 .unwrap();
 
-                            let reserved_amount = asteroid
-                                .try_to_reserve(ship_inventory.capacity - used_inventory_space);
+                            let reserved_amount = asteroid.try_to_reserve(remaining_space);
 
                             queue.push_back(TaskInsideQueue::MoveToEntity {
                                 target: closest_asteroid.entity.into(),

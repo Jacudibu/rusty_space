@@ -7,19 +7,21 @@ use crate::game_data::ItemData;
 use crate::utils::PriceSetting;
 
 impl BuyOrders {
-    pub fn mock(items: Vec<&ItemData>) -> Self {
+    pub fn mock(buys: &Vec<&ItemData>, sells: &[&ItemData]) -> Self {
+        let sharing_count = (buys.len() + sells.len()) as u32;
         BuyOrders::from_vec(
-            items
-                .iter()
+            buys.iter()
                 .map(|item| {
+                    let capacity =
+                        constants::MOCK_STATION_INVENTORY_SIZE / sharing_count / item.size;
                     let mut order = BuyOrderData {
-                        amount: constants::MOCK_STATION_INVENTORY_SIZE,
-                        buy_up_to: constants::MOCK_STATION_INVENTORY_SIZE,
+                        amount: capacity,
+                        buy_up_to: capacity,
                         price: 1,
                         price_setting: PriceSetting::Dynamic(item.price),
                     };
                     order.update(
-                        constants::MOCK_STATION_INVENTORY_SIZE,
+                        capacity,
                         Some(&InventoryElement {
                             current: 0,
                             total: 0,
@@ -34,22 +36,25 @@ impl BuyOrders {
 }
 
 impl SellOrders {
-    pub fn mock(items: Vec<&ItemData>) -> Self {
+    pub fn mock(buys: &[&ItemData], sells: &Vec<&ItemData>) -> Self {
+        let sharing_count = (buys.len() + sells.len()) as u32;
         SellOrders::from_vec(
-            items
+            sells
                 .iter()
                 .map(|item| {
+                    let capacity =
+                        constants::MOCK_STATION_INVENTORY_SIZE / sharing_count / item.size;
                     let mut order = SellOrderData {
-                        amount: constants::MOCK_STATION_INVENTORY_SIZE,
+                        amount: capacity,
                         keep_at_least: 0,
                         price: 100,
                         price_setting: PriceSetting::Dynamic(item.price),
                     };
                     order.update(
-                        constants::MOCK_STATION_INVENTORY_SIZE,
+                        capacity,
                         Some(&InventoryElement {
-                            current: constants::MOCK_STATION_INVENTORY_SIZE,
-                            total: constants::MOCK_STATION_INVENTORY_SIZE,
+                            current: capacity,
+                            total: capacity,
                             ..Default::default()
                         }),
                     );
