@@ -44,6 +44,7 @@ impl Manifest for ItemManifest {
                     name: raw_item.name,
                     price: PriceRange::new(raw_item.price_min, raw_item.price_max),
                     icon: asset_server.load(raw_item.icon),
+                    size: raw_item.size,
                 };
 
                 (id, item)
