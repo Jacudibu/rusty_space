@@ -5,10 +5,10 @@ pub struct InventoryElement {
     /// The amount that's currently inside this inventory, disregarding any reservations.
     pub current: u32,
 
-    /// Reserved space for goods which will get purchased soon.
+    /// Reserved space for upcoming purchases from an already existing buy order.
     pub planned_buying: u32,
 
-    /// Reserved goods for upcoming sales.
+    /// Reserved goods for upcoming sales from an already existing sell order.
     pub planned_selling: u32,
 
     /// Reserved space for goods that will leave a production line soon.

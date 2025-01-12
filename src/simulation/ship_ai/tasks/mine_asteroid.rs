@@ -1,5 +1,6 @@
 use crate::components::{Asteroid, AsteroidMiningComponent, Inventory};
 use crate::constants;
+use crate::game_data::ItemManifest;
 use crate::simulation::asteroids::AsteroidWasFullyMinedEvent;
 use crate::simulation::prelude::{CurrentSimulationTimestamp, SimulationTime, SimulationTimestamp};
 use crate::simulation::ship_ai::task_finished_event::TaskFinishedEvent;
@@ -42,6 +43,7 @@ impl MineAsteroid {
         now: CurrentSimulationTimestamp,
         all_asteroids: &Query<(&mut Asteroid, &mut SimulationScale)>,
         mining_component: &AsteroidMiningComponent,
+        item_manifest: &ItemManifest,
     ) -> TaskResult {
         if now.has_not_passed(self.next_update) {
             return TaskResult::Skip;
@@ -54,13 +56,13 @@ impl MineAsteroid {
 
         let mined_amount = mining_component
             .amount_per_second
-            .min(inventory.capacity - inventory.used())
+            .min(inventory.remaining_space_for(&asteroid.ore_item_id, item_manifest))
             .min(self.reserved_ore_amount);
 
-        inventory.add_item(asteroid.ore_item_id, mined_amount);
+        inventory.add_item(asteroid.ore_item_id, mined_amount, item_manifest);
         self.reserved_ore_amount -= mined_amount;
 
-        if self.reserved_ore_amount == 0 || inventory.used() == inventory.capacity {
+        if self.reserved_ore_amount == 0 || inventory.total_used_space() == inventory.capacity {
             TaskResult::Finished { mined_amount }
         } else {
             self.next_update
@@ -75,6 +77,7 @@ impl MineAsteroid {
         mut ships: Query<(Entity, &mut Self, &mut Inventory, &AsteroidMiningComponent)>,
         mut all_asteroids: Query<(&mut Asteroid, &mut SimulationScale)>,
         mut asteroid_was_fully_mined_event: EventWriter<AsteroidWasFullyMinedEvent>,
+        item_manifest: Res<ItemManifest>,
     ) {
         let task_completions = Arc::new(Mutex::new(Vec::<TaskFinishedEvent<Self>>::new()));
         let mined_asteroids = Arc::new(Mutex::new(Vec::<(AsteroidEntity, u32)>::new()));
@@ -83,7 +86,13 @@ impl MineAsteroid {
         ships
             .par_iter_mut()
             .for_each(|(entity, mut task, mut inventory, mining_component)| {
-                match task.run(&mut inventory, now, &all_asteroids, mining_component) {
+                match task.run(
+                    &mut inventory,
+                    now,
+                    &all_asteroids,
+                    mining_component,
+                    &item_manifest,
+                ) {
                     TaskResult::Skip => {}
                     TaskResult::Ongoing { mined_amount } => {
                         mined_asteroids

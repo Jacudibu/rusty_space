@@ -1,7 +1,7 @@
 use crate::components::{
     BuyOrders, InteractionQueue, Inventory, Sector, SelectableEntity, SellOrders, Station,
 };
-use crate::game_data::ItemData;
+use crate::game_data::{ItemData, ItemManifest};
 use crate::persistence::{PersistentStationId, StationIdMap};
 use crate::simulation::prelude::simulation_transform::SimulationScale;
 use crate::simulation::production::{ProductionComponent, ShipyardComponent};
@@ -26,6 +26,7 @@ pub fn spawn_station(
     sells: Vec<&ItemData>,
     production: Option<ProductionComponent>,
     shipyard: Option<ShipyardComponent>,
+    item_manifest: &ItemManifest,
 ) {
     let mut sector = sector_query.get_mut(sector_entity.into()).unwrap();
 
@@ -67,6 +68,7 @@ pub fn spawn_station(
                     .iter()
                     .map(|x| (x.id, constants::MOCK_STATION_INVENTORY_SIZE))
                     .collect(),
+                item_manifest,
             ),
             InteractionQueue::new(constants::SIMULTANEOUS_STATION_INTERACTIONS),
             SimulationScale::default(),

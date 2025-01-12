@@ -1,4 +1,5 @@
 use crate::components::Inventory;
+use crate::game_data::ItemManifest;
 use crate::simulation::prelude::{CurrentSimulationTimestamp, SimulationTime, SimulationTimestamp};
 use crate::simulation::production::InventoryUpdateForProductionEvent;
 use crate::simulation::ship_ai::task_finished_event::TaskFinishedEvent;
@@ -32,17 +33,18 @@ impl ExchangeWares {
         this_entity: Entity,
         all_storages: &mut Query<&mut Inventory>,
         event_writer: &mut EventWriter<InventoryUpdateForProductionEvent>,
+        item_manifest: &ItemManifest,
     ) -> TaskResult {
         match all_storages.get_many_mut([this_entity, self.target.into()]) {
             Ok([mut this_inv, mut other_inv]) => {
                 match self.data {
                     ExchangeWareData::Buy(item_id, amount) => {
-                        this_inv.complete_order(item_id, TradeIntent::Buy, amount);
-                        other_inv.complete_order(item_id, TradeIntent::Sell, amount);
+                        this_inv.complete_order(item_id, TradeIntent::Buy, amount, item_manifest);
+                        other_inv.complete_order(item_id, TradeIntent::Sell, amount, item_manifest);
                     }
                     ExchangeWareData::Sell(item_id, amount) => {
-                        this_inv.complete_order(item_id, TradeIntent::Sell, amount);
-                        other_inv.complete_order(item_id, TradeIntent::Buy, amount);
+                        this_inv.complete_order(item_id, TradeIntent::Sell, amount, item_manifest);
+                        other_inv.complete_order(item_id, TradeIntent::Buy, amount, item_manifest);
                     }
                 }
                 event_writer.send(InventoryUpdateForProductionEvent::new(this_entity));
@@ -87,12 +89,18 @@ impl ExchangeWares {
         mut all_storages: Query<&mut Inventory>,
         mut event_writer: EventWriter<InventoryUpdateForProductionEvent>,
         simulation_time: Res<SimulationTime>,
+        item_manifest: Res<ItemManifest>,
     ) {
         let now = simulation_time.now();
 
         for event in event_reader.read() {
             if let Ok((mut queue, task)) = all_ships_with_task.get_mut(event.entity) {
-                task.complete(event.entity, &mut all_storages, &mut event_writer);
+                task.complete(
+                    event.entity,
+                    &mut all_storages,
+                    &mut event_writer,
+                    &item_manifest,
+                );
 
                 tasks::remove_task_and_add_next_in_queue::<Self>(
                     &mut commands,

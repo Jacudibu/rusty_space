@@ -2,7 +2,7 @@ use bevy::log::error;
 use bevy::prelude::{Commands, EventWriter, Mut, Or, Query, Res, ResMut, Transform, With};
 
 use crate::components::{BuyOrders, InSector, Inventory, Sector, SellOrders};
-use crate::game_data::{ProductionModuleId, RecipeManifest, ShipyardModuleId};
+use crate::game_data::{ItemManifest, ProductionModuleId, RecipeManifest, ShipyardModuleId};
 use crate::persistence::{PersistentShipId, ShipIdMap};
 use crate::session_data::ShipConfigurationManifest;
 use crate::simulation::physics::ShipVelocity;
@@ -37,6 +37,7 @@ pub fn check_if_production_is_finished_and_start_new_one(
         ),
         Or<(With<ProductionComponent>, With<ShipyardComponent>)>,
     >,
+    item_manifest: Res<ItemManifest>,
 ) {
     let now = simulation_time.now();
     while let Some(next) = global_production_state.peek() {
@@ -71,6 +72,7 @@ pub fn check_if_production_is_finished_and_start_new_one(
                 production,
                 &mut inventory,
                 &module_id,
+                &item_manifest,
             ),
             ProductionKind::Shipyard(module_id) => process_finished_ship_production(
                 &mut commands,
@@ -150,6 +152,7 @@ fn process_finished_item_production(
     production: Option<Mut<ProductionComponent>>,
     inventory: &mut Inventory,
     module_id: &ProductionModuleId,
+    item_manifest: &ItemManifest,
 ) {
     let Some(mut production) = production else {
         error!("Was unable to find ProductionComponent for entity {} to trigger production completion!", next.entity);
@@ -165,6 +168,6 @@ fn process_finished_item_production(
     };
 
     let recipe = recipes.get_by_ref(&module.recipe).unwrap();
-    inventory.finish_production(recipe, module.amount);
+    inventory.finish_production(recipe, module.amount, item_manifest);
     module.current_run_finished_at = None;
 }

@@ -172,6 +172,7 @@ impl StationSaveData {
             sells,
             production,
             shipyard,
+            &args.items,
         )
     }
 }

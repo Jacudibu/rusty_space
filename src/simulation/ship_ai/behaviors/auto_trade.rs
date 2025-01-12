@@ -1,6 +1,7 @@
 use bevy::prelude::{Commands, Component, Entity, Query, Res};
 
 use crate::components::{BuyOrders, InSector, Inventory, Sector, SellOrders, TradeOrder};
+use crate::game_data::ItemManifest;
 use crate::simulation::prelude::{SimulationTime, SimulationTimestamp};
 use crate::simulation::ship_ai::ship_is_idle_filter::ShipIsIdleFilter;
 use crate::simulation::ship_ai::TaskQueue;
@@ -31,6 +32,7 @@ pub fn handle_idle_ships(
     mut inventories: Query<&mut Inventory>,
     all_sectors: Query<&Sector>,
     all_transforms: Query<&SimulationTransform>,
+    item_manifest: Res<ItemManifest>,
 ) {
     let now = simulation_time.now();
 
@@ -39,8 +41,12 @@ pub fn handle_idle_ships(
         .filter(|(_, _, behavior, _)| now.has_passed(behavior.next_idle_update))
         .for_each(|(ship_entity, mut queue, mut behavior, ship_sector)| {
             let inventory = inventories.get(ship_entity).unwrap();
-            let plan =
-                TradePlan::search_for_trade_run(inventory.capacity, &buy_orders, &sell_orders);
+            let plan = TradePlan::search_for_trade_run(
+                inventory.remaining_space(),
+                &buy_orders,
+                &sell_orders,
+                &item_manifest,
+            );
             let Some(plan) = plan else {
                 behavior.next_idle_update = now.add_seconds(2);
                 return;
@@ -49,11 +55,31 @@ pub fn handle_idle_ships(
                 .get_many_mut([ship_entity, plan.seller.into(), plan.buyer.into()])
                 .unwrap();
 
-            this_inventory.create_order(plan.item_id, TradeIntent::Buy, plan.amount);
-            seller_inventory.create_order(plan.item_id, TradeIntent::Sell, plan.amount);
+            this_inventory.create_order(
+                plan.item_id,
+                TradeIntent::Buy,
+                plan.amount,
+                &item_manifest,
+            );
+            seller_inventory.create_order(
+                plan.item_id,
+                TradeIntent::Sell,
+                plan.amount,
+                &item_manifest,
+            );
 
-            this_inventory.create_order(plan.item_id, TradeIntent::Sell, plan.amount);
-            buyer_inventory.create_order(plan.item_id, TradeIntent::Buy, plan.amount);
+            this_inventory.create_order(
+                plan.item_id,
+                TradeIntent::Sell,
+                plan.amount,
+                &item_manifest,
+            );
+            buyer_inventory.create_order(
+                plan.item_id,
+                TradeIntent::Buy,
+                plan.amount,
+                &item_manifest,
+            );
 
             update_buy_and_sell_orders_for_entity(
                 TypedEntity::Ship(ship_entity.into()),

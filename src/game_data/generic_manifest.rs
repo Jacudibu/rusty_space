@@ -2,6 +2,7 @@ use bevy::prelude::Resource;
 use bevy::utils::hashbrown::hash_map::Iter;
 use bevy::utils::HashMap;
 use leafwing_manifest::identifier::Id;
+use std::ops::Index;
 
 #[derive(Resource)]
 pub struct GenericManifest<Data> {
@@ -26,5 +27,21 @@ impl<Data> From<HashMap<Id<Data>, Data>> for GenericManifest<Data> {
     #[must_use]
     fn from(value: HashMap<Id<Data>, Data>) -> Self {
         Self { items: value }
+    }
+}
+
+impl<Data> Index<&Id<Data>> for GenericManifest<Data> {
+    type Output = Data;
+
+    fn index(&self, index: &Id<Data>) -> &Self::Output {
+        &self.items[index]
+    }
+}
+
+impl<Data> Index<Id<Data>> for GenericManifest<Data> {
+    type Output = Data;
+
+    fn index(&self, index: Id<Data>) -> &Self::Output {
+        &self.items[&index]
     }
 }

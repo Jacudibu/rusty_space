@@ -1,7 +1,7 @@
 use bevy::prelude::{Entity, Query};
 
 use crate::components::{BuyOrders, InSector, Inventory, Sector, SellOrders, TradeOrder};
-use crate::game_data::ItemId;
+use crate::game_data::{ItemId, ItemManifest};
 use crate::simulation::ship_ai::{TaskInsideQueue, TaskQueue};
 use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::utils::{ExchangeWareData, SectorEntity, TypedEntity};
@@ -22,6 +22,7 @@ impl TradePlan {
         storage_capacity: u32,
         buy_orders: &Query<(Entity, &mut BuyOrders, &InSector)>,
         sell_orders: &Query<(Entity, &mut SellOrders, &InSector)>,
+        item_manifest: &ItemManifest,
     ) -> Option<Self> {
         let mut best_offer: Option<TradePlan> = None;
 
@@ -37,9 +38,10 @@ impl TradePlan {
                             continue;
                         }
 
-                        let amount = storage_capacity.min(buy_order.amount.min(sell_order.amount));
+                        let amount = (storage_capacity / item_manifest[item_id].size)
+                            .min(buy_order.amount.min(sell_order.amount));
                         if amount == 0 {
-                            // TODO: Add custom definable minimum amount
+                            // TODO: Add custom defined minimum amount so the player has an option to tell ships to not ferry around 1 item
                             continue;
                         }
 

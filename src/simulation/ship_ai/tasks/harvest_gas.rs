@@ -1,6 +1,6 @@
 use crate::components::{GasHarvestingComponent, InteractionQueue, Inventory};
 use crate::constants;
-use crate::game_data::ItemId;
+use crate::game_data::{ItemId, ItemManifest};
 use crate::simulation::prelude::{
     AwaitingSignal, CurrentSimulationTimestamp, SimulationTime, SimulationTimestamp,
 };
@@ -42,6 +42,7 @@ impl HarvestGas {
         inventory: &mut Inventory,
         now: CurrentSimulationTimestamp,
         harvesting_component: &GasHarvestingComponent,
+        item_manifest: &ItemManifest,
     ) -> TaskResult {
         if now.has_not_passed(self.next_update) {
             return TaskResult::Skip;
@@ -49,11 +50,11 @@ impl HarvestGas {
 
         let harvested_amount = harvesting_component
             .amount_per_second
-            .min(inventory.capacity - inventory.used());
+            .min(inventory.remaining_space_for(&self.gas, item_manifest));
 
-        inventory.add_item(self.gas, harvested_amount);
+        inventory.add_item(self.gas, harvested_amount, item_manifest);
 
-        if inventory.used() == inventory.capacity {
+        if inventory.total_used_space() == inventory.capacity {
             TaskResult::Finished
         } else {
             self.next_update
@@ -66,6 +67,7 @@ impl HarvestGas {
         event_writer: EventWriter<TaskFinishedEvent<Self>>,
         simulation_time: Res<SimulationTime>,
         mut ships: Query<(Entity, &mut Self, &mut Inventory, &GasHarvestingComponent)>,
+        item_manifest: Res<ItemManifest>,
     ) {
         let task_completions = Arc::new(Mutex::new(Vec::<TaskFinishedEvent<Self>>::new()));
         let now = simulation_time.now();
@@ -73,7 +75,7 @@ impl HarvestGas {
         ships
             .par_iter_mut()
             .for_each(|(entity, mut task, mut inventory, harvesting_component)| {
-                match task.run(&mut inventory, now, harvesting_component) {
+                match task.run(&mut inventory, now, harvesting_component, &item_manifest) {
                     TaskResult::Skip => {}
                     TaskResult::Ongoing => {}
                     TaskResult::Finished => task_completions

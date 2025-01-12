@@ -1,5 +1,5 @@
 use crate::components::{BuyOrders, GasGiant, InSector, Inventory, Sector, SectorPlanets};
-use crate::game_data::ItemId;
+use crate::game_data::{ItemId, ItemManifest};
 use crate::pathfinding;
 use crate::simulation::prelude::{SimulationTime, SimulationTimestamp};
 use crate::simulation::ship_ai::behaviors::auto_mine;
@@ -32,6 +32,7 @@ pub fn handle_idle_ships(
     all_sectors: Query<&Sector>,
     all_gas_giants: Query<&GasGiant>,
     all_transforms: Query<&SimulationTransform>,
+    item_manifest: Res<ItemManifest>,
 ) {
     let now = simulation_time.now();
 
@@ -40,7 +41,7 @@ pub fn handle_idle_ships(
         .filter(|(_, _, behavior, _)| now.has_passed(behavior.next_idle_update))
         .for_each(|(ship_entity, mut queue, mut behavior, in_sector)| {
             let ship_inventory = inventories.get_mut(ship_entity).unwrap();
-            let used_inventory_space = ship_inventory.used();
+            let used_inventory_space = ship_inventory.total_used_space();
 
             behavior
                 .state
@@ -126,8 +127,18 @@ pub fn handle_idle_ships(
                         .get_many_mut([ship_entity, plan.buyer.into()])
                         .unwrap();
 
-                    this_inventory.create_order(plan.item_id, TradeIntent::Sell, plan.amount);
-                    buyer_inventory.create_order(plan.item_id, TradeIntent::Buy, plan.amount);
+                    this_inventory.create_order(
+                        plan.item_id,
+                        TradeIntent::Sell,
+                        plan.amount,
+                        &item_manifest,
+                    );
+                    buyer_inventory.create_order(
+                        plan.item_id,
+                        TradeIntent::Buy,
+                        plan.amount,
+                        &item_manifest,
+                    );
 
                     plan.create_tasks_for_sale(&all_sectors, &all_transforms, &mut queue);
                     queue.apply(&mut commands, now, ship_entity);

@@ -1,5 +1,5 @@
 use crate::components::{BuyOrders, Inventory, SellOrders};
-use crate::game_data::{RecipeManifest, ShipyardModuleId};
+use crate::game_data::{ItemManifest, RecipeElement, RecipeManifest, ShipyardModuleId};
 use crate::session_data::{ShipConfigId, ShipConfigurationManifest};
 use crate::simulation::prelude::SimulationTime;
 use crate::simulation::production::production_kind::ProductionKind;
@@ -45,6 +45,7 @@ pub fn handle_inventory_updates(
         ),
         Or<(With<ProductionComponent>, With<ShipyardComponent>)>,
     >,
+    item_manifest: Res<ItemManifest>,
 ) {
     let now = simulation_time.now();
     for event in event_reader.read() {
@@ -62,11 +63,26 @@ pub fn handle_inventory_updates(
                 }
 
                 let recipe = recipes.get_by_ref(&module.recipe).unwrap();
-                if inventory.has_enough_items_in_inventory(&recipe.input, module.amount)
-                    && inventory.has_enough_storage_for_items(&recipe.output, module.amount)
+                if has_all_required_materials(&mut inventory, &recipe.input, module.amount)
+                    && has_enough_storage_for_yields(
+                        &mut inventory,
+                        &recipe.output,
+                        module.amount,
+                        &item_manifest,
+                    )
                 {
-                    inventory.remove_items(&recipe.input, module.amount);
-                    inventory.reserve_storage_space_for_production_yield(recipe, module.amount);
+                    remove_recipe_items(
+                        &mut inventory,
+                        &recipe.input,
+                        module.amount,
+                        &item_manifest,
+                    );
+
+                    inventory.reserve_storage_space_for_production_yield(
+                        recipe,
+                        module.amount,
+                        &item_manifest,
+                    );
 
                     let finish_timestamp = now.add_milliseconds(recipe.duration);
                     module.current_run_finished_at = Some(finish_timestamp);
@@ -112,7 +128,8 @@ pub fn handle_inventory_updates(
                         return None;
                     };
 
-                    if inventory.has_enough_items_in_inventory(
+                    if has_all_required_materials(
+                        &mut inventory,
                         &configuration.computed_stats.required_materials,
                         1,
                     ) {
@@ -152,15 +169,23 @@ pub fn handle_inventory_updates(
                     available_module_ids.retain(|x| x != &module_id)
                 }
 
-                inventory.remove_items(&configuration.computed_stats.required_materials, 1);
+                remove_recipe_items(
+                    &mut inventory,
+                    &configuration.computed_stats.required_materials,
+                    1,
+                    &item_manifest,
+                );
                 affordable_ships_from_queue.retain(|(index, config)| {
                     if index == &next_index {
                         return false;
                     }
 
                     let config = ship_configs.get_by_id(config).unwrap();
-                    inventory
-                        .has_enough_items_in_inventory(&config.computed_stats.required_materials, 1)
+                    has_all_required_materials(
+                        &mut inventory,
+                        &config.computed_stats.required_materials,
+                        1,
+                    )
                 });
                 shipyard.queue.remove(next_index);
                 ships_built_this_frame += 1;
@@ -174,5 +199,54 @@ pub fn handle_inventory_updates(
         }
 
         utils::update_orders(&inventory, buy_orders, sell_orders);
+    }
+}
+
+/// Tests if there are enough items in stock to start a production run
+pub fn has_all_required_materials(
+    inventory: &mut Inventory,
+    input: &Vec<RecipeElement>,
+    multiplier: u32,
+) -> bool {
+    for element in input {
+        let Some(inventory_element) = inventory.get(&element.item_id) else {
+            return false;
+        };
+
+        if inventory_element.current - inventory_element.planned_selling
+            < element.amount * multiplier
+        {
+            return false;
+        }
+    }
+
+    true
+}
+
+/// Tests if there's enough storage space available to store all production yields.
+fn has_enough_storage_for_yields(
+    inventory: &mut Inventory,
+    output: &Vec<RecipeElement>,
+    multiplier: u32,
+    item_manifest: &ItemManifest,
+) -> bool {
+    let mut total_used_storage = inventory.total_used_space();
+
+    for element in output {
+        total_used_storage += element.amount * multiplier * item_manifest[element.item_id].size;
+    }
+
+    total_used_storage <= inventory.capacity
+}
+
+/// Removes all ingredients for a recipe from this inventory
+fn remove_recipe_items(
+    inventory: &mut Inventory,
+    items: &Vec<RecipeElement>,
+    multiplier: u32,
+    item_manifest: &ItemManifest,
+) {
+    for recipe in items {
+        inventory.remove_item(recipe.item_id, recipe.amount * multiplier, item_manifest);
     }
 }
