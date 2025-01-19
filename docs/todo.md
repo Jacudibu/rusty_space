@@ -13,20 +13,23 @@ Too lazy to manage a whole kanban board and issues for these things yet. Roughly
 - ~~Change items and recipes to stuff that makes sense instead of calling them "item A"~~
 
 # Improved Inventories
-- Individual inventory capacities for each item
-- Figure out if we want to separate weight and volume, or if this is just an unnecessary complication... (hint to future-me: it probably is) 
+~~- Individual inventory capacities for each item~~
+~~- Figure out if we want to separate weight and volume, or if this is just an unnecessary complication... (hint to future-me: it probably is)~~
+- Unit tests for `InventoryComponent`
 
 # Automated Trade Order System
 - Automatically generate relevant buy & sell orders for stations, depending on existing station modules. Replaces more hardcoded stuff.
 
 # Station Building
 
-- New stations can be created in a running game
+- Build-Site Entities
 - Construction Materials go into separate inventory
 - Builder ships build stations (builders being near the construction site should be enough to apply their constant construction strength)
 - Multiple builders speed up construction (maybe not linearly)
   - Builders just register themselves to a construction site, and the construction site itself actually increments its progress
 - Station module costs increase with station size
+
+- New stations can be created in a running game
 
 Modules:
 
