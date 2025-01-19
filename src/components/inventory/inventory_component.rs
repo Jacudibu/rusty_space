@@ -31,30 +31,6 @@ impl Inventory {
         }
     }
 
-    pub fn new_with_content(
-        capacity: u32,
-        content: Vec<(ItemId, u32)>,
-        item_manifest: &ItemManifest,
-    ) -> Self {
-        let mut result = Self::new(capacity);
-
-        let mut used_capacity = 0;
-        for (item_id, amount) in content {
-            result.inventory.insert(
-                item_id,
-                InventoryElement {
-                    current: amount,
-                    total: amount,
-                    ..Default::default()
-                },
-            );
-            used_capacity += item_manifest[item_id].size * amount;
-        }
-
-        result.used_space = used_capacity;
-        result
-    }
-
     #[inline]
     pub fn inventory(&self) -> &HashMap<ItemId, InventoryElement> {
         &self.inventory
@@ -96,7 +72,7 @@ impl Inventory {
             match intent {
                 TradeIntent::Buy => {
                     self.reserved_space += storage_size;
-                    inventory.planned_buying += amount;
+                    inventory.planned_incoming += amount;
                     inventory.total += amount;
                 }
                 TradeIntent::Sell => {
@@ -110,7 +86,7 @@ impl Inventory {
                     self.reserved_space += storage_size;
                     let item = InventoryElement {
                         total: amount,
-                        planned_buying: amount,
+                        planned_incoming: amount,
                         ..Default::default()
                     };
                     self.inventory.insert(item_id, item);
@@ -119,6 +95,54 @@ impl Inventory {
                     error!("How are we supposed to sell something if the item isn't even tracked inside our inventory yet?")
                 }
             }
+        }
+    }
+
+    /// Adjusts storage space reservations for a certain item
+    pub fn set_production_reservation(
+        &mut self,
+        item_id: &ItemId,
+        amount: u32,
+        item_manifest: &ItemManifest,
+    ) {
+        self.set_reservation(item_id, amount, item_manifest, ReservationKind::Production)
+    }
+
+    /// Adjusts storage space reservations for a certain item
+    pub fn set_purchase_reservation(
+        &mut self,
+        item_id: &ItemId,
+        amount: u32,
+        item_manifest: &ItemManifest,
+    ) {
+        self.set_reservation(item_id, amount, item_manifest, ReservationKind::Purchase)
+    }
+
+    fn set_reservation(
+        &mut self,
+        item_id: &ItemId,
+        amount: u32,
+        item_manifest: &ItemManifest,
+        reservation_kind: ReservationKind,
+    ) {
+        let item = item_manifest.get_by_ref(item_id).unwrap();
+        if !self.inventory.contains_key(&item.id) {
+            self.add_item(item.id, 0, item_manifest);
+        }
+        let inventory_element = self.inventory.get_mut(&item.id).unwrap();
+        let old_reserved = inventory_element.reserved();
+
+        match reservation_kind {
+            ReservationKind::Production => inventory_element.reserved_production += amount,
+            ReservationKind::Purchase => inventory_element.reserved_buying += amount,
+        }
+
+        let new_reserved = inventory_element.reserved();
+
+        if old_reserved > new_reserved {
+            self.reserved_space -= (old_reserved - new_reserved) * item.size;
+        } else {
+            self.reserved_space += (new_reserved - old_reserved) * item.size;
         }
     }
 
@@ -141,7 +165,7 @@ impl Inventory {
                 self.used_space += storage_size;
                 self.reserved_space -= storage_size;
                 inventory.current += amount;
-                inventory.planned_buying -= amount;
+                inventory.planned_incoming -= amount;
             }
             TradeIntent::Sell => {
                 self.used_space -= storage_size;
@@ -182,20 +206,15 @@ impl Inventory {
         &mut self,
         item_recipe: &RecipeData,
         multiplier: u32,
-        item_manifest: &ItemManifest,
     ) {
         for output in &item_recipe.output {
-            self.reserved_space += item_manifest[&output.item_id].size * multiplier;
+            let amount = output.amount * multiplier;
             if let Some(inventory) = self.inventory.get_mut(&output.item_id) {
-                inventory.planned_producing += output.amount * multiplier;
-                inventory.total += output.amount * multiplier;
+                inventory.add_incoming(amount);
             } else {
                 warn!("Product inventory entry did not exist when starting production!");
-                let item = InventoryElement {
-                    total: output.amount,
-                    planned_producing: output.amount * multiplier,
-                    ..Default::default()
-                };
+                let mut item = InventoryElement::default();
+                item.add_incoming(amount);
                 self.inventory.insert(output.item_id, item);
             }
         }
@@ -203,28 +222,23 @@ impl Inventory {
 
     /// Adds the output materials for a recipe to this inventory and removes their storage reservation.
     /// TODO: Extract
-    pub fn finish_production(
-        &mut self,
-        item_recipe: &RecipeData,
-        multiplier: u32,
-        item_manifest: &ItemManifest,
-    ) {
+    pub fn finish_production(&mut self, item_recipe: &RecipeData, multiplier: u32) {
         for output in &item_recipe.output {
-            let product_size = item_manifest[&output.item_id].size * multiplier;
-            self.used_space += product_size;
-            self.reserved_space -= product_size;
+            let amount = output.amount * multiplier;
             if let Some(inventory) = self.inventory.get_mut(&output.item_id) {
-                inventory.current += output.amount * multiplier;
-                inventory.planned_producing -= output.amount * multiplier;
+                inventory.current += amount;
+                inventory.planned_incoming -= amount;
             } else {
                 warn!("Product inventory entry did not exist on production completion!");
-                let item = InventoryElement {
-                    total: output.amount * multiplier,
-                    current: output.amount * multiplier,
-                    ..Default::default()
-                };
+                let mut item = InventoryElement::default();
+                item.add(amount);
                 self.inventory.insert(output.item_id, item);
             }
         }
     }
+}
+
+enum ReservationKind {
+    Production,
+    Purchase,
 }

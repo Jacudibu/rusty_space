@@ -78,11 +78,7 @@ pub fn handle_inventory_updates(
                         &item_manifest,
                     );
 
-                    inventory.reserve_storage_space_for_production_yield(
-                        recipe,
-                        module.amount,
-                        &item_manifest,
-                    );
+                    inventory.reserve_storage_space_for_production_yield(recipe, module.amount);
 
                     let finish_timestamp = now.add_milliseconds(recipe.duration);
                     module.current_run_finished_at = Some(finish_timestamp);
@@ -230,13 +226,20 @@ fn has_enough_storage_for_yields(
     multiplier: u32,
     item_manifest: &ItemManifest,
 ) -> bool {
-    let mut required_extra_space = 0;
-
     for element in output {
-        required_extra_space += element.amount * multiplier * item_manifest[element.item_id].size;
+        let inventory_element = inventory.get(&element.item_id).unwrap();
+        if inventory_element.reserved_production <= inventory_element.current {
+            return false;
+        }
+
+        if inventory_element.reserved_production - inventory_element.current
+            <= element.amount * multiplier * item_manifest[element.item_id].size
+        {
+            return false;
+        }
     }
 
-    required_extra_space <= inventory.remaining_space()
+    true
 }
 
 /// Removes all ingredients for a recipe from this inventory

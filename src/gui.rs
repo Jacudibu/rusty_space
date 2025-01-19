@@ -385,12 +385,12 @@ pub fn list_selection_details(
                         for (item_id, amount) in inventory {
                             let item = game_data.items.get_by_ref(item_id).unwrap();
                             ui.label(format!(
-                                "{} x {} (+{}, -{}, +{}(Prod))",
+                                "{} x {} (+{}, -{}) [{} max]",
                                 item.name,
                                 amount.current,
-                                amount.planned_buying,
+                                amount.planned_incoming,
                                 amount.planned_selling,
-                                amount.planned_producing
+                                amount.reserved()
                             ));
                         }
                     }

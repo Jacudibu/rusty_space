@@ -1,6 +1,6 @@
 use crate::components::Sector;
 use crate::game_data::{
-    ItemData, ItemId, ItemManifest, ProductionModuleId, RecipeId, ShipyardModuleId,
+    ItemData, ItemId, ItemManifest, ProductionModuleId, RecipeId, RecipeManifest, ShipyardModuleId,
 };
 use crate::persistence::data::v1::*;
 use crate::persistence::local_hex_position::LocalHexPosition;
@@ -22,6 +22,7 @@ pub struct Args<'w, 's> {
     sectors: Query<'w, 's, &'static mut Sector>,
     sector_id_map: Res<'w, SectorIdMap>,
     items: Res<'w, ItemManifest>,
+    recipes: Res<'w, RecipeManifest>,
 }
 
 type SaveData = SaveDataCollection<StationSaveData>;
@@ -173,6 +174,7 @@ impl StationSaveData {
             production,
             shipyard,
             &args.items,
+            &args.recipes,
         )
     }
 }

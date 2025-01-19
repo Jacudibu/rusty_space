@@ -36,6 +36,9 @@ Every Asset Pack contains a file holding all important information regarding it,
   "version": "1.2.3",
   "title": "My Fancy Mod",
   "authors": ["A Special Person"],
-  "dependencies": ["mod_a"]
+  "dependencies_required": ["mod_a"],
+  "dependencies_optional": ["mod_b"]
 }
 ```
+
+Data for optional dependencies won't be parsed in case they aren't present, whereas lacking a required dependency causes an error.

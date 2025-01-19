@@ -1,9 +1,9 @@
 use crate::components::inventory::InventoryElement;
 use crate::components::{
-    BuyOrderData, BuyOrders, OrderData, SellOrderData, SellOrders, TradeOrder,
+    BuyOrderData, BuyOrders, Inventory, OrderData, SellOrderData, SellOrders, TradeOrder,
 };
 use crate::constants;
-use crate::game_data::ItemData;
+use crate::game_data::{ItemData, ItemManifest};
 use crate::utils::PriceSetting;
 
 impl BuyOrders {
@@ -20,7 +20,7 @@ impl BuyOrders {
                         price: 1,
                         price_setting: PriceSetting::Dynamic(item.price),
                     };
-                    order.update(
+                    order.update_price(
                         capacity,
                         Some(&InventoryElement {
                             current: 0,
@@ -36,7 +36,12 @@ impl BuyOrders {
 }
 
 impl SellOrders {
-    pub fn mock(buys: &[&ItemData], sells: &Vec<&ItemData>) -> Self {
+    pub fn mock(
+        buys: &[&ItemData],
+        sells: &Vec<&ItemData>,
+        inventory: &mut Inventory,
+        item_manifest: &ItemManifest,
+    ) -> Self {
         let sharing_count = (buys.len() + sells.len()) as u32;
         SellOrders::from_vec(
             sells
@@ -44,20 +49,14 @@ impl SellOrders {
                 .map(|item| {
                     let capacity =
                         constants::MOCK_STATION_INVENTORY_SIZE / sharing_count / item.size;
+                    inventory.set_purchase_reservation(&item.id, capacity, item_manifest);
                     let mut order = SellOrderData {
                         amount: capacity,
                         keep_at_least: 0,
                         price: 100,
                         price_setting: PriceSetting::Dynamic(item.price),
                     };
-                    order.update(
-                        capacity,
-                        Some(&InventoryElement {
-                            current: capacity,
-                            total: capacity,
-                            ..Default::default()
-                        }),
-                    );
+                    order.update_price(capacity, inventory.get(&item.id));
                     (item.id, order)
                 })
                 .collect(),

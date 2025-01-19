@@ -11,7 +11,7 @@ pub trait TradeOrder<TOrderData: OrderData>: Default + Component {
     /// Updates the prices for all orders given the current inventory situation.
     fn update(&mut self, inventory: &Inventory, item_manifest: &ItemManifest) {
         for (item_id, order) in self.orders_mut() {
-            order.update(
+            order.update_price(
                 inventory.remaining_space_for(item_id, item_manifest),
                 inventory.get(item_id),
             );
@@ -32,5 +32,5 @@ pub trait TradeOrder<TOrderData: OrderData>: Default + Component {
 
 pub trait OrderData {
     /// Updates the order amount and cached price
-    fn update(&mut self, capacity: u32, inventory_element: Option<&InventoryElement>);
+    fn update_price(&mut self, capacity: u32, inventory_element: Option<&InventoryElement>);
 }

@@ -1,7 +1,7 @@
 use crate::components::{
     BuyOrders, InteractionQueue, Inventory, Sector, SelectableEntity, SellOrders, Station,
 };
-use crate::game_data::{ItemData, ItemManifest};
+use crate::game_data::{ItemData, ItemManifest, RecipeManifest};
 use crate::persistence::{PersistentStationId, StationIdMap};
 use crate::simulation::prelude::simulation_transform::SimulationScale;
 use crate::simulation::production::{ProductionComponent, ShipyardComponent};
@@ -27,6 +27,7 @@ pub fn spawn_station(
     production: Option<ProductionComponent>,
     shipyard: Option<ShipyardComponent>,
     item_manifest: &ItemManifest,
+    recipe_manifest: &RecipeManifest,
 ) {
     let mut sector = sector_query.get_mut(sector_entity.into()).unwrap();
 
@@ -54,8 +55,6 @@ pub fn spawn_station(
         ))
         .id();
 
-    let buy_and_sell_count = (buys.len() + sells.len()) as u32;
-
     let entity = commands
         .spawn((
             Name::new(name.to_string()),
@@ -64,23 +63,64 @@ pub fn spawn_station(
             Sprite::from_image(sprites.station.clone()),
             simulation_transform.as_transform(constants::z_layers::STATION),
             simulation_transform,
-            Inventory::new_with_content(
-                constants::MOCK_STATION_INVENTORY_SIZE,
-                sells
-                    .iter()
-                    .map(|x| {
-                        (
-                            x.id,
-                            constants::MOCK_STATION_INVENTORY_SIZE / buy_and_sell_count / x.size,
-                        )
-                    })
-                    .collect(),
-                item_manifest,
-            ),
             InteractionQueue::new(constants::SIMULTANEOUS_STATION_INTERACTIONS),
             SimulationScale::default(),
         ))
         .id();
+
+    let buy_sell_and_production_count = {
+        // This doesn't yet account for duplicates in case we ever want to copy this somewhere after the mock-data era is over
+        // (so items which are produced, sold *and* purchased will count twice or thrice)
+        let mut buy_sell_and_production_count = (buys.len() + sells.len()) as u32;
+        if let Some(production) = &production {
+            for (_, module) in &production.modules {
+                let recipe = recipe_manifest.get_by_ref(&module.recipe).unwrap();
+                buy_sell_and_production_count += recipe.output.len() as u32;
+            }
+        }
+
+        buy_sell_and_production_count
+    };
+
+    let mut inventory = Inventory::new(constants::MOCK_STATION_INVENTORY_SIZE);
+
+    let fill_ratio = 2;
+    for sold_item in &sells {
+        inventory.add_item(
+            sold_item.id,
+            constants::MOCK_STATION_INVENTORY_SIZE
+                / buy_sell_and_production_count
+                / sold_item.size
+                / fill_ratio,
+            item_manifest,
+        )
+    }
+
+    for purchased_item in &buys {
+        inventory.add_item(
+            purchased_item.id,
+            constants::MOCK_STATION_INVENTORY_SIZE
+                / buy_sell_and_production_count
+                / purchased_item.size
+                / fill_ratio,
+            item_manifest,
+        )
+    }
+
+    // Reserve storage space for products
+    if let Some(production) = &production {
+        for (_, module) in &production.modules {
+            let recipe = recipe_manifest.get_by_ref(&module.recipe).unwrap();
+            for x in &recipe.output {
+                let item = item_manifest.get_by_ref(&x.item_id).unwrap();
+                let amount = constants::MOCK_STATION_INVENTORY_SIZE
+                    / buy_sell_and_production_count
+                    / item.size;
+
+                inventory.set_production_reservation(&x.item_id, amount, item_manifest);
+            }
+        }
+    }
 
     if !buys.is_empty() {
         commands
@@ -88,9 +128,12 @@ pub fn spawn_station(
             .insert(BuyOrders::mock(&buys, &sells));
     }
     if !sells.is_empty() {
-        commands
-            .entity(entity)
-            .insert(SellOrders::mock(&buys, &sells));
+        commands.entity(entity).insert(SellOrders::mock(
+            &buys,
+            &sells,
+            &mut inventory,
+            item_manifest,
+        ));
     }
 
     if let Some(production) = production {
@@ -100,6 +143,8 @@ pub fn spawn_station(
     if let Some(shipyard) = shipyard {
         commands.entity(entity).insert(shipyard);
     }
+
+    commands.entity(entity).insert(inventory);
 
     station_id_map.insert(id, StationEntity::from(entity));
     sector.add_station(commands, sector_entity, StationEntity::from(entity));

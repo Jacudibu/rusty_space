@@ -25,7 +25,7 @@ pub fn check_if_production_is_finished_and_start_new_one(
     recipes: Res<RecipeManifest>,
     ship_configs: Res<ShipConfigurationManifest>,
     mut inventory_update_writer: EventWriter<InventoryUpdateForProductionEvent>,
-    mut query: Query<
+    mut producer_query: Query<
         (
             Option<&mut ProductionComponent>,
             Option<&mut ShipyardComponent>,
@@ -55,13 +55,12 @@ pub fn check_if_production_is_finished_and_start_new_one(
             sell_orders,
             transform,
             in_sector,
-        )) = query.get_mut(next.entity)
+        )) = producer_query.get_mut(next.entity)
         else {
             error!(
-                "Was unable to trigger production finish for entity {}!",
+                "Was unable to find producer {} for scheduled production completion!",
                 next.entity
             );
-
             continue;
         };
 
@@ -72,7 +71,6 @@ pub fn check_if_production_is_finished_and_start_new_one(
                 production,
                 &mut inventory,
                 &module_id,
-                &item_manifest,
             ),
             ProductionKind::Shipyard(module_id) => process_finished_ship_production(
                 &mut commands,
@@ -152,7 +150,6 @@ fn process_finished_item_production(
     production: Option<Mut<ProductionComponent>>,
     inventory: &mut Inventory,
     module_id: &ProductionModuleId,
-    item_manifest: &ItemManifest,
 ) {
     let Some(mut production) = production else {
         error!("Was unable to find ProductionComponent for entity {} to trigger production completion!", next.entity);
@@ -161,13 +158,14 @@ fn process_finished_item_production(
 
     let Some(module) = production.modules.get_mut(module_id) else {
         error!(
-            "Was unable to trigger production finish for entity {} and module id {:?}!",
+            "Was unable to find production module which was scheduled to to trigger production finish! Entity: {}, Module id: {:?}!",
             next.entity, module_id
         );
         return;
     };
 
+    // Testing if there's enough inventory space to truly finish production is not necessary - it's already been accounted for with planned_incoming.
     let recipe = recipes.get_by_ref(&module.recipe).unwrap();
-    inventory.finish_production(recipe, module.amount, item_manifest);
+    inventory.finish_production(recipe, module.amount);
     module.current_run_finished_at = None;
 }
