@@ -4,9 +4,9 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-bevy = { version = "0.15.0", features = ["trace"] }
-bevy_egui = "0.31.1"
-hexx = { version = "0.19.1", features = ["serde"] }
+bevy = { version = "0.15.1", features = ["trace"] }
+bevy_egui = "0.32.0"
+hexx = { version = "0.20.0", features = ["serde"] }
 iyes_perf_ui = "0.4.0"
 image = "0.25.5"
 rand = "0.8.5"
