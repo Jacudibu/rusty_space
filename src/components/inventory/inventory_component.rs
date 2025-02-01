@@ -1,6 +1,5 @@
 use crate::components::inventory::inventory_element::InventoryElement;
-use crate::game_data::ItemId;
-use crate::game_data::{ItemManifest, RecipeData};
+use crate::game_data::{ItemId, ItemManifest, RecipeData};
 use crate::utils::TradeIntent;
 use bevy::log::error;
 use bevy::prelude::{warn, Component};
@@ -41,8 +40,10 @@ impl Inventory {
         self.used_space + self.reserved_space
     }
 
+    /// Calculates how many items with the size of the provided [item_id] still fit into this inventory.
     #[inline]
     pub fn remaining_space_for(&self, item_id: &ItemId, item_manifest: &ItemManifest) -> u32 {
+        // TODO: This should probably take free reserved space into account?
         self.remaining_space() / item_manifest[item_id].size
     }
 
@@ -51,6 +52,7 @@ impl Inventory {
         self.capacity - self.total_used_space()
     }
 
+    /// The percentage of used storage space.
     pub fn ratio(&self) -> f32 {
         self.total_used_space() as f32 / self.capacity as f32
     }
@@ -241,4 +243,87 @@ impl Inventory {
 enum ReservationKind {
     Production,
     Purchase,
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use crate::create_id_constants;
+    use crate::game_data::{RawItemData, RawItemManifest};
+    use bevy::app::App;
+    use bevy::prelude::{AssetApp, AssetPlugin, Image};
+    use bevy::MinimalPlugins;
+    use leafwing_manifest::manifest::Manifest;
+    use rstest::{fixture, rstest};
+
+    create_id_constants!(ItemId, ITEM_WITH_SIZE_1);
+    create_id_constants!(ItemId, ITEM_WITH_SIZE_2);
+    create_id_constants!(ItemId, ITEM_WITH_SIZE_25);
+    create_id_constants!(ItemId, ITEM_WITH_SIZE_26);
+
+    fn create_item(name: &str, size: u32) -> RawItemData {
+        RawItemData {
+            name: name.into(),
+            icon: Default::default(),
+            price_min: 10,
+            price_max: 20,
+            size,
+        }
+    }
+
+    #[fixture]
+    #[once]
+    fn item_manifest() -> ItemManifest {
+        let mut app = App::new();
+        app.add_plugins(MinimalPlugins);
+        app.add_plugins(AssetPlugin::default());
+        app.init_asset::<Image>();
+
+        let world = app.world_mut();
+        ItemManifest::from_raw_manifest(
+            RawItemManifest {
+                items: vec![
+                    create_item(ITEM_WITH_SIZE_1_NAME, 1),
+                    create_item(ITEM_WITH_SIZE_2_NAME, 2),
+                    create_item(ITEM_WITH_SIZE_25_NAME, 25),
+                    create_item(ITEM_WITH_SIZE_26_NAME, 26),
+                ],
+            },
+            world,
+        )
+        .unwrap()
+    }
+
+    #[rstest]
+    fn add_item(item_manifest: &ItemManifest) {
+        let mut inventory = Inventory::new(25);
+        assert_eq!(0.0, inventory.ratio());
+
+        inventory.add_item(ITEM_WITH_SIZE_1_ID, 5, item_manifest);
+        assert_eq!(5, inventory.used_space);
+        assert_eq!(5, inventory.get(&ITEM_WITH_SIZE_1_ID).unwrap().current);
+
+        inventory.add_item(ITEM_WITH_SIZE_2_ID, 10, item_manifest);
+        assert_eq!(25, inventory.used_space);
+        assert_eq!(10, inventory.get(&ITEM_WITH_SIZE_2_ID).unwrap().current);
+
+        assert_eq!(1.0, inventory.ratio());
+    }
+
+    #[rstest]
+    #[case(25, ITEM_WITH_SIZE_1_ID)]
+    #[case(12, ITEM_WITH_SIZE_2_ID)]
+    #[case(1, ITEM_WITH_SIZE_25_ID)]
+    #[case(0, ITEM_WITH_SIZE_26_ID)]
+    fn remaining_space_for(
+        item_manifest: &ItemManifest,
+        #[case] expected_result: u32,
+        #[case] id: ItemId,
+    ) {
+        let inventory = Inventory::new(25);
+        assert_eq!(
+            expected_result,
+            inventory.remaining_space_for(&id, item_manifest)
+        );
+    }
 }

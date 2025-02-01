@@ -9,6 +9,9 @@ use crate::create_id_constants;
 pub use item::ItemData;
 pub use item_manifest::ItemManifest;
 
+#[cfg(test)]
+pub use {raw_item::RawItemData, raw_item_manifest::RawItemManifest};
+
 pub type ItemId = Id<ItemData>;
 
 create_id_constants!(

@@ -41,6 +41,9 @@ pub use {
     },
 };
 
+#[cfg(test)]
+pub use item_data::{RawItemData, RawItemManifest};
+
 /// A collection of all constant game data#
 #[allow(dead_code)]
 #[derive(SystemParam)]

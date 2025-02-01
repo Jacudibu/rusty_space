@@ -74,66 +74,55 @@ pub fn parse_session_data_into_universe_save_data(
 
 #[cfg(test)]
 mod tests {
-    use crate::persistence::local_hex_position::LocalHexPosition;
-    use crate::persistence::saving::parse_session_data_into_universe_save_data;
-    use crate::persistence::{
-        GatePairSaveData, SaveDataCollection, SectorSaveData, ShipBehaviorSaveData, ShipSaveData,
-        StationSaveData, UniverseSaveData,
-    };
-    use crate::simulation::prelude::SimulationTimestamp;
-    use bevy::ecs::system::RunSystemOnce;
-    use bevy::prelude::Vec2;
-    use hexx::Hex;
-
-    const CENTER: Hex = Hex::new(0, 0);
-    const RIGHT: Hex = Hex::new(1, 0);
+    // const CENTER: Hex = Hex::new(0, 0);
+    // const RIGHT: Hex = Hex::new(1, 0);
 
     #[test]
     #[ignore = "Saving was implemented as a PoC, but is not a priority to keep working right now"]
     fn test_loading_then_saving_should_yield_equal_results() {
-        let mut loaded_data = UniverseSaveData::default();
-        loaded_data.sectors.add(CENTER);
-        loaded_data.sectors.add(RIGHT);
-        loaded_data.gate_pairs.add(
-            LocalHexPosition::new(CENTER, Vec2::X),
-            LocalHexPosition::new(RIGHT, Vec2::NEG_X),
-        );
-        loaded_data.ships.add(
-            todo!(),
-            LocalHexPosition::new(CENTER, Vec2::Y),
-            2.0,
-            String::from("Fancy test ship"),
-            ShipBehaviorSaveData::AutoTrade {
-                next_idle_update: SimulationTimestamp::from(249),
-            },
-        );
-        loaded_data.stations.add(
-            LocalHexPosition::new(RIGHT, Vec2::NEG_Y),
-            String::from("Fancy test station"),
-        );
-
-        let mut app = loaded_data.clone().build_test_app();
-        let world = app.world_mut();
-
-        world.run_system_once(parse_session_data_into_universe_save_data);
-        let saved_data = UniverseSaveData {
-            sectors: world
-                .remove_resource::<SaveDataCollection<SectorSaveData>>()
-                .unwrap(),
-            gate_pairs: world
-                .remove_resource::<SaveDataCollection<GatePairSaveData>>()
-                .unwrap(),
-            stations: world
-                .remove_resource::<SaveDataCollection<StationSaveData>>()
-                .unwrap(),
-            ships: world
-                .remove_resource::<SaveDataCollection<ShipSaveData>>()
-                .unwrap(),
-        };
-
-        assert_eq!(
-            loaded_data, saved_data,
-            "Save data wasn't equal after loading and saving. Maybe stuff isn't ordered correctly?"
-        );
+        // let mut loaded_data = UniverseSaveData::default();
+        // loaded_data.sectors.add(CENTER);
+        // loaded_data.sectors.add(RIGHT);
+        // loaded_data.gate_pairs.add(
+        //     LocalHexPosition::new(CENTER, Vec2::X),
+        //     LocalHexPosition::new(RIGHT, Vec2::NEG_X),
+        // );
+        // loaded_data.ships.add(
+        //     todo!(),
+        //     LocalHexPosition::new(CENTER, Vec2::Y),
+        //     2.0,
+        //     String::from("Fancy test ship"),
+        //     ShipBehaviorSaveData::AutoTrade {
+        //         next_idle_update: SimulationTimestamp::from(249),
+        //     },
+        // );
+        // loaded_data.stations.add(
+        //     LocalHexPosition::new(RIGHT, Vec2::NEG_Y),
+        //     String::from("Fancy test station"),
+        // );
+        //
+        // let mut app = loaded_data.clone().build_test_app();
+        // let world = app.world_mut();
+        //
+        // world.run_system_once(parse_session_data_into_universe_save_data);
+        // let saved_data = UniverseSaveData {
+        //     sectors: world
+        //         .remove_resource::<SaveDataCollection<SectorSaveData>>()
+        //         .unwrap(),
+        //     gate_pairs: world
+        //         .remove_resource::<SaveDataCollection<GatePairSaveData>>()
+        //         .unwrap(),
+        //     stations: world
+        //         .remove_resource::<SaveDataCollection<StationSaveData>>()
+        //         .unwrap(),
+        //     ships: world
+        //         .remove_resource::<SaveDataCollection<ShipSaveData>>()
+        //         .unwrap(),
+        // };
+        //
+        // assert_eq!(
+        //     loaded_data, saved_data,
+        //     "Save data wasn't equal after loading and saving. Maybe stuff isn't ordered correctly?"
+        // );
     }
 }

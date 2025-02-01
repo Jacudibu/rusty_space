@@ -207,29 +207,31 @@ mod test {
     ) where
         F: Fn(Vec<PathElement>, &SectorIdMap) + Send + Sync + 'static,
     {
-        world.run_system_once(
-            move |sectors: Query<&Sector>,
-                  transforms: Query<&SimulationTransform>,
-                  sector_id_map: Res<SectorIdMap>| {
-                let from_entity = sector_id_map.id_to_entity()[&from_sector];
-                let from = sectors.get(from_entity.into()).unwrap();
+        world
+            .run_system_once(
+                move |sectors: Query<&Sector>,
+                      transforms: Query<&SimulationTransform>,
+                      sector_id_map: Res<SectorIdMap>| {
+                    let from_entity = sector_id_map.id_to_entity()[&from_sector];
+                    let from = sectors.get(from_entity.into()).unwrap();
 
-                let to_entity = sector_id_map.id_to_entity()[&to_sector];
-                let to = sectors.get(to_entity.into()).unwrap();
+                    let to_entity = sector_id_map.id_to_entity()[&to_sector];
+                    let to = sectors.get(to_entity.into()).unwrap();
 
-                let result = a_star(
-                    &sectors,
-                    &transforms,
-                    from_entity,
-                    from_local_position + from.world_pos,
-                    to_entity,
-                    to_local_position.map(|x| x + to.world_pos),
-                )
-                .unwrap();
+                    let result = a_star(
+                        &sectors,
+                        &transforms,
+                        from_entity,
+                        from_local_position + from.world_pos,
+                        to_entity,
+                        to_local_position.map(|x| x + to.world_pos),
+                    )
+                    .unwrap();
 
-                assertions(result, &sector_id_map);
-            },
-        );
+                    assertions(result, &sector_id_map);
+                },
+            )
+            .unwrap();
     }
 
     #[test]
@@ -530,7 +532,7 @@ mod test {
             Vec2::X,
             CENTER,
             Some(Vec2::NEG_X),
-            |result, sector_id_map| {
+            |result, _sector_id_map| {
                 // TODO: Probably should return some kinda enum for None|Local|GatePath
                 assert_eq!(result.len(), 0);
             },

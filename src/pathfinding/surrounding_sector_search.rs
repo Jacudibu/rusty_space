@@ -105,29 +105,31 @@ mod test {
         max_range: u8,
         expected_result: Vec<(u8, Hex)>,
     ) {
-        world.run_system_once(
-            move |sectors: Query<&Sector>,
-                  sector_id_map: Res<SectorIdMap>,
-                  search_query: Query<&SectorAsteroidComponent>| {
-                let from_entity = sector_id_map.id_to_entity()[&from_sector];
+        world
+            .run_system_once(
+                move |sectors: Query<&Sector>,
+                      sector_id_map: Res<SectorIdMap>,
+                      search_query: Query<&SectorAsteroidComponent>| {
+                    let from_entity = sector_id_map.id_to_entity()[&from_sector];
 
-                let result = surrounding_sector_search(
-                    &sectors,
-                    from_entity,
-                    min_range,
-                    max_range,
-                    &search_query,
-                    has_asteroids,
-                );
+                    let result = surrounding_sector_search(
+                        &sectors,
+                        from_entity,
+                        min_range,
+                        max_range,
+                        &search_query,
+                        has_asteroids,
+                    );
 
-                let transformed_result: Vec<(u8, Hex)> = result
-                    .iter()
-                    .map(|x| (x.distance, sector_id_map.entity_to_id()[&x.sector]))
-                    .collect();
+                    let transformed_result: Vec<(u8, Hex)> = result
+                        .iter()
+                        .map(|x| (x.distance, sector_id_map.entity_to_id()[&x.sector]))
+                        .collect();
 
-                assert_eq!(expected_result, transformed_result);
-            },
-        );
+                    assert_eq!(expected_result, transformed_result);
+                },
+            )
+            .unwrap();
     }
 
     #[test]

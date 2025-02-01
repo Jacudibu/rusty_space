@@ -10,7 +10,7 @@ use serde::Deserialize;
 /// Contains the raw, unprocessed item data.
 #[derive(Asset, TypePath, Deserialize)]
 pub struct RawItemManifest {
-    pub(crate) items: Vec<RawItemData>,
+    pub items: Vec<RawItemData>,
 }
 
 impl RawItemManifest {
