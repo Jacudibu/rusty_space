@@ -1,5 +1,5 @@
 use crate::constants;
-use crate::game_data::{HYDROGEN_ITEM_ID, IRON_ORE_ITEM_ID};
+use crate::game_data::{CRYSTAL_ORE_ITEM_ID, HYDROGEN_ITEM_ID, IRON_ORE_ITEM_ID};
 use crate::persistence::local_hex_position::LocalHexPosition;
 use crate::persistence::test_universe::coordinates::CENTER;
 use crate::persistence::{SaveDataCollection, ShipBehaviorSaveData, ShipSaveData};
@@ -32,10 +32,21 @@ pub fn create_test_data() -> SaveDataCollection<ShipSaveData> {
             MOCK_MINING_SHIP_CONFIG_ID,
             LocalHexPosition::new(CENTER, Vec2::ZERO),
             rotation_factor * (i as f32),
-            format!("Mining Ship {i}"),
+            format!("Iron Mining Ship {i}"),
             ShipBehaviorSaveData::AutoMine {
                 next_idle_update: SimulationTimestamp::from(i as Milliseconds % 1000),
                 mined_ore: IRON_ORE_ITEM_ID,
+                state: AutoMineState::Mining,
+            },
+        );
+        result.add(
+            MOCK_MINING_SHIP_CONFIG_ID,
+            LocalHexPosition::new(CENTER, Vec2::ZERO),
+            rotation_factor * (i as f32),
+            format!("Crystal Mining Ship {i}"),
+            ShipBehaviorSaveData::AutoMine {
+                next_idle_update: SimulationTimestamp::from(i as Milliseconds % 1000),
+                mined_ore: CRYSTAL_ORE_ITEM_ID,
                 state: AutoMineState::Mining,
             },
         );
