@@ -20,13 +20,18 @@ Too lazy to manage a whole kanban board and issues for these things yet. Roughly
 # Automated Trade Order System
 - Automatically generate relevant buy & sell orders for stations, depending on existing station modules. Replaces more hardcoded stuff.
 
+# Better Camera Controls 
+- Zoom to MouseCursor
+- Optional Edge Panning
+- View Jumping Hotkeys (save & jump to camera position X by pressing some key combination)
+
 # Station Building
 
 - Build-Site Entities
 - Construction Materials go into separate inventory
 - Builder ships build stations (builders being near the construction site should be enough to apply their constant construction strength)
-- Multiple builders speed up construction (maybe not linearly)
-  - Builders just register themselves to a construction site, and the construction site itself actually increments its progress
+- Multiple builders speed up construction (maybe not completely linearly, so players might want to consider bigger construction ships over a swarm of cheap small ones)
+  - Builders just register themselves to a construction site, and the construction site itself actually increments its progress each tick
 - Station module costs increase with station size
 
 - New stations can be created in a running game

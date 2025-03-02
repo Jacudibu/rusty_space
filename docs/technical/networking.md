@@ -11,7 +11,7 @@ First, we got to define a way on how to initially sync the game
 - [x] Saving and Loading Game
    - This includes assigning unique IDs to every relevant entity which are valid across sessions
 
-Next up, we need to get our clients connected with each other. This can happen either in a lobby or directly during gameplay. The latter is probably a little more annoying to set up, but very nice to have.
+Next up, we need to get our clients connected with each other. This can happen either in a lobby or directly during gameplay. The latter is probably a little more annoying to set up, but very nice to have in order to support reconnecting to existing games.
 - [ ] Add an option to host a game 
 - [ ] Add an option to join a hosted game
    - Clients download map from host

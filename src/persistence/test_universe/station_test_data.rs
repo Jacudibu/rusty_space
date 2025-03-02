@@ -15,7 +15,7 @@ pub fn create_test_data() -> SaveDataCollection<StationSaveData> {
     result
         .add(
             LocalHexPosition::new(CENTER, Vec2::new(0.0, 200.0)),
-            "Station A".into(),
+            "Crystal Processor".into(),
         )
         .with_production(1, SILICA_PRODUCTION_MODULE_ID, SILICA_RECIPE_ID)
         .with_buys(vec![CRYSTAL_ORE_ITEM_ID])
@@ -24,7 +24,7 @@ pub fn create_test_data() -> SaveDataCollection<StationSaveData> {
     result
         .add(
             LocalHexPosition::new(BOTTOM_LEFT, Vec2::new(-200.0, -200.0)),
-            "Station B".into(),
+            "Forge".into(),
         )
         .with_production(
             5,
@@ -37,7 +37,7 @@ pub fn create_test_data() -> SaveDataCollection<StationSaveData> {
     result
         .add(
             LocalHexPosition::new(CENTER, Vec2::new(200.0, -200.0)),
-            "Station C".into(),
+            "Wafer Fab".into(),
         )
         .with_production(3, WAFERS_PRODUCTION_MODULE_ID, WAFERS_RECIPE_ID)
         .with_buys(vec![SILICA_ITEM_ID, HYDROGEN_ITEM_ID])
