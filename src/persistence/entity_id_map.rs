@@ -1,10 +1,10 @@
 use crate::persistence::persistent_entity_id::{
     PersistentAsteroidId, PersistentGateId, PersistentShipId, PersistentStationId,
 };
-use crate::persistence::{PersistentEntityId, PersistentPlanetId};
+use crate::persistence::{PersistentBuildSiteId, PersistentEntityId, PersistentPlanetId};
 use crate::utils::{
-    AsteroidEntity, GateEntity, PlanetEntity, SectorEntity, ShipEntity, StarEntity, StationEntity,
-    TypedEntity,
+    AsteroidEntity, BuildSiteEntity, GateEntity, PlanetEntity, SectorEntity, ShipEntity,
+    StarEntity, StationEntity, TypedEntity,
 };
 use bevy::ecs::system::SystemParam;
 use bevy::prelude::{Res, Resource};
@@ -21,6 +21,7 @@ pub struct AllEntityIdMaps<'w> {
     pub ships: Res<'w, ShipIdMap>,
     pub stars: Res<'w, StarIdMap>,
     pub stations: Res<'w, StationIdMap>,
+    pub build_sites: Res<'w, BuildSiteIdMap>,
 }
 
 impl AllEntityIdMaps<'_> {
@@ -29,6 +30,7 @@ impl AllEntityIdMaps<'_> {
     pub fn get_typed_id_unchecked(&self, typed_entity: &TypedEntity) -> PersistentEntityId {
         match typed_entity {
             TypedEntity::Asteroid(asteroid) => self.asteroids.entity_to_id[asteroid].into(),
+            TypedEntity::BuildSite(build_site) => self.build_sites.entity_to_id[build_site].into(),
             TypedEntity::Gate(gate) => self.gates.entity_to_id[gate].into(),
             TypedEntity::Planet(planet) => self.planets.entity_to_id[planet].into(),
             TypedEntity::Sector(sector) => self.sectors.entity_to_id[sector].into(),
@@ -56,6 +58,7 @@ pub type ShipIdMap = EntityIdMap<PersistentShipId, ShipEntity>;
 pub type SectorIdMap = EntityIdMap<Hex, SectorEntity>;
 pub type StarIdMap = EntityIdMap<PersistentStationId, StarEntity>;
 pub type StationIdMap = EntityIdMap<PersistentStationId, StationEntity>;
+pub type BuildSiteIdMap = EntityIdMap<PersistentBuildSiteId, BuildSiteEntity>;
 
 /// A simple Bidirectional Map.
 ///

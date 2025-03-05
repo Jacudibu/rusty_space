@@ -41,7 +41,7 @@ pub fn spawn_ship(
         Inventory::new(ship_configuration.computed_stats.inventory_size),
         TaskQueue::new(),
         Sprite::from_image(ship_configuration.sprite.clone()),
-        simulation_transform.as_transform(constants::z_layers::SHIP),
+        simulation_transform.as_bevy_transform(constants::z_layers::SHIP),
         simulation_transform,
         SimulationScale::default(),
     ));

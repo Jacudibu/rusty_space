@@ -107,7 +107,7 @@ fn spawn_gate(
         Gate::new(id, ship_curve),
         SelectableEntity::Gate,
         Sprite::from_image(sprites.gate.clone()),
-        simulation_transform.as_transform(constants::z_layers::GATE),
+        simulation_transform.as_bevy_transform(constants::z_layers::GATE),
         simulation_transform,
         SimulationScale::default(),
     ));

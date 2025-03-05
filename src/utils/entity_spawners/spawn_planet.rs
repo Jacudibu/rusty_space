@@ -51,7 +51,7 @@ pub fn spawn_planet(
                 velocity,
             ),
             Sprite::from_image(sprites.planet.clone()),
-            simulation_transform.as_transform(constants::z_layers::PLANET_AND_STARS),
+            simulation_transform.as_bevy_transform(constants::z_layers::PLANET_AND_STARS),
             simulation_transform,
             SimulationScale::default(),
             planet,

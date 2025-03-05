@@ -43,12 +43,13 @@ pub const DOCKING_DISTANCE_TO_STATION_SQUARED: f32 =
     DOCKING_DISTANCE_TO_STATION * DOCKING_DISTANCE_TO_STATION;
 
 pub mod z_layers {
-    pub const SHIP: f32 = 10.0;
+    pub const ASTEROID: f32 = 0.0;
     pub const STATION: f32 = 5.0;
     pub const STATION_ICON: f32 = STATION + 1.0;
+    pub const BUILD_SITE: f32 = STATION_ICON + 1.0;
     pub const GATE: f32 = 5.0;
-    pub const ASTEROID: f32 = 0.0;
     pub const PLANET_AND_STARS: f32 = 5.0;
+    pub const SHIP: f32 = 10.0;
 
     /// Sadly linestrip depth seems to be ignored by 2D Cameras. Right now this constant purely exists to avoid magic numbers.
     pub const GATE_CONNECTION: f32 = 0.0;

@@ -84,6 +84,7 @@ pub struct SpriteHandles {
     star_selected: Handle<Image>,
     station: Handle<Image>,
     station_selected: Handle<Image>,
+    building_site: Handle<Image>,
     icon_unknown: Handle<Image>,
     icon_ship: Handle<Image>,
 }
@@ -114,6 +115,7 @@ pub fn initialize_data(
             "sprites/station.png",
             &mut image_assets,
         ),
+        building_site: asset_server.load("sprites/building_site.png"),
         icon_unknown: asset_server.load("sprites/unknown.png"),
         icon_ship: asset_server.load("sprites/ships/ship_fighter.png"),
     };

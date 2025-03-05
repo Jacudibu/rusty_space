@@ -32,7 +32,7 @@ pub fn spawn_sector(
     let entity_commands = commands.spawn((
         Name::new(format!("[{},{}]", coordinate.x, coordinate.y)),
         Sector::new(coordinate, position),
-        simulation_transform.as_transform(0.0),
+        simulation_transform.as_bevy_transform(0.0),
         simulation_transform,
     ));
 
@@ -79,7 +79,7 @@ pub fn spawn_sector(
                 InSector { sector },
                 SelectableEntity::Star,
                 Sprite::from_image(sprites.star.clone()),
-                simulation_transform.as_transform(constants::z_layers::PLANET_AND_STARS),
+                simulation_transform.as_bevy_transform(constants::z_layers::PLANET_AND_STARS),
                 simulation_transform,
                 SimulationScale::default(),
             ))

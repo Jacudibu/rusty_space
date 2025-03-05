@@ -44,7 +44,13 @@ pub use {
 #[cfg(test)]
 pub use item_data::{RawItemData, RawItemManifest};
 
-/// A collection of all constant game data#
+/// An enum which differentiates between the various Modules that make up a station.
+pub enum BuildableModuleId {
+    ProductionModule(ProductionModuleId),
+    ShipyardModule(ShipyardModuleId),
+}
+
+/// A collection of all constant game data
 #[allow(dead_code)]
 #[derive(SystemParam)]
 pub struct GameData<'w> {

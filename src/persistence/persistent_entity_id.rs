@@ -1,4 +1,4 @@
-use crate::components::{Asteroid, Gate, Planet, Ship, Station};
+use crate::components::{Asteroid, BuildSite, Gate, Planet, Ship, Station};
 use bevy::prelude::Component;
 use hexx::Hex;
 use serde::{Deserialize, Serialize};
@@ -7,6 +7,7 @@ use std::fmt::{Debug, Display, Formatter};
 use std::hash::{Hash, Hasher};
 use std::marker::PhantomData;
 use std::sync::atomic::{AtomicU32, Ordering};
+
 /// A unique ID that's the same between session and across different clients in multiplayer sessions.
 /// Should be used for persistence and networking.
 #[derive(Serialize, Deserialize)]
@@ -17,6 +18,7 @@ pub enum PersistentEntityId {
     Planet(PersistentPlanetId),
     Ship(PersistentShipId),
     Station(PersistentStationId),
+    BuildSite(PersistentBuildSiteId),
     Sector(Hex),
 }
 
@@ -79,6 +81,11 @@ impl_typed_persistent_entity_id!(Ship, NEXT_SHIP_ID);
 pub type PersistentStationId = TypedPersistentEntityId<Station>;
 impl_traits!(PersistentStationId, Station);
 impl_typed_persistent_entity_id!(Station, NEXT_STATION_ID);
+
+/// A [PersistentEntityId] for [BuildSite]s.
+pub type PersistentBuildSiteId = TypedPersistentEntityId<BuildSite>;
+impl_traits!(PersistentBuildSiteId, BuildSite);
+impl_typed_persistent_entity_id!(BuildSite, NEXT_BUILD_SITE_ID);
 
 impl_traits!(Hex, Sector);
 

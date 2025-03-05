@@ -2,6 +2,8 @@ use bevy::math::VectorSpace;
 use bevy::prelude::{Component, Dir2, Rot2, Transform, Vec2};
 use hexx::{Quat, Vec3};
 
+/// Describes the 2D position of an object within the simulation.
+/// (bevy's default [Transform] is only used for rendering in this project.)
 #[derive(Component)]
 pub struct SimulationTransform {
     pub translation: Vec2,
@@ -77,14 +79,14 @@ impl SimulationTransform {
         self.rotation * Dir2::Y
     }
 
-    /// Crate a 3D Transform based on self, with the z position set to the provided z_layer.
+    /// Create a 3D Transform based on self, with the z position set to the provided z_layer.
     #[inline]
     #[must_use]
-    pub fn as_transform(&self, z_layer: f32) -> Transform {
+    pub fn as_bevy_transform(&self, z_layer: f32) -> Transform {
         self.as_scaled_transform(z_layer, 1.0)
     }
 
-    /// Crate a 3D Transform based on self, with the z position set to the provided z_layer.
+    /// Create a 3D Transform based on self, with the z position set to the provided z_layer.
     #[inline]
     #[must_use]
     pub fn as_scaled_transform(&self, z_layer: f32, scale: f32) -> Transform {

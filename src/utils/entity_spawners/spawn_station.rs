@@ -1,5 +1,6 @@
 use crate::components::{
-    BuyOrders, InteractionQueue, Inventory, Sector, SelectableEntity, SellOrders, Station,
+    BuildSite, BuyOrders, InteractionQueue, Inventory, Sector, SelectableEntity, SellOrders,
+    Station,
 };
 use crate::game_data::{ItemData, ItemManifest, RecipeManifest};
 use crate::persistence::{PersistentStationId, StationIdMap};
@@ -11,6 +12,7 @@ use crate::{constants, SpriteHandles};
 use bevy::core::Name;
 use bevy::math::Vec2;
 use bevy::prelude::{default, Commands, Query, Sprite};
+use bevy::sprite::Anchor;
 
 #[allow(clippy::too_many_arguments)] // It's hopeless... :')
 pub fn spawn_station(
@@ -26,6 +28,7 @@ pub fn spawn_station(
     sells: Vec<&ItemData>,
     production: Option<ProductionComponent>,
     shipyard: Option<ShipyardComponent>,
+    build_site: Option<BuildSite>,
     item_manifest: &ItemManifest,
     recipe_manifest: &RecipeManifest,
 ) {
@@ -51,17 +54,46 @@ pub fn spawn_station(
                 image: icon_sprite,
                 ..default()
             },
-            simulation_transform.as_transform(constants::z_layers::STATION_ICON),
+            simulation_transform.as_bevy_transform(constants::z_layers::STATION_ICON),
         ))
         .id();
+
+    let build_site_id = if let Some(build_site) = build_site {
+        let build_site_id = Some(build_site.id);
+
+        // TODO: Build site has buy orders and an inventory
+        // TODO: Figure out the least painful way to sync simulation transform to the position of the station
+        //         (probably a new marker component + system that's run after the regular transform update)
+        //         (only necessary in sectors with some form of perpetual motion)
+        commands.spawn((
+            Name::new(name.to_string() + " (Build Site)"),
+            build_site,
+            simulation_transform.as_bevy_transform(constants::z_layers::BUILD_SITE),
+            Sprite {
+                image: sprites.building_site.clone(),
+                anchor: Anchor::BottomLeft,
+                ..Default::default()
+            },
+            SimulationTransform::new(
+                simulation_transform.translation,
+                simulation_transform.rotation,
+            ),
+            Inventory::new(u32::MAX), // TODO: This should be a special inventory with precise capacities for the required materials
+            BuyOrders::default(), // TODO: These should sync with the inventory capacities. Prices are a bit complicated, but MAX is enough for starters.
+        ));
+
+        build_site_id
+    } else {
+        None
+    };
 
     let entity = commands
         .spawn((
             Name::new(name.to_string()),
             SelectableEntity::Station,
-            Station::new(id),
+            Station::new(id, build_site_id),
             Sprite::from_image(sprites.station.clone()),
-            simulation_transform.as_transform(constants::z_layers::STATION),
+            simulation_transform.as_bevy_transform(constants::z_layers::STATION),
             simulation_transform,
             InteractionQueue::new(constants::SIMULTANEOUS_STATION_INTERACTIONS),
             SimulationScale::default(),
