@@ -180,6 +180,7 @@ pub fn handle_idle_ships(
         });
 }
 
+#[must_use]
 fn find_nearby_sector_with_asteroids(
     all_sectors_with_asteroids: &Query<&SectorAsteroidComponent>,
     all_sectors: &Query<&Sector>,
@@ -212,6 +213,7 @@ fn find_nearby_sector_with_asteroids(
     Some(target_sector.sector)
 }
 
+#[must_use]
 pub fn entity_distance_to_ship_squared<T>(
     all_transforms: &Query<&SimulationTransform>,
     ship_pos: Vec2,

@@ -24,6 +24,7 @@ impl FromMockData for ProductionModuleManifest {
                     id: SILICA_PRODUCTION_MODULE_ID,
                     name: SILICA_PRODUCTION_MODULE_NAME.into(),
                     available_recipes: vec![SILICA_RECIPE_ID],
+                    required_build_power: 1000,
                 },
             ),
             (
@@ -32,6 +33,7 @@ impl FromMockData for ProductionModuleManifest {
                     id: REFINED_METALS_PRODUCTION_MODULE_ID,
                     name: REFINED_METALS_PRODUCTION_MODULE_NAME.into(),
                     available_recipes: vec![REFINED_METALS_RECIPE_ID],
+                    required_build_power: 1000,
                 },
             ),
             (
@@ -40,6 +42,7 @@ impl FromMockData for ProductionModuleManifest {
                     id: WAFERS_PRODUCTION_MODULE_ID,
                     name: WAFERS_PRODUCTION_MODULE_NAME.into(),
                     available_recipes: vec![WAFERS_RECIPE_ID],
+                    required_build_power: 1000,
                 },
             ),
         ]);

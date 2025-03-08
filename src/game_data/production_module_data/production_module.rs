@@ -10,10 +10,15 @@ use serde::Deserialize;
 pub struct ProductionModuleData {
     /// Unique ID to differentiate between recipes
     pub id: ProductionModuleId,
+
     /// User Facing name thingy
     pub name: String,
+
     /// List of things that can be produced
     pub available_recipes: Vec<RecipeId>,
+
+    /// The amount of build power necessary to build this module.
+    pub required_build_power: u32,
 }
 
 impl DataCanBeUsedAsRawData for ProductionModuleData {}

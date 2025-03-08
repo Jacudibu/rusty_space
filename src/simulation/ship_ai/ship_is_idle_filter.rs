@@ -8,14 +8,15 @@ use bevy::prelude::{With, Without};
 pub struct ShipIsIdleFilter {
     tuple: (
         With<components::Ship>,
-        Without<tasks::ExchangeWares>,
-        Without<tasks::MoveToEntity>,
-        Without<tasks::UseGate>,
-        Without<tasks::MineAsteroid>,
-        Without<tasks::HarvestGas>,
         Without<tasks::AwaitingSignal>,
-        Without<tasks::RequestAccess>,
+        Without<tasks::Build>,
         Without<tasks::DockAtEntity>,
+        Without<tasks::ExchangeWares>,
+        Without<tasks::HarvestGas>,
+        Without<tasks::MineAsteroid>,
+        Without<tasks::MoveToEntity>,
+        Without<tasks::RequestAccess>,
         Without<tasks::Undock>,
+        Without<tasks::UseGate>,
     ),
 }

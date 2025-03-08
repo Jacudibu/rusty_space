@@ -72,6 +72,7 @@ demands.
 - See if `beet` might help implementing some of the more complex behaviors: https://github.com/mrchantey/beet
 - Main tasks are handed out by the ShipBehavior, and are then dynamically filled with subtasks to complete them.
     - e.g. AutoTrade: Just add `Buy X` and `Sell x`, then do the pathfinding in a more concurrent system once it becomes relevant.
+- Ship Behavior idle ship filter could be done in a par_iter_mut system for all ships by moving the timestamp into a separate component and adding/removing an "BehaviorUpdateRequested" kinda marker component. Would need profiling to see if it's actually better that way.
 
 ### Examples
 

@@ -1,4 +1,4 @@
-use crate::components::InSector;
+use crate::components::{BuildSite, InSector};
 use crate::utils::{GateEntity, SectorEntity, ShipEntity, StationEntity};
 use bevy::math::Vec2;
 use bevy::prelude::{Commands, Component};
@@ -14,6 +14,7 @@ pub struct Sector {
     pub gates: HashMap<SectorEntity, GatePairInSector>,
     pub ships: HashSet<ShipEntity>,
     pub stations: HashSet<StationEntity>,
+    pub build_sites: HashSet<BuildSite>,
 }
 
 #[derive(Eq, PartialEq, Hash, Copy, Clone)]
@@ -33,6 +34,7 @@ impl Sector {
             gates: HashMap::new(),
             ships: HashSet::new(),
             stations: HashSet::new(),
+            build_sites: HashSet::new(),
         }
     }
 

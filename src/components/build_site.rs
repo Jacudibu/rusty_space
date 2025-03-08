@@ -15,4 +15,7 @@ pub struct BuildSite {
 
     /// A queue of the modules which still need to be built.
     pub build_order: Vec<BuildableModuleId>,
+
+    /// The total amount of build power that's already been applied to the first element inside our [build_order].
+    pub current_build_progress: f32,
 }

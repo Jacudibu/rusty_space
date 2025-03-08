@@ -11,7 +11,8 @@ use bevy::prelude::{Query, Vec2};
 use crate::simulation::transform::simulation_transform::SimulationTransform;
 pub use {create_tasks_following_path::create_tasks_to_follow_path, path_element::PathElement};
 
-/// Returns the fastest gate-path between `from` and `to`.   
+/// Returns the fastest gate-path between `from` and `to`.
+#[must_use]
 pub fn find_path(
     sectors: &Query<&Sector>,
     gate_positions: &Query<&SimulationTransform>,

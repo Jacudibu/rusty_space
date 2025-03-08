@@ -15,6 +15,7 @@ impl FromMockData for ShipyardModuleManifest {
             ShipyardModuleData {
                 id: MOCK_SHIPYARD_MODULE_ID,
                 name: "Debug Shipyard".to_string(),
+                required_build_power: 1000,
             },
         )]);
 

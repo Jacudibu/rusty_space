@@ -4,6 +4,7 @@ use crate::simulation::ship_ai::behaviors::auto_harvest::AutoHarvestBehavior;
 use crate::simulation::ship_ai::{AutoMineBehavior, AutoMineState, AutoTradeBehavior};
 use bevy::ecs::system::EntityCommands;
 
+mod auto_build;
 pub mod auto_harvest;
 pub mod auto_mine;
 pub mod auto_trade;

@@ -149,6 +149,7 @@ pub fn handle_idle_ships(
         });
 }
 
+#[must_use]
 fn find_nearby_sector_with_gas_giants(
     all_gas_giants: &Query<&GasGiant>,
     all_sectors_with_planets: &Query<&SectorPlanets>,

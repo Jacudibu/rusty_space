@@ -1,6 +1,7 @@
 use bevy::prelude::{Commands, Component, Entity, Query, Res};
 
 use crate::components::{BuyOrders, InSector, Inventory, Sector, SellOrders, TradeOrder};
+use crate::constants;
 use crate::game_data::ItemManifest;
 use crate::simulation::prelude::{SimulationTime, SimulationTimestamp};
 use crate::simulation::ship_ai::ship_is_idle_filter::ShipIsIdleFilter;
@@ -48,7 +49,8 @@ pub fn handle_idle_ships(
                 &item_manifest,
             );
             let Some(plan) = plan else {
-                behavior.next_idle_update = now.add_seconds(2);
+                behavior.next_idle_update =
+                    now.add_seconds(constants::SECONDS_BETWEEN_SHIP_BEHAVIOR_IDLE_UPDATES);
                 return;
             };
             let [mut this_inventory, mut seller_inventory, mut buyer_inventory] = inventories

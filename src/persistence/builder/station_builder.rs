@@ -178,6 +178,7 @@ impl StationSaveData {
                 id: PersistentBuildSiteId::next(),
                 station_id: self.id,
                 build_order: Vec::new(),
+                current_build_progress: 0.0,
             }),
             &args.items,
             &args.recipes,

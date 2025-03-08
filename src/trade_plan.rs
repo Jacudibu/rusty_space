@@ -18,6 +18,7 @@ pub struct TradePlan {
 }
 
 impl TradePlan {
+    #[must_use]
     pub fn search_for_trade_run(
         inventory: &Inventory,
         buy_orders: &Query<(Entity, &mut BuyOrders, &InSector)>,

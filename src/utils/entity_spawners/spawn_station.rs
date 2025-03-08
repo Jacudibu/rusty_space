@@ -71,7 +71,7 @@ pub fn spawn_station(
             simulation_transform.as_bevy_transform(constants::z_layers::BUILD_SITE),
             Sprite {
                 image: sprites.building_site.clone(),
-                anchor: Anchor::BottomLeft,
+                anchor: Anchor::Custom(Vec2::splat(-0.7)),
                 ..Default::default()
             },
             SimulationTransform::new(

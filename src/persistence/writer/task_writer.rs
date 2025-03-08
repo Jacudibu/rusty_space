@@ -34,18 +34,11 @@ impl TaskSaveData {
                 target: all_entity_id_maps.planets.entity_to_id()[target],
                 gas: *gas,
             },
-            TaskInsideQueue::DockAtEntity { .. } => {
-                todo!()
-            }
-            TaskInsideQueue::AwaitingSignal => {
-                todo!()
-            }
-            TaskInsideQueue::RequestAccess { .. } => {
-                todo!()
-            }
-            TaskInsideQueue::Undock => {
-                todo!()
-            }
+            TaskInsideQueue::DockAtEntity { .. } => todo!(),
+            TaskInsideQueue::AwaitingSignal => todo!(),
+            TaskInsideQueue::RequestAccess { .. } => todo!(),
+            TaskInsideQueue::Undock => todo!(),
+            TaskInsideQueue::Build { .. } => todo!(),
         }
     }
 }
