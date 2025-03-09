@@ -4,6 +4,7 @@ use crate::simulation::prelude::SimulationTime;
 use crate::simulation::ship_ai::task_finished_event::TaskFinishedEvent;
 use crate::simulation::ship_ai::task_queue::TaskQueue;
 use crate::simulation::ship_ai::task_result::TaskResult;
+use crate::simulation::ship_ai::task_started_event::AllTaskStartedEventWriters;
 use crate::simulation::ship_ai::tasks;
 use crate::simulation::ship_ai::tasks::{move_to_entity, send_completion_events};
 use crate::simulation::transform::simulation_transform::{SimulationScale, SimulationTransform};
@@ -100,6 +101,7 @@ impl DockAtEntity {
         mut event_reader: EventReader<TaskFinishedEvent<Self>>,
         mut all_ships_with_task: Query<(&mut TaskQueue, &mut Visibility, &Self)>,
         simulation_time: Res<SimulationTime>,
+        mut task_started_event_writers: AllTaskStartedEventWriters,
     ) {
         let now = simulation_time.now();
 
@@ -112,9 +114,11 @@ impl DockAtEntity {
                 entity_commands.insert(components::IsDocked::new(task.target));
 
                 tasks::remove_task_and_add_next_in_queue_to_entity_commands::<Self>(
+                    event.entity,
                     &mut entity_commands,
                     &mut queue,
                     now,
+                    &mut task_started_event_writers,
                 );
             } else {
                 error!(

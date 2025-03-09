@@ -5,6 +5,7 @@ use crate::game_data::{ItemId, ItemManifest};
 use crate::pathfinding;
 use crate::simulation::prelude::{SimulationTime, SimulationTimestamp};
 use crate::simulation::ship_ai::ship_is_idle_filter::ShipIsIdleFilter;
+use crate::simulation::ship_ai::task_started_event::AllTaskStartedEventWriters;
 use crate::simulation::ship_ai::{TaskInsideQueue, TaskQueue};
 use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::trade_plan::TradePlan;
@@ -52,6 +53,7 @@ pub fn handle_idle_ships(
     mut all_asteroids: Query<&mut Asteroid>,
     all_transforms: Query<&SimulationTransform>,
     item_manifest: Res<ItemManifest>,
+    mut all_task_started_event_writers: AllTaskStartedEventWriters,
 ) {
     let now = simulation_time.now();
 
@@ -114,7 +116,12 @@ pub fn handle_idle_ships(
                                 reserved: reserved_amount,
                             });
 
-                            queue.apply(&mut commands, now, ship_entity);
+                            queue.apply(
+                                &mut commands,
+                                now,
+                                ship_entity,
+                                &mut all_task_started_event_writers,
+                            );
                             return;
                         }
                     }
@@ -143,7 +150,12 @@ pub fn handle_idle_ships(
                     )
                     .unwrap();
                     pathfinding::create_tasks_to_follow_path(&mut queue, path);
-                    queue.apply(&mut commands, now, ship_entity);
+                    queue.apply(
+                        &mut commands,
+                        now,
+                        ship_entity,
+                        &mut all_task_started_event_writers,
+                    );
                 }
                 AutoMineState::Trading => {
                     let Some(plan) = TradePlan::sell_anything_from_inventory(
@@ -174,7 +186,12 @@ pub fn handle_idle_ships(
                     );
 
                     plan.create_tasks_for_sale(&all_sectors, &all_transforms, &mut queue);
-                    queue.apply(&mut commands, now, ship_entity);
+                    queue.apply(
+                        &mut commands,
+                        now,
+                        ship_entity,
+                        &mut all_task_started_event_writers,
+                    );
                 }
             }
         });

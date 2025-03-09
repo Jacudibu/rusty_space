@@ -1,4 +1,5 @@
 use crate::simulation::prelude::{CurrentSimulationTimestamp, TaskInsideQueue};
+use crate::simulation::ship_ai::task_started_event::AllTaskStartedEventWriters;
 use bevy::prelude::{Commands, Component, Entity};
 use std::collections::VecDeque;
 use std::ops::{Deref, DerefMut};
@@ -17,10 +18,21 @@ impl TaskQueue {
     }
 
     /// Creates the Task Component for the first item in the queue to the provided entity.
-    /// Should be called by behaviors after adding new tasks.
-    pub fn apply(&self, commands: &mut Commands, now: CurrentSimulationTimestamp, entity: Entity) {
+    /// Should be called by behaviors when transitioning away from idle states.
+    pub fn apply(
+        &self,
+        commands: &mut Commands,
+        now: CurrentSimulationTimestamp,
+        entity: Entity,
+        task_started_event_writers: &mut AllTaskStartedEventWriters,
+    ) {
         let mut commands = commands.entity(entity);
-        self.queue[0].create_and_insert_component(&mut commands, now);
+        self.queue[0].create_and_insert_component(
+            entity,
+            &mut commands,
+            now,
+            task_started_event_writers,
+        );
     }
 }
 

@@ -11,8 +11,11 @@ use crate::simulation::prelude::SimulationTime;
 use crate::simulation::ship_ai::task_finished_event::TaskFinishedEvent;
 use crate::simulation::ship_ai::task_queue::TaskQueue;
 use crate::simulation::ship_ai::task_result::TaskResult;
+use crate::simulation::ship_ai::task_started_event::{
+    AllTaskStartedEventWriters, TaskStartedEvent,
+};
+use crate::simulation::ship_ai::tasks;
 use crate::simulation::ship_ai::tasks::send_completion_events;
-use crate::simulation::ship_ai::{tasks, MoveToEntity};
 use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::utils::{interpolation, ShipEntity};
 use crate::utils::{GateEntity, SectorEntity};
@@ -132,6 +135,7 @@ impl UseGate {
         mut all_ships_with_task: Query<(&mut TaskQueue, &Self, &mut ShipVelocity)>,
         mut all_sectors: Query<&mut SectorComponent>,
         simulation_time: Res<SimulationTime>,
+        mut task_started_event_writers: AllTaskStartedEventWriters,
     ) {
         let now = simulation_time.now();
 
@@ -146,14 +150,15 @@ impl UseGate {
                         ShipEntity::from(event.entity),
                     );
 
+                velocity.forward *= 0.5;
+
                 tasks::remove_task_and_add_next_in_queue::<Self>(
                     &mut commands,
                     event.entity,
                     &mut queue,
                     now,
+                    &mut task_started_event_writers,
                 );
-
-                velocity.forward *= 0.5;
             } else {
                 error!(
                     "Unable to find entity for task completion: {}",
@@ -163,10 +168,10 @@ impl UseGate {
         }
     }
 
-    pub fn on_task_creation(
+    pub fn on_task_started(
         mut commands: Commands,
         query: Query<&InSector, With<Self>>,
-        mut triggers: EventReader<TaskFinishedEvent<MoveToEntity>>,
+        mut triggers: EventReader<TaskStartedEvent<Self>>,
         mut all_sectors: Query<&mut SectorComponent>,
     ) {
         for x in triggers.read() {

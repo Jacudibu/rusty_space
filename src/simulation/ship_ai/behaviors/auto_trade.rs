@@ -5,6 +5,7 @@ use crate::constants;
 use crate::game_data::ItemManifest;
 use crate::simulation::prelude::{SimulationTime, SimulationTimestamp};
 use crate::simulation::ship_ai::ship_is_idle_filter::ShipIsIdleFilter;
+use crate::simulation::ship_ai::task_started_event::AllTaskStartedEventWriters;
 use crate::simulation::ship_ai::TaskQueue;
 use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::trade_plan::TradePlan;
@@ -34,6 +35,7 @@ pub fn handle_idle_ships(
     all_sectors: Query<&SectorComponent>,
     all_transforms: Query<&SimulationTransform>,
     item_manifest: Res<ItemManifest>,
+    mut all_task_started_event_writers: AllTaskStartedEventWriters,
 ) {
     let now = simulation_time.now();
 
@@ -114,7 +116,12 @@ pub fn handle_idle_ships(
             );
 
             plan.create_tasks_for_sale(&all_sectors, &all_transforms, &mut queue);
-            queue.apply(&mut commands, now, ship_entity);
+            queue.apply(
+                &mut commands,
+                now,
+                ship_entity,
+                &mut all_task_started_event_writers,
+            );
         });
 }
 

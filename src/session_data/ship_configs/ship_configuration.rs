@@ -107,6 +107,7 @@ pub struct ShipConfigurationComputedStats {
     pub required_materials: Vec<RecipeElement>,
     pub inventory_size: u32,
     pub engine: EngineStats,
+    //pub build_power: Option<u32>,
     pub asteroid_mining_amount: Option<u32>,
     pub gas_harvesting_amount: Option<u32>,
 }

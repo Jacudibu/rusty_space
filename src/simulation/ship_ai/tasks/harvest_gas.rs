@@ -6,6 +6,7 @@ use crate::simulation::prelude::{
 };
 use crate::simulation::ship_ai::task_finished_event::TaskFinishedEvent;
 use crate::simulation::ship_ai::task_queue::TaskQueue;
+use crate::simulation::ship_ai::task_started_event::AllTaskStartedEventWriters;
 use crate::simulation::ship_ai::tasks;
 use crate::simulation::ship_ai::tasks::{finish_interaction, send_completion_events};
 use crate::utils::PlanetEntity;
@@ -94,6 +95,7 @@ impl HarvestGas {
         mut interaction_queues: Query<&mut InteractionQueue>,
         simulation_time: Res<SimulationTime>,
         mut signal_writer: EventWriter<TaskFinishedEvent<AwaitingSignal>>,
+        mut task_started_event_writers: AllTaskStartedEventWriters,
     ) {
         let now = simulation_time.now();
 
@@ -110,6 +112,7 @@ impl HarvestGas {
                     event.entity,
                     &mut queue,
                     now,
+                    &mut task_started_event_writers,
                 );
             } else {
                 error!(

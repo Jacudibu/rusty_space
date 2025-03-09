@@ -1,5 +1,6 @@
 use crate::components::InteractionQueue;
 use crate::simulation::prelude::{SimulationTime, TaskInsideQueue, TaskQueue};
+use crate::simulation::ship_ai::task_started_event::AllTaskStartedEventWriters;
 use crate::simulation::ship_ai::tasks;
 use crate::utils::TypedEntity;
 use bevy::prelude::{Commands, Component, Entity, Query, Res};
@@ -24,6 +25,7 @@ impl RequestAccess {
         mut all_ships_with_task: Query<(Entity, &Self, &mut TaskQueue)>,
         mut all_interaction_queues: Query<&mut InteractionQueue>,
         simulation_time: Res<SimulationTime>,
+        mut task_started_event_writers: AllTaskStartedEventWriters,
     ) {
         let now = simulation_time.now();
 
@@ -42,6 +44,7 @@ impl RequestAccess {
                 entity,
                 &mut task_queue,
                 now,
+                &mut task_started_event_writers,
             );
         }
     }

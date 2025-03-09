@@ -6,6 +6,7 @@ mod task_finished_event;
 mod task_inside_queue;
 mod task_queue;
 mod task_result;
+mod task_started_event;
 mod tasks;
 
 pub use behaviors::auto_mine::{AutoMineBehavior, AutoMineState};

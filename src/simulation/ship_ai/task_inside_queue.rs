@@ -1,11 +1,15 @@
 use crate::game_data::ItemId;
 use crate::simulation::prelude::{CurrentSimulationTimestamp, SimulationTimestamp};
+use crate::simulation::ship_ai::task_started_event::{
+    AllTaskStartedEventWriters, TaskStartedEvent,
+};
 use crate::simulation::ship_ai::tasks;
 use crate::utils::{
     AsteroidEntity, ConstructionSiteEntity, ExchangeWareData, PlanetEntity, TypedEntity,
 };
 use crate::utils::{GateEntity, SectorEntity};
 use bevy::ecs::system::EntityCommands;
+use bevy::prelude::Entity;
 
 /// Defines a Task inside the [TaskQueue]. New task components can be created from these.
 pub enum TaskInsideQueue {
@@ -53,11 +57,16 @@ pub enum TaskInsideQueue {
 impl TaskInsideQueue {
     pub fn create_and_insert_component(
         &self,
+        entity: Entity,
         entity_commands: &mut EntityCommands,
         now: CurrentSimulationTimestamp,
+        task_started_event_writers: &mut AllTaskStartedEventWriters,
     ) {
         match self {
             TaskInsideQueue::ExchangeWares { target, data } => {
+                task_started_event_writers
+                    .exchange_wares
+                    .send(TaskStartedEvent::new(entity));
                 entity_commands.insert(tasks::ExchangeWares {
                     finishes_at: SimulationTimestamp::MAX,
                     target: *target,
@@ -79,6 +88,9 @@ impl TaskInsideQueue {
                 enter_gate,
                 exit_sector,
             } => {
+                task_started_event_writers
+                    .use_gate
+                    .send(TaskStartedEvent::new(entity));
                 entity_commands.insert(tasks::UseGate {
                     progress: 0.0,
                     traversal_state: Default::default(),
@@ -96,6 +108,9 @@ impl TaskInsideQueue {
                 entity_commands.insert(tasks::AwaitingSignal {});
             }
             TaskInsideQueue::Construct { target } => {
+                task_started_event_writers
+                    .construct
+                    .send(TaskStartedEvent::new(entity));
                 entity_commands.insert(tasks::Construct { target: *target });
             }
             TaskInsideQueue::RequestAccess { target } => {
@@ -105,6 +120,9 @@ impl TaskInsideQueue {
                 entity_commands.insert(tasks::DockAtEntity::new(*target));
             }
             TaskInsideQueue::Undock => {
+                task_started_event_writers
+                    .undock
+                    .send(TaskStartedEvent::new(entity));
                 entity_commands.insert(tasks::Undock::new());
             }
         }

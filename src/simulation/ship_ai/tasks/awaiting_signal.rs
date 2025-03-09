@@ -1,4 +1,5 @@
 use crate::simulation::prelude::{SimulationTime, TaskFinishedEvent, TaskQueue};
+use crate::simulation::ship_ai::task_started_event::AllTaskStartedEventWriters;
 use crate::simulation::ship_ai::tasks;
 use bevy::prelude::{error, Commands, Component, EventReader, Query, Res, With};
 
@@ -13,6 +14,7 @@ impl AwaitingSignal {
         mut event_reader: EventReader<TaskFinishedEvent<Self>>,
         mut all_ships_with_task: Query<&mut TaskQueue, With<Self>>,
         simulation_time: Res<SimulationTime>,
+        mut task_started_event_writers: AllTaskStartedEventWriters,
     ) {
         let now = simulation_time.now();
 
@@ -23,6 +25,7 @@ impl AwaitingSignal {
                     event.entity,
                     &mut queue,
                     now,
+                    &mut task_started_event_writers,
                 );
             } else {
                 error!(

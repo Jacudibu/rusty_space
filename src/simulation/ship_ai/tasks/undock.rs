@@ -6,6 +6,9 @@ use crate::simulation::prelude::SimulationTime;
 use crate::simulation::ship_ai::task_finished_event::TaskFinishedEvent;
 use crate::simulation::ship_ai::task_queue::TaskQueue;
 use crate::simulation::ship_ai::task_result::TaskResult;
+use crate::simulation::ship_ai::task_started_event::{
+    AllTaskStartedEventWriters, TaskStartedEvent,
+};
 use crate::simulation::ship_ai::tasks::{
     dock_at_entity, finish_interaction, send_completion_events,
 };
@@ -89,7 +92,7 @@ impl Undock {
     }
 
     #[allow(clippy::type_complexity)]
-    pub fn on_task_creation(
+    pub fn on_task_started(
         mut commands: Commands,
         mut all_ships_with_task: Query<(
             Entity,
@@ -98,13 +101,22 @@ impl Undock {
             &mut Visibility,
             &IsDocked,
         )>,
+        mut started_tasks: EventReader<TaskStartedEvent<Self>>,
         mut interaction_queues: Query<&mut InteractionQueue>,
         mut signal_writer: EventWriter<TaskFinishedEvent<AwaitingSignal>>,
     ) {
         // Compared to the other task_creation thingies we can cheat a little since we got IsDocked as a useful marker
-        for (entity, mut task, transform, mut visibility, is_docked) in
-            all_ships_with_task.iter_mut()
-        {
+        for task in started_tasks.read() {
+            let Ok((entity, mut task, transform, mut visibility, is_docked)) =
+                all_ships_with_task.get_mut(task.entity)
+            else {
+                error!(
+                    "Was unable to start undock task for entity {:?}: Entity not found.",
+                    task.entity
+                );
+                continue;
+            };
+
             finish_interaction(
                 is_docked.at.into(),
                 &mut interaction_queues,
@@ -123,6 +135,7 @@ impl Undock {
         mut event_reader: EventReader<TaskFinishedEvent<Self>>,
         mut all_ships_with_task: Query<&mut TaskQueue, With<Self>>,
         simulation_time: Res<SimulationTime>,
+        mut task_started_event_writers: AllTaskStartedEventWriters,
     ) {
         let now = simulation_time.now();
 
@@ -133,6 +146,7 @@ impl Undock {
                     event.entity,
                     &mut queue,
                     now,
+                    &mut task_started_event_writers,
                 );
             } else {
                 error!(

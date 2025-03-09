@@ -3,9 +3,10 @@ use crate::simulation::prelude::{
     SimulationTime, SimulationTimestamp, SimulationTransform, TaskInsideQueue, TaskQueue,
 };
 use crate::simulation::ship_ai::ship_is_idle_filter::ShipIsIdleFilter;
+use crate::simulation::ship_ai::task_started_event::AllTaskStartedEventWriters;
 use crate::utils::{ConstructionSiteEntity, SectorEntity, TypedEntity};
 use crate::{constants, pathfinding};
-use bevy::prelude::{Component, Entity, Query, Res};
+use bevy::prelude::{Commands, Component, Entity, Query, Res};
 use std::ops::Not;
 
 #[derive(Component)]
@@ -15,6 +16,7 @@ pub struct AutoConstructionBehavior {
 
 #[allow(clippy::too_many_arguments)]
 pub fn handle_idle_ships(
+    mut commands: Commands,
     simulation_time: Res<SimulationTime>,
     mut ships: Query<
         (
@@ -27,6 +29,7 @@ pub fn handle_idle_ships(
     >,
     all_sectors: Query<&SectorComponent>,
     all_transforms: Query<&SimulationTransform>,
+    mut all_task_started_event_writers: AllTaskStartedEventWriters,
 ) {
     let now = simulation_time.now();
 
@@ -62,7 +65,14 @@ pub fn handle_idle_ships(
                 distance_to_target: 0.0,
             });
 
-            queue.push_back(TaskInsideQueue::Construct { target: build_site })
+            queue.push_back(TaskInsideQueue::Construct { target: build_site });
+
+            queue.apply(
+                &mut commands,
+                now,
+                ship_entity,
+                &mut all_task_started_event_writers,
+            );
         })
 }
 

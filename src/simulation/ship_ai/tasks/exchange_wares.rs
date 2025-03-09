@@ -5,8 +5,11 @@ use crate::simulation::production::InventoryUpdateForProductionEvent;
 use crate::simulation::ship_ai::task_finished_event::TaskFinishedEvent;
 use crate::simulation::ship_ai::task_queue::TaskQueue;
 use crate::simulation::ship_ai::task_result::TaskResult;
+use crate::simulation::ship_ai::task_started_event::{
+    AllTaskStartedEventWriters, TaskStartedEvent,
+};
 use crate::simulation::ship_ai::tasks;
-use crate::simulation::ship_ai::tasks::{send_completion_events, DockAtEntity};
+use crate::simulation::ship_ai::tasks::send_completion_events;
 use crate::utils::ExchangeWareData;
 use crate::utils::{TradeIntent, TypedEntity};
 use bevy::prelude::{error, Commands, Component, Entity, EventReader, EventWriter, Query, Res};
@@ -90,6 +93,7 @@ impl ExchangeWares {
         mut event_writer: EventWriter<InventoryUpdateForProductionEvent>,
         simulation_time: Res<SimulationTime>,
         item_manifest: Res<ItemManifest>,
+        mut task_started_event_writers: AllTaskStartedEventWriters,
     ) {
         let now = simulation_time.now();
 
@@ -107,6 +111,7 @@ impl ExchangeWares {
                     event.entity,
                     &mut queue,
                     now,
+                    &mut task_started_event_writers,
                 );
             } else {
                 error!(
@@ -117,11 +122,9 @@ impl ExchangeWares {
         }
     }
 
-    /// To avoid the O(a + n) query runtime for change detection, this just iterates through all relevant TaskFinishedEvents.
-    /// Even in a busy session, there should always be *way, WAY* less of those than Entities.
-    pub fn on_task_creation(
+    pub fn on_task_started(
         mut query: Query<&mut Self>,
-        mut finished_events: EventReader<TaskFinishedEvent<DockAtEntity>>,
+        mut finished_events: EventReader<TaskStartedEvent<Self>>,
         simulation_time: Res<SimulationTime>,
     ) {
         let now = simulation_time.now();

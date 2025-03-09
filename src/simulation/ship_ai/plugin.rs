@@ -5,11 +5,14 @@ use crate::simulation::ship_ai::tasks::{AwaitingSignal, Construct, DockAtEntity,
 use crate::states::SimulationState;
 use bevy::app::App;
 use bevy::prelude::{in_state, on_event, FixedPostUpdate, FixedUpdate, IntoSystemConfigs, Plugin};
+use crate::simulation::ship_ai::task_started_event::TaskStartedEvent;
 
 pub struct ShipAiPlugin;
 impl Plugin for ShipAiPlugin {
     #[rustfmt::skip]
     fn build(&self, app: &mut App) {
+        // TODO: There should be just some register function for every task which does all of this...
+
         app.add_event::<TaskFinishedEvent<MoveToEntity>>();
         app.add_event::<TaskFinishedEvent<DockAtEntity>>();
         app.add_event::<TaskFinishedEvent<Undock>>();
@@ -19,6 +22,12 @@ impl Plugin for ShipAiPlugin {
         app.add_event::<TaskFinishedEvent<HarvestGas>>();
         app.add_event::<TaskFinishedEvent<AwaitingSignal>>();
         app.add_event::<TaskFinishedEvent<Construct>>();
+
+        app.add_event::<TaskStartedEvent<ExchangeWares>>();
+        app.add_event::<TaskStartedEvent<UseGate>>();
+        app.add_event::<TaskStartedEvent<Undock>>();
+        app.add_event::<TaskStartedEvent<Construct>>();
+
         app.add_systems(
             FixedUpdate,
             (
@@ -50,7 +59,7 @@ impl Plugin for ShipAiPlugin {
         );
         app.add_systems(
             FixedPostUpdate,
-            (ExchangeWares::on_task_creation, UseGate::on_task_creation, Undock::on_task_creation)
+            (ExchangeWares::on_task_started, UseGate::on_task_started, Undock::on_task_started, Construct::on_task_creation)
                 .run_if(in_state(SimulationState::Running))
         );
     }

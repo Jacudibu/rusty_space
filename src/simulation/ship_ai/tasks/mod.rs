@@ -16,6 +16,7 @@ mod use_gate;
 use crate::simulation::prelude::{CurrentSimulationTimestamp, TaskFinishedEvent, TaskQueue};
 
 use crate::components::InteractionQueue;
+use crate::simulation::ship_ai::task_started_event::AllTaskStartedEventWriters;
 pub use {
     awaiting_signal::AwaitingSignal, construct::Construct, dock_at_entity::DockAtEntity,
     exchange_wares::ExchangeWares, harvest_gas::HarvestGas, mine_asteroid::MineAsteroid,
@@ -39,28 +40,39 @@ pub fn send_completion_events<T: Component>(
     }
 }
 
-/// Future Performance improvement: Once EventWriters can be written to in parallel, this could be run with a par_iter EventReader after all complete_task systems are done
-/// https://github.com/bevyengine/bevy/issues/2648
-/// Alternatively, `bevy_concurrent_event` would already enable that if we remove tasks the next frame (PreUpdate)
 pub fn remove_task_and_add_next_in_queue<T: Component>(
     commands: &mut Commands,
     entity: Entity,
     queue: &mut Mut<TaskQueue>,
     now: CurrentSimulationTimestamp,
+    task_started_event_writers: &mut AllTaskStartedEventWriters,
 ) {
     let mut entity_commands = commands.entity(entity);
-    remove_task_and_add_next_in_queue_to_entity_commands::<T>(&mut entity_commands, queue, now);
+    remove_task_and_add_next_in_queue_to_entity_commands::<T>(
+        entity,
+        &mut entity_commands,
+        queue,
+        now,
+        task_started_event_writers,
+    );
 }
 
 pub fn remove_task_and_add_next_in_queue_to_entity_commands<T: Component>(
+    entity: Entity,
     entity_commands: &mut EntityCommands,
     queue: &mut Mut<TaskQueue>,
     now: CurrentSimulationTimestamp,
+    task_started_event_writers: &mut AllTaskStartedEventWriters,
 ) {
     entity_commands.remove::<T>();
     queue.queue.pop_front();
     if let Some(next_task) = queue.front() {
-        next_task.create_and_insert_component(entity_commands, now);
+        next_task.create_and_insert_component(
+            entity,
+            entity_commands,
+            now,
+            task_started_event_writers,
+        );
     }
 }
 

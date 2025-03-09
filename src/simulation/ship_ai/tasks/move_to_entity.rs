@@ -4,6 +4,7 @@ use crate::simulation::prelude::SimulationTime;
 use crate::simulation::ship_ai::task_finished_event::TaskFinishedEvent;
 use crate::simulation::ship_ai::task_queue::TaskQueue;
 use crate::simulation::ship_ai::task_result::TaskResult;
+use crate::simulation::ship_ai::task_started_event::AllTaskStartedEventWriters;
 use crate::simulation::ship_ai::tasks;
 use crate::simulation::ship_ai::tasks::send_completion_events;
 use crate::simulation::transform::simulation_transform::SimulationTransform;
@@ -132,6 +133,7 @@ impl MoveToEntity {
         mut event_reader: EventReader<TaskFinishedEvent<Self>>,
         mut all_ships_with_task: Query<&mut TaskQueue, With<Self>>,
         simulation_time: Res<SimulationTime>,
+        mut task_started_event_writers: AllTaskStartedEventWriters,
     ) {
         let now = simulation_time.now();
 
@@ -142,6 +144,7 @@ impl MoveToEntity {
                     event.entity,
                     &mut queue,
                     now,
+                    &mut task_started_event_writers,
                 );
             } else {
                 error!(
