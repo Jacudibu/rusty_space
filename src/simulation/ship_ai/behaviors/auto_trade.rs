@@ -1,6 +1,6 @@
 use bevy::prelude::{Commands, Component, Entity, Query, Res};
 
-use crate::components::{BuyOrders, InSector, Inventory, Sector, SellOrders, TradeOrder};
+use crate::components::{BuyOrders, InSector, Inventory, SectorComponent, SellOrders, TradeOrder};
 use crate::constants;
 use crate::game_data::ItemManifest;
 use crate::simulation::prelude::{SimulationTime, SimulationTimestamp};
@@ -31,7 +31,7 @@ pub fn handle_idle_ships(
     mut buy_orders: Query<(Entity, &mut BuyOrders, &InSector)>,
     mut sell_orders: Query<(Entity, &mut SellOrders, &InSector)>,
     mut inventories: Query<&mut Inventory>,
-    all_sectors: Query<&Sector>,
+    all_sectors: Query<&SectorComponent>,
     all_transforms: Query<&SimulationTransform>,
     item_manifest: Res<ItemManifest>,
 ) {

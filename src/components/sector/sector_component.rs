@@ -1,20 +1,20 @@
-use crate::components::{ConstructionSite, InSector};
-use crate::utils::{GateEntity, SectorEntity, ShipEntity, StationEntity};
+use crate::components::InSector;
+use crate::utils::{ConstructionSiteEntity, GateEntity, SectorEntity, ShipEntity, StationEntity};
 use bevy::math::Vec2;
 use bevy::prelude::{Commands, Component};
 use bevy::utils::{HashMap, HashSet};
 use hexx::Hex;
 
-/// Marker Component for Sectors
+/// Main Component for Sector Entities. Keeps track of common entities which can be found inside all sectors.
 #[derive(Component)]
-pub struct Sector {
+pub struct SectorComponent {
     pub coordinate: Hex,
     pub world_pos: Vec2,
 
     pub gates: HashMap<SectorEntity, GatePairInSector>,
     pub ships: HashSet<ShipEntity>,
     pub stations: HashSet<StationEntity>,
-    pub build_sites: HashSet<ConstructionSite>,
+    pub construction_sites: HashSet<ConstructionSiteEntity>,
 }
 
 #[derive(Eq, PartialEq, Hash, Copy, Clone)]
@@ -26,15 +26,15 @@ pub struct GatePairInSector {
     pub to: GateEntity,
 }
 
-impl Sector {
+impl SectorComponent {
     pub fn new(coordinate: Hex, world_pos: Vec2) -> Self {
-        Sector {
+        SectorComponent {
             coordinate,
             world_pos,
             gates: HashMap::new(),
             ships: HashSet::new(),
             stations: HashSet::new(),
-            build_sites: HashSet::new(),
+            construction_sites: HashSet::new(),
         }
     }
 
@@ -59,6 +59,17 @@ impl Sector {
         entity: StationEntity,
     ) {
         self.stations.insert(entity);
+        InSector::add_component(commands, sector, entity.into());
+    }
+
+    /// Adds the construction site to this sector and inserts the [InSector] component to it.
+    pub fn add_construction_site(
+        &mut self,
+        commands: &mut Commands,
+        sector: SectorEntity,
+        entity: ConstructionSiteEntity,
+    ) {
+        self.construction_sites.insert(entity);
         InSector::add_component(commands, sector, entity.into());
     }
 

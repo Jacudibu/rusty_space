@@ -15,6 +15,7 @@ impl Plugin for SimulationPlugin {
         app.insert_resource(Time::<Fixed>::from_hz(constants::TICKS_PER_SECOND));
         app.add_plugins((
             asteroids::AsteroidPlugin,
+            construction_site_updater::ConstructionSiteUpdaterPlugin,
             physics::PhysicsPlugin,
             production::ProductionPlugin,
             ship_ai::ShipAiPlugin,

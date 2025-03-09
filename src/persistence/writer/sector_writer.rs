@@ -1,4 +1,6 @@
-use crate::components::{Asteroid, Sector, SectorAsteroidComponent, SectorStarComponent, Star};
+use crate::components::{
+    Asteroid, SectorAsteroidComponent, SectorComponent, SectorStarComponent, Star,
+};
 use crate::persistence::data::v1::*;
 use crate::simulation::physics::ConstantVelocity;
 use crate::simulation::transform::simulation_transform::SimulationTransform;
@@ -84,7 +86,7 @@ use bevy::prelude::Query;
 
 #[derive(QueryData)]
 pub struct SectorSaveDataQuery {
-    sector: &'static Sector,
+    sector: &'static SectorComponent,
     star: Option<&'static SectorStarComponent>,
     asteroids: Option<&'static SectorAsteroidComponent>,
 }

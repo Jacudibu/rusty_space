@@ -1,4 +1,6 @@
-use crate::components::{Asteroid, ConstructionSite, Gate, Planet, Ship, Station};
+use crate::components::{
+    Asteroid, ConstructionSiteComponent, Gate, Planet, Ship, StationComponent,
+};
 use bevy::prelude::Component;
 use hexx::Hex;
 use serde::{Deserialize, Serialize};
@@ -77,15 +79,15 @@ pub type PersistentShipId = TypedPersistentEntityId<Ship>;
 impl_traits!(PersistentShipId, Ship);
 impl_typed_persistent_entity_id!(Ship, NEXT_SHIP_ID);
 
-/// A [PersistentEntityId] for [Station]s.
-pub type PersistentStationId = TypedPersistentEntityId<Station>;
+/// A [PersistentEntityId] for [StationComponent]s.
+pub type PersistentStationId = TypedPersistentEntityId<StationComponent>;
 impl_traits!(PersistentStationId, Station);
-impl_typed_persistent_entity_id!(Station, NEXT_STATION_ID);
+impl_typed_persistent_entity_id!(StationComponent, NEXT_STATION_ID);
 
-/// A [PersistentEntityId] for [ConstructionSite]s.
-pub type PersistentConstructionSiteId = TypedPersistentEntityId<ConstructionSite>;
+/// A [PersistentEntityId] for [ConstructionSiteComponent]s.
+pub type PersistentConstructionSiteId = TypedPersistentEntityId<ConstructionSiteComponent>;
 impl_traits!(PersistentConstructionSiteId, ConstructionSite);
-impl_typed_persistent_entity_id!(ConstructionSite, NEXT_construction_site_id);
+impl_typed_persistent_entity_id!(ConstructionSiteComponent, NEXT_CONSTRUCTION_SITE_ID);
 
 impl_traits!(Hex, Sector);
 

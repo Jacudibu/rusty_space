@@ -2,7 +2,7 @@ use bevy::core::Name;
 use bevy::prelude::{Commands, CubicCurve, Query, Sprite, Vec2};
 
 use crate::components::{
-    ConstantOrbit, Gate, GateConnectionComponent, MovingGateConnection, Sector,
+    ConstantOrbit, Gate, GateConnectionComponent, MovingGateConnection, SectorComponent,
     SectorStarComponent, SelectableEntity, Star,
 };
 use crate::persistence::{GateIdMap, PersistentGateId};
@@ -17,7 +17,7 @@ use crate::{constants, SpriteHandles};
 pub fn spawn_gate_pair(
     commands: &mut Commands,
     gate_id_map: &mut GateIdMap,
-    sectors: &mut Query<(&mut Sector, Option<&SectorStarComponent>)>,
+    sectors: &mut Query<(&mut SectorComponent, Option<&SectorStarComponent>)>,
     stars: &Query<&Star>,
     sprites: &SpriteHandles,
     from_id: PersistentGateId,
@@ -92,8 +92,8 @@ fn spawn_gate(
     gate_id_map: &mut GateIdMap,
     sprites: &SpriteHandles,
     pos: &SectorPosition,
-    from: &mut Sector,
-    to: &Sector,
+    from: &mut SectorComponent,
+    to: &SectorComponent,
     ship_curve: CubicCurve<Vec2>,
     star: Option<&Star>,
 ) -> GateEntity {

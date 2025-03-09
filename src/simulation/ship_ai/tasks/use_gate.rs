@@ -4,7 +4,7 @@ use bevy::prelude::{
 };
 use std::sync::{Arc, Mutex};
 
-use crate::components::{Gate, InSector, Sector};
+use crate::components::{Gate, InSector, SectorComponent};
 use crate::constants;
 use crate::simulation::physics::ShipVelocity;
 use crate::simulation::prelude::SimulationTime;
@@ -130,7 +130,7 @@ impl UseGate {
         mut commands: Commands,
         mut event_reader: EventReader<TaskFinishedEvent<Self>>,
         mut all_ships_with_task: Query<(&mut TaskQueue, &Self, &mut ShipVelocity)>,
-        mut all_sectors: Query<&mut Sector>,
+        mut all_sectors: Query<&mut SectorComponent>,
         simulation_time: Res<SimulationTime>,
     ) {
         let now = simulation_time.now();
@@ -167,7 +167,7 @@ impl UseGate {
         mut commands: Commands,
         query: Query<&InSector, With<Self>>,
         mut triggers: EventReader<TaskFinishedEvent<MoveToEntity>>,
-        mut all_sectors: Query<&mut Sector>,
+        mut all_sectors: Query<&mut SectorComponent>,
     ) {
         for x in triggers.read() {
             let Ok(in_sector) = query.get(x.entity) else {

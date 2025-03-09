@@ -1,5 +1,6 @@
 use crate::components::{
-    Asteroid, BuyOrders, Gate, InSector, Inventory, Sector, SellOrders, Ship, Star, Station,
+    Asteroid, BuyOrders, Gate, InSector, Inventory, SectorComponent, SellOrders, Ship, Star,
+    StationComponent,
 };
 use crate::persistence::data::v1::*;
 use crate::persistence::writer::sector_writer::SectorSaveDataQuery;
@@ -23,7 +24,7 @@ use bevy::prelude::{Commands, Query};
 #[allow(unused)] // That's gonna fix itself as soon as we actually load stuff from disk
 pub fn parse_session_data_into_universe_save_data(
     mut commands: Commands,
-    all_sectors: Query<&Sector>,
+    all_sectors: Query<&SectorComponent>,
     stars: Query<&Star>,
     asteroids: Query<(&Asteroid, &SimulationTransform, &ConstantVelocity)>,
     gates: Query<(&Gate, &InSector, &SimulationTransform)>,
@@ -40,7 +41,7 @@ pub fn parse_session_data_into_universe_save_data(
         Option<&AutoMineBehavior>,
     )>,
     stations: Query<(
-        &Station,
+        &StationComponent,
         &Name,
         &InSector,
         &SimulationTransform,

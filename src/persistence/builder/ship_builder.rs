@@ -1,4 +1,4 @@
-use crate::components::Sector;
+use crate::components::SectorComponent;
 use crate::persistence::data::v1::*;
 use crate::persistence::local_hex_position::LocalHexPosition;
 use crate::persistence::{PersistentShipId, SectorIdMap, ShipIdMap};
@@ -14,7 +14,7 @@ type SaveData = SaveDataCollection<ShipSaveData>;
 #[derive(SystemParam)]
 pub struct Args<'w, 's> {
     commands: Commands<'w, 's>,
-    sectors: Query<'w, 's, &'static mut Sector>,
+    sectors: Query<'w, 's, &'static mut SectorComponent>,
     sector_id_map: Res<'w, SectorIdMap>,
     ship_configurations: Res<'w, ShipConfigurationManifest>,
 }

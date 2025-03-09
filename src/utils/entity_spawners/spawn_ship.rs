@@ -1,6 +1,6 @@
 use crate::components::{
-    AsteroidMiningComponent, Engine, GasHarvestingComponent, Inventory, Sector, SelectableEntity,
-    Ship,
+    AsteroidMiningComponent, Engine, GasHarvestingComponent, Inventory, SectorComponent,
+    SelectableEntity, Ship,
 };
 use crate::constants;
 use crate::persistence::{PersistentShipId, ShipIdMap};
@@ -18,7 +18,7 @@ pub fn spawn_ship(
     commands: &mut Commands,
     id: PersistentShipId,
     name: String,
-    sector_query: &mut Query<&mut Sector>,
+    sector_query: &mut Query<&mut SectorComponent>,
     sector: SectorEntity,
     position: Vec2,
     rotation: f32,

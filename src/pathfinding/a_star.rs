@@ -1,4 +1,4 @@
-use crate::components::Sector;
+use crate::components::SectorComponent;
 use crate::pathfinding::search_node::{SearchNode, GATE_COST};
 use crate::pathfinding::PathElement;
 use crate::simulation::transform::simulation_transform::SimulationTransform;
@@ -8,7 +8,7 @@ use bevy::utils::HashMap;
 use std::collections::BinaryHeap;
 
 pub fn a_star(
-    sectors: &Query<&Sector>,
+    sectors: &Query<&SectorComponent>,
     gate_positions: &Query<&SimulationTransform>,
     from: SectorEntity,
     from_position: Vec2,
@@ -120,7 +120,7 @@ pub fn a_star(
 }
 
 fn cost(
-    sectors: &Query<&Sector>,
+    sectors: &Query<&SectorComponent>,
     gate_positions: &Query<&SimulationTransform>,
     from_sector: SectorEntity,
     from_pos_in_sector: Vec2,
@@ -178,7 +178,7 @@ fn reconstruct_path(
 
 #[cfg(test)]
 mod test {
-    use crate::components::Sector;
+    use crate::components::SectorComponent;
     use crate::pathfinding::a_star::a_star;
     use crate::pathfinding::search_node::GATE_COST;
     use crate::pathfinding::PathElement;
@@ -209,7 +209,7 @@ mod test {
     {
         world
             .run_system_once(
-                move |sectors: Query<&Sector>,
+                move |sectors: Query<&SectorComponent>,
                       transforms: Query<&SimulationTransform>,
                       sector_id_map: Res<SectorIdMap>| {
                     let from_entity = sector_id_map.id_to_entity()[&from_sector];

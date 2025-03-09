@@ -44,7 +44,7 @@ pub use {
 #[cfg(test)]
 pub use item_data::{RawItemData, RawItemManifest};
 
-/// An enum which differentiates between the various Modules that make up a station.
+/// An enum which differentiates between the various module kinds which make up a station.
 pub enum ConstructableModuleId {
     ProductionModule(ProductionModuleId),
     ShipyardModule(ShipyardModuleId),

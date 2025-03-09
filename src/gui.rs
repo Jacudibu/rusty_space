@@ -1,9 +1,11 @@
 use crate::components::{
-    Asteroid, BuyOrders, Gate, InSector, InteractionQueue, Inventory, SelectableEntity, SellOrders,
-    Ship, TradeOrder,
+    Asteroid, BuyOrders, ConstructionSiteComponent, Gate, InSector, InteractionQueue, Inventory,
+    SelectableEntity, SellOrders, Ship, StationComponent, TradeOrder,
 };
 use crate::entity_selection::{MouseCursor, Selected};
-use crate::game_data::{AsteroidDataId, AsteroidManifest, GameData, IRON_ASTEROID_ID};
+use crate::game_data::{
+    AsteroidDataId, AsteroidManifest, ConstructableModuleId, GameData, IRON_ASTEROID_ID,
+};
 use crate::map_layout::MapLayout;
 use crate::session_data::ship_configs::ShipConfigurationAddedEvent;
 use crate::session_data::{
@@ -17,6 +19,7 @@ use crate::simulation::ship_ai::TaskQueue;
 use crate::utils::ExchangeWareData;
 use crate::SpriteHandles;
 use bevy::app::App;
+use bevy::ecs::query::QueryData;
 use bevy::prelude::{
     on_event, AppExtStates, AssetServer, Commands, Entity, EventReader, IntoSystemConfigs, Name,
     NextState, Plugin, PreUpdate, Query, Res, ResMut, Resource, Startup, State, States, Update,
@@ -297,39 +300,41 @@ pub fn list_selection_icons_and_counts(
         });
 }
 
-#[allow(clippy::type_complexity)]
-pub fn list_selection_details(
+#[derive(QueryData)]
+struct SelectableComponents {
+    entity: Entity,
+    selectable: &'static SelectableEntity,
+    name: &'static Name,
+    ship: Option<&'static Ship>,
+    inventory: Option<&'static Inventory>,
+    asteroid: Option<&'static Asteroid>,
+    ship_velocity: Option<&'static ShipVelocity>,
+    task_queue: Option<&'static TaskQueue>,
+    buy_orders: Option<&'static BuyOrders>,
+    sell_orders: Option<&'static SellOrders>,
+    station: Option<&'static StationComponent>,
+    production: Option<&'static ProductionComponent>,
+    shipyard: Option<&'static ShipyardComponent>,
+    gate: Option<&'static Gate>,
+    in_sector: Option<&'static InSector>,
+    interaction_queue: Option<&'static InteractionQueue>,
+}
+
+#[allow(clippy::too_many_arguments)]
+fn list_selection_details(
     game_data: GameData,
     session_data: SessionData,
     mut context: EguiContexts,
     simulation_time: Res<SimulationTime>,
     images: Res<UiIcons>,
     gui_data: Res<GuiDataCache>,
-    selected: Query<
-        (
-            Entity,
-            &SelectableEntity,
-            &Name,
-            Option<&Ship>,
-            Option<&Inventory>,
-            Option<&Asteroid>,
-            Option<&ShipVelocity>,
-            Option<&TaskQueue>,
-            Option<&BuyOrders>,
-            Option<&SellOrders>,
-            Option<&ProductionComponent>,
-            Option<&ShipyardComponent>,
-            Option<&Gate>,
-            Option<&InSector>,
-            Option<&InteractionQueue>,
-        ),
-        With<Selected>,
-    >,
+    selected: Query<SelectableComponents, With<Selected>>,
+    construction_sites: Query<&ConstructionSiteComponent>,
     names: Query<&Name>,
 ) {
     let counts = selected.iter().fold(
         SelectableCount::new(&game_data.asteroids, &gui_data),
-        |acc, x| acc.add(x.1),
+        |acc, x| acc.add(x.selectable),
     );
 
     if counts.total() == 0 {
@@ -344,35 +349,17 @@ pub fn list_selection_details(
             .collapsible(false)
             .resizable(false)
             .show(context.ctx_mut(), |ui| {
-                let (
-                    _,
-                    selectable,
-                    name,
-                    ship,
-                    inventory,
-                    asteroid,
-                    velocity,
-                    task_queue,
-                    buy_orders,
-                    sell_orders,
-                    production_module,
-                    shipyard,
-                    _,
-                    in_sector,
-                    interaction_queue,
-                ) = selected.single();
-                draw_ship_summary_row(
-                    &images, ui, selectable, name, inventory, velocity, task_queue,
-                );
+                let item = selected.single();
+                draw_summary_row(&images, ui, &item);
 
-                if let Some(in_sector) = in_sector {
+                if let Some(in_sector) = item.in_sector {
                     ui.label(format!(
                         "In sector {}",
                         names.get(in_sector.sector.into()).unwrap()
                     ));
                 }
 
-                if let Some(interaction_queue) = interaction_queue {
+                if let Some(interaction_queue) = item.interaction_queue {
                     ui.label(format!(
                         "Interaction Queue at {}/{}",
                         interaction_queue.currently_interacting(),
@@ -380,7 +367,7 @@ pub fn list_selection_details(
                     ));
                 }
 
-                if let Some(inventory) = inventory {
+                if let Some(inventory) = item.inventory {
                     ui.heading("Inventory");
                     let inventory = inventory.inventory();
                     if inventory.is_empty() {
@@ -400,7 +387,7 @@ pub fn list_selection_details(
                     }
                 }
 
-                if let Some(asteroid) = asteroid {
+                if let Some(asteroid) = item.asteroid {
                     ui.label(format!(
                         "Material: {}",
                         game_data
@@ -422,7 +409,7 @@ pub fn list_selection_details(
                     ));
                 }
 
-                if let Some(production) = production_module {
+                if let Some(production) = item.production {
                     ui.heading("Production");
                     for (id, module) in &production.modules {
                         let definition = game_data.production_modules.get_by_ref(id).unwrap();
@@ -440,7 +427,7 @@ pub fn list_selection_details(
                     }
                 }
 
-                if let Some(buy_orders) = buy_orders {
+                if let Some(buy_orders) = item.buy_orders {
                     ui.heading("Buy Orders");
                     for (item_id, data) in buy_orders.orders() {
                         ui.label(format!(
@@ -451,7 +438,7 @@ pub fn list_selection_details(
                         ));
                     }
                 }
-                if let Some(sell_orders) = sell_orders {
+                if let Some(sell_orders) = item.sell_orders {
                     ui.heading("Sell Orders");
                     for (item_id, data) in sell_orders.orders() {
                         ui.label(format!(
@@ -463,7 +450,7 @@ pub fn list_selection_details(
                     }
                 }
 
-                if let Some(shipyard) = shipyard {
+                if let Some(shipyard) = item.shipyard {
                     ui.heading("Ship Construction");
                     for (id, module) in &shipyard.modules {
                         let definition = game_data.shipyard_modules.get_by_ref(id).unwrap();
@@ -487,7 +474,7 @@ pub fn list_selection_details(
                     }
                 }
 
-                if let Some(ship) = ship {
+                if let Some(ship) = item.ship {
                     draw_ship_config_stats(
                         ui,
                         session_data
@@ -497,7 +484,39 @@ pub fn list_selection_details(
                     )
                 }
 
-                if let Some(task_queue) = task_queue {
+                if let Some(station) = item.station {
+                    if let Some(construction_site_entity) = station.construction_site {
+                        let construction_site = construction_sites
+                            .get(construction_site_entity.into())
+                            .unwrap();
+
+                        let module = construction_site.build_order.first().unwrap();
+                        let required_build_power = match module {
+                            ConstructableModuleId::ProductionModule(id) => {
+                                game_data
+                                    .production_modules
+                                    .get_by_ref(id)
+                                    .unwrap()
+                                    .required_build_power
+                            }
+                            ConstructableModuleId::ShipyardModule(id) => {
+                                game_data
+                                    .shipyard_modules
+                                    .get_by_ref(id)
+                                    .unwrap()
+                                    .required_build_power
+                            }
+                        };
+
+                        let current_build = construction_site.current_build_progress;
+                        ui.image(images.construct);
+                        ui.label(format!(
+                            "Build Site ({current_build:.0} / {required_build_power})"
+                        ));
+                    }
+                }
+
+                if let Some(task_queue) = item.task_queue {
                     ui.heading("Tasks");
 
                     if task_queue.is_empty() {
@@ -577,28 +596,18 @@ pub fn list_selection_details(
         .resizable(false)
         .vscroll(true)
         .show(context.ctx_mut(), |ui| {
-            for (_, selectable, name, _, storage, _, velocity, task_queue, _, _, _, _, _, _, _) in
-                selected.iter()
-            {
-                draw_ship_summary_row(&images, ui, selectable, name, storage, velocity, task_queue);
+            for item in selected.iter() {
+                draw_summary_row(&images, ui, &item);
             }
         });
 }
 
-fn draw_ship_summary_row(
-    images: &UiIcons,
-    ui: &mut Ui,
-    selectable: &SelectableEntity,
-    name: &Name,
-    inventory: Option<&Inventory>,
-    velocity: Option<&ShipVelocity>,
-    task_queue: Option<&TaskQueue>,
-) {
+fn draw_summary_row(images: &UiIcons, ui: &mut Ui, item: &SelectableComponentsItem) {
     ui.horizontal(|ui| {
-        ui.image(images.get_selectable(selectable));
-        ui.label(format!("{}", name));
+        ui.image(images.get_selectable(item.selectable));
+        ui.label(format!("{}", item.name));
 
-        if let Some(task_queue) = task_queue {
+        if let Some(task_queue) = item.task_queue {
             if let Some(task) = task_queue.queue.front() {
                 match task {
                     TaskInsideQueue::MoveToEntity { .. } => {
@@ -614,11 +623,11 @@ fn draw_ship_summary_row(
             }
         }
 
-        if let Some(inventory) = inventory {
+        if let Some(inventory) = item.inventory {
             ui.label(format!("{:.0}%", inventory.ratio() * 100.0));
         }
 
-        if let Some(velocity) = velocity {
+        if let Some(velocity) = item.ship_velocity {
             ui.label(format!("{:.0}u/s", velocity.forward));
         }
     });

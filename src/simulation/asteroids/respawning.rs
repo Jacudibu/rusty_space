@@ -1,4 +1,4 @@
-use crate::components::{Sector, SectorAsteroidComponent};
+use crate::components::{SectorAsteroidComponent, SectorComponent};
 use crate::game_data::AsteroidManifest;
 use crate::map_layout::MapLayout;
 use crate::persistence::AsteroidIdMap;
@@ -14,7 +14,7 @@ pub fn respawn_asteroids(
     mut asteroid_id_map: ResMut<AsteroidIdMap>,
     asteroid_manifest: Res<AsteroidManifest>,
     mut fading_asteroids: ResMut<FadingAsteroidsIn>,
-    mut sectors_with_asteroids: Query<(Entity, &Sector, &mut SectorAsteroidComponent)>,
+    mut sectors_with_asteroids: Query<(Entity, &SectorComponent, &mut SectorAsteroidComponent)>,
     simulation_time: Res<SimulationTime>,
     map_layout: Res<MapLayout>,
 ) {

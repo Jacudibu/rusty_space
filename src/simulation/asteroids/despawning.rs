@@ -1,5 +1,5 @@
 use crate::components::{
-    Asteroid, InSector, RespawningAsteroidData, Sector, SectorAsteroidComponent,
+    Asteroid, InSector, RespawningAsteroidData, SectorAsteroidComponent, SectorComponent,
 };
 use crate::map_layout::MapLayout;
 use crate::simulation::asteroids::fading::FadingAsteroidsOut;
@@ -25,7 +25,7 @@ pub fn on_asteroid_was_fully_mined(
         &ConstantVelocity,
         &SimulationTransform,
     )>,
-    mut sectors_with_asteroids: Query<(&Sector, &mut SectorAsteroidComponent)>,
+    mut sectors_with_asteroids: Query<(&SectorComponent, &mut SectorAsteroidComponent)>,
     map_layout: Res<MapLayout>,
 ) {
     for event in events.read() {
@@ -76,7 +76,7 @@ pub fn on_asteroid_was_fully_mined(
 /// Technically this doesn't need to run every frame, given the super slow speed of asteroids.
 pub fn make_asteroids_disappear_when_they_leave_sector(
     mut fading_asteroids: ResMut<FadingAsteroidsOut>,
-    mut sector_asteroids: Query<(&Sector, &mut SectorAsteroidComponent)>,
+    mut sector_asteroids: Query<(&SectorComponent, &mut SectorAsteroidComponent)>,
     asteroids: Query<(&Asteroid, &ConstantVelocity, &SimulationTransform)>,
     simulation_time: Res<SimulationTime>,
 ) {

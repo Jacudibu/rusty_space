@@ -1,4 +1,4 @@
-use crate::components::{InSector, Inventory, Sector, Ship};
+use crate::components::{InSector, Inventory, SectorComponent, Ship};
 use crate::persistence::data::v1::*;
 use crate::persistence::local_hex_position::LocalHexPosition;
 use crate::persistence::{AllEntityIdMaps, ComponentWithPersistentId};
@@ -21,7 +21,7 @@ impl ShipSaveData {
             Option<&AutoTradeBehavior>,
             Option<&AutoMineBehavior>,
         ),
-        sectors: &Query<&Sector>,
+        sectors: &Query<&SectorComponent>,
         all_entity_id_maps: &AllEntityIdMaps,
     ) -> Self {
         Self {

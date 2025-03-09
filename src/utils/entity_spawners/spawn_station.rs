@@ -1,13 +1,13 @@
 use crate::components::{
-    BuyOrders, ConstructionSite, InteractionQueue, Inventory, Sector, SelectableEntity, SellOrders,
-    Station,
+    BuyOrders, ConstructionSiteComponent, InteractionQueue, Inventory, SectorComponent,
+    SelectableEntity, SellOrders, StationComponent,
 };
 use crate::game_data::{ItemData, ItemManifest, RecipeManifest};
 use crate::persistence::{PersistentStationId, StationIdMap};
 use crate::simulation::prelude::simulation_transform::SimulationScale;
 use crate::simulation::production::{ProductionComponent, ShipyardComponent};
 use crate::simulation::transform::simulation_transform::SimulationTransform;
-use crate::utils::{SectorEntity, StationEntity};
+use crate::utils::{ConstructionSiteEntity, SectorEntity, StationEntity};
 use crate::{constants, SpriteHandles};
 use bevy::core::Name;
 use bevy::math::Vec2;
@@ -17,7 +17,7 @@ use bevy::sprite::Anchor;
 #[allow(clippy::too_many_arguments)] // It's hopeless... :')
 pub fn spawn_station(
     commands: &mut Commands,
-    sector_query: &mut Query<&mut Sector>,
+    sector_query: &mut Query<&mut SectorComponent>,
     station_id_map: &mut StationIdMap,
     sprites: &SpriteHandles,
     id: PersistentStationId,
@@ -28,7 +28,7 @@ pub fn spawn_station(
     sells: Vec<&ItemData>,
     production: Option<ProductionComponent>,
     shipyard: Option<ShipyardComponent>,
-    build_site: Option<ConstructionSite>,
+    construction_site: Option<ConstructionSiteComponent>,
     item_manifest: &ItemManifest,
     recipe_manifest: &RecipeManifest,
 ) {
@@ -58,31 +58,33 @@ pub fn spawn_station(
         ))
         .id();
 
-    let construction_site_id = if let Some(build_site) = build_site {
-        let construction_site_id = Some(build_site.id);
-
+    let construction_site_entity = if let Some(construction_site) = construction_site {
         // TODO: Build site has buy orders and an inventory
         // TODO: Figure out the least painful way to sync simulation transform to the position of the station
         //         (probably a new marker component + system that's run after the regular transform update)
         //         (only necessary in sectors with some form of perpetual motion)
-        commands.spawn((
-            Name::new(name.to_string() + " (Build Site)"),
-            build_site,
-            simulation_transform.as_bevy_transform(constants::z_layers::BUILD_SITE),
-            Sprite {
-                image: sprites.construction_site.clone(),
-                anchor: Anchor::Custom(Vec2::splat(-0.7)),
-                ..Default::default()
-            },
-            SimulationTransform::new(
-                simulation_transform.translation,
-                simulation_transform.rotation,
-            ),
-            Inventory::new(u32::MAX), // TODO: This should be a special inventory with precise capacities for the required materials
-            BuyOrders::default(), // TODO: These should sync with the inventory capacities. Prices are a bit complicated, but MAX is enough for starters.
-        ));
+        let entity = commands
+            .spawn((
+                Name::new(name.to_string() + " (Build Site)"),
+                construction_site,
+                simulation_transform.as_bevy_transform(constants::z_layers::BUILD_SITE),
+                Sprite {
+                    image: sprites.construction_site.clone(),
+                    anchor: Anchor::Custom(Vec2::splat(-0.7)),
+                    ..Default::default()
+                },
+                SimulationTransform::new(
+                    simulation_transform.translation,
+                    simulation_transform.rotation,
+                ),
+                Inventory::new(u32::MAX), // TODO: This should be a special inventory with precise capacities for the required materials
+                BuyOrders::default(), // TODO: These should sync with the inventory capacities. Prices are a bit complicated, but MAX is enough for starters.
+            ))
+            .id();
 
-        construction_site_id
+        let entity = ConstructionSiteEntity::from(entity);
+        sector.add_construction_site(commands, sector_entity, entity);
+        Some(entity)
     } else {
         None
     };
@@ -91,7 +93,7 @@ pub fn spawn_station(
         .spawn((
             Name::new(name.to_string()),
             SelectableEntity::Station,
-            Station::new(id, construction_site_id),
+            StationComponent::new(id, construction_site_entity),
             Sprite::from_image(sprites.station.clone()),
             simulation_transform.as_bevy_transform(constants::z_layers::STATION),
             simulation_transform,

@@ -1,4 +1,4 @@
-use crate::components::Sector;
+use crate::components::SectorComponent;
 use crate::constants;
 use crate::utils::GateEntity;
 use bevy::math::Vec3;
@@ -32,9 +32,9 @@ impl GateConnectionComponent {
     }
 
     pub fn calculate_curves_from_local_positions(
-        from_sector: &Sector,
+        from_sector: &SectorComponent,
         from_pos: Vec2,
-        to_sector: &Sector,
+        to_sector: &SectorComponent,
         to_pos: Vec2,
     ) -> (CubicCurve<Vec2>, CubicCurve<Vec2>) {
         let a = from_sector.world_pos + from_pos;

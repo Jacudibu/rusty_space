@@ -1,7 +1,7 @@
 use bevy::log::error;
 use bevy::prelude::{Commands, EventWriter, Mut, Or, Query, Res, ResMut, Transform, With};
 
-use crate::components::{BuyOrders, InSector, Inventory, Sector, SellOrders};
+use crate::components::{BuyOrders, InSector, Inventory, SectorComponent, SellOrders};
 use crate::game_data::{ItemManifest, ProductionModuleId, RecipeManifest, ShipyardModuleId};
 use crate::persistence::{PersistentShipId, ShipIdMap};
 use crate::session_data::ShipConfigurationManifest;
@@ -18,7 +18,7 @@ use crate::utils::entity_spawners;
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
 pub fn check_if_production_is_finished_and_start_new_one(
     mut commands: Commands,
-    mut sector_query: Query<&mut Sector>,
+    mut sector_query: Query<&mut SectorComponent>,
     mut ship_id_map: ResMut<ShipIdMap>,
     simulation_time: Res<SimulationTime>,
     mut global_production_state: ResMut<GlobalProductionState>,
@@ -94,7 +94,7 @@ pub fn check_if_production_is_finished_and_start_new_one(
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
 fn process_finished_ship_production(
     commands: &mut Commands,
-    sector_query: &mut Query<&mut Sector>,
+    sector_query: &mut Query<&mut SectorComponent>,
     ship_id_map: &mut ResMut<ShipIdMap>,
     ship_configs: &ShipConfigurationManifest,
     now: CurrentSimulationTimestamp,

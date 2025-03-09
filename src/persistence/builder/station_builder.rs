@@ -1,11 +1,13 @@
-use crate::components::{ConstructionSite, Sector};
+use crate::components::{ConstructionSiteComponent, ConstructionSiteStatus, SectorComponent};
 use crate::game_data::{
-    ItemData, ItemId, ItemManifest, ProductionModuleId, RecipeId, RecipeManifest, ShipyardModuleId,
+    ConstructableModuleId, ItemData, ItemId, ItemManifest, ProductionModuleId, RecipeId,
+    RecipeManifest, ShipyardModuleId, REFINED_METALS_PRODUCTION_MODULE_ID,
 };
 use crate::persistence::data::v1::*;
 use crate::persistence::local_hex_position::LocalHexPosition;
 use crate::persistence::{
-    PersistentConstructionSiteId, PersistentStationId, SectorIdMap, StationIdMap,
+    ConstructionSiteIdMap, PersistentConstructionSiteId, PersistentStationId, SectorIdMap,
+    StationIdMap,
 };
 use crate::simulation::production::{
     OngoingShipConstructionOrder, ProductionComponent, ProductionModule, ShipyardComponent,
@@ -21,7 +23,7 @@ use bevy::utils::hashbrown::HashMap;
 pub struct Args<'w, 's> {
     commands: Commands<'w, 's>,
     sprites: Res<'w, SpriteHandles>,
-    sectors: Query<'w, 's, &'static mut Sector>,
+    sectors: Query<'w, 's, &'static mut SectorComponent>,
     sector_id_map: Res<'w, SectorIdMap>,
     items: Res<'w, ItemManifest>,
     recipes: Res<'w, RecipeManifest>,
@@ -31,12 +33,14 @@ type SaveData = SaveDataCollection<StationSaveData>;
 
 pub fn spawn_all(data: Res<SaveData>, mut args: Args) {
     let mut station_id_map = StationIdMap::new();
+    let mut construction_site_id_map = ConstructionSiteIdMap::new();
     for builder in &data.data {
         builder.build(&mut args, &mut station_id_map);
     }
 
     args.commands.remove_resource::<SaveData>();
     args.commands.insert_resource(station_id_map);
+    args.commands.insert_resource(construction_site_id_map);
 }
 
 impl SaveData {
@@ -176,11 +180,16 @@ impl StationSaveData {
             production,
             shipyard,
             // TODO: implement proper construction site... constructing
-            Some(ConstructionSite {
-                id: PersistentConstructionSiteId::next(),
+            Some(ConstructionSiteComponent {
+                id: PersistentConstructionSiteId::next(), // TODO: ID must be persisted in EntityIdMap. Or we skip the entire thing and just refer to the StationId?
                 station_id: self.id,
-                build_order: Vec::new(),
+                build_order: vec![ConstructableModuleId::ProductionModule(
+                    REFINED_METALS_PRODUCTION_MODULE_ID,
+                )],
                 current_build_progress: 0.0,
+                total_construction_power: 0,
+                construction_ship_count: 0,
+                status: ConstructionSiteStatus::MissingBuilders,
             }),
             &args.items,
             &args.recipes,

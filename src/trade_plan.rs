@@ -1,6 +1,6 @@
 use bevy::prelude::{Entity, Query};
 
-use crate::components::{BuyOrders, InSector, Inventory, Sector, SellOrders, TradeOrder};
+use crate::components::{BuyOrders, InSector, Inventory, SectorComponent, SellOrders, TradeOrder};
 use crate::game_data::{ItemId, ItemManifest};
 use crate::simulation::ship_ai::{TaskInsideQueue, TaskQueue};
 use crate::simulation::transform::simulation_transform::SimulationTransform;
@@ -123,7 +123,7 @@ impl TradePlan {
 
     pub fn create_tasks_for_purchase(
         &self,
-        all_sectors: &Query<&Sector>,
+        all_sectors: &Query<&SectorComponent>,
         all_transforms: &Query<&SimulationTransform>,
         ship_entity: Entity,
         ship_sector: &InSector,
@@ -164,7 +164,7 @@ impl TradePlan {
 
     pub fn create_tasks_for_sale(
         &self,
-        all_sectors: &Query<&Sector>,
+        all_sectors: &Query<&SectorComponent>,
         all_transforms: &Query<&SimulationTransform>,
         queue: &mut TaskQueue,
     ) {

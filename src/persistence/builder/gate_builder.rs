@@ -1,4 +1,4 @@
-use crate::components::{Sector, SectorStarComponent, Star};
+use crate::components::{SectorComponent, SectorStarComponent, Star};
 use crate::persistence::data::v1::*;
 use crate::persistence::local_hex_position::LocalHexPosition;
 use crate::persistence::{GateIdMap, PersistentGateId, SectorIdMap};
@@ -11,7 +11,14 @@ use bevy::prelude::{Commands, Query, Res};
 pub struct Args<'w, 's> {
     commands: Commands<'w, 's>,
     sprites: Res<'w, SpriteHandles>,
-    sectors: Query<'w, 's, (&'static mut Sector, Option<&'static SectorStarComponent>)>,
+    sectors: Query<
+        'w,
+        's,
+        (
+            &'static mut SectorComponent,
+            Option<&'static SectorStarComponent>,
+        ),
+    >,
     stars: Query<'w, 's, &'static Star>,
 
     sector_id_map: Res<'w, SectorIdMap>,

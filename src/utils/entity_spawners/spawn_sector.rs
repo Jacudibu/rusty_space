@@ -1,5 +1,5 @@
 use crate::components::{
-    InSector, Sector, SectorAsteroidComponent, SectorStarComponent, SelectableEntity,
+    InSector, SectorAsteroidComponent, SectorComponent, SectorStarComponent, SelectableEntity,
 };
 use crate::game_data::AsteroidManifest;
 use crate::persistence::{AsteroidIdMap, PlanetIdMap, SectorFeatureSaveData};
@@ -31,7 +31,7 @@ pub fn spawn_sector(
 
     let entity_commands = commands.spawn((
         Name::new(format!("[{},{}]", coordinate.x, coordinate.y)),
-        Sector::new(coordinate, position),
+        SectorComponent::new(coordinate, position),
         simulation_transform.as_bevy_transform(0.0),
         simulation_transform,
     ));

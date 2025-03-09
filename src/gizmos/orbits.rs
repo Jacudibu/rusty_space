@@ -1,6 +1,6 @@
 use bevy::prelude::{GizmoConfigGroup, GizmoConfigStore, Gizmos, Query, Reflect, ResMut, With};
 
-use crate::components::{ConstantOrbit, InSector, Sector};
+use crate::components::{ConstantOrbit, InSector, SectorComponent};
 use crate::entity_selection::Selected;
 
 #[derive(Default, Reflect, GizmoConfigGroup)]
@@ -14,7 +14,7 @@ pub fn configure(mut config_store: ResMut<GizmoConfigStore>) {
 pub fn draw_orbit_circles(
     mut gizmos: Gizmos<OrbitLineGizmos>,
     orbits: Query<(&ConstantOrbit, &InSector), With<Selected>>,
-    sectors: Query<&Sector>,
+    sectors: Query<&SectorComponent>,
 ) {
     for (orbit, in_sector) in orbits.iter() {
         let center = sectors.get(in_sector.into()).unwrap().world_pos;
