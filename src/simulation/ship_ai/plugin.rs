@@ -1,7 +1,7 @@
 use crate::simulation::asteroids;
 use crate::simulation::ship_ai::{behaviors, stop_idle_ships};
 use crate::simulation::ship_ai::task_finished_event::TaskFinishedEvent;
-use crate::simulation::ship_ai::tasks::{AwaitingSignal, Build, DockAtEntity, ExchangeWares, HarvestGas, MineAsteroid, MoveToEntity, RequestAccess, Undock, UseGate};
+use crate::simulation::ship_ai::tasks::{AwaitingSignal, Construct, DockAtEntity, ExchangeWares, HarvestGas, MineAsteroid, MoveToEntity, RequestAccess, Undock, UseGate};
 use crate::states::SimulationState;
 use bevy::app::App;
 use bevy::prelude::{in_state, on_event, FixedPostUpdate, FixedUpdate, IntoSystemConfigs, Plugin};
@@ -18,7 +18,7 @@ impl Plugin for ShipAiPlugin {
         app.add_event::<TaskFinishedEvent<MineAsteroid>>();
         app.add_event::<TaskFinishedEvent<HarvestGas>>();
         app.add_event::<TaskFinishedEvent<AwaitingSignal>>();
-        app.add_event::<TaskFinishedEvent<Build>>();
+        app.add_event::<TaskFinishedEvent<Construct>>();
         app.add_systems(
             FixedUpdate,
             (

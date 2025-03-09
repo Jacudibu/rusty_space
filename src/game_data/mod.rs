@@ -45,7 +45,7 @@ pub use {
 pub use item_data::{RawItemData, RawItemManifest};
 
 /// An enum which differentiates between the various Modules that make up a station.
-pub enum BuildableModuleId {
+pub enum ConstructableModuleId {
     ProductionModule(ProductionModuleId),
     ShipyardModule(ShipyardModuleId),
 }

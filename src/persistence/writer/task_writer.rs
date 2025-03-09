@@ -38,7 +38,7 @@ impl TaskSaveData {
             TaskInsideQueue::AwaitingSignal => todo!(),
             TaskInsideQueue::RequestAccess { .. } => todo!(),
             TaskInsideQueue::Undock => todo!(),
-            TaskInsideQueue::Build { .. } => todo!(),
+            TaskInsideQueue::Construct { .. } => todo!(),
         }
     }
 }

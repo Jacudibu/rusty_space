@@ -1,5 +1,5 @@
 use crate::utils::{
-    AsteroidEntity, BuildSiteEntity, GateEntity, PlanetEntity, SectorEntity, ShipEntity,
+    AsteroidEntity, ConstructionSiteEntity, GateEntity, PlanetEntity, SectorEntity, ShipEntity,
     StarEntity, StationEntity,
 };
 use bevy::prelude::Entity;
@@ -7,7 +7,7 @@ use bevy::prelude::Entity;
 #[derive(Copy, Clone, Debug)]
 pub enum TypedEntity {
     Asteroid(AsteroidEntity),
-    BuildSite(BuildSiteEntity),
+    ConstructionSite(ConstructionSiteEntity),
     Gate(GateEntity),
     Planet(PlanetEntity),
     Sector(SectorEntity),
@@ -21,7 +21,7 @@ impl From<TypedEntity> for Entity {
     fn from(value: TypedEntity) -> Self {
         match value {
             TypedEntity::Asteroid(inner) => inner.into(),
-            TypedEntity::BuildSite(inner) => inner.into(),
+            TypedEntity::ConstructionSite(inner) => inner.into(),
             TypedEntity::Gate(inner) => inner.into(),
             TypedEntity::Planet(inner) => inner.into(),
             TypedEntity::Sector(inner) => inner.into(),
@@ -37,7 +37,7 @@ impl From<&TypedEntity> for Entity {
     fn from(value: &TypedEntity) -> Self {
         match value {
             TypedEntity::Asteroid(inner) => inner.into(),
-            TypedEntity::BuildSite(inner) => inner.into(),
+            TypedEntity::ConstructionSite(inner) => inner.into(),
             TypedEntity::Gate(inner) => inner.into(),
             TypedEntity::Planet(inner) => inner.into(),
             TypedEntity::Sector(inner) => inner.into(),

@@ -1,5 +1,5 @@
 use crate::components::{
-    BuildSite, BuyOrders, InteractionQueue, Inventory, Sector, SelectableEntity, SellOrders,
+    BuyOrders, ConstructionSite, InteractionQueue, Inventory, Sector, SelectableEntity, SellOrders,
     Station,
 };
 use crate::game_data::{ItemData, ItemManifest, RecipeManifest};
@@ -28,7 +28,7 @@ pub fn spawn_station(
     sells: Vec<&ItemData>,
     production: Option<ProductionComponent>,
     shipyard: Option<ShipyardComponent>,
-    build_site: Option<BuildSite>,
+    build_site: Option<ConstructionSite>,
     item_manifest: &ItemManifest,
     recipe_manifest: &RecipeManifest,
 ) {
@@ -58,8 +58,8 @@ pub fn spawn_station(
         ))
         .id();
 
-    let build_site_id = if let Some(build_site) = build_site {
-        let build_site_id = Some(build_site.id);
+    let construction_site_id = if let Some(build_site) = build_site {
+        let construction_site_id = Some(build_site.id);
 
         // TODO: Build site has buy orders and an inventory
         // TODO: Figure out the least painful way to sync simulation transform to the position of the station
@@ -70,7 +70,7 @@ pub fn spawn_station(
             build_site,
             simulation_transform.as_bevy_transform(constants::z_layers::BUILD_SITE),
             Sprite {
-                image: sprites.building_site.clone(),
+                image: sprites.construction_site.clone(),
                 anchor: Anchor::Custom(Vec2::splat(-0.7)),
                 ..Default::default()
             },
@@ -82,7 +82,7 @@ pub fn spawn_station(
             BuyOrders::default(), // TODO: These should sync with the inventory capacities. Prices are a bit complicated, but MAX is enough for starters.
         ));
 
-        build_site_id
+        construction_site_id
     } else {
         None
     };
@@ -91,7 +91,7 @@ pub fn spawn_station(
         .spawn((
             Name::new(name.to_string()),
             SelectableEntity::Station,
-            Station::new(id, build_site_id),
+            Station::new(id, construction_site_id),
             Sprite::from_image(sprites.station.clone()),
             simulation_transform.as_bevy_transform(constants::z_layers::STATION),
             simulation_transform,

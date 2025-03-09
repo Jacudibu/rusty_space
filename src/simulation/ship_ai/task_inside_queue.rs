@@ -1,7 +1,9 @@
 use crate::game_data::ItemId;
 use crate::simulation::prelude::{CurrentSimulationTimestamp, SimulationTimestamp};
 use crate::simulation::ship_ai::tasks;
-use crate::utils::{AsteroidEntity, BuildSiteEntity, ExchangeWareData, PlanetEntity, TypedEntity};
+use crate::utils::{
+    AsteroidEntity, ConstructionSiteEntity, ExchangeWareData, PlanetEntity, TypedEntity,
+};
 use crate::utils::{GateEntity, SectorEntity};
 use bevy::ecs::system::EntityCommands;
 
@@ -9,8 +11,8 @@ use bevy::ecs::system::EntityCommands;
 pub enum TaskInsideQueue {
     /// Indicates that our ship is waiting for an external entity (e.g. a station or the player) to signal the ship to continue with it next task.
     AwaitingSignal,
-    Build {
-        target: BuildSiteEntity,
+    Construct {
+        target: ConstructionSiteEntity,
     },
     /// The ship will tell the provided entity that it wants to access it.
     /// Depending on how busy the target is, it will either tell us to go straight ahead and proceed with the next task or enter the ship into a queue, causing this task to be replaced by [TaskInsideQueue::AwaitingSignal].
@@ -93,8 +95,8 @@ impl TaskInsideQueue {
             TaskInsideQueue::AwaitingSignal => {
                 entity_commands.insert(tasks::AwaitingSignal {});
             }
-            TaskInsideQueue::Build { target } => {
-                entity_commands.insert(tasks::Build { target: *target });
+            TaskInsideQueue::Construct { target } => {
+                entity_commands.insert(tasks::Construct { target: *target });
             }
             TaskInsideQueue::RequestAccess { target } => {
                 entity_commands.insert(tasks::RequestAccess::new(*target));

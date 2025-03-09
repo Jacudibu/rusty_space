@@ -1,25 +1,33 @@
 use crate::components::{InSector, Sector};
-use crate::persistence::BuildSiteIdMap;
+use crate::persistence::ConstructionSiteIdMap;
 use crate::simulation::prelude::{
     SimulationTime, SimulationTimestamp, SimulationTransform, TaskInsideQueue, TaskQueue,
 };
 use crate::simulation::ship_ai::ship_is_idle_filter::ShipIsIdleFilter;
-use crate::utils::{BuildSiteEntity, SectorEntity, TypedEntity};
+use crate::utils::{ConstructionSiteEntity, SectorEntity, TypedEntity};
 use crate::{constants, pathfinding};
 use bevy::prelude::{Component, Entity, Query, Res};
 
 #[derive(Component)]
-pub struct AutoBuildBehavior {
+pub struct AutoConstructionBehavior {
     pub next_idle_update: SimulationTimestamp,
 }
 
 #[allow(clippy::too_many_arguments)]
 pub fn handle_idle_ships(
     simulation_time: Res<SimulationTime>,
-    mut ships: Query<(Entity, &mut TaskQueue, &mut AutoBuildBehavior, &InSector), ShipIsIdleFilter>,
+    mut ships: Query<
+        (
+            Entity,
+            &mut TaskQueue,
+            &mut AutoConstructionBehavior,
+            &InSector,
+        ),
+        ShipIsIdleFilter,
+    >,
     all_sectors: Query<&Sector>,
     all_transforms: Query<&SimulationTransform>,
-    build_site_id_map: Res<BuildSiteIdMap>,
+    construction_site_id_map: Res<ConstructionSiteIdMap>,
 ) {
     let now = simulation_time.now();
 
@@ -27,9 +35,11 @@ pub fn handle_idle_ships(
         .iter_mut()
         .filter(|(_, _, behavior, _)| now.has_passed(behavior.next_idle_update))
         .for_each(|(ship_entity, mut queue, mut behavior, in_sector)| {
-            let Some((target_sector, build_site)) =
-                find_nearby_sector_with_build_site(&all_sectors, in_sector, &build_site_id_map)
-            else {
+            let Some((target_sector, build_site)) = find_nearby_sector_with_build_site(
+                &all_sectors,
+                in_sector,
+                &construction_site_id_map,
+            ) else {
                 behavior.next_idle_update =
                     now.add_seconds(constants::SECONDS_BETWEEN_SHIP_BEHAVIOR_IDLE_UPDATES);
                 return;
@@ -50,12 +60,12 @@ pub fn handle_idle_ships(
             }
 
             queue.push_back(TaskInsideQueue::MoveToEntity {
-                target: TypedEntity::BuildSite(build_site),
+                target: TypedEntity::ConstructionSite(build_site),
                 stop_at_target: true,
                 distance_to_target: 0.0,
             });
 
-            queue.push_back(TaskInsideQueue::Build { target: build_site })
+            queue.push_back(TaskInsideQueue::Construct { target: build_site })
         })
 }
 
@@ -63,8 +73,8 @@ pub fn handle_idle_ships(
 fn find_nearby_sector_with_build_site(
     all_sectors: &Query<&Sector>,
     in_sector: &InSector,
-    build_site_id_map: &BuildSiteIdMap,
-) -> Option<(SectorEntity, BuildSiteEntity)> {
+    construction_site_id_map: &ConstructionSiteIdMap,
+) -> Option<(SectorEntity, ConstructionSiteEntity)> {
     let nearby_sectors_with_build_sites =
         pathfinding::surrounding_sector_search::surrounding_sector_search(
             all_sectors,
@@ -90,7 +100,7 @@ fn find_nearby_sector_with_build_site(
 
     Some((
         target_sector.sector,
-        build_site_id_map
+        construction_site_id_map
             .get_entity(&target_build_site.id)
             .unwrap()
             .clone(),

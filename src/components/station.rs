@@ -1,5 +1,6 @@
 use crate::persistence::{
-    ComponentWithPersistentId, PersistentBuildSiteId, PersistentStationId, TypedPersistentEntityId,
+    ComponentWithPersistentId, PersistentConstructionSiteId, PersistentStationId,
+    TypedPersistentEntityId,
 };
 use bevy::prelude::Component;
 
@@ -10,7 +11,7 @@ pub struct Station {
     pub id: PersistentStationId,
 
     /// The PersistentEntityId of this station's active build site, if there is any.
-    pub build_site_id: Option<PersistentBuildSiteId>,
+    pub construction_site_id: Option<PersistentConstructionSiteId>,
 }
 
 impl ComponentWithPersistentId<Station> for Station {
@@ -24,8 +25,11 @@ impl Station {
     #[inline]
     pub fn new(
         id: TypedPersistentEntityId<Station>,
-        build_site_id: Option<PersistentBuildSiteId>,
+        construction_site_id: Option<PersistentConstructionSiteId>,
     ) -> Self {
-        Self { id, build_site_id }
+        Self {
+            id,
+            construction_site_id,
+        }
     }
 }

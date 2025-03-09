@@ -107,7 +107,7 @@ pub struct UiIcons {
     pub station: SizedTexture,
 
     pub awaiting_signal: SizedTexture,
-    pub build: SizedTexture,
+    pub construct: SizedTexture,
     pub idle: SizedTexture,
     pub move_to: SizedTexture,
     pub buy: SizedTexture,
@@ -142,7 +142,7 @@ impl UiIcons {
             TaskInsideQueue::RequestAccess { .. } => self.awaiting_signal,
             TaskInsideQueue::DockAtEntity { .. } => self.dock_at,
             TaskInsideQueue::Undock { .. } => self.undock,
-            TaskInsideQueue::Build { .. } => self.build,
+            TaskInsideQueue::Construct { .. } => self.construct,
         }
     }
 }
@@ -167,7 +167,7 @@ pub fn initialize(
     let undock = asset_server.load("sprites/task_icons/move_to.png"); // TODO
     let buy = asset_server.load("sprites/task_icons/buy.png");
     let sell = asset_server.load("sprites/task_icons/sell.png");
-    let build = asset_server.load("sprites/building_site.png");
+    let construct = asset_server.load("sprites/construction_site.png");
 
     let icons = UiIcons {
         asteroids: asteroid_manifest
@@ -191,7 +191,7 @@ pub fn initialize(
         undock: SizedTexture::new(contexts.add_image(undock), ICON_SIZE),
         buy: SizedTexture::new(contexts.add_image(buy), ICON_SIZE),
         sell: SizedTexture::new(contexts.add_image(sell), ICON_SIZE),
-        build: SizedTexture::new(contexts.add_image(build), ICON_SIZE),
+        construct: SizedTexture::new(contexts.add_image(construct), ICON_SIZE),
     };
 
     commands.insert_resource(icons);
@@ -554,8 +554,11 @@ pub fn list_selection_details(
                                             names.get(target.into()).unwrap()
                                         )
                                     }
-                                    TaskInsideQueue::Build { target } => {
-                                        format!("Building {}", names.get(target.into()).unwrap())
+                                    TaskInsideQueue::Construct { target } => {
+                                        format!(
+                                            "Constructing {}",
+                                            names.get(target.into()).unwrap()
+                                        )
                                     }
                                 });
                             });

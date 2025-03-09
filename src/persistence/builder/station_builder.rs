@@ -1,10 +1,12 @@
-use crate::components::{BuildSite, Sector};
+use crate::components::{ConstructionSite, Sector};
 use crate::game_data::{
     ItemData, ItemId, ItemManifest, ProductionModuleId, RecipeId, RecipeManifest, ShipyardModuleId,
 };
 use crate::persistence::data::v1::*;
 use crate::persistence::local_hex_position::LocalHexPosition;
-use crate::persistence::{PersistentBuildSiteId, PersistentStationId, SectorIdMap, StationIdMap};
+use crate::persistence::{
+    PersistentConstructionSiteId, PersistentStationId, SectorIdMap, StationIdMap,
+};
 use crate::simulation::production::{
     OngoingShipConstructionOrder, ProductionComponent, ProductionModule, ShipyardComponent,
     ShipyardModule,
@@ -173,9 +175,9 @@ impl StationSaveData {
             sells,
             production,
             shipyard,
-            // TODO: implement proper build site... building
-            Some(BuildSite {
-                id: PersistentBuildSiteId::next(),
+            // TODO: implement proper construction site... constructing
+            Some(ConstructionSite {
+                id: PersistentConstructionSiteId::next(),
                 station_id: self.id,
                 build_order: Vec::new(),
                 current_build_progress: 0.0,

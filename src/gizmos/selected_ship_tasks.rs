@@ -52,7 +52,7 @@ pub fn draw_selected_ship_task(
                     current_position = target_position;
                 }
                 TaskInsideQueue::Undock => {}
-                TaskInsideQueue::Build { target } => {
+                TaskInsideQueue::Construct { target } => {
                     let target_pos = all_transforms.get(target.into()).unwrap().translation;
                     gizmos.line(current_position, target_pos, GIZMO_COLOR);
                 }

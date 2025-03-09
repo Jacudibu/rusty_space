@@ -1,6 +1,6 @@
 mod asteroid;
-mod build_site;
 mod constant_orbit;
+mod construction_site;
 mod engine;
 mod gate;
 mod gate_connection;
@@ -17,7 +17,7 @@ mod station;
 mod trade;
 
 pub use {
-    asteroid::*, build_site::*, constant_orbit::*, engine::Engine, gate::*, gate_connection::*,
-    interaction_queue::*, inventory::Inventory, is_docked::*, planet::*, sector::*,
-    selectable_entity::*, ship::*, ship_components::*, star::*, station::*, trade::*,
+    asteroid::*, constant_orbit::*, construction_site::*, engine::Engine, gate::*,
+    gate_connection::*, interaction_queue::*, inventory::Inventory, is_docked::*, planet::*,
+    sector::*, selectable_entity::*, ship::*, ship_components::*, star::*, station::*, trade::*,
 };
