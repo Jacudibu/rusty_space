@@ -9,7 +9,7 @@ pub struct Construct {
 }
 
 impl Construct {
-    pub fn on_task_creation(
+    pub fn on_task_started(
         construction_tasks: Query<(&Self, &Ship)>,
         construction_sites: Query<&mut ConstructionSiteComponent>,
         mut event_reader: EventReader<TaskStartedEvent<Self>>,
@@ -22,11 +22,13 @@ impl Construct {
         // Add buildpower to construction site
     }
 
-    fn cancel_task() {
+    pub fn run_tasks() {}
+
+    pub fn cancel_task() {
         // remove buildpoewr from construction site
     }
 
-    fn complete_task() {
+    pub fn complete_tasks() {
         // since the build site disappears when construction is finished, being unable to find the related entity is our completion condition
     }
 }
