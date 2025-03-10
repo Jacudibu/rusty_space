@@ -7,14 +7,14 @@ use crate::persistence::{
 };
 use crate::simulation::precomputed_orbit_directions::PrecomputedOrbitDirections;
 use crate::simulation::time::SimulationTimestamp;
-use crate::utils::{entity_spawners, SectorEntity, UniverseSeed};
-use crate::{constants, SpriteHandles};
+use crate::utils::{SectorEntity, UniverseSeed, entity_spawners};
+use crate::{SpriteHandles, constants};
 use bevy::ecs::system::SystemParam;
 use bevy::prelude::{Circle, Commands, Res, ShapeSample, Vec2};
 use hexx::Hex;
 use leafwing_manifest::manifest::Manifest;
-use rand::distributions::Distribution;
 use rand::Rng;
+use rand::distributions::Distribution;
 
 #[derive(SystemParam)]
 pub struct Args<'w, 's> {
@@ -84,7 +84,7 @@ impl SectorSaveData {
     }
 
     pub fn with_planet(&mut self, data: SectorPlanetSaveData) -> &mut Self {
-        if let Some(ref mut planets) = &mut self.features.planets {
+        if let Some(planets) = &mut self.features.planets {
             planets.push(data);
         } else {
             self.features.planets = Some(vec![data]);
