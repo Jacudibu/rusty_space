@@ -10,7 +10,7 @@ use bevy::prelude::{Commands, Component, Entity, Query, Res};
 use std::ops::Not;
 
 #[derive(Component)]
-pub struct AutoConstructionBehavior {
+pub struct AutoConstructBehavior {
     pub next_idle_update: SimulationTimestamp,
 }
 
@@ -22,7 +22,7 @@ pub fn handle_idle_ships(
         (
             Entity,
             &mut TaskQueue,
-            &mut AutoConstructionBehavior,
+            &mut AutoConstructBehavior,
             &InSector,
         ),
         ShipIsIdleFilter,
@@ -62,7 +62,7 @@ pub fn handle_idle_ships(
             queue.push_back(TaskInsideQueue::MoveToEntity {
                 target: TypedEntity::ConstructionSite(build_site),
                 stop_at_target: true,
-                distance_to_target: 0.0,
+                distance_to_target: constants::DOCKING_DISTANCE_TO_STATION,
             });
 
             queue.push_back(TaskInsideQueue::Construct { target: build_site });

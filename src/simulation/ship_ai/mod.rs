@@ -9,12 +9,11 @@ mod task_result;
 mod task_started_event;
 mod tasks;
 
+pub use behaviors::BehaviorBuilder;
 pub use behaviors::auto_mine::{AutoMineBehavior, AutoMineState};
 pub use behaviors::auto_trade::AutoTradeBehavior;
-pub use behaviors::BehaviorBuilder;
 pub use plugin::ShipAiPlugin;
 pub use task_finished_event::TaskFinishedEvent;
 pub use task_inside_queue::TaskInsideQueue;
 pub use task_queue::TaskQueue;
 pub use tasks::AwaitingSignal;
-pub use tasks::MoveToEntity;

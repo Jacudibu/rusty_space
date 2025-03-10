@@ -1,16 +1,20 @@
 use crate::game_data::ItemId;
 use crate::simulation::prelude::SimulationTimestamp;
+use crate::simulation::ship_ai::behaviors::auto_construct::AutoConstructBehavior;
 use crate::simulation::ship_ai::behaviors::auto_harvest::AutoHarvestBehavior;
 use crate::simulation::ship_ai::{AutoMineBehavior, AutoMineState, AutoTradeBehavior};
 use bevy::ecs::system::EntityCommands;
 
-mod auto_construction;
+pub(crate) mod auto_construct;
 pub mod auto_harvest;
 pub mod auto_mine;
 pub mod auto_trade;
 
 pub enum BehaviorBuilder {
     AutoTrade {
+        next_idle_update: SimulationTimestamp,
+    },
+    AutoConstruct {
         next_idle_update: SimulationTimestamp,
     },
     AutoMine {
@@ -33,6 +37,9 @@ impl BehaviorBuilder {
         match self {
             BehaviorBuilder::AutoTrade { next_idle_update } => {
                 entity_commands.insert(AutoTradeBehavior { next_idle_update })
+            }
+            BehaviorBuilder::AutoConstruct { next_idle_update } => {
+                entity_commands.insert(AutoConstructBehavior { next_idle_update })
             }
             BehaviorBuilder::AutoMine {
                 next_idle_update,

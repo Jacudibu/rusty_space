@@ -27,11 +27,23 @@ pub struct ConstructionSiteComponent {
 
     /// The total construction power of all construction ships currently working on this site.
     /// A higher [construction_ship_count] means less of this will be applied due to inefficiencies.
-    pub total_construction_power: u32,
+    pub total_build_power: u32,
 }
 
 pub enum ConstructionSiteStatus {
     Ok,
     MissingMaterials(Vec<ItemId>),
     MissingBuilders,
+}
+
+impl ConstructionSiteComponent {
+    pub fn add_builder(&mut self, build_power: u32) {
+        self.total_build_power += build_power;
+        self.construction_ship_count += 1;
+    }
+
+    pub fn remove_builder(&mut self, build_power: u32) {
+        self.total_build_power -= build_power;
+        self.construction_ship_count -= 1;
+    }
 }

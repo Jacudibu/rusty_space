@@ -1,6 +1,6 @@
+use crate::session_data::ShipConfiguration;
 use crate::session_data::ship_configs::version;
 use crate::session_data::ship_configs::version::Version;
-use crate::session_data::ShipConfiguration;
 use bevy::utils::HashMap;
 use serde::Deserialize;
 use std::hash::{Hash, Hasher};
@@ -56,10 +56,10 @@ impl ShipConfigurationVersions {
 mod test {
     use super::*;
     use crate::game_data::SHIP_HULL_TRANSPORT_ID;
+    use crate::session_data::ShipConfigId;
     use crate::session_data::ship_configs::ship_configuration::{
         EngineStats, EngineTuning, ShipConfigurationComputedStats, ShipConfigurationParts,
     };
-    use crate::session_data::ShipConfigId;
 
     fn mock_parts() -> ShipConfigurationParts {
         ShipConfigurationParts {
@@ -80,6 +80,7 @@ mod test {
                 max_angular_speed: 1.0,
                 angular_acceleration: 1.0,
             },
+            build_power: None,
             asteroid_mining_amount: None,
             gas_harvesting_amount: None,
         }

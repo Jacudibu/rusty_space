@@ -80,6 +80,7 @@ impl ShipConfigurationParts {
             inventory_size: hull.inventory_size,
             build_time: hull.build_time,
             required_materials: hull.required_materials.clone(), // TODO: sum up all materials
+            build_power: Self::sum_strength(&weapons, |x| x.build_power),
             asteroid_mining_amount: Self::sum_strength(&weapons, |x| x.asteroid_mining_strength),
             gas_harvesting_amount: Self::sum_strength(&weapons, |x| x.gas_harvesting_strength),
             engine: EngineStats::compute_from(hull, tuning),
@@ -91,11 +92,7 @@ impl ShipConfigurationParts {
         T: Fn(&&X) -> Option<u32>,
     {
         let result = items.iter().filter_map(value_getter).sum();
-        if result > 0 {
-            Some(result)
-        } else {
-            None
-        }
+        if result > 0 { Some(result) } else { None }
     }
 }
 
@@ -107,7 +104,7 @@ pub struct ShipConfigurationComputedStats {
     pub required_materials: Vec<RecipeElement>,
     pub inventory_size: u32,
     pub engine: EngineStats,
-    //pub build_power: Option<u32>,
+    pub build_power: Option<u32>,
     pub asteroid_mining_amount: Option<u32>,
     pub gas_harvesting_amount: Option<u32>,
 }

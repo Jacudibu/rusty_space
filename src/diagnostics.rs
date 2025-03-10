@@ -1,7 +1,7 @@
 use crate::simulation::prelude::SimulationTime;
 use bevy::app::{App, Plugin};
-use bevy::ecs::system::lifetimeless::SRes;
 use bevy::ecs::system::SystemParam;
+use bevy::ecs::system::lifetimeless::SRes;
 use bevy::prelude::{Commands, Component, Startup};
 use iyes_perf_ui::entry::PerfUiEntry;
 use iyes_perf_ui::prelude::*;
@@ -20,7 +20,10 @@ impl Plugin for DiagnosticsPlugin {
 
 fn init(mut commands: Commands) {
     commands.spawn((
-        PerfUiRoot::default(),
+        PerfUiRoot {
+            values_col_width: 32.0,
+            ..Default::default()
+        },
         PerfUiTickDisplay::default(),
         PerfUiEntryFPS {
             #[cfg(debug_assertions)]

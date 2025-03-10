@@ -27,7 +27,7 @@ fn construction_site_updater(
             site.status = ConstructionSiteStatus::MissingBuilders;
         }
 
-        site.current_build_progress += site.total_construction_power as f32 * delta;
+        site.current_build_progress += site.total_build_power as f32 * delta;
         site.status = ConstructionSiteStatus::Ok;
 
         // TODO: check if construction is finished

@@ -1,13 +1,14 @@
 use crate::game_data::{
-    ShipHullManifest, ShipWeaponManifest, GAS_COLLECTOR_ID, ORE_MINING_LASER_ID,
-    SHIP_HULL_MINER_ID, SHIP_HULL_TRANSPORT_ID,
+    CONSTRUCTION_TOOL_ID, GAS_COLLECTOR_ID, ORE_MINING_LASER_ID, SHIP_HULL_MINER_ID,
+    SHIP_HULL_TRANSPORT_ID, ShipHullManifest, ShipWeaponManifest,
 };
 use crate::session_data::ship_configs::ship_configuration::ShipConfigurationParts;
 use crate::session_data::ship_configs::versioned_id::VersionedId;
 use crate::session_data::ship_configs::{
-    version, MOCK_HARVESTING_SHIP_CONFIG_ID, MOCK_HARVESTING_SHIP_CONFIG_NAME,
-    MOCK_MINING_SHIP_CONFIG_ID, MOCK_MINING_SHIP_CONFIG_NAME, MOCK_TRANSPORT_SHIP_CONFIG_ID,
-    MOCK_TRANSPORT_SHIP_CONFIG_NAME,
+    MOCK_CONSTRUCTION_SHIP_CONFIG_ID, MOCK_CONSTRUCTION_SHIP_CONFIG_NAME,
+    MOCK_HARVESTING_SHIP_CONFIG_ID, MOCK_HARVESTING_SHIP_CONFIG_NAME, MOCK_MINING_SHIP_CONFIG_ID,
+    MOCK_MINING_SHIP_CONFIG_NAME, MOCK_TRANSPORT_SHIP_CONFIG_ID, MOCK_TRANSPORT_SHIP_CONFIG_NAME,
+    version,
 };
 use crate::session_data::{ShipConfigId, ShipConfiguration, ShipConfigurationVersions};
 use bevy::asset::Asset;
@@ -109,6 +110,21 @@ impl ShipConfigurationManifest {
                 ShipConfigurationParts {
                     hull: SHIP_HULL_MINER_ID,
                     weapons: vec![GAS_COLLECTOR_ID, GAS_COLLECTOR_ID],
+                },
+                &hulls,
+                &weapons,
+                &mut image_assets,
+            )),
+        );
+
+        mock_data.insert(
+            VersionedId::from_name(MOCK_CONSTRUCTION_SHIP_CONFIG_NAME).id,
+            ShipConfigurationVersions::new(ShipConfiguration::from(
+                MOCK_CONSTRUCTION_SHIP_CONFIG_ID,
+                "Builder".into(),
+                ShipConfigurationParts {
+                    hull: SHIP_HULL_MINER_ID,
+                    weapons: vec![CONSTRUCTION_TOOL_ID, CONSTRUCTION_TOOL_ID],
                 },
                 &hulls,
                 &weapons,

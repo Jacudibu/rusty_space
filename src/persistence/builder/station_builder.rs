@@ -1,7 +1,7 @@
 use crate::components::{ConstructionSiteComponent, ConstructionSiteStatus, SectorComponent};
 use crate::game_data::{
-    ConstructableModuleId, ItemData, ItemId, ItemManifest, ProductionModuleId, RecipeId,
-    RecipeManifest, ShipyardModuleId, REFINED_METALS_PRODUCTION_MODULE_ID,
+    ConstructableModuleId, ItemData, ItemId, ItemManifest, ProductionModuleId,
+    REFINED_METALS_PRODUCTION_MODULE_ID, RecipeId, RecipeManifest, ShipyardModuleId,
 };
 use crate::persistence::data::v1::*;
 use crate::persistence::local_hex_position::LocalHexPosition;
@@ -13,8 +13,8 @@ use crate::simulation::production::{
     OngoingShipConstructionOrder, ProductionComponent, ProductionModule, ShipyardComponent,
     ShipyardModule,
 };
-use crate::utils::{entity_spawners, PriceRange, PriceSetting};
-use crate::{constants, SpriteHandles};
+use crate::utils::{PriceRange, PriceSetting, entity_spawners};
+use crate::{SpriteHandles, constants};
 use bevy::ecs::system::SystemParam;
 use bevy::prelude::{Commands, Query, Res};
 use bevy::utils::hashbrown::HashMap;
@@ -187,7 +187,7 @@ impl StationSaveData {
                     REFINED_METALS_PRODUCTION_MODULE_ID,
                 )],
                 current_build_progress: 0.0,
-                total_construction_power: 0,
+                total_build_power: 0,
                 construction_ship_count: 0,
                 status: ConstructionSiteStatus::MissingBuilders,
             }),

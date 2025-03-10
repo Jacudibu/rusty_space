@@ -18,6 +18,7 @@ pub struct ShipAiPlugin;
 impl Plugin for ShipAiPlugin {
     #[rustfmt::skip]
     fn build(&self, app: &mut App) {
+        register_behavior(app, behaviors::auto_construct::handle_idle_ships);
         register_behavior(app, behaviors::auto_trade::handle_idle_ships);
         register_behavior(app, behaviors::auto_harvest::handle_idle_ships);
         register_behavior(app, behaviors::auto_mine::handle_idle_ships.before(asteroids::respawn_asteroids));

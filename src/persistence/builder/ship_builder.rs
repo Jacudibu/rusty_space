@@ -82,6 +82,9 @@ impl From<ShipBehaviorSaveData> for BehaviorBuilder {
             ShipBehaviorSaveData::AutoTrade { next_idle_update } => {
                 BehaviorBuilder::AutoTrade { next_idle_update }
             }
+            ShipBehaviorSaveData::AutoConstruct { next_idle_update } => {
+                BehaviorBuilder::AutoConstruct { next_idle_update }
+            }
             ShipBehaviorSaveData::AutoMine {
                 next_idle_update,
                 mined_ore,

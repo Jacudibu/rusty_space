@@ -8,6 +8,7 @@ pub const TRADE_SHIP_COUNT: u32 = 200000;
 
 pub const MINING_SHIP_COUNT: u32 = 20;
 pub const HARVESTING_SHIP_COUNT: u32 = 20;
+pub const CONSTRUCTION_SHIP_COUNT: u32 = 20;
 pub const ASTEROID_COUNT: usize = 400;
 
 /// Lower values here mean ships will spread out more when buying / selling things, but also come to a halt much sooner,
