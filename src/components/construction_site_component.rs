@@ -1,5 +1,6 @@
 use crate::game_data::{ConstructableModuleId, ItemId};
 use crate::persistence::{PersistentConstructionSiteId, PersistentStationId};
+use crate::utils::ConstructionSiteEntity;
 use bevy::prelude::Component;
 
 /// Marker component for ConstructionSites.
@@ -34,16 +35,4 @@ pub enum ConstructionSiteStatus {
     Ok,
     MissingMaterials(Vec<ItemId>),
     MissingBuilders,
-}
-
-impl ConstructionSiteComponent {
-    pub fn add_builder(&mut self, build_power: u32) {
-        self.total_build_power += build_power;
-        self.construction_ship_count += 1;
-    }
-
-    pub fn remove_builder(&mut self, build_power: u32) {
-        self.total_build_power -= build_power;
-        self.construction_ship_count -= 1;
-    }
 }

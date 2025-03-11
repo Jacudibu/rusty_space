@@ -28,7 +28,7 @@ impl Construct {
                 continue;
             };
 
-            construction_site.add_builder(build_power);
+            add_builder(&mut construction_site, build_power);
         }
     }
 
@@ -42,4 +42,14 @@ impl Construct {
         // since the build site disappears when construction is finished, being unable to find the related entity is our local completion condition, but checking that for every builder is sorta inefficient
         // maybe this could be akin to an interaction queue on the construction site which notifies us when it's done?
     }
+}
+
+fn add_builder(site: &mut ConstructionSiteComponent, build_power: u32) {
+    site.total_build_power += build_power;
+    site.construction_ship_count += 1;
+}
+
+fn remove_builder(site: &mut ConstructionSiteComponent, build_power: u32) {
+    site.total_build_power -= build_power;
+    site.construction_ship_count -= 1;
 }
