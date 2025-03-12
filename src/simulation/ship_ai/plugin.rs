@@ -2,7 +2,7 @@ use crate::simulation::asteroids;
 use crate::simulation::ship_ai::task_finished_event::TaskFinishedEvent;
 use crate::simulation::ship_ai::task_started_event::TaskStartedEvent;
 use crate::simulation::ship_ai::tasks::{
-    AwaitingSignal, Construct, DockAtEntity, ExchangeWares, HarvestGas, MineAsteroid, MoveToEntity,
+    AwaitingSignal, ConstructTaskComponent, DockAtEntity, ExchangeWares, HarvestGas, MineAsteroid, MoveToEntity,
     RequestAccess, Undock, UseGate,
 };
 use crate::simulation::ship_ai::{behaviors, stop_idle_ships};
@@ -26,7 +26,7 @@ impl Plugin for ShipAiPlugin {
         register_task::<Undock, _, _, _>(app, Some(Undock::on_task_started), Undock::run_tasks, Undock::complete_tasks);
         register_task::<ExchangeWares, _, _, _>(app, Some(ExchangeWares::on_task_started), ExchangeWares::run_tasks, ExchangeWares::complete_tasks);
         register_task::<UseGate, _, _, _>(app, Some(UseGate::on_task_started), UseGate::run_tasks, UseGate::complete_tasks);
-        register_task::<Construct, _, _, _>(app, Some(Construct::on_task_started), Construct::run_tasks, Construct::complete_tasks);
+        register_task::<ConstructTaskComponent, _, _, _>(app, Some(ConstructTaskComponent::on_task_started), ConstructTaskComponent::run_tasks, ConstructTaskComponent::complete_tasks);
 
         register_task::<MoveToEntity, _, _, _>(app, None::<Nothing>, MoveToEntity::run_tasks, MoveToEntity::complete_tasks);
         register_task::<DockAtEntity, _, _, _>(app, None::<Nothing>, DockAtEntity::run_tasks, DockAtEntity::complete_tasks);

@@ -12,7 +12,7 @@ use crate::simulation::ship_ai::tasks;
 use crate::simulation::ship_ai::tasks::send_completion_events;
 use crate::utils::ExchangeWareData;
 use crate::utils::{TradeIntent, TypedEntity};
-use bevy::prelude::{error, Commands, Component, Entity, EventReader, EventWriter, Query, Res};
+use bevy::prelude::{Commands, Component, Entity, EventReader, EventWriter, Query, Res, error};
 use std::sync::{Arc, Mutex};
 
 #[derive(Component)]
@@ -129,7 +129,7 @@ impl ExchangeWares {
     ) {
         let now = simulation_time.now();
         for x in finished_events.read() {
-            let Ok(mut created_component) = query.get_mut(x.entity) else {
+            let Ok(mut created_component) = query.get_mut(x.entity.into()) else {
                 continue;
             };
 

@@ -3,15 +3,17 @@ use crate::components::{
     SelectableEntity, SellOrders, StationComponent,
 };
 use crate::game_data::{ItemData, ItemManifest, RecipeManifest};
-use crate::persistence::{PersistentStationId, StationIdMap};
+use crate::persistence::{
+    ConstructionSiteIdMap, PersistentConstructionSiteId, PersistentStationId, StationIdMap,
+};
 use crate::simulation::prelude::simulation_transform::SimulationScale;
 use crate::simulation::production::{ProductionComponent, ShipyardComponent};
 use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::utils::{ConstructionSiteEntity, SectorEntity, StationEntity};
-use crate::{constants, SpriteHandles};
+use crate::{SpriteHandles, constants};
 use bevy::core::Name;
 use bevy::math::Vec2;
-use bevy::prelude::{default, Commands, Query, Sprite};
+use bevy::prelude::{Commands, Query, Sprite, default};
 use bevy::sprite::Anchor;
 
 #[allow(clippy::too_many_arguments)] // It's hopeless... :')
@@ -28,10 +30,9 @@ pub fn spawn_station(
     sells: Vec<&ItemData>,
     production: Option<ProductionComponent>,
     shipyard: Option<ShipyardComponent>,
-    construction_site: Option<ConstructionSiteComponent>,
     item_manifest: &ItemManifest,
     recipe_manifest: &RecipeManifest,
-) {
+) -> StationEntity {
     let mut sector = sector_query.get_mut(sector_entity.into()).unwrap();
 
     let icon_sprite = match sells.first() {
@@ -58,42 +59,11 @@ pub fn spawn_station(
         ))
         .id();
 
-    let construction_site_entity = if let Some(construction_site) = construction_site {
-        // TODO: Build site has buy orders and an inventory
-        // TODO: Figure out the least painful way to sync simulation transform to the position of the station
-        //         (probably a new marker component + system that's run after the regular transform update)
-        //         (only necessary in sectors with some form of perpetual motion)
-        let entity = commands
-            .spawn((
-                Name::new(name.to_string() + " (Build Site)"),
-                construction_site,
-                simulation_transform.as_bevy_transform(constants::z_layers::BUILD_SITE),
-                Sprite {
-                    image: sprites.construction_site.clone(),
-                    anchor: Anchor::Custom(Vec2::splat(-0.7)),
-                    ..Default::default()
-                },
-                SimulationTransform::new(
-                    simulation_transform.translation,
-                    simulation_transform.rotation,
-                ),
-                Inventory::new(u32::MAX), // TODO: This should be a special inventory with precise capacities for the required materials
-                BuyOrders::default(), // TODO: These should sync with the inventory capacities. Prices are a bit complicated, but MAX is enough for starters.
-            ))
-            .id();
-
-        let entity = ConstructionSiteEntity::from(entity);
-        sector.add_construction_site(commands, sector_entity, entity);
-        Some(entity)
-    } else {
-        None
-    };
-
     let entity = commands
         .spawn((
             Name::new(name.to_string()),
             SelectableEntity::Station,
-            StationComponent::new(id, construction_site_entity),
+            StationComponent::new(id, None),
             Sprite::from_image(sprites.station.clone()),
             simulation_transform.as_bevy_transform(constants::z_layers::STATION),
             simulation_transform,
@@ -180,6 +150,52 @@ pub fn spawn_station(
 
     commands.entity(entity).insert(inventory);
 
-    station_id_map.insert(id, StationEntity::from(entity));
-    sector.add_station(commands, sector_entity, StationEntity::from(entity));
+    station_id_map.insert(id, entity.into());
+    sector.add_station(commands, sector_entity, entity.into());
+
+    entity.into()
+}
+
+#[allow(clippy::too_many_arguments)] // It's hopeless... :')
+pub fn spawn_construction_site(
+    commands: &mut Commands,
+    construction_site: ConstructionSiteComponent,
+    construction_site_id_map: &mut ConstructionSiteIdMap,
+    sector_query: &mut Query<&mut SectorComponent>,
+    sprites: &SpriteHandles,
+    id: PersistentConstructionSiteId,
+    name: &str,
+    local_pos: Vec2,
+    sector_entity: SectorEntity,
+) -> ConstructionSiteEntity {
+    let mut sector = sector_query.get_mut(sector_entity.into()).unwrap();
+    let simulation_transform = SimulationTransform::from_translation(local_pos + sector.world_pos);
+
+    // TODO: Build site has buy orders and an inventory
+    // TODO: Figure out the least painful way to sync simulation transform to the position of the station
+    //         (probably a new marker component + system that's run after the regular transform update)
+    //         (only necessary in sectors with some form of perpetual motion)
+    let entity = commands
+        .spawn((
+            Name::new(name.to_string() + " (Build Site)"),
+            construction_site,
+            simulation_transform.as_bevy_transform(constants::z_layers::BUILD_SITE),
+            Sprite {
+                image: sprites.construction_site.clone(),
+                anchor: Anchor::Custom(Vec2::splat(-0.7)),
+                ..Default::default()
+            },
+            SimulationTransform::new(
+                simulation_transform.translation,
+                simulation_transform.rotation,
+            ),
+            Inventory::new(u32::MAX), // TODO: This should be a special inventory with precise capacities for the required materials
+            BuyOrders::default(), // TODO: These should sync with the inventory capacities. Prices are a bit complicated, but MAX is enough for starters.
+        ))
+        .id();
+
+    let entity = ConstructionSiteEntity::from(entity);
+    construction_site_id_map.insert(id, entity);
+    sector.add_construction_site(commands, sector_entity, entity);
+    entity
 }

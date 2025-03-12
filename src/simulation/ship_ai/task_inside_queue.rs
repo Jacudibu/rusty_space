@@ -5,11 +5,10 @@ use crate::simulation::ship_ai::task_started_event::{
 };
 use crate::simulation::ship_ai::tasks;
 use crate::utils::{
-    AsteroidEntity, ConstructionSiteEntity, ExchangeWareData, PlanetEntity, TypedEntity,
+    AsteroidEntity, ConstructionSiteEntity, ExchangeWareData, PlanetEntity, ShipEntity, TypedEntity,
 };
 use crate::utils::{GateEntity, SectorEntity};
 use bevy::ecs::system::EntityCommands;
-use bevy::prelude::Entity;
 
 /// Defines a Task inside the [TaskQueue]. New task components can be created from these.
 pub enum TaskInsideQueue {
@@ -57,7 +56,7 @@ pub enum TaskInsideQueue {
 impl TaskInsideQueue {
     pub fn create_and_insert_component(
         &self,
-        entity: Entity,
+        entity: ShipEntity,
         entity_commands: &mut EntityCommands,
         now: CurrentSimulationTimestamp,
         task_started_event_writers: &mut AllTaskStartedEventWriters,
@@ -111,7 +110,7 @@ impl TaskInsideQueue {
                 task_started_event_writers
                     .construct
                     .send(TaskStartedEvent::new(entity));
-                entity_commands.insert(tasks::Construct { target: *target });
+                entity_commands.insert(tasks::ConstructTaskComponent { target: *target });
             }
             TaskInsideQueue::RequestAccess { target } => {
                 entity_commands.insert(tasks::RequestAccess::new(*target));

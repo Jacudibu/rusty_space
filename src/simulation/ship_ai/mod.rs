@@ -16,4 +16,4 @@ pub use plugin::ShipAiPlugin;
 pub use task_finished_event::TaskFinishedEvent;
 pub use task_inside_queue::TaskInsideQueue;
 pub use task_queue::TaskQueue;
-pub use tasks::AwaitingSignal;
+pub use tasks::{AwaitingSignal, ConstructTaskComponent};

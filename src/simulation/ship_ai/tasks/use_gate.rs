@@ -1,6 +1,6 @@
 use bevy::prelude::{
-    error, Commands, Component, CubicCurve, Entity, EventReader, EventWriter, Query, Res, Time,
-    Vec2, With,
+    Commands, Component, CubicCurve, Entity, EventReader, EventWriter, Query, Res, Time, Vec2,
+    With, error,
 };
 use std::sync::{Arc, Mutex};
 
@@ -17,8 +17,8 @@ use crate::simulation::ship_ai::task_started_event::{
 use crate::simulation::ship_ai::tasks;
 use crate::simulation::ship_ai::tasks::send_completion_events;
 use crate::simulation::transform::simulation_transform::SimulationTransform;
-use crate::utils::{interpolation, ShipEntity};
 use crate::utils::{GateEntity, SectorEntity};
+use crate::utils::{ShipEntity, interpolation};
 
 #[derive(Component)]
 pub struct UseGate {
@@ -175,7 +175,7 @@ impl UseGate {
         mut all_sectors: Query<&mut SectorComponent>,
     ) {
         for x in triggers.read() {
-            let Ok(in_sector) = query.get(x.entity) else {
+            let Ok(in_sector) = query.get(x.entity.into()) else {
                 continue;
             };
 

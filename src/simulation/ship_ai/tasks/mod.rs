@@ -18,9 +18,10 @@ use crate::simulation::prelude::{CurrentSimulationTimestamp, TaskFinishedEvent, 
 use crate::components::InteractionQueue;
 use crate::simulation::ship_ai::task_started_event::AllTaskStartedEventWriters;
 pub use {
-    awaiting_signal::AwaitingSignal, construct::Construct, dock_at_entity::DockAtEntity,
-    exchange_wares::ExchangeWares, harvest_gas::HarvestGas, mine_asteroid::MineAsteroid,
-    move_to_entity::MoveToEntity, request_access::RequestAccess, undock::Undock, use_gate::UseGate,
+    awaiting_signal::AwaitingSignal, construct::ConstructTaskComponent,
+    dock_at_entity::DockAtEntity, exchange_wares::ExchangeWares, harvest_gas::HarvestGas,
+    mine_asteroid::MineAsteroid, move_to_entity::MoveToEntity, request_access::RequestAccess,
+    undock::Undock, use_gate::UseGate,
 };
 
 pub fn send_completion_events<T: Component>(
@@ -68,7 +69,7 @@ pub fn remove_task_and_add_next_in_queue_to_entity_commands<T: Component>(
     queue.queue.pop_front();
     if let Some(next_task) = queue.front() {
         next_task.create_and_insert_component(
-            entity,
+            entity.into(),
             entity_commands,
             now,
             task_started_event_writers,

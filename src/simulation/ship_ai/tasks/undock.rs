@@ -1,8 +1,8 @@
 use crate::components::{Engine, InteractionQueue, IsDocked};
 use crate::constants;
 use crate::simulation::physics::ShipVelocity;
-use crate::simulation::prelude::simulation_transform::SimulationScale;
 use crate::simulation::prelude::SimulationTime;
+use crate::simulation::prelude::simulation_transform::SimulationScale;
 use crate::simulation::ship_ai::task_finished_event::TaskFinishedEvent;
 use crate::simulation::ship_ai::task_queue::TaskQueue;
 use crate::simulation::ship_ai::task_result::TaskResult;
@@ -12,7 +12,7 @@ use crate::simulation::ship_ai::task_started_event::{
 use crate::simulation::ship_ai::tasks::{
     dock_at_entity, finish_interaction, send_completion_events,
 };
-use crate::simulation::ship_ai::{tasks, AwaitingSignal};
+use crate::simulation::ship_ai::{AwaitingSignal, tasks};
 use crate::simulation::transform::simulation_transform::SimulationTransform;
 use bevy::log::error;
 use bevy::prelude::{
@@ -108,7 +108,7 @@ impl Undock {
         // Compared to the other task_creation thingies we can cheat a little since we got IsDocked as a useful marker
         for task in started_tasks.read() {
             let Ok((entity, mut task, transform, mut visibility, is_docked)) =
-                all_ships_with_task.get_mut(task.entity)
+                all_ships_with_task.get_mut(task.entity.into())
             else {
                 error!(
                     "Was unable to start undock task for entity {:?}: Entity not found.",

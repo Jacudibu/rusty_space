@@ -1,15 +1,15 @@
 use crate::components::{ConstructionSiteComponent, Ship};
 use crate::session_data::ShipConfigurationManifest;
 use crate::simulation::ship_ai::task_started_event::TaskStartedEvent;
-use crate::utils::ConstructionSiteEntity;
+use crate::utils::{ConstructionSiteEntity, ShipEntity};
 use bevy::prelude::{Component, EventReader, Query, Res, error};
 
 #[derive(Component)]
-pub struct Construct {
+pub struct ConstructTaskComponent {
     pub target: ConstructionSiteEntity,
 }
 
-impl Construct {
+impl ConstructTaskComponent {
     pub fn on_task_started(
         construction_tasks: Query<(&Self, &Ship)>,
         mut construction_sites: Query<&mut ConstructionSiteComponent>,
@@ -17,7 +17,7 @@ impl Construct {
         ship_configurations: Res<ShipConfigurationManifest>,
     ) {
         for event in event_reader.read() {
-            let (task, ship) = construction_tasks.get(event.entity).unwrap();
+            let (task, ship) = construction_tasks.get(event.entity.into()).unwrap();
             let mut construction_site = construction_sites.get_mut(task.target.into()).unwrap();
             let ship_config = ship_configurations.get_by_id(&ship.config_id()).unwrap();
             let Some(build_power) = ship_config.computed_stats.build_power else {
@@ -28,7 +28,7 @@ impl Construct {
                 continue;
             };
 
-            add_builder(&mut construction_site, build_power);
+            add_builder(&mut construction_site, build_power, event.entity);
         }
     }
 
@@ -44,12 +44,12 @@ impl Construct {
     }
 }
 
-fn add_builder(site: &mut ConstructionSiteComponent, build_power: u32) {
+fn add_builder(site: &mut ConstructionSiteComponent, build_power: u32, entity: ShipEntity) {
     site.total_build_power += build_power;
-    site.construction_ship_count += 1;
+    site.construction_ships.insert(entity);
 }
 
-fn remove_builder(site: &mut ConstructionSiteComponent, build_power: u32) {
+fn remove_builder(site: &mut ConstructionSiteComponent, build_power: u32, entity: &ShipEntity) {
     site.total_build_power -= build_power;
-    site.construction_ship_count -= 1;
+    site.construction_ships.remove(entity);
 }

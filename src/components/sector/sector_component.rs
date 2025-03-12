@@ -73,6 +73,12 @@ impl SectorComponent {
         InSector::add_component(commands, sector, entity.into());
     }
 
+    /// Removes a construction site from this Sector. It must have either been destroyed or completed, so we don't bother touching the [InSector] component.
+    pub fn remove_construction_site(&mut self, entity: ConstructionSiteEntity) {
+        let result = self.construction_sites.remove(&entity);
+        debug_assert!(result, "removed con-sites should always be in sector!");
+    }
+
     /// Adds the gate to this sector and inserts the [InSector] component to it.
     pub fn add_gate(
         &mut self,
