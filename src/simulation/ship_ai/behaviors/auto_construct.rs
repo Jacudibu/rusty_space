@@ -85,7 +85,7 @@ fn find_nearby_sector_with_build_site(
         pathfinding::surrounding_sector_search::surrounding_sector_search(
             all_sectors,
             in_sector.sector,
-            1,
+            0,
             u8::MAX, // TODO: Should be limited
             all_sectors,
             |x| x.construction_sites.is_empty().not(),

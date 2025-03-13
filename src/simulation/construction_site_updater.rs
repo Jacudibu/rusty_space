@@ -4,13 +4,13 @@ use crate::components::{
 use crate::game_data::{ConstructableModuleId, ProductionModuleManifest, ShipyardModuleManifest};
 use crate::simulation::prelude::{
     ConstructTaskComponent, ProductionComponent, ProductionModule, ShipyardComponent,
-    ShipyardModule,
+    ShipyardModule, TaskQueue,
 };
+use crate::states::SimulationState;
 use crate::utils::ConstructionSiteEntity;
-use bevy::app::{App, FixedUpdate};
 use bevy::prelude::{
-    Commands, Entity, Event, EventReader, EventWriter, Fixed, IntoSystemConfigs, Plugin, Query,
-    Res, Time, error,
+    App, Commands, Entity, Event, EventReader, EventWriter, Fixed, FixedPostUpdate, FixedUpdate,
+    IntoSystemConfigs, Plugin, Query, Res, Time, error, in_state,
 };
 use leafwing_manifest::manifest::Manifest;
 
@@ -21,7 +21,9 @@ impl Plugin for ConstructionSiteUpdaterPlugin {
         app.add_event::<ConstructionFinishedEvent>();
         app.add_systems(
             FixedUpdate,
-            (construction_site_updater, construction_site_finisher).chain(),
+            (construction_site_updater, construction_site_finisher)
+                .chain()
+                .run_if(in_state(SimulationState::Running)),
         );
     }
 }
@@ -83,48 +85,68 @@ fn construction_site_updater(
 fn construction_site_finisher(
     mut commands: Commands,
     mut events: EventReader<ConstructionFinishedEvent>,
-    mut all_construction_sites: Query<(Entity, &mut ConstructionSiteComponent, &InSector)>,
+    mut all_construction_sites: Query<(&mut ConstructionSiteComponent, &InSector)>,
     mut all_stations: Query<(
         &mut StationComponent,
         Option<&mut ProductionComponent>,
         Option<&mut ShipyardComponent>,
     )>,
+    mut all_ships: Query<&mut TaskQueue>,
     mut all_sectors: Query<&mut SectorComponent>,
     production_manifest: Res<ProductionModuleManifest>,
 ) {
     for event in events.read() {
-        let (entity, mut construction_site, in_sector) =
+        let (mut construction_site, in_sector) =
             all_construction_sites.get_mut(event.entity.into()).unwrap();
         let (mut station, production, shipyards) = all_stations
             .get_mut(construction_site.station.into())
             .unwrap();
 
         let Some(finished_thing) = construction_site.build_order.pop() else {
-            error!("Construction Site {entity:?} didn't contain any construction modules!");
+            error!(
+                "Construction Site {:?} didn't contain any construction modules!",
+                event.entity
+            );
             continue;
         };
         match finished_thing {
             ConstructableModuleId::ProductionModule(id) => {
-                let Some(mut production) = production else {
-                    todo!();
-                };
+                if let Some(mut production) = production {
+                    match production.modules.get_mut(&id) {
+                        None => {
+                            let recipes = &production_manifest.get(id).unwrap().available_recipes;
 
-                match production.modules.get_mut(&id) {
-                    None => {
-                        let recipes = &production_manifest.get(id).unwrap().available_recipes;
+                            production.modules.insert(
+                                id,
+                                ProductionModule {
+                                    recipe: *recipes.first().unwrap(), // TODO: Guess this needs to be an option after all! Wouldn't want to start a random recipe... Or maybe this could already be part of the construction order?
+                                    amount: 1,
+                                    current_run_finished_at: None,
+                                },
+                            );
+                        }
+                        Some(module) => {
+                            module.amount += 1; // TODO: This shouldn't increase the amount of running recipes, so things need to be split
+                        }
+                    }
+                } else {
+                    let recipes = &production_manifest.get(id).unwrap().available_recipes;
 
-                        production.modules.insert(
+                    let production = ProductionComponent {
+                        modules: [(
                             id,
                             ProductionModule {
                                 recipe: *recipes.first().unwrap(), // TODO: Guess this needs to be an option after all! Wouldn't want to start a random recipe... Or maybe this could already be part of the construction order?
                                 amount: 1,
                                 current_run_finished_at: None,
                             },
-                        );
-                    }
-                    Some(module) => {
-                        module.amount += 1; // TODO: This shouldn't increase the amount of running recipes, so things need to be split
-                    }
+                        )]
+                        .into(),
+                    };
+
+                    commands
+                        .entity(construction_site.station.into())
+                        .insert(production);
                 }
             }
             ConstructableModuleId::ShipyardModule(id) => {
@@ -154,14 +176,16 @@ fn construction_site_finisher(
             // TODO: This should probably also be handled as an event?
             station.construction_site = None;
             for x in &construction_site.construction_ships {
+                // TODO: This feels ugly. Might be better to have a TaskQueue::cancel_running_task<T>() function or similar, but the generic there is awkward as well.
                 commands.entity(x.into()).remove::<ConstructTaskComponent>();
+                all_ships.get_mut(x.into()).unwrap().pop_front();
             }
 
             all_sectors
                 .get_mut(in_sector.into())
                 .unwrap()
-                .remove_construction_site(entity.into());
-            commands.entity(entity).despawn();
+                .remove_construction_site(event.entity);
+            commands.entity(event.entity.into()).despawn();
         }
     }
 }

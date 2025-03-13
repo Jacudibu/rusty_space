@@ -26,7 +26,7 @@ impl TaskQueue {
         entity: Entity,
         task_started_event_writers: &mut AllTaskStartedEventWriters,
     ) {
-        let mut commands = commands.entity(entity.into());
+        let mut commands = commands.entity(entity);
         self.queue[0].create_and_insert_component(
             entity.into(),
             &mut commands,
