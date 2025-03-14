@@ -113,7 +113,10 @@ fn process_finished_ship_production(
     };
 
     let Some(module) = shipyard.modules.get_mut(module_id) else {
-        error!("Was unable to trigger shipyard construction finish for entity {} and module id {:?}! Guess it was destroyed?", next.entity, module_id);
+        error!(
+            "Was unable to trigger shipyard construction finish for entity {} and module id {:?}! Guess it was destroyed?",
+            next.entity, module_id
+        );
         return;
     };
 
@@ -152,7 +155,10 @@ fn process_finished_item_production(
     module_id: &ProductionModuleId,
 ) {
     let Some(mut production) = production else {
-        error!("Was unable to find ProductionComponent for entity {} to trigger production completion!", next.entity);
+        error!(
+            "Was unable to find ProductionComponent for entity {} to trigger production completion!",
+            next.entity
+        );
         return;
     };
 
@@ -164,8 +170,11 @@ fn process_finished_item_production(
         return;
     };
 
-    // Testing if there's enough inventory space to truly finish production is not necessary - it's already been accounted for with planned_incoming.
-    let recipe = recipes.get_by_ref(&module.recipe).unwrap();
-    inventory.finish_production(recipe, module.amount);
-    module.current_run_finished_at = None;
+    // TODO: This kind of reservation shouldn't happen. Testing this every couple seconds is fairly trivial, even with thousands of stations
+    // Testing if there's enough inventory space to truly finish production is not necessary right now - it's already been accounted for with planned_incoming.
+    let recipe = recipes
+        // TODO: change to priority queue to make sure this won't fail with multiple recipes & don't use .remove
+        .get_by_ref(&module.running_recipes.remove(0).recipe)
+        .expect("Recipe IDs should always be valid!");
+    inventory.finish_production(recipe);
 }

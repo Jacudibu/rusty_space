@@ -414,15 +414,22 @@ fn list_selection_details(
                     for (id, module) in &production.modules {
                         let definition = game_data.production_modules.get_by_ref(id).unwrap();
                         ui.label(format!("  {}x {}", module.amount, definition.name));
-                        let recipe = game_data.item_recipes.get_by_ref(&module.recipe).unwrap();
-                        ui.label(format!("    Active Recipe: {}", recipe.name));
-                        if let Some(finished_at) = module.current_run_finished_at {
+                        for running in &module.running_recipes {
+                            let recipe =
+                                game_data.item_recipes.get_by_ref(&running.recipe).unwrap();
                             ui.label(format!(
-                                "      Done in {}",
-                                now.remaining_time(finished_at).as_secs() + 1
+                                "    -> {} in {}",
+                                recipe.name,
+                                now.remaining_time(running.finished_at).as_secs() + 1
                             ));
-                        } else {
-                            ui.label("    (Inactive)");
+                        }
+                        for queued in &module.queued_recipes {
+                            let recipe = game_data.item_recipes.get_by_ref(&queued.recipe).unwrap();
+                            ui.label(format!(
+                                "    {} (Queued{})",
+                                recipe.name,
+                                if queued.is_repeating { " [R]" } else { "" }
+                            ));
                         }
                     }
                 }

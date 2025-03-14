@@ -13,7 +13,6 @@ use bevy::prelude::{
     App, Commands, Entity, Event, EventReader, EventWriter, Fixed, FixedUpdate, IntoSystemConfigs,
     Plugin, Query, Res, Time, error, in_state,
 };
-use leafwing_manifest::manifest::Manifest;
 
 pub struct ConstructionSiteUpdaterPlugin;
 
@@ -94,7 +93,6 @@ fn construction_site_finisher(
     )>,
     mut task_finished_event_writer: EventWriter<TaskFinishedEvent<ConstructTaskComponent>>,
     mut all_sectors: Query<&mut SectorComponent>,
-    production_manifest: Res<ProductionModuleManifest>,
 ) {
     for event in events.read() {
         let (mut construction_site, in_sector) =
@@ -115,14 +113,12 @@ fn construction_site_finisher(
                 if let Some(mut production) = production {
                     match production.modules.get_mut(&id) {
                         None => {
-                            let recipes = &production_manifest.get(id).unwrap().available_recipes;
-
                             production.modules.insert(
                                 id,
                                 ProductionModule {
-                                    recipe: *recipes.first().unwrap(), // TODO: Guess this needs to be an option after all! Wouldn't want to start a random recipe... Or maybe this could already be part of the construction order?
                                     amount: 1,
-                                    current_run_finished_at: None,
+                                    queued_recipes: Default::default(),
+                                    running_recipes: Default::default(),
                                 },
                             );
                         }
@@ -131,15 +127,13 @@ fn construction_site_finisher(
                         }
                     }
                 } else {
-                    let recipes = &production_manifest.get(id).unwrap().available_recipes;
-
                     let production = ProductionComponent {
                         modules: [(
                             id,
                             ProductionModule {
-                                recipe: *recipes.first().unwrap(), // TODO: Guess this needs to be an option after all! Wouldn't want to start a random recipe... Or maybe this could already be part of the construction order?
                                 amount: 1,
-                                current_run_finished_at: None,
+                                queued_recipes: Default::default(),
+                                running_recipes: Default::default(),
                             },
                         )]
                         .into(),

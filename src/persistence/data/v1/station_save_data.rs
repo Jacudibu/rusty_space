@@ -1,7 +1,7 @@
 use crate::game_data::{ItemId, ProductionModuleId, RecipeId, ShipyardModuleId};
+use crate::persistence::PersistentStationId;
 use crate::persistence::data::v1::inventory_save_data::InventorySaveData;
 use crate::persistence::local_hex_position::LocalHexPosition;
-use crate::persistence::PersistentStationId;
 use crate::session_data::ShipConfigId;
 use crate::simulation::prelude::SimulationTimestamp;
 use crate::utils::PriceSetting;
@@ -13,13 +13,27 @@ pub struct ProductionSaveData {
     pub modules: Vec<ProductionModuleSaveData>,
 }
 
-#[derive(Serialize, Deserialize, Copy, Clone)]
+#[derive(Serialize, Deserialize, Clone)]
 #[cfg_attr(test, derive(Debug, PartialEq))]
 pub struct ProductionModuleSaveData {
     pub module_id: ProductionModuleId,
     pub amount: u32,
+    pub running_recipes: Vec<RunningProductionModuleQueueElementSaveData>,
+    pub queued_recipes: Vec<ProductionModuleQueueElementSaveData>,
+}
+
+#[derive(Serialize, Deserialize, Copy, Clone)]
+#[cfg_attr(test, derive(Debug, PartialEq))]
+pub struct ProductionModuleQueueElementSaveData {
     pub recipe: RecipeId,
-    pub finished_at: Option<SimulationTimestamp>,
+    pub is_repeating: bool,
+}
+
+#[derive(Serialize, Deserialize, Copy, Clone)]
+#[cfg_attr(test, derive(Debug, PartialEq))]
+pub struct RunningProductionModuleQueueElementSaveData {
+    pub recipe: RecipeId,
+    pub finished_at: SimulationTimestamp,
 }
 
 #[derive(Serialize, Deserialize, Clone)]

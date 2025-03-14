@@ -78,8 +78,10 @@ pub fn spawn_station(
         let mut buy_sell_and_production_count = (buys.len() + sells.len()) as u32;
         if let Some(production) = &production {
             for (_, module) in &production.modules {
-                let recipe = recipe_manifest.get_by_ref(&module.recipe).unwrap();
-                buy_sell_and_production_count += recipe.output.len() as u32;
+                for element in &module.queued_recipes {
+                    let recipe = recipe_manifest.get_by_ref(&element.recipe).unwrap();
+                    buy_sell_and_production_count += recipe.output.len() as u32;
+                }
             }
         }
 
@@ -114,14 +116,17 @@ pub fn spawn_station(
     // Reserve storage space for products
     if let Some(production) = &production {
         for (_, module) in &production.modules {
-            let recipe = recipe_manifest.get_by_ref(&module.recipe).unwrap();
-            for x in &recipe.output {
-                let item = item_manifest.get_by_ref(&x.item_id).unwrap();
-                let amount = constants::MOCK_STATION_INVENTORY_SIZE
-                    / buy_sell_and_production_count
-                    / item.size;
+            for element in &module.queued_recipes {
+                let recipe = recipe_manifest.get_by_ref(&element.recipe).unwrap();
+                // TODO: This probably doesn't work once we have something with multiple recipes
+                for x in &recipe.output {
+                    let item = item_manifest.get_by_ref(&x.item_id).unwrap();
+                    let amount = constants::MOCK_STATION_INVENTORY_SIZE
+                        / buy_sell_and_production_count
+                        / item.size;
 
-                inventory.set_production_reservation(&x.item_id, amount, item_manifest);
+                    inventory.set_production_reservation(&x.item_id, amount, item_manifest);
+                }
             }
         }
     }

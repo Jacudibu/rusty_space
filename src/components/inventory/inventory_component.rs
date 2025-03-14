@@ -2,7 +2,7 @@ use crate::components::inventory::inventory_element::InventoryElement;
 use crate::game_data::{ItemId, ItemManifest, RecipeData};
 use crate::utils::TradeIntent;
 use bevy::log::error;
-use bevy::prelude::{warn, Component};
+use bevy::prelude::{Component, warn};
 use bevy::utils::HashMap;
 
 #[derive(Component)]
@@ -94,7 +94,9 @@ impl Inventory {
                     self.inventory.insert(item_id, item);
                 }
                 TradeIntent::Sell => {
-                    error!("How are we supposed to sell something if the item isn't even tracked inside our inventory yet?")
+                    error!(
+                        "How are we supposed to sell something if the item isn't even tracked inside our inventory yet?"
+                    )
                 }
             }
         }
@@ -204,19 +206,14 @@ impl Inventory {
 
     /// Reserves storage space for queued production yields.
     /// TODO: Extract
-    pub fn reserve_storage_space_for_production_yield(
-        &mut self,
-        item_recipe: &RecipeData,
-        multiplier: u32,
-    ) {
+    pub fn reserve_storage_space_for_production_yield(&mut self, item_recipe: &RecipeData) {
         for output in &item_recipe.output {
-            let amount = output.amount * multiplier;
             if let Some(inventory) = self.inventory.get_mut(&output.item_id) {
-                inventory.add_incoming(amount);
+                inventory.add_incoming(output.amount);
             } else {
                 warn!("Product inventory entry did not exist when starting production!");
                 let mut item = InventoryElement::default();
-                item.add_incoming(amount);
+                item.add_incoming(output.amount);
                 self.inventory.insert(output.item_id, item);
             }
         }
@@ -224,16 +221,15 @@ impl Inventory {
 
     /// Adds the output materials for a recipe to this inventory and removes their storage reservation.
     /// TODO: Extract
-    pub fn finish_production(&mut self, item_recipe: &RecipeData, multiplier: u32) {
+    pub fn finish_production(&mut self, item_recipe: &RecipeData) {
         for output in &item_recipe.output {
-            let amount = output.amount * multiplier;
             if let Some(inventory) = self.inventory.get_mut(&output.item_id) {
-                inventory.current += amount;
-                inventory.planned_incoming -= amount;
+                inventory.current += output.amount;
+                inventory.planned_incoming -= output.amount;
             } else {
                 warn!("Product inventory entry did not exist on production completion!");
                 let mut item = InventoryElement::default();
-                item.add(amount);
+                item.add(output.amount);
                 self.inventory.insert(output.item_id, item);
             }
         }
@@ -250,9 +246,9 @@ mod test {
     use super::*;
     use crate::create_id_constants;
     use crate::game_data::{RawItemData, RawItemManifest};
+    use bevy::MinimalPlugins;
     use bevy::app::App;
     use bevy::prelude::{AssetApp, AssetPlugin, Image};
-    use bevy::MinimalPlugins;
     use leafwing_manifest::manifest::Manifest;
     use rstest::{fixture, rstest};
 

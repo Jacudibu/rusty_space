@@ -9,6 +9,7 @@ use crate::persistence::{
     ConstructionSiteIdMap, PersistentConstructionSiteId, PersistentStationId, SectorIdMap,
     StationIdMap,
 };
+use crate::simulation::prelude::{ProductionQueueElement, RunningProductionQueueElement};
 use crate::simulation::production::{
     OngoingShipConstructionOrder, ProductionComponent, ProductionModule, ShipyardComponent,
     ShipyardModule,
@@ -125,8 +126,11 @@ impl StationSaveData {
             production.modules.push(ProductionModuleSaveData {
                 amount,
                 module_id,
-                recipe,
-                finished_at: None,
+                queued_recipes: vec![ProductionModuleQueueElementSaveData {
+                    recipe,
+                    is_repeating: true,
+                }],
+                running_recipes: Vec::new(),
             });
         }
 
@@ -257,8 +261,22 @@ impl ProductionModuleSaveData {
             self.module_id,
             ProductionModule {
                 amount: self.amount,
-                recipe: self.recipe,
-                current_run_finished_at: self.finished_at,
+                queued_recipes: self
+                    .queued_recipes
+                    .iter()
+                    .map(|x| ProductionQueueElement {
+                        recipe: x.recipe,
+                        is_repeating: x.is_repeating,
+                    })
+                    .collect(),
+                running_recipes: self
+                    .running_recipes
+                    .iter()
+                    .map(|x| RunningProductionQueueElement {
+                        recipe: x.recipe,
+                        finished_at: x.finished_at,
+                    })
+                    .collect(),
             },
         )
     }

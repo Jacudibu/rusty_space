@@ -3,9 +3,9 @@ use crate::components::{
     StationComponent, TradeOrder,
 };
 use crate::game_data::{ItemId, ProductionModuleId, ShipyardModuleId};
+use crate::persistence::ComponentWithPersistentId;
 use crate::persistence::data::v1::*;
 use crate::persistence::local_hex_position::LocalHexPosition;
-use crate::persistence::ComponentWithPersistentId;
 use crate::simulation::production::{
     OngoingShipConstructionOrder, ProductionComponent, ProductionModule, ShipyardComponent,
     ShipyardModule,
@@ -31,8 +31,9 @@ impl ProductionModuleSaveData {
         Self {
             module_id: *id,
             amount: module.amount,
-            recipe: module.recipe,
-            finished_at: module.current_run_finished_at,
+            queued_recipes: todo!(),
+            #[allow(unreachable_code)]
+            running_recipes: todo!(),
         }
     }
 }
