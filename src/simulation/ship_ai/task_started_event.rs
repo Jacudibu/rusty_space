@@ -1,16 +1,17 @@
+use crate::simulation::prelude::TaskComponent;
 use crate::simulation::ship_ai::tasks::{ConstructTaskComponent, ExchangeWares, Undock, UseGate};
 use crate::utils::ShipEntity;
 use bevy::ecs::system::SystemParam;
-use bevy::prelude::{Component, Event, EventWriter};
+use bevy::prelude::{Event, EventWriter};
 use std::marker::PhantomData;
 
 #[derive(Event, Copy, Clone)]
-pub struct TaskStartedEvent<T: Component> {
+pub struct TaskStartedEvent<T: TaskComponent> {
     t: PhantomData<T>,
     pub entity: ShipEntity,
 }
 
-impl<T: Component> TaskStartedEvent<T> {
+impl<T: TaskComponent> TaskStartedEvent<T> {
     pub fn new(entity: ShipEntity) -> Self {
         Self {
             entity,

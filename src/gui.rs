@@ -1,3 +1,4 @@
+use crate::SpriteHandles;
 use crate::components::{
     Asteroid, BuyOrders, ConstructionSiteComponent, Gate, InSector, InteractionQueue, Inventory,
     SelectableEntity, SellOrders, Ship, StationComponent, TradeOrder,
@@ -17,18 +18,17 @@ use crate::simulation::production::{ProductionComponent, ShipyardComponent};
 use crate::simulation::ship_ai::TaskInsideQueue;
 use crate::simulation::ship_ai::TaskQueue;
 use crate::utils::ExchangeWareData;
-use crate::SpriteHandles;
 use bevy::app::App;
 use bevy::ecs::query::QueryData;
 use bevy::prelude::{
-    on_event, AppExtStates, AssetServer, Commands, Entity, EventReader, IntoSystemConfigs, Name,
-    NextState, Plugin, PreUpdate, Query, Res, ResMut, Resource, Startup, State, States, Update,
-    With,
+    AppExtStates, AssetServer, Commands, Entity, EventReader, IntoSystemConfigs, Name, NextState,
+    Plugin, PreUpdate, Query, Res, ResMut, Resource, Startup, State, States, Update, With,
+    on_event,
 };
 use bevy::utils::{HashMap, HashSet};
 use bevy_egui::egui::load::SizedTexture;
 use bevy_egui::egui::{Align2, Shadow, Ui};
-use bevy_egui::{egui, EguiContexts, EguiStartupSet};
+use bevy_egui::{EguiContexts, EguiStartupSet, egui};
 
 pub struct GUIPlugin;
 impl Plugin for GUIPlugin {
@@ -574,10 +574,12 @@ fn list_selection_details(
                                         )
                                     }
                                     TaskInsideQueue::Construct { target } => {
-                                        format!(
-                                            "Constructing {}",
-                                            names.get(target.into()).unwrap()
-                                        )
+                                        // Might be none during the frame where a construction site is finished
+                                        if let Ok(name) = names.get(target.into()) {
+                                            format!("Constructing {}", name)
+                                        } else {
+                                            "Finished Construction".into()
+                                        }
                                     }
                                 });
                             });

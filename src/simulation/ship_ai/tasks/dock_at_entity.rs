@@ -1,11 +1,8 @@
 use crate::components::Engine;
 use crate::simulation::physics::ShipVelocity;
-use crate::simulation::prelude::SimulationTime;
+use crate::simulation::prelude::TaskComponent;
 use crate::simulation::ship_ai::task_finished_event::TaskFinishedEvent;
-use crate::simulation::ship_ai::task_queue::TaskQueue;
 use crate::simulation::ship_ai::task_result::TaskResult;
-use crate::simulation::ship_ai::task_started_event::AllTaskStartedEventWriters;
-use crate::simulation::ship_ai::tasks;
 use crate::simulation::ship_ai::tasks::{move_to_entity, send_completion_events};
 use crate::simulation::transform::simulation_transform::{SimulationScale, SimulationTransform};
 use crate::utils::TypedEntity;
@@ -16,10 +13,15 @@ use bevy::prelude::{
 };
 use std::sync::{Arc, Mutex};
 
+/// Ships with this [TaskComponent] are currently docking at the specified target entity.
+/// They'll move into the target and scale out of existence, then this task will complete.
 #[derive(Component)]
 pub struct DockAtEntity {
+    /// The Entity this ship is currently docking at.
     pub target: TypedEntity,
 }
+
+impl TaskComponent for DockAtEntity {}
 
 pub fn scale_based_on_docking_distance(scale: &mut SimulationScale, ratio: f32) {
     if ratio < 0.5 {
@@ -99,27 +101,14 @@ impl DockAtEntity {
     pub fn complete_tasks(
         mut commands: Commands,
         mut event_reader: EventReader<TaskFinishedEvent<Self>>,
-        mut all_ships_with_task: Query<(&mut TaskQueue, &mut Visibility, &Self)>,
-        simulation_time: Res<SimulationTime>,
-        mut task_started_event_writers: AllTaskStartedEventWriters,
+        mut all_ships_with_task: Query<(&mut Visibility, &Self)>,
     ) {
-        let now = simulation_time.now();
-
         for event in event_reader.read() {
-            if let Ok((mut queue, mut visibility, task)) = all_ships_with_task.get_mut(event.entity)
-            {
+            if let Ok((mut visibility, task)) = all_ships_with_task.get_mut(event.entity) {
                 *visibility = Visibility::Hidden;
 
                 let mut entity_commands = commands.entity(event.entity);
                 entity_commands.insert(components::IsDocked::new(task.target));
-
-                tasks::remove_task_and_add_next_in_queue_to_entity_commands::<Self>(
-                    event.entity,
-                    &mut entity_commands,
-                    &mut queue,
-                    now,
-                    &mut task_started_event_writers,
-                );
             } else {
                 error!(
                     "Unable to find entity for task completion: {}",

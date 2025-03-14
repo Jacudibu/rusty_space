@@ -4,6 +4,7 @@ use crate::simulation::ship_ai::task_started_event::{
     AllTaskStartedEventWriters, TaskStartedEvent,
 };
 use crate::simulation::ship_ai::tasks;
+use crate::simulation::ship_ai::tasks::MoveToEntity;
 use crate::utils::{
     AsteroidEntity, ConstructionSiteEntity, ExchangeWareData, PlanetEntity, ShipEntity, TypedEntity,
 };
@@ -77,7 +78,7 @@ impl TaskInsideQueue {
                 stop_at_target,
                 distance_to_target: distance,
             } => {
-                entity_commands.insert(tasks::MoveToEntity {
+                entity_commands.insert(MoveToEntity {
                     target: *target,
                     stop_at_target: *stop_at_target,
                     distance_to_target: *distance,

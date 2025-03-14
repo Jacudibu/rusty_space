@@ -1,5 +1,5 @@
 use crate::components::InteractionQueue;
-use crate::simulation::prelude::{SimulationTime, TaskInsideQueue, TaskQueue};
+use crate::simulation::prelude::{SimulationTime, TaskComponent, TaskInsideQueue, TaskQueue};
 use crate::simulation::ship_ai::task_started_event::AllTaskStartedEventWriters;
 use crate::simulation::ship_ai::tasks;
 use crate::utils::TypedEntity;
@@ -12,8 +12,10 @@ use bevy::prelude::{Commands, Component, Entity, Query, Res};
 ///  - busy: spawning an [`AwaitingSignal`] Task
 #[derive(Component)]
 pub struct RequestAccess {
+    /// The entity we want to access. Should have an [InteractionQueue].
     target: TypedEntity,
 }
+impl TaskComponent for RequestAccess {}
 
 impl RequestAccess {
     pub fn new(target: TypedEntity) -> Self {

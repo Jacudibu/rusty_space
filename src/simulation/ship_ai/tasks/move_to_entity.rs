@@ -1,26 +1,28 @@
 use crate::components::Engine;
 use crate::simulation::physics::ShipVelocity;
-use crate::simulation::prelude::SimulationTime;
+use crate::simulation::prelude::TaskComponent;
 use crate::simulation::ship_ai::task_finished_event::TaskFinishedEvent;
-use crate::simulation::ship_ai::task_queue::TaskQueue;
 use crate::simulation::ship_ai::task_result::TaskResult;
-use crate::simulation::ship_ai::task_started_event::AllTaskStartedEventWriters;
-use crate::simulation::ship_ai::tasks;
 use crate::simulation::ship_ai::tasks::send_completion_events;
 use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::utils::TypedEntity;
-use bevy::log::error;
-use bevy::prelude::{
-    warn, Commands, Component, Entity, EventReader, EventWriter, Query, Res, Time, With,
-};
+use bevy::prelude::{Component, Entity, EventWriter, Query, Res, Time, warn};
 use std::sync::{Arc, Mutex};
 
+/// Ships with this [TaskComponent] are currently moving towards another entity.
 #[derive(Component)]
 pub struct MoveToEntity {
+    /// The entity to which we are moving.
     pub target: TypedEntity,
+
+    /// Whether the ship should slow down as it reaches the target, or just zoom past it.
     pub stop_at_target: bool,
+
+    /// In case that we stop at the target, how far from it would be the perfect distance to do so?
+    /// 0 would be right on top.
     pub distance_to_target: f32,
 }
+impl TaskComponent for MoveToEntity {}
 
 pub fn move_to_entity(
     this_entity: Entity,
@@ -126,32 +128,5 @@ impl MoveToEntity {
             });
 
         send_completion_events(event_writer, task_completions);
-    }
-
-    pub fn complete_tasks(
-        mut commands: Commands,
-        mut event_reader: EventReader<TaskFinishedEvent<Self>>,
-        mut all_ships_with_task: Query<&mut TaskQueue, With<Self>>,
-        simulation_time: Res<SimulationTime>,
-        mut task_started_event_writers: AllTaskStartedEventWriters,
-    ) {
-        let now = simulation_time.now();
-
-        for event in event_reader.read() {
-            if let Ok(mut queue) = all_ships_with_task.get_mut(event.entity) {
-                tasks::remove_task_and_add_next_in_queue::<Self>(
-                    &mut commands,
-                    event.entity,
-                    &mut queue,
-                    now,
-                    &mut task_started_event_writers,
-                );
-            } else {
-                error!(
-                    "Unable to find entity for task completion: {}",
-                    event.entity
-                );
-            }
-        }
     }
 }

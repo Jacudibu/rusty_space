@@ -1,17 +1,16 @@
 use crate::components::{ConstructionSiteComponent, Ship};
 use crate::session_data::ShipConfigurationManifest;
-use crate::simulation::prelude::{SimulationTime, TaskFinishedEvent, TaskQueue};
-use crate::simulation::ship_ai::task_started_event::{
-    AllTaskStartedEventWriters, TaskStartedEvent,
-};
-use crate::simulation::ship_ai::tasks;
+use crate::simulation::prelude::TaskComponent;
+use crate::simulation::ship_ai::task_started_event::TaskStartedEvent;
 use crate::utils::{ConstructionSiteEntity, ShipEntity};
-use bevy::prelude::{Commands, Component, EventReader, Query, Res, With, error};
+use bevy::prelude::{Component, EventReader, Query, Res, error};
 
+/// Ships with this [TaskComponent] are actively working on a construction site.
 #[derive(Component)]
 pub struct ConstructTaskComponent {
     pub target: ConstructionSiteEntity,
 }
+impl TaskComponent for ConstructTaskComponent {}
 
 impl ConstructTaskComponent {
     pub fn on_task_started(
@@ -42,33 +41,6 @@ impl ConstructTaskComponent {
 
     pub fn cancel_task() {
         // remove build_power from construction site
-    }
-
-    pub fn complete_tasks(
-        mut commands: Commands,
-        mut event_reader: EventReader<TaskFinishedEvent<Self>>,
-        mut all_ships_with_task: Query<&mut TaskQueue, With<Self>>,
-        simulation_time: Res<SimulationTime>,
-        mut task_started_event_writers: AllTaskStartedEventWriters,
-    ) {
-        let now = simulation_time.now();
-
-        for event in event_reader.read() {
-            if let Ok(mut queue) = all_ships_with_task.get_mut(event.entity) {
-                tasks::remove_task_and_add_next_in_queue::<Self>(
-                    &mut commands,
-                    event.entity,
-                    &mut queue,
-                    now,
-                    &mut task_started_event_writers,
-                );
-            } else {
-                error!(
-                    "Unable to find entity for task completion: {}",
-                    event.entity
-                );
-            }
-        }
     }
 }
 

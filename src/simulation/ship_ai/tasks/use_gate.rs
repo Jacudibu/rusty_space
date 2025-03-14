@@ -7,34 +7,45 @@ use std::sync::{Arc, Mutex};
 use crate::components::{Gate, InSector, SectorComponent};
 use crate::constants;
 use crate::simulation::physics::ShipVelocity;
-use crate::simulation::prelude::SimulationTime;
+use crate::simulation::prelude::TaskComponent;
 use crate::simulation::ship_ai::task_finished_event::TaskFinishedEvent;
-use crate::simulation::ship_ai::task_queue::TaskQueue;
 use crate::simulation::ship_ai::task_result::TaskResult;
-use crate::simulation::ship_ai::task_started_event::{
-    AllTaskStartedEventWriters, TaskStartedEvent,
-};
-use crate::simulation::ship_ai::tasks;
+use crate::simulation::ship_ai::task_started_event::TaskStartedEvent;
 use crate::simulation::ship_ai::tasks::send_completion_events;
 use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::utils::{GateEntity, SectorEntity};
 use crate::utils::{ShipEntity, interpolation};
 
+/// Ships with this [TaskComponent] are currently using a [Gate].
 #[derive(Component)]
 pub struct UseGate {
+    /// How far along the line connecting the two gates we are.
     pub progress: f32,
+
+    /// The current state of our little journey.
     pub traversal_state: GateTraversalState,
+
+    /// The entity of the Gate we entered
     pub enter_gate: GateEntity,
+
+    /// The sector we are about to enter when finishing this task.
     pub exit_sector: SectorEntity,
 }
 
+impl TaskComponent for UseGate {}
+
+/// Gate Traversal is split up into different states
+/// Ranging from "Getting sucked into it" to "traversing along the connection at full speed"
 #[derive(Default)]
 pub enum GateTraversalState {
+    /// The task has just been created, used to set up starting values
     #[default]
     JustCreated,
-    BlendingIntoMotion {
-        origin: Vec2,
-    },
+
+    /// The ship is still speeding up.
+    BlendingIntoMotion { origin: Vec2 },
+
+    /// The ship is zooming along the line at full speed.
     TraversingLine,
 }
 
@@ -132,15 +143,11 @@ impl UseGate {
     pub fn complete_tasks(
         mut commands: Commands,
         mut event_reader: EventReader<TaskFinishedEvent<Self>>,
-        mut all_ships_with_task: Query<(&mut TaskQueue, &Self, &mut ShipVelocity)>,
+        mut all_ships_with_task: Query<(&Self, &mut ShipVelocity)>,
         mut all_sectors: Query<&mut SectorComponent>,
-        simulation_time: Res<SimulationTime>,
-        mut task_started_event_writers: AllTaskStartedEventWriters,
     ) {
-        let now = simulation_time.now();
-
         for event in event_reader.read() {
-            if let Ok((mut queue, task, mut velocity)) = all_ships_with_task.get_mut(event.entity) {
+            if let Ok((task, mut velocity)) = all_ships_with_task.get_mut(event.entity) {
                 all_sectors
                     .get_mut(task.exit_sector.into())
                     .unwrap()
@@ -151,14 +158,6 @@ impl UseGate {
                     );
 
                 velocity.forward *= 0.5;
-
-                tasks::remove_task_and_add_next_in_queue::<Self>(
-                    &mut commands,
-                    event.entity,
-                    &mut queue,
-                    now,
-                    &mut task_started_event_writers,
-                );
             } else {
                 error!(
                     "Unable to find entity for task completion: {}",

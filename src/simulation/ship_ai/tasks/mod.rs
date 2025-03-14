@@ -1,5 +1,5 @@
 use bevy::ecs::system::EntityCommands;
-use bevy::prelude::{Commands, Component, Entity, EventWriter, Mut, Query};
+use bevy::prelude::{Commands, Entity, EventWriter, Mut, Query};
 use std::sync::{Arc, Mutex};
 
 mod awaiting_signal;
@@ -16,6 +16,7 @@ mod use_gate;
 use crate::simulation::prelude::{CurrentSimulationTimestamp, TaskFinishedEvent, TaskQueue};
 
 use crate::components::InteractionQueue;
+use crate::simulation::ship_ai::TaskComponent;
 use crate::simulation::ship_ai::task_started_event::AllTaskStartedEventWriters;
 pub use {
     awaiting_signal::AwaitingSignal, construct::ConstructTaskComponent,
@@ -24,7 +25,7 @@ pub use {
     undock::Undock, use_gate::UseGate,
 };
 
-pub fn send_completion_events<T: Component>(
+pub fn send_completion_events<T: TaskComponent>(
     mut event_writer: EventWriter<TaskFinishedEvent<T>>,
     task_completions: Arc<Mutex<Vec<TaskFinishedEvent<T>>>>,
 ) {
@@ -41,7 +42,7 @@ pub fn send_completion_events<T: Component>(
     }
 }
 
-pub fn remove_task_and_add_next_in_queue<T: Component>(
+pub fn remove_task_and_add_next_in_queue<T: TaskComponent>(
     commands: &mut Commands,
     entity: Entity,
     queue: &mut Mut<TaskQueue>,
@@ -58,7 +59,7 @@ pub fn remove_task_and_add_next_in_queue<T: Component>(
     );
 }
 
-pub fn remove_task_and_add_next_in_queue_to_entity_commands<T: Component>(
+pub fn remove_task_and_add_next_in_queue_to_entity_commands<T: TaskComponent>(
     entity: Entity,
     entity_commands: &mut EntityCommands,
     queue: &mut Mut<TaskQueue>,

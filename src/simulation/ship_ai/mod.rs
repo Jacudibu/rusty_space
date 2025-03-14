@@ -17,3 +17,8 @@ pub use task_finished_event::TaskFinishedEvent;
 pub use task_inside_queue::TaskInsideQueue;
 pub use task_queue::TaskQueue;
 pub use tasks::{AwaitingSignal, ConstructTaskComponent};
+
+use bevy::prelude::Component;
+
+/// Marker trait to denote that a struct is used to describe Ship Tasks.
+pub trait TaskComponent: Component + Send + Sync + 'static {}

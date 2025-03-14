@@ -1,26 +1,33 @@
 use crate::components::Inventory;
 use crate::game_data::ItemManifest;
-use crate::simulation::prelude::{CurrentSimulationTimestamp, SimulationTime, SimulationTimestamp};
+use crate::simulation::prelude::{
+    CurrentSimulationTimestamp, SimulationTime, SimulationTimestamp, TaskComponent,
+};
 use crate::simulation::production::InventoryUpdateForProductionEvent;
 use crate::simulation::ship_ai::task_finished_event::TaskFinishedEvent;
-use crate::simulation::ship_ai::task_queue::TaskQueue;
 use crate::simulation::ship_ai::task_result::TaskResult;
-use crate::simulation::ship_ai::task_started_event::{
-    AllTaskStartedEventWriters, TaskStartedEvent,
-};
-use crate::simulation::ship_ai::tasks;
+use crate::simulation::ship_ai::task_started_event::TaskStartedEvent;
 use crate::simulation::ship_ai::tasks::send_completion_events;
 use crate::utils::ExchangeWareData;
 use crate::utils::{TradeIntent, TypedEntity};
-use bevy::prelude::{Commands, Component, Entity, EventReader, EventWriter, Query, Res, error};
+use bevy::prelude::{Component, Entity, EventReader, EventWriter, Query, Res, error};
 use std::sync::{Arc, Mutex};
 
+/// Ships with this [TaskComponent] are currently trading wares with the specified target entity.
+/// (They basically just wait until a timer runs out and then finish the transfer)
 #[derive(Component)]
 pub struct ExchangeWares {
+    /// The [SimulationTimestamp] at which this transaction is supposed to finish.
     pub finishes_at: SimulationTimestamp,
+
+    /// The entity representing our trading partner.
     pub target: TypedEntity,
+
+    /// Further information on which wares are going to be exchanged.
     pub data: ExchangeWareData,
 }
+
+impl TaskComponent for ExchangeWares {}
 
 impl ExchangeWares {
     fn run(&self, now: CurrentSimulationTimestamp) -> TaskResult {
@@ -86,32 +93,19 @@ impl ExchangeWares {
     }
 
     pub fn complete_tasks(
-        mut commands: Commands,
         mut event_reader: EventReader<TaskFinishedEvent<Self>>,
-        mut all_ships_with_task: Query<(&mut TaskQueue, &Self)>,
+        mut all_ships_with_task: Query<&Self>,
         mut all_storages: Query<&mut Inventory>,
         mut event_writer: EventWriter<InventoryUpdateForProductionEvent>,
-        simulation_time: Res<SimulationTime>,
         item_manifest: Res<ItemManifest>,
-        mut task_started_event_writers: AllTaskStartedEventWriters,
     ) {
-        let now = simulation_time.now();
-
         for event in event_reader.read() {
-            if let Ok((mut queue, task)) = all_ships_with_task.get_mut(event.entity) {
+            if let Ok(task) = all_ships_with_task.get_mut(event.entity) {
                 task.complete(
                     event.entity,
                     &mut all_storages,
                     &mut event_writer,
                     &item_manifest,
-                );
-
-                tasks::remove_task_and_add_next_in_queue::<Self>(
-                    &mut commands,
-                    event.entity,
-                    &mut queue,
-                    now,
-                    &mut task_started_event_writers,
                 );
             } else {
                 error!(

@@ -2,16 +2,13 @@ use crate::components::{GasHarvestingComponent, InteractionQueue, Inventory};
 use crate::constants;
 use crate::game_data::{ItemId, ItemManifest};
 use crate::simulation::prelude::{
-    AwaitingSignal, CurrentSimulationTimestamp, SimulationTime, SimulationTimestamp,
+    AwaitingSignal, CurrentSimulationTimestamp, SimulationTime, SimulationTimestamp, TaskComponent,
 };
 use crate::simulation::ship_ai::task_finished_event::TaskFinishedEvent;
-use crate::simulation::ship_ai::task_queue::TaskQueue;
-use crate::simulation::ship_ai::task_started_event::AllTaskStartedEventWriters;
-use crate::simulation::ship_ai::tasks;
 use crate::simulation::ship_ai::tasks::{finish_interaction, send_completion_events};
 use crate::utils::PlanetEntity;
 use bevy::log::error;
-use bevy::prelude::{Commands, Component, Entity, EventReader, EventWriter, Query, Res};
+use bevy::prelude::{Component, Entity, EventReader, EventWriter, Query, Res};
 use std::sync::{Arc, Mutex};
 
 enum TaskResult {
@@ -20,12 +17,20 @@ enum TaskResult {
     Finished,
 }
 
+/// Ships with this [TaskComponent] are currently harvesting gas from a gas giant.
 #[derive(Component)]
 pub struct HarvestGas {
+    /// The entity of the gas giant from which we are harvesting.
     pub target: PlanetEntity,
+
+    /// The gas which we are collecting
     pub gas: ItemId,
+
+    /// A [SimulationTimestamp] to denote when the next inventory update occurs.
     next_update: SimulationTimestamp,
 }
+
+impl TaskComponent for HarvestGas {}
 
 impl HarvestGas {
     pub fn new(target: PlanetEntity, gas: ItemId, now: CurrentSimulationTimestamp) -> Self {
@@ -89,30 +94,17 @@ impl HarvestGas {
     }
 
     pub fn complete_tasks(
-        mut commands: Commands,
         mut event_reader: EventReader<TaskFinishedEvent<Self>>,
-        mut all_ships_with_task: Query<(&mut TaskQueue, &Self)>,
+        mut all_ships_with_task: Query<&Self>,
         mut interaction_queues: Query<&mut InteractionQueue>,
-        simulation_time: Res<SimulationTime>,
         mut signal_writer: EventWriter<TaskFinishedEvent<AwaitingSignal>>,
-        mut task_started_event_writers: AllTaskStartedEventWriters,
     ) {
-        let now = simulation_time.now();
-
         for event in event_reader.read() {
-            if let Ok((mut queue, task)) = all_ships_with_task.get_mut(event.entity) {
+            if let Ok(task) = all_ships_with_task.get_mut(event.entity) {
                 finish_interaction(
                     task.target.into(),
                     &mut interaction_queues,
                     &mut signal_writer,
-                );
-
-                tasks::remove_task_and_add_next_in_queue::<Self>(
-                    &mut commands,
-                    event.entity,
-                    &mut queue,
-                    now,
-                    &mut task_started_event_writers,
                 );
             } else {
                 error!(

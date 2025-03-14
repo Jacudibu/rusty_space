@@ -1,13 +1,14 @@
-use bevy::prelude::{Component, Entity, Event};
+use crate::simulation::prelude::TaskComponent;
+use bevy::prelude::{Entity, Event};
 use std::marker::PhantomData;
 
 #[derive(Event, Copy, Clone)]
-pub struct TaskFinishedEvent<T: Component> {
+pub struct TaskFinishedEvent<T: TaskComponent> {
     t: PhantomData<T>,
     pub entity: Entity,
 }
 
-impl<T: Component> TaskFinishedEvent<T> {
+impl<T: TaskComponent> TaskFinishedEvent<T> {
     pub fn new(entity: Entity) -> Self {
         Self {
             entity,
