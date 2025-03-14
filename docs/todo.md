@@ -16,6 +16,7 @@ Too lazy to manage a whole kanban board and issues for these things yet. Roughly
 ~~- Individual inventory capacities for each item~~
 ~~- Figure out if we want to separate weight and volume, or if this is just an unnecessary complication... (hint to future-me: it probably is)~~
 - Unit tests for `InventoryComponent`
+- Remove reservation for items in production lines
 
 # Automated Trade Order System
 - Automatically generate relevant buy & sell orders for stations, depending on existing station modules. Replaces more hardcoded stuff.
@@ -27,11 +28,11 @@ Too lazy to manage a whole kanban board and issues for these things yet. Roughly
 
 # Station Building
 
-- Build-Site Entities
+~~- Build-Site Entities~~
 - Construction Materials go into separate inventory
-- Builder ships build stations (builders being near the construction site should be enough to apply their constant construction strength)
-- Multiple builders speed up construction (maybe not completely linearly, so players might want to consider bigger construction ships over a swarm of cheap small ones)
-  - Builders just register themselves to a construction site, and the construction site itself actually increments its progress each tick
+~~- Builder ships build stations (builders being near the construction site should be enough to apply their constant construction strength)~~
+~~- Multiple builders speed up construction (maybe not completely linearly, so players might want to consider bigger construction ships over a swarm of cheap small ones)~~
+  ~~- Builders just register themselves to a construction site, and the construction site itself actually increments its progress each tick~~
 - Station module costs increase with station size
 
 - New stations can be created in a running game
