@@ -4,13 +4,14 @@ use crate::components::{
 use crate::game_data::{ConstructableModuleId, ProductionModuleManifest, ShipyardModuleManifest};
 use crate::simulation::prelude::{
     ConstructTaskComponent, ProductionComponent, ProductionModule, ShipyardComponent,
-    ShipyardModule, TaskQueue,
+    ShipyardModule,
 };
+use crate::simulation::ship_ai::TaskFinishedEvent;
 use crate::states::SimulationState;
 use crate::utils::ConstructionSiteEntity;
 use bevy::prelude::{
-    App, Commands, Entity, Event, EventReader, EventWriter, Fixed, FixedPostUpdate, FixedUpdate,
-    IntoSystemConfigs, Plugin, Query, Res, Time, error, in_state,
+    App, Commands, Entity, Event, EventReader, EventWriter, Fixed, FixedUpdate, IntoSystemConfigs,
+    Plugin, Query, Res, Time, error, in_state,
 };
 use leafwing_manifest::manifest::Manifest;
 
@@ -91,7 +92,7 @@ fn construction_site_finisher(
         Option<&mut ProductionComponent>,
         Option<&mut ShipyardComponent>,
     )>,
-    mut all_ships: Query<&mut TaskQueue>,
+    mut task_finished_event_writer: EventWriter<TaskFinishedEvent<ConstructTaskComponent>>,
     mut all_sectors: Query<&mut SectorComponent>,
     production_manifest: Res<ProductionModuleManifest>,
 ) {
@@ -175,12 +176,12 @@ fn construction_site_finisher(
         if construction_site.build_order.is_empty() {
             // TODO: This should probably also be handled as an event?
             station.construction_site = None;
-            for x in &construction_site.construction_ships {
-                // TODO: This feels ugly. Might be better to have a TaskQueue::cancel_running_task<T>() function or similar, but the generic there is awkward as well.
-                commands.entity(x.into()).remove::<ConstructTaskComponent>();
-                all_ships.get_mut(x.into()).unwrap().pop_front();
-            }
-
+            task_finished_event_writer.send_batch(
+                construction_site
+                    .construction_ships
+                    .iter()
+                    .map(|x| TaskFinishedEvent::new(x.into())),
+            );
             all_sectors
                 .get_mut(in_sector.into())
                 .unwrap()

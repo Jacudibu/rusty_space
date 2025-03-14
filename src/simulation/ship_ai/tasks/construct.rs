@@ -1,8 +1,12 @@
 use crate::components::{ConstructionSiteComponent, Ship};
 use crate::session_data::ShipConfigurationManifest;
-use crate::simulation::ship_ai::task_started_event::TaskStartedEvent;
+use crate::simulation::prelude::{SimulationTime, TaskFinishedEvent, TaskQueue};
+use crate::simulation::ship_ai::task_started_event::{
+    AllTaskStartedEventWriters, TaskStartedEvent,
+};
+use crate::simulation::ship_ai::tasks;
 use crate::utils::{ConstructionSiteEntity, ShipEntity};
-use bevy::prelude::{Component, EventReader, Query, Res, error};
+use bevy::prelude::{Commands, Component, EventReader, Query, Res, With, error};
 
 #[derive(Component)]
 pub struct ConstructTaskComponent {
@@ -32,15 +36,39 @@ impl ConstructTaskComponent {
         }
     }
 
-    pub fn run_tasks() {}
+    pub fn run_tasks() {
+        // Individual ships don't do anything whilst constructing, that's handled inside construction_site_updater
+    }
 
     pub fn cancel_task() {
         // remove build_power from construction site
     }
 
-    pub fn complete_tasks() {
-        // since the build site disappears when construction is finished, being unable to find the related entity is our local completion condition, but checking that for every builder is sorta inefficient
-        // maybe this could be akin to an interaction queue on the construction site which notifies us when it's done?
+    pub fn complete_tasks(
+        mut commands: Commands,
+        mut event_reader: EventReader<TaskFinishedEvent<Self>>,
+        mut all_ships_with_task: Query<&mut TaskQueue, With<Self>>,
+        simulation_time: Res<SimulationTime>,
+        mut task_started_event_writers: AllTaskStartedEventWriters,
+    ) {
+        let now = simulation_time.now();
+
+        for event in event_reader.read() {
+            if let Ok(mut queue) = all_ships_with_task.get_mut(event.entity) {
+                tasks::remove_task_and_add_next_in_queue::<Self>(
+                    &mut commands,
+                    event.entity,
+                    &mut queue,
+                    now,
+                    &mut task_started_event_writers,
+                );
+            } else {
+                error!(
+                    "Unable to find entity for task completion: {}",
+                    event.entity
+                );
+            }
+        }
     }
 }
 

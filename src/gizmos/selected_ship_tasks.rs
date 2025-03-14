@@ -53,8 +53,10 @@ pub fn draw_selected_ship_task(
                 }
                 TaskInsideQueue::Undock => {}
                 TaskInsideQueue::Construct { target } => {
-                    let target_pos = all_transforms.get(target.into()).unwrap().translation;
-                    gizmos.line(current_position, target_pos, GIZMO_COLOR);
+                    // Task target might become invalid during the frame where construction is finished
+                    if let Ok(target_transform) = all_transforms.get(target.into()) {
+                        gizmos.line(current_position, target_transform.translation, GIZMO_COLOR);
+                    }
                 }
             }
         }
