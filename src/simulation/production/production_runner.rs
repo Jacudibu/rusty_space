@@ -173,8 +173,7 @@ fn process_finished_item_production(
     // TODO: This kind of reservation shouldn't happen. Testing this every couple seconds is fairly trivial, even with thousands of stations
     // Testing if there's enough inventory space to truly finish production is not necessary right now - it's already been accounted for with planned_incoming.
     let recipe = recipes
-        // TODO: change to priority queue to make sure this won't fail with multiple recipes & don't use .remove
-        .get_by_ref(&module.running_recipes.remove(0).recipe)
+        .get_by_ref(&module.running_recipes.pop().unwrap().recipe)
         .expect("Recipe IDs should always be valid!");
     inventory.finish_production(recipe);
 }
