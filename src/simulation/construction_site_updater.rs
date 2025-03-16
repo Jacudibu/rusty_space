@@ -113,56 +113,43 @@ fn construction_site_finisher(
                 if let Some(mut production) = production {
                     match production.modules.get_mut(&id) {
                         None => {
-                            production.modules.insert(
-                                id,
-                                ProductionModule {
-                                    amount: 1,
-                                    queued_recipes: Default::default(),
-                                    running_recipes: Default::default(),
-                                },
-                            );
+                            production.modules.insert(id, ProductionModule::default());
                         }
                         Some(module) => {
-                            module.amount += 1; // TODO: This shouldn't increase the amount of running recipes, so things need to be split
+                            module.amount += 1;
+                            // TODO: Send some "New Production module ready" event so stations start using it immediately
                         }
                     }
                 } else {
-                    let production = ProductionComponent {
-                        modules: [(
-                            id,
-                            ProductionModule {
-                                amount: 1,
-                                queued_recipes: Default::default(),
-                                running_recipes: Default::default(),
-                            },
-                        )]
-                        .into(),
+                    let component = ProductionComponent {
+                        modules: [(id, ProductionModule::default())].into(),
                     };
 
                     commands
                         .entity(construction_site.station.into())
-                        .insert(production);
+                        .insert(component);
                 }
             }
             ConstructableModuleId::ShipyardModule(id) => {
-                let Some(mut shipyards) = shipyards else {
-                    todo!();
-                };
-                match shipyards.modules.get_mut(&id) {
-                    None => {
-                        // TODO
-                        shipyards.modules.insert(
-                            id,
-                            ShipyardModule {
-                                amount: 1,
-                                active: Vec::new(),
-                            },
-                        );
+                if let Some(mut shipyards) = shipyards {
+                    match shipyards.modules.get_mut(&id) {
+                        None => {
+                            shipyards.modules.insert(id, ShipyardModule::default());
+                        }
+                        Some(module) => {
+                            module.amount += 1;
+                            // TODO: Send some "New Shipyard module ready" event so shipyards can queue an additional ship
+                        }
                     }
-                    Some(module) => {
-                        module.amount += 1;
-                        // TODO: Send some "New Shipyard module ready" event so shipyards can queue an additional ship
-                    }
+                } else {
+                    let component = ShipyardComponent {
+                        modules: [(id, ShipyardModule::default())].into(),
+                        queue: Default::default(),
+                    };
+
+                    commands
+                        .entity(construction_site.station.into())
+                        .insert(component);
                 }
             }
         }

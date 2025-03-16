@@ -4,12 +4,12 @@ use crate::simulation::prelude::SimulationTimestamp;
 use bevy::prelude::Component;
 use bevy::utils::HashMap;
 
-/// A component on [StationEntity]s that keeps track of ship building modules and requests.
+/// A component on [StationEntity]s which keeps track of ship building modules and requests.
 #[derive(Component)]
 pub struct ShipyardComponent {
     pub modules: HashMap<ShipyardModuleId, ShipyardModule>,
 
-    /// The ships that are queued to be built in the near future at this shipyard.
+    /// The ships which are queued to be built in the near future at this shipyard.
     pub queue: Vec<ShipConfigId>,
 }
 
@@ -19,6 +19,15 @@ pub struct ShipyardModule {
 
     /// A list of ship orders which are actively being built right now
     pub active: Vec<OngoingShipConstructionOrder>,
+}
+
+impl Default for ShipyardModule {
+    fn default() -> Self {
+        Self {
+            amount: 1,
+            active: Default::default(),
+        }
+    }
 }
 
 /// Holds data detailing one specific ship that's currently being worked on within a shipyard.

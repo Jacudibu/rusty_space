@@ -25,6 +25,16 @@ pub struct ProductionModule {
     pub running_recipes: BinaryHeap<RunningProductionQueueElement>,
 }
 
+impl Default for ProductionModule {
+    fn default() -> Self {
+        Self {
+            amount: 1,
+            queued_recipes: Default::default(),
+            running_recipes: Default::default(),
+        }
+    }
+}
+
 /// Represents a single element inside a production queue.
 pub struct ProductionQueueElement {
     /// The [RecipeId] of the queued production run.
