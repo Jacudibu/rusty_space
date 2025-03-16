@@ -1,8 +1,8 @@
 use crate::components::{
-    BuyOrders, ConstructionSiteComponent, InteractionQueue, Inventory, SectorComponent,
-    SelectableEntity, SellOrders, StationComponent,
+    BuyOrders, ConstructionSiteComponent, ConstructionSiteStatus, InteractionQueue, Inventory,
+    SectorComponent, SelectableEntity, SellOrders, StationComponent,
 };
-use crate::game_data::{ItemData, ItemManifest, RecipeManifest};
+use crate::game_data::{ConstructableModuleId, ItemData, ItemManifest, RecipeManifest};
 use crate::persistence::{
     ConstructionSiteIdMap, PersistentConstructionSiteId, PersistentStationId, StationIdMap,
 };
@@ -15,12 +15,44 @@ use bevy::core::Name;
 use bevy::math::Vec2;
 use bevy::prelude::{Commands, Query, Sprite, default};
 use bevy::sprite::Anchor;
+use std::ops::Not;
 
+/// Spawn Data for new Construction Sites.
+pub struct ConstructionSiteSpawnData {
+    /// The [PersistentEntityId] our construction site will have. Defaults to the next available id.
+    pub id: PersistentConstructionSiteId,
+
+    /// The modules which should be built. This should never be empty.
+    pub build_order: Vec<ConstructableModuleId>,
+
+    /// The current progress in building this site. Defaults to 0.
+    pub current_progress: f32,
+}
+
+impl ConstructionSiteSpawnData {
+    /// Validates the provided arguments and returns a new instance of [ConstructionSiteSpawnData] with defaults for all values which should only be set when loading save games.
+    pub fn new(build_order: Vec<ConstructableModuleId>) -> Self {
+        debug_assert!(
+            build_order.is_empty().not(),
+            "New ConstructionSite build_order should never be empty!"
+        );
+
+        Self {
+            id: PersistentConstructionSiteId::next(),
+            build_order,
+            current_progress: 0.0,
+        }
+    }
+}
+
+/// Creates a new Station Entity with all the required bells and whistles attached.
+/// Unless we are loading a save file, new stations should always spawn with a construction site and no modules built or.
 #[allow(clippy::too_many_arguments)] // It's hopeless... :')
 pub fn spawn_station(
     commands: &mut Commands,
     sector_query: &mut Query<&mut SectorComponent>,
     station_id_map: &mut StationIdMap,
+    construction_site_id_map: &mut ConstructionSiteIdMap,
     sprites: &SpriteHandles,
     id: PersistentStationId,
     name: &str,
@@ -32,6 +64,7 @@ pub fn spawn_station(
     shipyard: Option<ShipyardComponent>,
     item_manifest: &ItemManifest,
     recipe_manifest: &RecipeManifest,
+    construction_site: Option<ConstructionSiteSpawnData>,
 ) -> StationEntity {
     let mut sector = sector_query.get_mut(sector_entity.into()).unwrap();
 
@@ -63,7 +96,6 @@ pub fn spawn_station(
         .spawn((
             Name::new(name.to_string()),
             SelectableEntity::Station,
-            StationComponent::new(id, None),
             Sprite::from_image(sprites.station.clone()),
             simulation_transform.as_bevy_transform(constants::z_layers::STATION),
             simulation_transform,
@@ -71,6 +103,25 @@ pub fn spawn_station(
             SimulationScale::default(),
         ))
         .id();
+
+    sector.add_station(commands, sector_entity, entity.into());
+
+    let construction_site = construction_site.map(|construction_site| {
+        spawn_construction_site(
+            commands,
+            construction_site_id_map,
+            sector_query,
+            sprites,
+            name,
+            local_pos,
+            sector_entity,
+            entity.into(),
+            construction_site,
+        )
+    });
+
+    let mut entity_commands = commands.entity(entity);
+    entity_commands.insert(StationComponent::new(id, construction_site));
 
     let buy_sell_and_production_count = {
         // This doesn't yet account for duplicates in case we ever want to copy this somewhere after the mock-data era is over
@@ -132,12 +183,10 @@ pub fn spawn_station(
     }
 
     if !buys.is_empty() {
-        commands
-            .entity(entity)
-            .insert(BuyOrders::mock(&buys, &sells));
+        entity_commands.insert(BuyOrders::mock(&buys, &sells));
     }
     if !sells.is_empty() {
-        commands.entity(entity).insert(SellOrders::mock(
+        entity_commands.insert(SellOrders::mock(
             &buys,
             &sells,
             &mut inventory,
@@ -146,35 +195,51 @@ pub fn spawn_station(
     }
 
     if let Some(production) = production {
-        commands.entity(entity).insert(production);
+        entity_commands.insert(production);
     }
 
     if let Some(shipyard) = shipyard {
-        commands.entity(entity).insert(shipyard);
+        entity_commands.insert(shipyard);
     }
 
-    commands.entity(entity).insert(inventory);
+    entity_commands.insert(inventory);
 
     station_id_map.insert(id, entity.into());
-    sector.add_station(commands, sector_entity, entity.into());
 
     entity.into()
 }
 
+/// Spawns a construction site for the specified station entity.
+/// This can happen in two situations:
+///
+/// a) A new station was just spawned. A construction site will be automatically attached to it.
+///
+/// b) An existing construction site has triggered expansion (not yet implemented)
 #[allow(clippy::too_many_arguments)] // It's hopeless... :')
-pub fn spawn_construction_site(
+fn spawn_construction_site(
     commands: &mut Commands,
-    construction_site: ConstructionSiteComponent,
     construction_site_id_map: &mut ConstructionSiteIdMap,
     sector_query: &mut Query<&mut SectorComponent>,
     sprites: &SpriteHandles,
-    id: PersistentConstructionSiteId,
-    name: &str,
+    station_name: &str,
     local_pos: Vec2,
     sector_entity: SectorEntity,
+    station_entity: StationEntity,
+    data: ConstructionSiteSpawnData,
 ) -> ConstructionSiteEntity {
     let mut sector = sector_query.get_mut(sector_entity.into()).unwrap();
     let simulation_transform = SimulationTransform::from_translation(local_pos + sector.world_pos);
+
+    // TODO: implement proper construction site... constructing
+    let construction_site = ConstructionSiteComponent {
+        id: data.id,
+        station: station_entity,
+        build_order: data.build_order,
+        current_build_progress: data.current_progress,
+        total_build_power: 0,
+        construction_ships: Default::default(),
+        status: ConstructionSiteStatus::MissingBuilders,
+    };
 
     // TODO: Build site has buy orders and an inventory
     // TODO: Figure out the least painful way to sync simulation transform to the position of the station
@@ -182,7 +247,7 @@ pub fn spawn_construction_site(
     //         (only necessary in sectors with some form of perpetual motion)
     let entity = commands
         .spawn((
-            Name::new(name.to_string() + " (Build Site)"),
+            Name::new(station_name.to_string() + " (Build Site)"),
             construction_site,
             simulation_transform.as_bevy_transform(constants::z_layers::BUILD_SITE),
             Sprite {
@@ -200,7 +265,7 @@ pub fn spawn_construction_site(
         .id();
 
     let entity = ConstructionSiteEntity::from(entity);
-    construction_site_id_map.insert(id, entity);
+    construction_site_id_map.insert(data.id, entity);
     sector.add_construction_site(commands, sector_entity, entity);
     entity
 }

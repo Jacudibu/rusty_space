@@ -1,24 +1,21 @@
-use crate::components::{ConstructionSiteComponent, ConstructionSiteStatus, SectorComponent};
+use crate::components::SectorComponent;
 use crate::game_data::{
     ConstructableModuleId, ItemData, ItemId, ItemManifest, ProductionModuleId,
     REFINED_METALS_PRODUCTION_MODULE_ID, RecipeId, RecipeManifest, ShipyardModuleId,
 };
 use crate::persistence::data::v1::*;
 use crate::persistence::local_hex_position::LocalHexPosition;
-use crate::persistence::{
-    ConstructionSiteIdMap, PersistentConstructionSiteId, PersistentStationId, SectorIdMap,
-    StationIdMap,
-};
+use crate::persistence::{ConstructionSiteIdMap, PersistentStationId, SectorIdMap, StationIdMap};
 use crate::simulation::prelude::{ProductionQueueElement, RunningProductionQueueElement};
 use crate::simulation::production::{
     OngoingShipConstructionOrder, ProductionComponent, ProductionModule, ShipyardComponent,
     ShipyardModule,
 };
+use crate::utils::entity_spawners::ConstructionSiteSpawnData;
 use crate::utils::{PriceRange, PriceSetting, entity_spawners};
 use crate::{SpriteHandles, constants};
 use bevy::ecs::system::SystemParam;
 use bevy::prelude::{Commands, Query, Res};
-use bevy::utils::HashSet;
 use bevy::utils::hashbrown::HashMap;
 
 #[derive(SystemParam)]
@@ -180,10 +177,11 @@ impl StationSaveData {
         let production = self.production_modules.clone().map(|x| x.parse());
         let shipyard = self.shipyard_modules.clone().map(|x| x.parse());
 
-        let station_entity = entity_spawners::spawn_station(
+        entity_spawners::spawn_station(
             &mut args.commands,
             &mut args.sectors,
             station_id_map,
+            construction_site_id_map,
             &args.sprites,
             self.id,
             &self.name,
@@ -195,37 +193,10 @@ impl StationSaveData {
             shipyard,
             &args.items,
             &args.recipes,
+            Some(ConstructionSiteSpawnData::new(vec![
+                ConstructableModuleId::ProductionModule(REFINED_METALS_PRODUCTION_MODULE_ID),
+            ])),
         );
-
-        // TODO: This should be part of a construction site builder or something...
-        // In order to properly link up entities, stations need to be already spawned
-        let con_id = PersistentConstructionSiteId::next();
-        // TODO: implement proper construction site... constructing
-        let construction_site = ConstructionSiteComponent {
-            id: con_id, // TODO: ID must be persisted in EntityIdMap. Or we skip the entire thing and just refer to the StationId?
-            station: station_entity,
-            build_order: vec![ConstructableModuleId::ProductionModule(
-                REFINED_METALS_PRODUCTION_MODULE_ID,
-            )],
-            current_build_progress: 0.0,
-            total_build_power: 0,
-            construction_ships: HashSet::new(),
-            status: ConstructionSiteStatus::MissingBuilders,
-        };
-
-        entity_spawners::spawn_construction_site(
-            &mut args.commands,
-            construction_site,
-            construction_site_id_map,
-            &mut args.sectors,
-            &args.sprites,
-            con_id,
-            &self.name,
-            self.position.position,
-            *sector_entity,
-        );
-
-        // TODO: Construction Site still needs to be added to station component
     }
 }
 
