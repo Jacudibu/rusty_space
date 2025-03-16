@@ -2,14 +2,14 @@ use crate::components::{
     BuyOrders, ConstructionSiteComponent, ConstructionSiteStatus, InteractionQueue, Inventory,
     SectorComponent, SelectableEntity, SellOrders, StationComponent,
 };
-use crate::game_data::{ConstructableModuleId, ItemData, ItemManifest, RecipeManifest};
+use crate::game_data::{ConstructableModuleId, ItemId, ItemManifest, RecipeManifest};
 use crate::persistence::{
     ConstructionSiteIdMap, PersistentConstructionSiteId, PersistentStationId, StationIdMap,
 };
 use crate::simulation::prelude::simulation_transform::SimulationScale;
 use crate::simulation::production::{ProductionComponent, ShipyardComponent};
 use crate::simulation::transform::simulation_transform::SimulationTransform;
-use crate::utils::{ConstructionSiteEntity, SectorEntity, StationEntity};
+use crate::utils::{ConstructionSiteEntity, SectorPosition, StationEntity};
 use crate::{SpriteHandles, constants};
 use bevy::core::Name;
 use bevy::math::Vec2;
@@ -17,14 +17,52 @@ use bevy::prelude::{Commands, Query, Sprite, default};
 use bevy::sprite::Anchor;
 use std::ops::Not;
 
+/// Spawn Data for new Stations.
+pub struct StationSpawnData {
+    /// The persistent entity id for this station.
+    pub id: PersistentStationId,
+    /// The name station should have
+    pub name: String,
+    /// The position at which this station should be spawned
+    pub sector_position: SectorPosition,
+    /// Unless we are loading a save file, new stations should always spawn with a construction site.
+    pub construction_site: Option<ConstructionSiteSpawnData>,
+    /// Buy data for this Station.
+    pub buys: Vec<ItemId>,
+    /// Sell data for this Station.
+    pub sells: Vec<ItemId>,
+    /// Production data for this Station.
+    pub production: Option<ProductionComponent>,
+    /// The shipyard component for this station.
+    pub shipyard: Option<ShipyardComponent>,
+}
+
+impl StationSpawnData {
+    /// Creates a new instance of [StationSpawnData] with defaults for all values which should only be set when loading save games.
+    pub fn new(
+        name: impl Into<String>,
+        construction_site: ConstructionSiteSpawnData,
+        sector_position: SectorPosition,
+    ) -> Self {
+        Self {
+            id: PersistentStationId::next(),
+            name: name.into(),
+            sector_position,
+            construction_site: Some(construction_site),
+            buys: Default::default(),
+            sells: Default::default(),
+            production: Default::default(),
+            shipyard: Default::default(),
+        }
+    }
+}
+
 /// Spawn Data for new Construction Sites.
 pub struct ConstructionSiteSpawnData {
     /// The [PersistentEntityId] our construction site will have. Defaults to the next available id.
     pub id: PersistentConstructionSiteId,
-
     /// The modules which should be built. This should never be empty.
     pub build_order: Vec<ConstructableModuleId>,
-
     /// The current progress in building this site. Defaults to 0.
     pub current_progress: f32,
 }
@@ -54,36 +92,34 @@ pub fn spawn_station(
     station_id_map: &mut StationIdMap,
     construction_site_id_map: &mut ConstructionSiteIdMap,
     sprites: &SpriteHandles,
-    id: PersistentStationId,
-    name: &str,
-    local_pos: Vec2,
-    sector_entity: SectorEntity,
-    buys: Vec<&ItemData>,
-    sells: Vec<&ItemData>,
-    production: Option<ProductionComponent>,
-    shipyard: Option<ShipyardComponent>,
     item_manifest: &ItemManifest,
     recipe_manifest: &RecipeManifest,
-    construction_site: Option<ConstructionSiteSpawnData>,
+    data: StationSpawnData,
 ) -> StationEntity {
-    let mut sector = sector_query.get_mut(sector_entity.into()).unwrap();
+    let mut sector = sector_query
+        .get_mut(data.sector_position.sector.into())
+        .unwrap();
 
-    let icon_sprite = match sells.first() {
+    // TODO: Station Icon should be part of spawn data
+    let icon_sprite = match data.sells.first() {
         None => {
-            if shipyard.is_some() {
+            if data.shipyard.is_some() {
                 sprites.icon_ship.clone()
             } else {
                 sprites.icon_unknown.clone()
             }
         }
-        Some(item) => item.icon.clone(),
+        Some(item) => item_manifest.get_by_ref(item).unwrap().icon.clone(),
     };
 
-    let simulation_transform = SimulationTransform::from_translation(local_pos + sector.world_pos);
+    let simulation_transform = SimulationTransform::from_translation(
+        data.sector_position.local_position + sector.world_pos,
+    );
 
+    // TODO: Icon EntityID needs to be persisted since we want to be able to change it
     let _icon_entity = commands
         .spawn((
-            Name::new(format!("{name} (Icon)")),
+            Name::new(format!("{} (Icon)", data.name)),
             Sprite {
                 image: icon_sprite,
                 ..default()
@@ -94,7 +130,7 @@ pub fn spawn_station(
 
     let entity = commands
         .spawn((
-            Name::new(name.to_string()),
+            Name::new(data.name.clone()),
             SelectableEntity::Station,
             Sprite::from_image(sprites.station.clone()),
             simulation_transform.as_bevy_transform(constants::z_layers::STATION),
@@ -104,30 +140,29 @@ pub fn spawn_station(
         ))
         .id();
 
-    sector.add_station(commands, sector_entity, entity.into());
+    sector.add_station(commands, data.sector_position.sector, entity.into());
 
-    let construction_site = construction_site.map(|construction_site| {
+    let construction_site = data.construction_site.map(|construction_site| {
         spawn_construction_site(
             commands,
             construction_site_id_map,
             sector_query,
             sprites,
-            name,
-            local_pos,
-            sector_entity,
+            &data.name,
+            data.sector_position,
             entity.into(),
             construction_site,
         )
     });
 
     let mut entity_commands = commands.entity(entity);
-    entity_commands.insert(StationComponent::new(id, construction_site));
+    entity_commands.insert(StationComponent::new(data.id, construction_site));
 
     let buy_sell_and_production_count = {
         // This doesn't yet account for duplicates in case we ever want to copy this somewhere after the mock-data era is over
         // (so items which are produced, sold *and* purchased will count twice or thrice)
-        let mut buy_sell_and_production_count = (buys.len() + sells.len()) as u32;
-        if let Some(production) = &production {
+        let mut buy_sell_and_production_count = (data.buys.len() + data.sells.len()) as u32;
+        if let Some(production) = &data.production {
             for (_, module) in &production.modules {
                 for element in &module.queued_recipes {
                     let recipe = recipe_manifest.get_by_ref(&element.recipe).unwrap();
@@ -142,30 +177,32 @@ pub fn spawn_station(
     let mut inventory = Inventory::new(constants::MOCK_STATION_INVENTORY_SIZE);
 
     let fill_ratio = 2;
-    for sold_item in &sells {
+    // TODO: Remove mock data
+    for sold_item in &data.sells {
         inventory.add_item(
-            sold_item.id,
+            *sold_item,
             constants::MOCK_STATION_INVENTORY_SIZE
                 / buy_sell_and_production_count
-                / sold_item.size
+                / item_manifest.get_by_ref(sold_item).unwrap().size
                 / fill_ratio,
             item_manifest,
         )
     }
 
-    for purchased_item in &buys {
+    // TODO: Remove mock data
+    for purchased_item in &data.buys {
         inventory.add_item(
-            purchased_item.id,
+            *purchased_item,
             constants::MOCK_STATION_INVENTORY_SIZE
                 / buy_sell_and_production_count
-                / purchased_item.size
+                / item_manifest.get_by_ref(purchased_item).unwrap().size
                 / fill_ratio,
             item_manifest,
         )
     }
 
     // Reserve storage space for products
-    if let Some(production) = &production {
+    if let Some(production) = &data.production {
         for (_, module) in &production.modules {
             for element in &module.queued_recipes {
                 let recipe = recipe_manifest.get_by_ref(&element.recipe).unwrap();
@@ -182,30 +219,47 @@ pub fn spawn_station(
         }
     }
 
-    if !buys.is_empty() {
-        entity_commands.insert(BuyOrders::mock(&buys, &sells));
+    if !data.buys.is_empty() {
+        entity_commands.insert(BuyOrders::mock(
+            &data
+                .buys
+                .iter()
+                .map(|x| item_manifest.get_by_ref(x).unwrap())
+                .collect::<Vec<_>>(),
+            &data
+                .sells
+                .iter()
+                .map(|x| item_manifest.get_by_ref(x).unwrap())
+                .collect::<Vec<_>>(),
+        ));
     }
-    if !sells.is_empty() {
+    if !data.sells.is_empty() {
         entity_commands.insert(SellOrders::mock(
-            &buys,
-            &sells,
+            &data
+                .buys
+                .iter()
+                .map(|x| item_manifest.get_by_ref(x).unwrap())
+                .collect::<Vec<_>>(),
+            &data
+                .sells
+                .iter()
+                .map(|x| item_manifest.get_by_ref(x).unwrap())
+                .collect::<Vec<_>>(),
             &mut inventory,
             item_manifest,
         ));
     }
 
-    if let Some(production) = production {
+    if let Some(production) = data.production {
         entity_commands.insert(production);
     }
 
-    if let Some(shipyard) = shipyard {
+    if let Some(shipyard) = data.shipyard {
         entity_commands.insert(shipyard);
     }
 
     entity_commands.insert(inventory);
-
-    station_id_map.insert(id, entity.into());
-
+    station_id_map.insert(data.id, entity.into());
     entity.into()
 }
 
@@ -222,13 +276,13 @@ fn spawn_construction_site(
     sector_query: &mut Query<&mut SectorComponent>,
     sprites: &SpriteHandles,
     station_name: &str,
-    local_pos: Vec2,
-    sector_entity: SectorEntity,
+    sector_position: SectorPosition,
     station_entity: StationEntity,
     data: ConstructionSiteSpawnData,
 ) -> ConstructionSiteEntity {
-    let mut sector = sector_query.get_mut(sector_entity.into()).unwrap();
-    let simulation_transform = SimulationTransform::from_translation(local_pos + sector.world_pos);
+    let mut sector = sector_query.get_mut(sector_position.sector.into()).unwrap();
+    let simulation_transform =
+        SimulationTransform::from_translation(sector_position.local_position + sector.world_pos);
 
     // TODO: implement proper construction site... constructing
     let construction_site = ConstructionSiteComponent {
@@ -266,6 +320,6 @@ fn spawn_construction_site(
 
     let entity = ConstructionSiteEntity::from(entity);
     construction_site_id_map.insert(data.id, entity);
-    sector.add_construction_site(commands, sector_entity, entity);
+    sector.add_construction_site(commands, sector_position.sector, entity);
     entity
 }

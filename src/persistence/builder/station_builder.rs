@@ -11,8 +11,8 @@ use crate::simulation::production::{
     OngoingShipConstructionOrder, ProductionComponent, ProductionModule, ShipyardComponent,
     ShipyardModule,
 };
-use crate::utils::entity_spawners::ConstructionSiteSpawnData;
-use crate::utils::{PriceRange, PriceSetting, entity_spawners};
+use crate::utils::entity_spawners::{ConstructionSiteSpawnData, StationSpawnData};
+use crate::utils::{PriceRange, PriceSetting, SectorPosition, entity_spawners};
 use crate::{SpriteHandles, constants};
 use bevy::ecs::system::SystemParam;
 use bevy::prelude::{Commands, Query, Res};
@@ -168,14 +168,31 @@ impl StationSaveData {
         let buys = self
             .buy_orders
             .clone()
-            .map_or_else(Vec::new, |x| x.parse(&args.items));
+            .map_or_else(Vec::new, |x| x.orders.iter().map(|x| x.item_id).collect());
         let sells = self
             .sell_orders
             .clone()
-            .map_or_else(Vec::new, |x| x.parse(&args.items));
+            .map_or_else(Vec::new, |x| x.orders.iter().map(|x| x.item_id).collect());
 
         let production = self.production_modules.clone().map(|x| x.parse());
         let shipyard = self.shipyard_modules.clone().map(|x| x.parse());
+
+        let data = StationSpawnData {
+            id: self.id,
+            name: self.name.clone(),
+            sector_position: SectorPosition {
+                sector: *sector_entity,
+                local_position: self.position.position,
+            },
+            shipyard,
+            production,
+            buys,
+            sells,
+            construction_site: Some(ConstructionSiteSpawnData::new(vec![
+                // TODO: persist in save data
+                ConstructableModuleId::ProductionModule(REFINED_METALS_PRODUCTION_MODULE_ID),
+            ])),
+        };
 
         entity_spawners::spawn_station(
             &mut args.commands,
@@ -183,38 +200,10 @@ impl StationSaveData {
             station_id_map,
             construction_site_id_map,
             &args.sprites,
-            self.id,
-            &self.name,
-            self.position.position,
-            *sector_entity,
-            buys,
-            sells,
-            production,
-            shipyard,
             &args.items,
             &args.recipes,
-            Some(ConstructionSiteSpawnData::new(vec![
-                ConstructableModuleId::ProductionModule(REFINED_METALS_PRODUCTION_MODULE_ID),
-            ])),
+            data,
         );
-    }
-}
-
-impl SerializedBuyOrder {
-    pub fn parse<'a>(&self, items: &'a ItemManifest) -> Vec<&'a ItemData> {
-        self.orders
-            .iter()
-            .map(|x| items.get_by_ref(&x.item_id).unwrap())
-            .collect()
-    }
-}
-
-impl SerializedSellOrder {
-    pub fn parse<'a>(&self, items: &'a ItemManifest) -> Vec<&'a ItemData> {
-        self.orders
-            .iter()
-            .map(|x| items.get_by_ref(&x.item_id).unwrap())
-            .collect()
     }
 }
 
