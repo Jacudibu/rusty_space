@@ -33,17 +33,20 @@ Too lazy to manage a whole kanban board and issues for these things yet. Roughly
 ~~- Builder ships build stations (builders being near the construction site should be enough to apply their constant construction strength)~~
 ~~- Multiple builders speed up construction (maybe not completely linearly, so players might want to consider bigger construction ships over a swarm of cheap small ones)~~
   ~~- Builders just register themselves to a construction site, and the construction site itself actually increments its progress each tick~~
+- Construction Sites are loaded from save files
 - Station module costs increase with station size
 
 - New stations can be created in a running game
+  - Pressing C and left-clicking somewhere should just place a new construction site as a PoC
 
 Modules:
 
-- Production (one module per item... or per recipe?)
+- Production
 - Storage (At this point capacities won't be hardcoded anymore, yay!)
 - Docking (At this point we will need to implement a docking queue. Will look funny.)
-- Ship Building (With every module supporting constructing differently sized ships)
+- Ship Building (With every module supporting constructing differently sized ships, maybe with speed modifiers for some)
 - Defense (later on)
+- Sector Claim
 
 # Sectors
 ## Sector Resources
