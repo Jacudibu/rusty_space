@@ -75,6 +75,7 @@ fn construction_site_updater(
             };
 
             if site.current_build_progress as u32 > required_build_power {
+                site.current_build_progress -= required_build_power as f32;
                 event_writer.send(ConstructionFinishedEvent {
                     entity: entity.into(),
                 });

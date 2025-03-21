@@ -1,7 +1,7 @@
 use crate::components::SectorComponent;
 use crate::game_data::{
-    ConstructableModuleId, ItemData, ItemId, ItemManifest, ProductionModuleId,
-    REFINED_METALS_PRODUCTION_MODULE_ID, RecipeId, RecipeManifest, ShipyardModuleId,
+    ConstructableModuleId, ItemId, ItemManifest, ProductionModuleId, RecipeId, RecipeManifest,
+    ShipyardModuleId,
 };
 use crate::persistence::data::v1::*;
 use crate::persistence::local_hex_position::LocalHexPosition;
@@ -64,6 +64,7 @@ impl StationSaveData {
             production_modules: None,
             shipyard_modules: None,
             inventory: InventorySaveData { items: Vec::new() },
+            construction_site: None,
         }
     }
 
@@ -153,6 +154,18 @@ impl StationSaveData {
         self
     }
 
+    pub fn with_construction_site(
+        &mut self,
+        queue: Vec<ConstructableModuleId>,
+        current_progress: f32,
+    ) -> &mut Self {
+        self.construction_site = Some(ConstructionSiteSaveData {
+            queue,
+            current_progress,
+        });
+        self
+    }
+
     pub fn build(
         &self,
         args: &mut Args,
@@ -188,10 +201,10 @@ impl StationSaveData {
             production,
             buys,
             sells,
-            construction_site: Some(ConstructionSiteSpawnData::new(vec![
-                // TODO: persist in save data
-                ConstructableModuleId::ProductionModule(REFINED_METALS_PRODUCTION_MODULE_ID),
-            ])),
+            construction_site: self
+                .construction_site
+                .clone()
+                .map(|x| ConstructionSiteSpawnData::new(x.queue).with_progress(x.current_progress)),
         };
 
         entity_spawners::spawn_station(

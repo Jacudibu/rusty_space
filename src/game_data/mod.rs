@@ -13,7 +13,7 @@ mod shipyard_module_data;
 use crate::game_data::from_mock_data::FromMockData;
 use bevy::ecs::system::SystemParam;
 use bevy::prelude::{Res, World};
-
+use serde::{Deserialize, Serialize};
 #[allow(unused)]
 pub use {
     asteroid_data::{AsteroidDataId, AsteroidManifest, CRYSTAL_ASTEROID_ID, IRON_ASTEROID_ID},
@@ -46,6 +46,7 @@ pub use {
 pub use item_data::{RawItemData, RawItemManifest};
 
 /// An enum which differentiates between the various module kinds which make up a station.
+#[derive(Serialize, Deserialize, Copy, Clone, Debug, PartialEq, Eq)]
 pub enum ConstructableModuleId {
     ProductionModule(ProductionModuleId),
     ShipyardModule(ShipyardModuleId),

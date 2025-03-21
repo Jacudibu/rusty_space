@@ -103,7 +103,7 @@ impl SerializedBuyOrderData {
         Self {
             item_id: *id,
             amount: data.amount,
-            price_setting: data.price_setting.clone(),
+            price_setting: data.price_setting,
             buy_up_to: data.buy_up_to,
         }
     }
@@ -114,7 +114,7 @@ impl SerializedSellOrderData {
         Self {
             item_id: *id,
             amount: data.amount,
-            price_setting: data.price_setting.clone(),
+            price_setting: data.price_setting,
             keep_at_least: data.keep_at_least,
         }
     }
@@ -155,6 +155,7 @@ impl StationSaveData {
             sell_orders: sell_orders.map(SerializedSellOrder::from),
             production_modules: production.map(ProductionSaveData::from),
             shipyard_modules: shipyard.map(ShipyardSaveData::from),
+            construction_site: todo!(),
         }
     }
 }

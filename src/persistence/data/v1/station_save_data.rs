@@ -1,4 +1,6 @@
-use crate::game_data::{ItemId, ProductionModuleId, RecipeId, ShipyardModuleId};
+use crate::game_data::{
+    ConstructableModuleId, ItemId, ProductionModuleId, RecipeId, ShipyardModuleId,
+};
 use crate::persistence::PersistentStationId;
 use crate::persistence::data::v1::inventory_save_data::InventorySaveData;
 use crate::persistence::local_hex_position::LocalHexPosition;
@@ -58,6 +60,13 @@ pub struct ShipyardSaveData {
     pub modules: Vec<ShipyardModuleSaveData>,
 }
 
+#[derive(Serialize, Deserialize, Clone)]
+#[cfg_attr(test, derive(Debug, PartialEq))]
+pub struct ConstructionSiteSaveData {
+    pub queue: Vec<ConstructableModuleId>,
+    pub current_progress: f32,
+}
+
 #[derive(Serialize, Deserialize)]
 #[cfg_attr(test, derive(Clone, Debug, PartialEq))]
 pub struct StationSaveData {
@@ -69,6 +78,7 @@ pub struct StationSaveData {
     pub shipyard_modules: Option<ShipyardSaveData>,
     pub buy_orders: Option<SerializedBuyOrder>,
     pub sell_orders: Option<SerializedSellOrder>,
+    pub construction_site: Option<ConstructionSiteSaveData>,
 }
 
 #[derive(Serialize, Deserialize, Clone)]

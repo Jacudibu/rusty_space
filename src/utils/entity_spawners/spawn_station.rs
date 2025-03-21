@@ -41,14 +41,14 @@ impl StationSpawnData {
     /// Creates a new instance of [StationSpawnData] with defaults for all values which should only be set when loading save games.
     pub fn new(
         name: impl Into<String>,
-        construction_site: ConstructionSiteSpawnData,
+        construction_site: Option<ConstructionSiteSpawnData>,
         sector_position: SectorPosition,
     ) -> Self {
         Self {
             id: PersistentStationId::next(),
             name: name.into(),
             sector_position,
-            construction_site: Some(construction_site),
+            construction_site,
             buys: Default::default(),
             sells: Default::default(),
             production: Default::default(),
@@ -65,6 +65,13 @@ pub struct ConstructionSiteSpawnData {
     pub build_order: Vec<ConstructableModuleId>,
     /// The current progress in building this site. Defaults to 0.
     pub current_progress: f32,
+}
+
+impl ConstructionSiteSpawnData {
+    pub fn with_progress(mut self, value: f32) -> Self {
+        self.current_progress = value;
+        self
+    }
 }
 
 impl ConstructionSiteSpawnData {
