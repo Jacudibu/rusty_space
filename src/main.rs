@@ -1,11 +1,11 @@
 use crate::game_data::GameData;
+use bevy::DefaultPlugins;
 use bevy::asset::AssetServer;
 use bevy::core::Name;
 use bevy::prelude::{
     App, Assets, Camera2d, Commands, Handle, Image, ImagePlugin, PluginGroup, Res, ResMut,
     Resource, Startup, Window, WindowPlugin,
 };
-use bevy::DefaultPlugins;
 mod camera;
 mod components;
 mod constants;

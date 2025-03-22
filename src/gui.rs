@@ -7,7 +7,6 @@ use crate::entity_selection::{MouseCursor, Selected};
 use crate::game_data::{
     AsteroidDataId, AsteroidManifest, ConstructableModuleId, GameData, IRON_ASTEROID_ID,
 };
-use crate::map_layout::MapLayout;
 use crate::session_data::ship_configs::ShipConfigurationAddedEvent;
 use crate::session_data::{
     SessionData, ShipConfigId, ShipConfiguration, ShipConfigurationManifest,
@@ -200,16 +199,10 @@ pub fn initialize(
     commands.insert_resource(icons);
 }
 
-pub fn draw_sector_info(
-    mut context: EguiContexts,
-    mouse_cursor: Res<MouseCursor>,
-    map: Res<MapLayout>,
-) {
-    let Some(world_pos) = mouse_cursor.world_space else {
+pub fn draw_sector_info(mut context: EguiContexts, mouse_cursor: Res<MouseCursor>) {
+    let Some(sector_pos) = &mouse_cursor.sector_space else {
         return;
     };
-
-    let coordinates = map.hex_layout.world_pos_to_hex(world_pos);
 
     egui::Window::new("Sector Info")
         .anchor(Align2::CENTER_TOP, egui::Vec2::ZERO)
@@ -217,7 +210,18 @@ pub fn draw_sector_info(
         .collapsible(false)
         .resizable(false)
         .show(context.ctx_mut(), |ui| {
-            ui.label(format!("Sector {}/{}", coordinates.x, coordinates.y));
+            ui.set_width(120.0);
+            ui.vertical_centered(|ui| {
+                ui.label(format!(
+                    "Sector {}/{}",
+                    sector_pos.coordinates.x, sector_pos.coordinates.y
+                ));
+                ui.label(format!(
+                    "[x: {:>4.0} | y: {:>4.0}]",
+                    sector_pos.sector_position.local_position.x,
+                    sector_pos.sector_position.local_position.y,
+                ))
+            });
         });
 }
 

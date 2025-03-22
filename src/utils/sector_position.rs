@@ -1,3 +1,4 @@
+use crate::entity_selection::MouseCursor;
 use crate::utils::SectorEntity;
 use bevy::math::Vec2;
 
@@ -7,4 +8,10 @@ pub struct SectorPosition {
     pub sector: SectorEntity,
     /// The local position within the sector
     pub local_position: Vec2,
+}
+
+impl From<MouseCursor> for SectorPosition {
+    fn from(value: MouseCursor) -> Self {
+        todo!()
+    }
 }
