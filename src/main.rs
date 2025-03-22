@@ -22,6 +22,7 @@ mod session_data;
 mod simulation;
 mod states;
 mod trade_plan;
+mod user_interaction;
 mod utils;
 
 fn main() {
@@ -52,6 +53,7 @@ fn main() {
         simulation::plugin::SimulationPlugin,
         states::StatePlugin,
         session_data::SessionDataPlugin,
+        user_interaction::UserInteraction,
     ))
     .add_systems(Startup, initialize_data);
 

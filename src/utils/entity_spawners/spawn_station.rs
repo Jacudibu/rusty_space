@@ -41,14 +41,14 @@ impl StationSpawnData {
     /// Creates a new instance of [StationSpawnData] with defaults for all values which should only be set when loading save games.
     pub fn new(
         name: impl Into<String>,
-        construction_site: Option<ConstructionSiteSpawnData>,
+        construction_site: ConstructionSiteSpawnData,
         sector_position: SectorPosition,
     ) -> Self {
         Self {
             id: PersistentStationId::next(),
             name: name.into(),
             sector_position,
-            construction_site,
+            construction_site: construction_site.into(),
             buys: Default::default(),
             sells: Default::default(),
             production: Default::default(),
