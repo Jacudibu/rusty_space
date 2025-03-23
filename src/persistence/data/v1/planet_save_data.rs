@@ -1,6 +1,7 @@
 use crate::game_data::ItemId;
 use crate::persistence::PersistentPlanetId;
 use crate::utils::EarthMass;
+use bevy::prelude::Vec2;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
@@ -10,14 +11,7 @@ pub struct SectorPlanetSaveData {
     pub kind: PlanetKindSaveData,
     pub name: String,
     pub mass: EarthMass,
-    pub orbit: ConstantOrbitSaveData,
-}
-
-#[derive(Serialize, Deserialize)]
-#[cfg_attr(test, derive(Clone, Debug, PartialEq))]
-pub struct ConstantOrbitSaveData {
-    pub current_rotational_fraction: f32,
-    pub radius: f32,
+    pub local_position: Vec2,
 }
 
 #[derive(Serialize, Deserialize)]

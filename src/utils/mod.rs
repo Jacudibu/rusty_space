@@ -4,6 +4,7 @@ mod entity_wrappers;
 mod exchange_ware_data;
 pub mod interpolation;
 mod key_value_resource;
+pub mod polar_coordinates;
 mod price_range;
 mod price_setting;
 mod sector_position;

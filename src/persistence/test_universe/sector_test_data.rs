@@ -3,10 +3,11 @@ use crate::game_data::{AsteroidManifest, CRYSTAL_ASTEROID_ID, HYDROGEN_ITEM_ID, 
 use crate::map_layout::MapLayout;
 use crate::persistence::test_universe::coordinates;
 use crate::persistence::{
-    ConstantOrbitSaveData, PlanetKindSaveData, SaveDataCollection, SectorAsteroidSaveData,
-    SectorPlanetSaveData, SectorSaveData, SectorStarSaveData,
+    PlanetKindSaveData, SaveDataCollection, SectorAsteroidSaveData, SectorPlanetSaveData,
+    SectorSaveData, SectorStarSaveData,
 };
 use crate::utils::UniverseSeed;
+use crate::utils::polar_coordinates::PolarCoordinates;
 use bevy::math::Vec2;
 
 const UNIVERSE_SEED: UniverseSeed = UniverseSeed::from_seed(42);
@@ -22,17 +23,30 @@ pub fn create_test_data(
         .add(coordinates::RIGHT)
         .with_star(SectorStarSaveData::new())
         .with_planet(SectorPlanetSaveData::new(
-            ConstantOrbitSaveData::new(50.0).with_current_rotational_fraction(0.3),
+            PolarCoordinates {
+                radial: 50.0,
+                angle: 100.0,
+            }
+            .to_cartesian(),
         ))
         .with_planet(SectorPlanetSaveData::new(
-            ConstantOrbitSaveData::new(200.0).with_current_rotational_fraction(0.7),
+            PolarCoordinates {
+                radial: 200.0,
+                angle: 210.0,
+            }
+            .to_cartesian(),
         ))
         .with_planet(
-            SectorPlanetSaveData::new(ConstantOrbitSaveData::new(400.0)).with_kind(
-                PlanetKindSaveData::GasGiant {
-                    resources: vec![HYDROGEN_ITEM_ID],
-                },
-            ),
+            SectorPlanetSaveData::new(
+                PolarCoordinates {
+                    radial: 350.0,
+                    angle: 0.0,
+                }
+                .to_cartesian(),
+            )
+            .with_kind(PlanetKindSaveData::GasGiant {
+                resources: vec![HYDROGEN_ITEM_ID],
+            }),
         );
 
     sectors.add(coordinates::TOP_RIGHT).with_asteroids(

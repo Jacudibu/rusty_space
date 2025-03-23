@@ -10,7 +10,7 @@ use crate::simulation::prelude::simulation_transform::SimulationScale;
 use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::utils::GateEntity;
 use crate::utils::SectorPosition;
-use crate::utils::entity_spawners::shared_logic;
+use crate::utils::polar_coordinates::PolarCoordinates;
 use crate::{SpriteHandles, constants};
 
 #[allow(clippy::too_many_arguments)]
@@ -113,12 +113,8 @@ fn spawn_gate(
     ));
 
     if let Some(star) = star {
-        let radius = pos.local_position.length();
-        entity_commands.insert(ConstantOrbit::new(
-            pos.local_position.to_angle(),
-            radius,
-            shared_logic::calculate_orbit_velocity(radius, star.mass),
-        ));
+        let polar_coordinates = PolarCoordinates::from_cartesian(&pos.local_position);
+        entity_commands.insert(ConstantOrbit::new(polar_coordinates, &star.mass));
     }
 
     let entity = entity_commands.id();

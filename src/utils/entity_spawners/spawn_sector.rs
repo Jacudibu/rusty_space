@@ -3,7 +3,6 @@ use crate::components::{
 };
 use crate::game_data::AsteroidManifest;
 use crate::persistence::{AsteroidIdMap, PlanetIdMap, SectorFeatureSaveData};
-use crate::simulation::precomputed_orbit_directions::PrecomputedOrbitDirections;
 use crate::simulation::prelude::simulation_transform::SimulationScale;
 use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::utils::entity_spawners::spawn_planet::spawn_planet;
@@ -21,7 +20,6 @@ pub fn spawn_sector(
     sprites: &SpriteHandles,
     asteroid_id_map: &mut AsteroidIdMap,
     planet_id_map: &mut PlanetIdMap,
-    orbit_directions: &PrecomputedOrbitDirections,
     asteroid_manifest: &AsteroidManifest,
 ) -> SectorEntity {
     let position = layout.hex_to_world_pos(coordinate);
@@ -105,7 +103,6 @@ pub fn spawn_sector(
                 position,
                 sector,
                 gravitation_well_mass,
-                orbit_directions,
             );
         }
 

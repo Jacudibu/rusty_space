@@ -18,6 +18,6 @@ pub fn orbit_system(
             let sector_pos = sectors.get(in_sector.sector.into()).unwrap().world_pos;
 
             transform.translation = sector_pos
-                + orbit_directions.orbit_position_at(orbit.radius, orbit.rotational_fraction);
+                + orbit_directions.convert_polar_to_local_cartesian(&orbit.polar_coordinates);
         })
 }

@@ -5,7 +5,6 @@ use crate::persistence::{
     AsteroidIdMap, AsteroidSaveData, PersistentAsteroidId, PlanetIdMap, SectorFeatureSaveData,
     SectorIdMap, SectorPlanetSaveData, SectorStarSaveData,
 };
-use crate::simulation::precomputed_orbit_directions::PrecomputedOrbitDirections;
 use crate::simulation::time::SimulationTimestamp;
 use crate::utils::{SectorEntity, UniverseSeed, entity_spawners};
 use crate::{SpriteHandles, constants};
@@ -21,7 +20,6 @@ pub struct Args<'w, 's> {
     commands: Commands<'w, 's>,
     sprites: Res<'w, SpriteHandles>,
     map_layout: Res<'w, MapLayout>,
-    orbit_directions: Res<'w, PrecomputedOrbitDirections>,
     asteroid_manifest: Res<'w, AsteroidManifest>,
 }
 
@@ -68,7 +66,6 @@ impl SectorSaveData {
             &args.sprites,
             asteroid_id_map,
             planet_id_map,
-            &args.orbit_directions,
             &args.asteroid_manifest,
         )
     }
@@ -146,7 +143,7 @@ impl SectorAsteroidSaveData {
                 let ore = inner_rng.gen_range(constants::ASTEROID_ORE_RANGE);
                 AsteroidSaveData {
                     id: PersistentAsteroidId::next(),
-                    manifest_id: asteroid_data_id.clone(),
+                    manifest_id: asteroid_data_id,
                     position: local_position + sector_pos,
                     velocity,
                     rotation_degrees: rotation * std::f32::consts::PI * 1000.0,

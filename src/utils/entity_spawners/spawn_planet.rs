@@ -1,12 +1,11 @@
 use crate::components::{ConstantOrbit, Planet, SelectableEntity};
 use crate::persistence::{PlanetIdMap, PlanetKindSaveData, SectorPlanetSaveData};
-use crate::simulation::precomputed_orbit_directions::PrecomputedOrbitDirections;
 use crate::simulation::prelude::simulation_transform::SimulationScale;
 use crate::simulation::ship_ai::AutoTradeBehavior;
 use crate::simulation::transform::simulation_transform::SimulationTransform;
-use crate::utils::entity_spawners::shared_logic;
+use crate::utils::polar_coordinates::PolarCoordinates;
 use crate::utils::{PlanetEntity, SectorEntity, SolarMass};
-use crate::{components, constants, SpriteHandles};
+use crate::{SpriteHandles, components, constants};
 use bevy::core::Name;
 use bevy::math::Vec2;
 use bevy::prelude::{Commands, Rot2};
@@ -22,34 +21,17 @@ pub fn spawn_planet(
     sector_pos: Vec2,
     sector_entity: SectorEntity,
     orbit_mass: Option<SolarMass>,
-    orbit_directions: &PrecomputedOrbitDirections,
 ) {
     let planet = Planet::new(planet_data.id, planet_data.mass);
 
-    let local_position = orbit_directions.orbit_position_at(
-        planet_data.orbit.radius,
-        planet_data.orbit.current_rotational_fraction,
-    );
-
-    let velocity = if let Some(orbit_mass) = orbit_mass {
-        shared_logic::calculate_orbit_velocity(planet_data.orbit.radius, orbit_mass)
-    } else {
-        0.0
-    };
-
     let simulation_transform =
-        SimulationTransform::new(sector_pos + local_position, Rot2::IDENTITY);
+        SimulationTransform::new(sector_pos + planet_data.local_position, Rot2::IDENTITY);
 
     let entity = commands
         .spawn((
             Name::new(planet_data.name.clone()),
             SelectableEntity::Planet,
             AutoTradeBehavior::default(),
-            ConstantOrbit::new(
-                planet_data.orbit.current_rotational_fraction,
-                planet_data.orbit.radius,
-                velocity,
-            ),
             Sprite::from_image(sprites.planet.clone()),
             simulation_transform.as_bevy_transform(constants::z_layers::PLANET_AND_STARS),
             simulation_transform,
@@ -57,6 +39,13 @@ pub fn spawn_planet(
             planet,
         ))
         .id();
+
+    if let Some(orbit_mass) = orbit_mass {
+        let polar_coordinates = PolarCoordinates::from_cartesian(&planet_data.local_position);
+        commands
+            .entity(entity)
+            .insert(ConstantOrbit::new(polar_coordinates, &orbit_mass));
+    }
 
     match &planet_data.kind {
         PlanetKindSaveData::Terrestrial => {}

@@ -1,4 +1,3 @@
-mod shared_logic;
 mod spawn_asteroid;
 mod spawn_gates;
 mod spawn_planet;

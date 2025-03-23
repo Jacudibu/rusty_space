@@ -20,7 +20,11 @@ pub fn draw_orbit_circles(
         let center = sectors.get(in_sector.into()).unwrap().world_pos;
 
         gizmos
-            .circle_2d(center, orbit.radius, bevy::color::palettes::css::INDIGO)
-            .resolution(32 + (orbit.radius / 5.0) as u32);
+            .circle_2d(
+                center,
+                orbit.polar_coordinates.radial,
+                bevy::color::palettes::css::INDIGO,
+            )
+            .resolution(32 + (orbit.polar_coordinates.radial / 5.0) as u32);
     }
 }

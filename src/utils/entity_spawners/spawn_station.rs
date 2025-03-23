@@ -10,14 +10,13 @@ use crate::persistence::{
 use crate::simulation::prelude::simulation_transform::SimulationScale;
 use crate::simulation::production::{ProductionComponent, ShipyardComponent};
 use crate::simulation::transform::simulation_transform::SimulationTransform;
-use crate::utils::entity_spawners::shared_logic;
+use crate::utils::polar_coordinates::PolarCoordinates;
 use crate::utils::{ConstructionSiteEntity, SectorPosition, StationEntity};
 use crate::{SpriteHandles, constants};
 use bevy::core::Name;
 use bevy::math::Vec2;
-use bevy::prelude::{Commands, Query, Sprite, default, info};
+use bevy::prelude::{Commands, Query, Sprite, default};
 use bevy::sprite::Anchor;
-use std::f32::consts::PI;
 use std::ops::Not;
 
 /// Spawn Data for new Stations.
@@ -277,23 +276,9 @@ pub fn spawn_station(
             )
         });
 
-        // TODO: Polar Coordinates might be worth extracting into a struct
-        let pos = &data.sector_position.local_position;
-        let mut orbit_angle = pos.y.atan2(pos.x);
-        let orbit_radius = (pos.x * pos.x + pos.y * pos.y).sqrt();
-        let velocity = shared_logic::calculate_orbit_velocity(orbit_radius, star.mass);
-        // clamping should just be
-        // 0° should be to the right, increasing counterclockwise.
-        // let orbit_angle = (orbit_angle + PI) / (2.0 * PI);
-
-        if orbit_angle < 0.0 {
-            orbit_angle += std::f32::consts::TAU;
-        }
-
-        let orbit_angle = (orbit_angle / std::f32::consts::TAU);
-        info!("Angle: {orbit_angle} | Radius: {orbit_radius}");
-
-        entity_commands.insert(ConstantOrbit::new(orbit_angle, orbit_radius, velocity));
+        let polar_coordinates =
+            PolarCoordinates::from_cartesian(&data.sector_position.local_position);
+        entity_commands.insert(ConstantOrbit::new(polar_coordinates, &star.mass));
     }
 
     entity_commands.insert(inventory);
