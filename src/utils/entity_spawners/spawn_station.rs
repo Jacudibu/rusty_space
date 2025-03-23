@@ -1,6 +1,7 @@
 use crate::components::{
-    BuyOrders, ConstructionSiteComponent, ConstructionSiteStatus, InteractionQueue, Inventory,
-    SectorComponent, SelectableEntity, SellOrders, StationComponent,
+    BuyOrders, ConstantOrbit, ConstructionSiteComponent, ConstructionSiteStatus, InteractionQueue,
+    Inventory, SectorComponent, SectorStarComponent, SelectableEntity, SellOrders, StarComponent,
+    StationComponent,
 };
 use crate::game_data::{ConstructableModuleId, ItemId, ItemManifest, RecipeManifest};
 use crate::persistence::{
@@ -9,12 +10,14 @@ use crate::persistence::{
 use crate::simulation::prelude::simulation_transform::SimulationScale;
 use crate::simulation::production::{ProductionComponent, ShipyardComponent};
 use crate::simulation::transform::simulation_transform::SimulationTransform;
+use crate::utils::entity_spawners::shared_logic;
 use crate::utils::{ConstructionSiteEntity, SectorPosition, StationEntity};
 use crate::{SpriteHandles, constants};
 use bevy::core::Name;
 use bevy::math::Vec2;
-use bevy::prelude::{Commands, Query, Sprite, default};
+use bevy::prelude::{Commands, Query, Sprite, default, info};
 use bevy::sprite::Anchor;
+use std::f32::consts::PI;
 use std::ops::Not;
 
 /// Spawn Data for new Stations.
@@ -95,7 +98,8 @@ impl ConstructionSiteSpawnData {
 #[allow(clippy::too_many_arguments)] // It's hopeless... :')
 pub fn spawn_station(
     commands: &mut Commands,
-    sector_query: &mut Query<&mut SectorComponent>,
+    sector_query: &mut Query<(&mut SectorComponent, Option<&SectorStarComponent>)>,
+    star_query: &Query<&StarComponent>,
     station_id_map: &mut StationIdMap,
     construction_site_id_map: &mut ConstructionSiteIdMap,
     sprites: &SpriteHandles,
@@ -103,7 +107,7 @@ pub fn spawn_station(
     recipe_manifest: &RecipeManifest,
     data: StationSpawnData,
 ) -> StationEntity {
-    let mut sector = sector_query
+    let (mut sector, star) = sector_query
         .get_mut(data.sector_position.sector.into())
         .unwrap();
 
@@ -153,7 +157,7 @@ pub fn spawn_station(
         spawn_construction_site(
             commands,
             construction_site_id_map,
-            sector_query,
+            &mut sector,
             sprites,
             &data.name,
             data.sector_position,
@@ -265,6 +269,33 @@ pub fn spawn_station(
         entity_commands.insert(shipyard);
     }
 
+    if let Some(star) = star {
+        let star = star_query.get(star.entity.into()).unwrap_or_else(|_| {
+            panic!(
+                "Unable to find star for sector with SectorStarComponent: {:?}",
+                sector.coordinate
+            )
+        });
+
+        // TODO: Polar Coordinates might be worth extracting into a struct
+        let pos = &data.sector_position.local_position;
+        let mut orbit_angle = pos.y.atan2(pos.x);
+        let orbit_radius = (pos.x * pos.x + pos.y * pos.y).sqrt();
+        let velocity = shared_logic::calculate_orbit_velocity(orbit_radius, star.mass);
+        // clamping should just be
+        // 0° should be to the right, increasing counterclockwise.
+        // let orbit_angle = (orbit_angle + PI) / (2.0 * PI);
+
+        if orbit_angle < 0.0 {
+            orbit_angle += std::f32::consts::TAU;
+        }
+
+        let orbit_angle = (orbit_angle / std::f32::consts::TAU);
+        info!("Angle: {orbit_angle} | Radius: {orbit_radius}");
+
+        entity_commands.insert(ConstantOrbit::new(orbit_angle, orbit_radius, velocity));
+    }
+
     entity_commands.insert(inventory);
     station_id_map.insert(data.id, entity.into());
     entity.into()
@@ -280,14 +311,13 @@ pub fn spawn_station(
 fn spawn_construction_site(
     commands: &mut Commands,
     construction_site_id_map: &mut ConstructionSiteIdMap,
-    sector_query: &mut Query<&mut SectorComponent>,
+    sector: &mut SectorComponent,
     sprites: &SpriteHandles,
     station_name: &str,
     sector_position: SectorPosition,
     station_entity: StationEntity,
     data: ConstructionSiteSpawnData,
 ) -> ConstructionSiteEntity {
-    let mut sector = sector_query.get_mut(sector_position.sector.into()).unwrap();
     let simulation_transform =
         SimulationTransform::from_translation(sector_position.local_position + sector.world_pos);
 

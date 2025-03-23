@@ -1,5 +1,5 @@
 use crate::SpriteHandles;
-use crate::components::SectorComponent;
+use crate::components::{SectorComponent, SectorStarComponent, StarComponent};
 use crate::entity_selection::MouseCursor;
 use crate::game_data::{
     ConstructableModuleId, ItemManifest, RecipeManifest, SILICA_PRODUCTION_MODULE_ID,
@@ -20,9 +20,10 @@ impl Plugin for UserInteraction {
 #[allow(clippy::too_many_arguments)]
 pub fn create_construction_site_on_button_press(
     mut commands: Commands,
-    mut sector_query: Query<&mut SectorComponent>,
+    mut sector_query: Query<(&mut SectorComponent, Option<&SectorStarComponent>)>,
     mut station_id_map: ResMut<StationIdMap>,
     mut construction_site_id_map: ResMut<ConstructionSiteIdMap>,
+    stars: Query<&StarComponent>,
     sprites: Res<SpriteHandles>,
     item_manifest: Res<ItemManifest>,
     recipe_manifest: Res<RecipeManifest>,
@@ -54,6 +55,7 @@ pub fn create_construction_site_on_button_press(
     spawn_station(
         &mut commands,
         &mut sector_query,
+        &stars,
         &mut station_id_map,
         &mut construction_site_id_map,
         &sprites,

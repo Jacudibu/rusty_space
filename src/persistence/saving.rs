@@ -1,10 +1,10 @@
 use crate::components::{
-    Asteroid, BuyOrders, Gate, InSector, Inventory, SectorComponent, SellOrders, Ship, Star,
-    StationComponent,
+    Asteroid, BuyOrders, Gate, InSector, Inventory, SectorComponent, SellOrders, Ship,
+    StarComponent, StationComponent,
 };
+use crate::persistence::AllEntityIdMaps;
 use crate::persistence::data::v1::*;
 use crate::persistence::writer::sector_writer::SectorSaveDataQuery;
-use crate::persistence::AllEntityIdMaps;
 use crate::simulation::physics::{ConstantVelocity, ShipVelocity};
 use crate::simulation::production::{ProductionComponent, ShipyardComponent};
 use crate::simulation::ship_ai::{AutoMineBehavior, AutoTradeBehavior, TaskQueue};
@@ -25,7 +25,7 @@ use bevy::prelude::{Commands, Query};
 pub fn parse_session_data_into_universe_save_data(
     mut commands: Commands,
     all_sectors: Query<&SectorComponent>,
-    stars: Query<&Star>,
+    stars: Query<&StarComponent>,
     asteroids: Query<(&Asteroid, &SimulationTransform, &ConstantVelocity)>,
     gates: Query<(&Gate, &InSector, &SimulationTransform)>,
     sectors_to_save: Query<SectorSaveDataQuery>,

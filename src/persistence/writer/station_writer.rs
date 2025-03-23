@@ -146,6 +146,7 @@ impl StationSaveData {
         ),
         sectors: &Query<&SectorComponent>,
     ) -> Self {
+        #[allow(unreachable_code)]
         Self {
             id: station.id(),
             name: name.to_string(),

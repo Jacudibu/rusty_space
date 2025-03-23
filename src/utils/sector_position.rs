@@ -10,9 +10,3 @@ pub struct SectorPosition {
     /// The local position within the sector
     pub local_position: Vec2,
 }
-
-impl From<MouseCursor> for SectorPosition {
-    fn from(value: MouseCursor) -> Self {
-        todo!()
-    }
-}

@@ -48,6 +48,11 @@ Modules:
 - Defense (later on)
 - Sector Claim
 
+# Future Proofing
+- Destroy ships when pressing DEL
+  - Verifies task Cancellation is properly implemented
+  - ...but also write tests for that :>
+
 # Sectors
 ## Sector Resources
 

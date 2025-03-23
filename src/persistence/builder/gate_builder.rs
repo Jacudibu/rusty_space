@@ -1,9 +1,9 @@
-use crate::components::{SectorComponent, SectorStarComponent, Star};
+use crate::SpriteHandles;
+use crate::components::{SectorComponent, SectorStarComponent, StarComponent};
 use crate::persistence::data::v1::*;
 use crate::persistence::local_hex_position::LocalHexPosition;
 use crate::persistence::{GateIdMap, PersistentGateId, SectorIdMap};
 use crate::utils::entity_spawners::spawn_gate_pair;
-use crate::SpriteHandles;
 use bevy::ecs::system::SystemParam;
 use bevy::prelude::{Commands, Query, Res};
 
@@ -19,7 +19,7 @@ pub struct Args<'w, 's> {
             Option<&'static SectorStarComponent>,
         ),
     >,
-    stars: Query<'w, 's, &'static Star>,
+    stars: Query<'w, 's, &'static StarComponent>,
 
     sector_id_map: Res<'w, SectorIdMap>,
 }

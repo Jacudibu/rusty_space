@@ -3,22 +3,22 @@ use bevy::prelude::{Commands, CubicCurve, Query, Sprite, Vec2};
 
 use crate::components::{
     ConstantOrbit, Gate, GateConnectionComponent, MovingGateConnection, SectorComponent,
-    SectorStarComponent, SelectableEntity, Star,
+    SectorStarComponent, SelectableEntity, StarComponent,
 };
 use crate::persistence::{GateIdMap, PersistentGateId};
 use crate::simulation::prelude::simulation_transform::SimulationScale;
 use crate::simulation::transform::simulation_transform::SimulationTransform;
-use crate::utils::entity_spawners::shared_logic;
 use crate::utils::GateEntity;
 use crate::utils::SectorPosition;
-use crate::{constants, SpriteHandles};
+use crate::utils::entity_spawners::shared_logic;
+use crate::{SpriteHandles, constants};
 
 #[allow(clippy::too_many_arguments)]
 pub fn spawn_gate_pair(
     commands: &mut Commands,
     gate_id_map: &mut GateIdMap,
     sectors: &mut Query<(&mut SectorComponent, Option<&SectorStarComponent>)>,
-    stars: &Query<&Star>,
+    stars: &Query<&StarComponent>,
     sprites: &SpriteHandles,
     from_id: PersistentGateId,
     from_pos: SectorPosition,
@@ -95,7 +95,7 @@ fn spawn_gate(
     from: &mut SectorComponent,
     to: &SectorComponent,
     ship_curve: CubicCurve<Vec2>,
-    star: Option<&Star>,
+    star: Option<&StarComponent>,
 ) -> GateEntity {
     let simulation_transform =
         SimulationTransform::from_translation(from.world_pos + pos.local_position);

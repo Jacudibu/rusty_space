@@ -21,8 +21,8 @@ impl Default for PrecomputedOrbitDirections {
             let angle = (i as f32) * DEGREE_TO_RADIAN;
 
             result.directions[i] = Dir2::new_unchecked(Vec2 {
-                x: angle.sin(),
-                y: angle.cos(),
+                x: angle.cos(),
+                y: angle.sin(),
             });
         }
 

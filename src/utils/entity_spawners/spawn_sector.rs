@@ -7,8 +7,8 @@ use crate::simulation::precomputed_orbit_directions::PrecomputedOrbitDirections;
 use crate::simulation::prelude::simulation_transform::SimulationScale;
 use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::utils::entity_spawners::spawn_planet::spawn_planet;
-use crate::utils::{entity_spawners, SectorEntity, StarEntity};
-use crate::{components, constants, SpriteHandles};
+use crate::utils::{SectorEntity, StarEntity, entity_spawners};
+use crate::{SpriteHandles, components, constants};
 use bevy::core::Name;
 use bevy::prelude::{Commands, Sprite, Vec2};
 use hexx::{Hex, HexLayout};
@@ -75,7 +75,7 @@ pub fn spawn_sector(
         let star_entity = commands
             .spawn((
                 Name::new(format!("[{},{}] Star", coordinate.x, coordinate.y)),
-                components::Star::new(coordinate, star.mass),
+                components::StarComponent::new(coordinate, star.mass),
                 InSector { sector },
                 SelectableEntity::Star,
                 Sprite::from_image(sprites.star.clone()),

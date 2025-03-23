@@ -12,13 +12,13 @@ mod sector;
 mod selectable_entity;
 mod ship;
 mod ship_components;
-mod star;
+mod star_component;
 mod station_component;
 mod trade;
 
 pub use {
     asteroid::*, constant_orbit::*, construction_site_component::*, engine::Engine, gate::*,
     gate_connection::*, interaction_queue::*, inventory::Inventory, is_docked::*, planet::*,
-    sector::*, selectable_entity::*, ship::*, ship_components::*, star::*, station_component::*,
-    trade::*,
+    sector::*, selectable_entity::*, ship::*, ship_components::*, star_component::*,
+    station_component::*, trade::*,
 };

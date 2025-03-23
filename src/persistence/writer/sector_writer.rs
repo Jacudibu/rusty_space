@@ -1,5 +1,5 @@
 use crate::components::{
-    Asteroid, SectorAsteroidComponent, SectorComponent, SectorStarComponent, Star,
+    Asteroid, SectorAsteroidComponent, SectorComponent, SectorStarComponent, StarComponent,
 };
 use crate::persistence::data::v1::*;
 use crate::simulation::physics::ConstantVelocity;
@@ -95,7 +95,7 @@ impl SectorSaveData {
     pub fn from(
         _data: SectorSaveDataQueryItem,
         _asteroid_query: &Query<(&Asteroid, &SimulationTransform, &ConstantVelocity)>,
-        _star_query: &Query<&Star>,
+        _star_query: &Query<&StarComponent>,
     ) -> Self {
         todo!();
         // Self {
