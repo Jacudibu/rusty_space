@@ -9,6 +9,7 @@ use bevy::prelude::{
 mod camera;
 mod components;
 mod constants;
+mod construction_site_placement;
 mod diagnostics;
 mod entity_selection;
 mod game_data;
@@ -22,7 +23,6 @@ mod session_data;
 mod simulation;
 mod states;
 mod trade_plan;
-mod user_interaction;
 mod utils;
 
 fn main() {
@@ -53,7 +53,7 @@ fn main() {
         simulation::plugin::SimulationPlugin,
         states::StatePlugin,
         session_data::SessionDataPlugin,
-        user_interaction::UserInteraction,
+        construction_site_placement::ConstructionSitePlacementPlugin,
     ))
     .add_systems(Startup, initialize_data);
 

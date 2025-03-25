@@ -8,13 +8,66 @@ use crate::persistence::{ConstructionSiteIdMap, StationIdMap};
 use crate::utils::entity_spawners::{ConstructionSiteSpawnData, StationSpawnData, spawn_station};
 use bevy::app::{App, Plugin};
 use bevy::input::ButtonInput;
-use bevy::prelude::{Commands, KeyCode, Query, Res, ResMut, Update};
+use bevy::prelude::{
+    AppExtStates, Commands, IntoSystemConfigs, KeyCode, MouseButton, NextState, OnEnter, OnExit,
+    Query, Res, ResMut, State, States, Update, in_state,
+};
 
-pub struct UserInteraction;
-impl Plugin for UserInteraction {
+pub struct ConstructionSitePlacementPlugin;
+impl Plugin for ConstructionSitePlacementPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, create_construction_site_on_button_press);
+        app.insert_state(ConstructionPreviewState::Off);
+        app.add_systems(OnEnter(ConstructionPreviewState::On), spawn_preview_entity);
+        app.add_systems(OnExit(ConstructionPreviewState::On), despawn_preview_entity);
+        app.add_systems(
+            Update,
+            (
+                toggle_construction_site_placement,
+                (
+                    move_preview_entity,
+                    create_construction_site_on_button_press,
+                )
+                    .run_if(in_state(ConstructionPreviewState::On)),
+            ),
+        );
     }
+}
+
+#[derive(States, Debug, Clone, PartialEq, Eq, Hash)]
+pub enum ConstructionPreviewState {
+    Off,
+    On,
+}
+
+pub fn toggle_construction_site_placement(
+    state: Res<State<ConstructionPreviewState>>,
+    mut next_state: ResMut<NextState<ConstructionPreviewState>>,
+    keys: Res<ButtonInput<KeyCode>>,
+) {
+    if !keys.just_pressed(KeyCode::KeyV) {
+        return;
+    }
+
+    match state.get() {
+        ConstructionPreviewState::Off => {
+            next_state.set(ConstructionPreviewState::On);
+        }
+        ConstructionPreviewState::On => {
+            next_state.set(ConstructionPreviewState::Off);
+        }
+    }
+}
+
+pub fn spawn_preview_entity() {
+    // TODO
+}
+
+pub fn despawn_preview_entity() {
+    // TODO
+}
+
+pub fn move_preview_entity() {
+    // TODO
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -28,13 +81,13 @@ pub fn create_construction_site_on_button_press(
     item_manifest: Res<ItemManifest>,
     recipe_manifest: Res<RecipeManifest>,
     mouse_cursor: Res<MouseCursor>,
-    keys: Res<ButtonInput<KeyCode>>,
+    mouse: Res<ButtonInput<MouseButton>>,
 ) {
-    if !keys.just_pressed(KeyCode::KeyV) {
-        // TODO: This should fire an event, which is then either processed locally or sent to the server
+    if !mouse.just_pressed(MouseButton::Left) {
         return;
     }
 
+    // TODO: This should fire an event, which is then either processed locally or sent to the server
     let Some(sector_pos) = &mouse_cursor.sector_space else {
         return;
     };
