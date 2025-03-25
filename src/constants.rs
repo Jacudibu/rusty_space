@@ -54,6 +54,8 @@ pub mod z_layers {
     pub const PLANET_AND_STARS: f32 = 5.0;
     pub const SHIP: f32 = 10.0;
 
+    pub const TRANSPARENT_PREVIEW_ITEM: f32 = 100.0;
+
     /// Sadly linestrip depth seems to be ignored by 2D Cameras. Right now this constant purely exists to avoid magic numbers.
     pub const GATE_CONNECTION: f32 = 0.0;
 }

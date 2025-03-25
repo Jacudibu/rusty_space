@@ -1,4 +1,3 @@
-use crate::SpriteHandles;
 use crate::components::{SectorComponent, SectorStarComponent, StarComponent};
 use crate::entity_selection::MouseCursor;
 use crate::game_data::{
@@ -6,42 +5,51 @@ use crate::game_data::{
 };
 use crate::persistence::{ConstructionSiteIdMap, StationIdMap};
 use crate::utils::entity_spawners::{ConstructionSiteSpawnData, StationSpawnData, spawn_station};
+use crate::{SpriteHandles, constants};
 use bevy::app::{App, Plugin};
 use bevy::input::ButtonInput;
 use bevy::prelude::{
-    AppExtStates, Commands, IntoSystemConfigs, KeyCode, MouseButton, NextState, OnEnter, OnExit,
-    Query, Res, ResMut, State, States, Update, in_state,
+    AppExtStates, Color, Commands, Component, Entity, IntoSystemConfigs, KeyCode, LinearRgba,
+    MouseButton, Name, NextState, OnEnter, OnExit, Query, Res, ResMut, State, States, Transform,
+    Update, With, in_state,
 };
+use bevy::sprite::Sprite;
 
+/// Plugin for placing new Construction Sites.
 pub struct ConstructionSitePlacementPlugin;
 impl Plugin for ConstructionSitePlacementPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_state(ConstructionPreviewState::Off);
-        app.add_systems(OnEnter(ConstructionPreviewState::On), spawn_preview_entity);
-        app.add_systems(OnExit(ConstructionPreviewState::On), despawn_preview_entity);
+        app.insert_state(ConstructionMode::Off);
+        app.add_systems(
+            OnEnter(ConstructionMode::On),
+            spawn_construction_preview_entity,
+        );
+        app.add_systems(
+            OnExit(ConstructionMode::On),
+            despawn_construction_preview_entity,
+        );
         app.add_systems(
             Update,
             (
-                toggle_construction_site_placement,
-                (
-                    move_preview_entity,
-                    create_construction_site_on_button_press,
-                )
-                    .run_if(in_state(ConstructionPreviewState::On)),
+                toggle_construction_mode,
+                (move_preview_entity, create_construction_site_on_mouse_click)
+                    .run_if(in_state(ConstructionMode::On)),
             ),
         );
     }
 }
 
+/// States indicating whether we are currently in Construction Mode.
 #[derive(States, Debug, Clone, PartialEq, Eq, Hash)]
-pub enum ConstructionPreviewState {
+pub enum ConstructionMode {
     Off,
     On,
 }
 
-pub fn toggle_construction_site_placement(
-    state: Res<State<ConstructionPreviewState>>,
-    mut next_state: ResMut<NextState<ConstructionPreviewState>>,
+/// Toggles the [ConstructionMode] between [ConstructionMode::On] and [ConstructionMode::Off] when pressing a button.
+fn toggle_construction_mode(
+    state: Res<State<ConstructionMode>>,
+    mut next_state: ResMut<NextState<ConstructionMode>>,
     keys: Res<ButtonInput<KeyCode>>,
 ) {
     if !keys.just_pressed(KeyCode::KeyV) {
@@ -49,29 +57,62 @@ pub fn toggle_construction_site_placement(
     }
 
     match state.get() {
-        ConstructionPreviewState::Off => {
-            next_state.set(ConstructionPreviewState::On);
+        ConstructionMode::Off => {
+            next_state.set(ConstructionMode::On);
         }
-        ConstructionPreviewState::On => {
-            next_state.set(ConstructionPreviewState::Off);
+        ConstructionMode::On => {
+            next_state.set(ConstructionMode::Off);
         }
     }
 }
 
-pub fn spawn_preview_entity() {
-    // TODO
+/// Marker component for the construction preview entity
+#[derive(Component)]
+struct PreviewEntityComponent {}
+
+fn spawn_construction_preview_entity(mut commands: Commands, sprites: Res<SpriteHandles>) {
+    commands.spawn((
+        Name::new("Construction Site Preview"),
+        PreviewEntityComponent {},
+        Sprite {
+            image: sprites.station.clone(),
+            color: Color::LinearRgba(LinearRgba::new(0.0, 1.0, 0.0, 0.75)),
+            ..Default::default()
+        },
+    ));
 }
 
-pub fn despawn_preview_entity() {
-    // TODO
+/// Despawns all entities marked with a [PreviewEntityComponent]
+fn despawn_construction_preview_entity(
+    mut commands: Commands,
+    query: Query<Entity, With<PreviewEntityComponent>>,
+) {
+    for x in query.iter() {
+        commands.entity(x).despawn();
+    }
 }
 
-pub fn move_preview_entity() {
-    // TODO
+/// Moves all entities marked with a [PreviewEntityComponent] to the mouse cursor.
+fn move_preview_entity(
+    mouse_cursor: Res<MouseCursor>,
+    mut query: Query<&mut Transform, With<PreviewEntityComponent>>,
+) {
+    let Some(position) = mouse_cursor.world_space else {
+        return;
+    };
+
+    if mouse_cursor.sector_space.is_none() {
+        return;
+    }
+
+    for mut transform in query.iter_mut() {
+        transform.translation = position.extend(constants::z_layers::TRANSPARENT_PREVIEW_ITEM);
+    }
 }
 
+/// Creates a new Construction Site when the player clicks the left mouse button.
 #[allow(clippy::too_many_arguments)]
-pub fn create_construction_site_on_button_press(
+fn create_construction_site_on_mouse_click(
     mut commands: Commands,
     mut sector_query: Query<(&mut SectorComponent, Option<&SectorStarComponent>)>,
     mut station_id_map: ResMut<StationIdMap>,
