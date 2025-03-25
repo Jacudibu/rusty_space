@@ -1,7 +1,7 @@
 use crate::SpriteHandles;
 use crate::components::{
-    Asteroid, BuyOrders, ConstructionSiteComponent, Gate, InSector, InteractionQueue, Inventory,
-    SelectableEntity, SellOrders, Ship, StationComponent, TradeOrder,
+    Asteroid, BuyOrders, ConstructionSiteComponent, GateComponent, InSector, InteractionQueue,
+    Inventory, SelectableEntity, SellOrders, Ship, StationComponent, TradeOrder,
 };
 use crate::entity_selection::{MouseCursor, Selected};
 use crate::game_data::{
@@ -319,7 +319,7 @@ struct SelectableComponents {
     station: Option<&'static StationComponent>,
     production: Option<&'static ProductionComponent>,
     shipyard: Option<&'static ShipyardComponent>,
-    gate: Option<&'static Gate>,
+    gate: Option<&'static GateComponent>,
     in_sector: Option<&'static InSector>,
     interaction_queue: Option<&'static InteractionQueue>,
 }

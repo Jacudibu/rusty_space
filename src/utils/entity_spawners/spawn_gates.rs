@@ -2,7 +2,7 @@ use bevy::core::Name;
 use bevy::prelude::{Commands, CubicCurve, Query, Sprite, Vec2};
 
 use crate::components::{
-    ConstantOrbit, Gate, GateConnectionComponent, MovingGateConnection, SectorComponent,
+    ConstantOrbit, GateComponent, GateConnectionComponent, MovingGateConnection, SectorComponent,
     SectorStarComponent, SelectableEntity, StarComponent,
 };
 use crate::persistence::{GateIdMap, PersistentGateId};
@@ -104,7 +104,7 @@ fn spawn_gate(
             "Gate [{},{}] -> [{},{}]",
             from.coordinate.x, from.coordinate.y, to.coordinate.x, to.coordinate.y
         )),
-        Gate::new(id, ship_curve),
+        GateComponent::new(id, ship_curve),
         SelectableEntity::Gate,
         Sprite::from_image(sprites.gate.clone()),
         simulation_transform.as_bevy_transform(constants::z_layers::GATE),

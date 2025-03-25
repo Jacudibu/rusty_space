@@ -89,7 +89,7 @@ pub fn spawn_sector(
     }
 
     if let Some(planets) = &features.planets {
-        let mut component = components::SectorPlanets {
+        let mut component = components::SectorPlanetsComponent {
             planets: Default::default(),
         };
 

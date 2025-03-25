@@ -1,4 +1,10 @@
+//! Collection of constants which are used all over the place.
+//!
+//! Ideally, the values in here should be extracted into a resource at some point to be configurable
+//! by the player and mods.
+
 use crate::simulation::prelude::Milliseconds;
+use bevy::color::{Color, LinearRgba};
 use std::ops::Range;
 
 #[cfg(debug_assertions)]
@@ -28,6 +34,15 @@ pub const TICKS_PER_SECOND: f64 = 10.0;
 
 /// How big should our sectors be?
 pub const SECTOR_SIZE: f32 = 500.0;
+
+/// The color which should be used for valid preview items.
+pub const VALID_PREVIEW_COLOR: Color = Color::LinearRgba(LinearRgba::new(0.0, 1.0, 0.0, 0.75));
+/// The color which should be used for invalid preview items.
+pub const INVALID_PREVIEW_COLOR: Color = Color::LinearRgba(LinearRgba::new(1.0, 0.0, 0.0, 0.75));
+/// The minimum distance between stations, to the sector edges and between planet orbits.
+pub const MINIMUM_DISTANCE_BETWEEN_STATIONS: f32 = 100.0;
+/// The radius of objects in space.
+pub const STATION_GATE_PLANET_RADIUS: f32 = 16.0;
 
 /// How much of [SECTOR_SIZE] is actually part of the sector. This is where the borders are drawn and stuff starts despawning.
 pub const SECTOR_AREA_PERCENTAGE: f32 = 0.99;

@@ -1,4 +1,6 @@
-use crate::components::{BuyOrders, GasGiant, InSector, Inventory, SectorComponent, SectorPlanets};
+use crate::components::{
+    BuyOrders, GasGiant, InSector, Inventory, SectorComponent, SectorPlanetsComponent,
+};
 use crate::game_data::{ItemId, ItemManifest};
 use crate::pathfinding;
 use crate::simulation::prelude::{SimulationTime, SimulationTimestamp};
@@ -29,7 +31,7 @@ pub fn handle_idle_ships(
     >,
     buy_orders: Query<(Entity, &mut BuyOrders, &InSector)>,
     mut inventories: Query<&mut Inventory>,
-    all_sectors_with_gas_giants: Query<&SectorPlanets>,
+    all_sectors_with_gas_giants: Query<&SectorPlanetsComponent>,
     all_sectors: Query<&SectorComponent>,
     all_gas_giants: Query<&GasGiant>,
     all_transforms: Query<&SimulationTransform>,
@@ -169,7 +171,7 @@ pub fn handle_idle_ships(
 #[must_use]
 fn find_nearby_sector_with_gas_giants(
     all_gas_giants: &Query<&GasGiant>,
-    all_sectors_with_planets: &Query<&SectorPlanets>,
+    all_sectors_with_planets: &Query<&SectorPlanetsComponent>,
     all_sectors: &Query<&SectorComponent>,
     in_sector: &InSector,
     gas: &ItemId,

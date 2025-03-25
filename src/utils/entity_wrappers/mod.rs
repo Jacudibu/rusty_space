@@ -1,6 +1,6 @@
 use crate::components::{
-    Asteroid, ConstructionSiteComponent, Gate, Planet, SectorComponent, Ship, StarComponent,
-    StationComponent,
+    Asteroid, ConstructionSiteComponent, GateComponent, PlanetComponent, SectorComponent, Ship,
+    StarComponent, StationComponent,
 };
 use crate::utils::entity_wrappers::typed_entity_wrapper::TypedEntityWrapper;
 
@@ -11,8 +11,8 @@ mod typed_entity_wrapper;
 pub use typed_entity::TypedEntity;
 
 pub type SectorEntity = TypedEntityWrapper<SectorComponent>;
-pub type GateEntity = TypedEntityWrapper<Gate>;
-pub type PlanetEntity = TypedEntityWrapper<Planet>;
+pub type GateEntity = TypedEntityWrapper<GateComponent>;
+pub type PlanetEntity = TypedEntityWrapper<PlanetComponent>;
 pub type ShipEntity = TypedEntityWrapper<Ship>;
 pub type StarEntity = TypedEntityWrapper<StarComponent>;
 pub type StationEntity = TypedEntityWrapper<StationComponent>;

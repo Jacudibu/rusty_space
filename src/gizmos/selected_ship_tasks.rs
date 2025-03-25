@@ -1,4 +1,4 @@
-use crate::components::Gate;
+use crate::components::GateComponent;
 use crate::entity_selection::Selected;
 use crate::simulation::ship_ai::{TaskInsideQueue, TaskQueue};
 use bevy::prelude::{
@@ -19,7 +19,7 @@ pub fn draw_selected_ship_task(
     mut gizmos: Gizmos<SelectedShipTaskGizmos>,
     selected_ships: Query<(&TaskQueue, &Transform), With<Selected>>,
     all_transforms: Query<&Transform>,
-    all_gates: Query<&Gate>,
+    all_gates: Query<&GateComponent>,
 ) {
     for (tasks, transform) in selected_ships.iter() {
         let mut current_position = transform.translation;

@@ -4,12 +4,12 @@ use crate::utils::EarthMass;
 use bevy::prelude::Component;
 
 #[derive(Component)]
-pub struct Planet {
+pub struct PlanetComponent {
     pub id: PersistentPlanetId,
     pub mass: EarthMass,
 }
 
-impl Planet {
+impl PlanetComponent {
     #[inline]
     pub fn new(id: PersistentPlanetId, mass: EarthMass) -> Self {
         Self { id, mass }

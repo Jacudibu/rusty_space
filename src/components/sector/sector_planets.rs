@@ -5,11 +5,11 @@ use bevy::utils::HashSet;
 
 /// A sector with this component features planets.
 #[derive(Component)]
-pub struct SectorPlanets {
+pub struct SectorPlanetsComponent {
     pub planets: HashSet<PlanetEntity>,
 }
 
-impl SectorPlanets {
+impl SectorPlanetsComponent {
     /// Adds the given `planet_entity` and inserts the [InSector] component to it.
     pub fn add_planet(
         &mut self,

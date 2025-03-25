@@ -1,5 +1,5 @@
 use crate::components::{
-    Asteroid, BuyOrders, Gate, InSector, Inventory, SectorComponent, SellOrders, Ship,
+    Asteroid, BuyOrders, GateComponent, InSector, Inventory, SectorComponent, SellOrders, Ship,
     StarComponent, StationComponent,
 };
 use crate::persistence::AllEntityIdMaps;
@@ -27,7 +27,7 @@ pub fn parse_session_data_into_universe_save_data(
     all_sectors: Query<&SectorComponent>,
     stars: Query<&StarComponent>,
     asteroids: Query<(&Asteroid, &SimulationTransform, &ConstantVelocity)>,
-    gates: Query<(&Gate, &InSector, &SimulationTransform)>,
+    gates: Query<(&GateComponent, &InSector, &SimulationTransform)>,
     sectors_to_save: Query<SectorSaveDataQuery>,
     ships: Query<(
         &Ship,

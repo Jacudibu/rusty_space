@@ -1,5 +1,5 @@
 use crate::components::{
-    Asteroid, ConstructionSiteComponent, Gate, Planet, Ship, StationComponent,
+    Asteroid, ConstructionSiteComponent, GateComponent, PlanetComponent, Ship, StationComponent,
 };
 use bevy::prelude::Component;
 use hexx::Hex;
@@ -64,15 +64,15 @@ pub type PersistentAsteroidId = TypedPersistentEntityId<Asteroid>;
 impl_traits!(PersistentAsteroidId, Asteroid);
 impl_typed_persistent_entity_id!(Asteroid, NEXT_ASTEROID_ID);
 
-/// A [PersistentEntityId] for [Gate]s.
-pub type PersistentGateId = TypedPersistentEntityId<Gate>;
+/// A [PersistentEntityId] for [GateComponent]s.
+pub type PersistentGateId = TypedPersistentEntityId<GateComponent>;
 impl_traits!(PersistentGateId, Gate);
-impl_typed_persistent_entity_id!(Gate, NEXT_GATE_ID);
+impl_typed_persistent_entity_id!(GateComponent, NEXT_GATE_ID);
 
-/// A [PersistentEntityId] for [Planet]s.
-pub type PersistentPlanetId = TypedPersistentEntityId<Planet>;
+/// A [PersistentEntityId] for [PlanetComponent]s.
+pub type PersistentPlanetId = TypedPersistentEntityId<PlanetComponent>;
 impl_traits!(PersistentPlanetId, Planet);
-impl_typed_persistent_entity_id!(Planet, NEXT_PLANET_ID);
+impl_typed_persistent_entity_id!(PlanetComponent, NEXT_PLANET_ID);
 
 /// A [PersistentEntityId] for [Ship]s.
 pub type PersistentShipId = TypedPersistentEntityId<Ship>;

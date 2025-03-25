@@ -4,7 +4,7 @@ use bevy::prelude::{
 };
 use std::sync::{Arc, Mutex};
 
-use crate::components::{Gate, InSector, SectorComponent};
+use crate::components::{GateComponent, InSector, SectorComponent};
 use crate::constants;
 use crate::simulation::physics::ShipVelocity;
 use crate::simulation::prelude::TaskComponent;
@@ -16,7 +16,7 @@ use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::utils::{GateEntity, SectorEntity};
 use crate::utils::{ShipEntity, interpolation};
 
-/// Ships with this [TaskComponent] are currently using a [Gate].
+/// Ships with this [TaskComponent] are currently using a [GateComponent].
 #[derive(Component)]
 pub struct UseGate {
     /// How far along the line connecting the two gates we are.
@@ -88,7 +88,7 @@ impl UseGate {
         &mut self,
         delta_travel: f32,
         transform: &mut SimulationTransform,
-        transit_curve_query: &Query<&Gate>,
+        transit_curve_query: &Query<&GateComponent>,
     ) -> TaskResult {
         self.progress += delta_travel;
         let curve = &transit_curve_query
@@ -120,7 +120,7 @@ impl UseGate {
         event_writer: EventWriter<TaskFinishedEvent<Self>>,
         time: Res<Time>,
         mut ships: Query<(Entity, &mut Self, &mut SimulationTransform)>,
-        transit_curve_query: Query<&Gate>,
+        transit_curve_query: Query<&GateComponent>,
     ) {
         let task_completions = Arc::new(Mutex::new(Vec::<TaskFinishedEvent<Self>>::new()));
         let delta_travel = time.delta_secs() / constants::SECONDS_TO_TRAVEL_THROUGH_GATE;
