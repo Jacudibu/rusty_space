@@ -5,7 +5,7 @@ use crate::persistence::AsteroidIdMap;
 use crate::simulation::asteroids::fading::FadingAsteroidsIn;
 use crate::simulation::asteroids::helpers;
 use crate::simulation::prelude::SimulationTime;
-use crate::utils::entity_spawners;
+use crate::utils::{entity_spawners, intersections};
 use bevy::math::Vec2;
 use bevy::prelude::{Commands, Entity, Query, Res, ResMut};
 
@@ -73,7 +73,7 @@ pub fn calculate_local_asteroid_respawn_position_asteroid_was_mined(
     let mut despawn_intersection = None;
 
     for edge in local_hexagon_edges.iter() {
-        if let Some(intersection) = helpers::intersect_lines(
+        if let Some(intersection) = intersections::intersect_lines(
             local_current_position,
             local_current_position + velocity * helpers::VELOCITY_MULTIPLIER,
             edge[0],

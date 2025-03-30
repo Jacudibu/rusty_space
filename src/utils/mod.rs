@@ -3,6 +3,7 @@ pub mod entity_spawners;
 mod entity_wrappers;
 mod exchange_ware_data;
 pub mod interpolation;
+pub mod intersections;
 mod key_value_resource;
 pub mod polar_coordinates;
 mod price_range;

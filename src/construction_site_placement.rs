@@ -6,8 +6,10 @@ use crate::entity_selection::MouseCursor;
 use crate::game_data::{
     ConstructableModuleId, ItemManifest, RecipeManifest, SILICA_PRODUCTION_MODULE_ID,
 };
+use crate::map_layout::MapLayout;
 use crate::persistence::{ConstructionSiteIdMap, StationIdMap};
 use crate::utils::entity_spawners::{ConstructionSiteSpawnData, StationSpawnData, spawn_station};
+use crate::utils::intersections;
 use crate::{SpriteHandles, constants};
 use bevy::app::{App, Plugin};
 use bevy::input::ButtonInput;
@@ -131,6 +133,7 @@ fn update_preview_entity(
     all_gates: Query<&Transform, With<GateComponent>>,
     all_planets: Query<&Transform, With<PlanetComponent>>,
     all_stars: Query<&Transform, With<StarComponent>>,
+    map_layout: Res<MapLayout>,
     mut gizmos: Gizmos<ConstructionSitePreviewGizmos>,
 ) {
     for (mut transform, mut sprite, mut visibility) in preview_query.iter_mut() {
@@ -141,6 +144,7 @@ fn update_preview_entity(
             &all_gates,
             &all_planets,
             &all_stars,
+            &map_layout,
         ) {
             Ok(_) => {
                 *visibility = Visibility::Visible;
@@ -150,6 +154,10 @@ fn update_preview_entity(
                 PositionValidationError::InvalidPosition => {
                     *visibility = Visibility::Hidden;
                     continue;
+                }
+                PositionValidationError::NotWithinSector => {
+                    *visibility = Visibility::Visible;
+                    constants::INVALID_PREVIEW_COLOR
                 }
                 PositionValidationError::TooCloseToSectorEdge => {
                     *visibility = Visibility::Visible;
@@ -233,8 +241,11 @@ fn create_construction_site_on_mouse_click(
 }
 
 enum PositionValidationError {
-    /// The position is not within a sector
+    /// The world position is invalid, for whatever reason
     InvalidPosition,
+
+    /// The position is not within a sector
+    NotWithinSector,
 
     /// The position is too close to one of the sector edges
     TooCloseToSectorEdge,
@@ -254,25 +265,30 @@ fn is_construction_site_position_valid(
     all_gates: &Query<&Transform, With<GateComponent>>,
     all_planets: &Query<&Transform, With<PlanetComponent>>,
     all_stars: &Query<&Transform, With<StarComponent>>,
+    map_layout: &MapLayout,
 ) -> Result<(), PositionValidationError> {
     let Some(world_pos) = position.world_space else {
         return Err(PositionValidationError::InvalidPosition);
     };
 
     let Some(sector_pos) = &position.sector_space else {
-        return Err(PositionValidationError::InvalidPosition);
+        return Err(PositionValidationError::NotWithinSector);
     };
-
-    if sector_pos.sector_position.local_position.length()
-        > constants::SECTOR_SIZE - constants::MINIMUM_DISTANCE_BETWEEN_STATIONS
-    {
-        // TODO: Line intersect with sector edges instead of just a circle
-        return Err(PositionValidationError::TooCloseToSectorEdge);
-    }
 
     let (sector, sector_planets, sector_star) = all_sectors
         .get(sector_pos.sector_position.sector.into())
         .expect("Sector Position within mouse sector pos should always be valid!");
+
+    for edge in map_layout.hex_edge_vertices {
+        if intersections::intersect_line_with_circle(
+            edge[0] + sector.world_pos,
+            edge[1] + sector.world_pos,
+            world_pos,
+            constants::STATION_GATE_PLANET_RADIUS,
+        ) {
+            return Err(PositionValidationError::TooCloseToSectorEdge);
+        }
+    }
 
     let mut conflicts = Vec::new();
     for entity in &sector.stations {
