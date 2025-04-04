@@ -17,8 +17,8 @@ use bevy::log::warn;
 use bevy::prelude::{
     AppExtStates, AppGizmoBuilder, Commands, Component, Entity, GizmoConfigGroup, Gizmos,
     IntoSystemConfigs, Isometry2d, KeyCode, MouseButton, Name, NextState, OnEnter, OnExit, Query,
-    Reflect, Res, ResMut, State, States, Transform, Update, Vec2, Visibility, With, Without,
-    in_state,
+    Reflect, Res, ResMut, Resource, State, States, Transform, Update, Vec2, Visibility, With,
+    Without, in_state,
 };
 use bevy::sprite::Sprite;
 
@@ -41,8 +41,9 @@ impl Plugin for ConstructionSitePlacementPlugin {
             (
                 toggle_construction_mode,
                 (
-                    update_preview_entity,
-                    create_construction_site_on_mouse_click,
+                    update_target_position,
+                    update_preview_entity.after(update_target_position),
+                    create_construction_site_on_mouse_click.after(update_target_position),
                 )
                     .run_if(in_state(ConstructionMode::On)),
             ),
@@ -95,6 +96,8 @@ fn spawn_construction_preview_entity(mut commands: Commands, sprites: Res<Sprite
             ..Default::default()
         },
     ));
+
+    commands.insert_resource(PreviewTargetPosition::default());
 }
 
 /// Despawns all entities marked with a [PreviewEntityComponent]
@@ -105,15 +108,28 @@ fn despawn_construction_preview_entity(
     for x in query.iter() {
         commands.entity(x).despawn();
     }
+
+    commands.remove_resource::<PreviewTargetPosition>()
 }
 
-// TODO: Split into two systems:
-//    a) position validator -> Write current state into state or resource so we don't need to query all that stuff twice
-//    b) preview update logic
+#[derive(Resource)]
+struct PreviewTargetPosition {
+    pub position_state: Result<(), PositionValidationError>,
+}
+
+impl Default for PreviewTargetPosition {
+    fn default() -> Self {
+        PreviewTargetPosition {
+            position_state: Err(PositionValidationError::InvalidPosition),
+        }
+    }
+}
+
 /// Updates the color and position of all entities marked with a [PreviewEntityComponent].
 #[allow(clippy::type_complexity)]
 fn update_preview_entity(
     mouse_cursor: Res<MouseCursor>,
+    preview_target: Res<PreviewTargetPosition>,
     mut preview_query: Query<
         (&mut Transform, &mut Sprite, &mut Visibility),
         (
@@ -124,28 +140,10 @@ fn update_preview_entity(
             Without<StarComponent>,
         ),
     >,
-    all_sectors: Query<(
-        &SectorComponent,
-        Option<&SectorPlanetsComponent>,
-        Option<&SectorStarComponent>,
-    )>,
-    all_stations: Query<&Transform, With<StationComponent>>,
-    all_gates: Query<&Transform, With<GateComponent>>,
-    all_planets: Query<&Transform, With<PlanetComponent>>,
-    all_stars: Query<&Transform, With<StarComponent>>,
-    map_layout: Res<MapLayout>,
     mut gizmos: Gizmos<ConstructionSitePreviewGizmos>,
 ) {
     for (mut transform, mut sprite, mut visibility) in preview_query.iter_mut() {
-        let color = match is_construction_site_position_valid(
-            &mouse_cursor,
-            &all_sectors,
-            &all_stations,
-            &all_gates,
-            &all_planets,
-            &all_stars,
-            &map_layout,
-        ) {
+        let color = match &preview_target.position_state {
             Ok(_) => {
                 *visibility = Visibility::Visible;
                 constants::VALID_PREVIEW_COLOR
@@ -168,7 +166,7 @@ fn update_preview_entity(
 
                     for pos in conflicts {
                         gizmos.circle_2d(
-                            Isometry2d::from_translation(pos),
+                            Isometry2d::from_translation(*pos),
                             constants::STATION_GATE_PLANET_RADIUS,
                             constants::INVALID_PREVIEW_COLOR,
                         );
@@ -204,7 +202,12 @@ fn create_construction_site_on_mouse_click(
     recipe_manifest: Res<RecipeManifest>,
     mouse_cursor: Res<MouseCursor>,
     mouse: Res<ButtonInput<MouseButton>>,
+    preview_target: Res<PreviewTargetPosition>,
 ) {
+    if preview_target.position_state.is_err() {
+        return;
+    }
+
     if !mouse.just_pressed(MouseButton::Left) {
         return;
     }
@@ -254,6 +257,33 @@ enum PositionValidationError {
     TooCloseTo(Vec<Vec2>),
 }
 
+/// Updates the [PreviewTargetPosition] resource before any of the systems depending on it are run.
+#[allow(clippy::too_many_arguments)]
+fn update_target_position(
+    mut preview_target: ResMut<PreviewTargetPosition>,
+    mouse_cursor: Res<MouseCursor>,
+    all_sectors: Query<(
+        &SectorComponent,
+        Option<&SectorPlanetsComponent>,
+        Option<&SectorStarComponent>,
+    )>,
+    all_stations: Query<&Transform, With<StationComponent>>,
+    all_gates: Query<&Transform, With<GateComponent>>,
+    all_planets: Query<&Transform, With<PlanetComponent>>,
+    all_stars: Query<&Transform, With<StarComponent>>,
+    map_layout: Res<MapLayout>,
+) {
+    preview_target.position_state = is_construction_site_position_valid(
+        &mouse_cursor,
+        &all_sectors,
+        &all_stations,
+        &all_gates,
+        &all_planets,
+        &all_stars,
+        &map_layout,
+    );
+}
+
 fn is_construction_site_position_valid(
     position: &MouseCursor,
     all_sectors: &Query<(
@@ -279,6 +309,7 @@ fn is_construction_site_position_valid(
         .get(sector_pos.sector_position.sector.into())
         .expect("Sector Position within mouse sector pos should always be valid!");
 
+    // Sector Edges
     for edge in map_layout.hex_edge_vertices {
         if intersections::intersect_line_with_circle(
             edge[0] + sector.world_pos,
@@ -290,6 +321,7 @@ fn is_construction_site_position_valid(
         }
     }
 
+    // Other Stations
     let mut conflicts = Vec::new();
     for entity in &sector.stations {
         let Ok(station) = all_stations.get(entity.into()) else {
@@ -302,6 +334,7 @@ fn is_construction_site_position_valid(
         }
     }
 
+    // Gates
     for (_, gate_pair) in &sector.gates {
         let Ok(gate) = all_gates.get(gate_pair.from.into()) else {
             warn!("Gate in sector with ID {:?} did not exist!", gate_pair.from);
@@ -313,6 +346,7 @@ fn is_construction_site_position_valid(
         }
     }
 
+    // Planets
     if let Some(planets) = sector_planets {
         for planet in &planets.planets {
             let Ok(gate) = all_planets.get(planet.into()) else {
@@ -326,6 +360,7 @@ fn is_construction_site_position_valid(
         }
     }
 
+    // Celestials
     if let Some(star) = sector_star {
         if let Ok(star) = all_stars.get(star.entity.into()) {
             if is_item_too_close(star, world_pos) {
