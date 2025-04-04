@@ -315,7 +315,7 @@ fn is_construction_site_position_valid(
             edge[0] + sector.world_pos,
             edge[1] + sector.world_pos,
             world_pos,
-            constants::STATION_GATE_PLANET_RADIUS,
+            constants::MINIMUM_DISTANCE_BETWEEN_STATIONS,
         ) {
             return Err(PositionValidationError::TooCloseToSectorEdge);
         }
