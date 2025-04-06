@@ -22,9 +22,9 @@ pub fn draw_orbit_circles(
         gizmos
             .circle_2d(
                 center,
-                orbit.polar_coordinates.radial,
+                orbit.polar_coordinates.radial_distance,
                 bevy::color::palettes::css::INDIGO,
             )
-            .resolution(32 + (orbit.polar_coordinates.radial / 5.0) as u32);
+            .resolution(32 + (orbit.polar_coordinates.radial_distance / 5.0) as u32);
     }
 }

@@ -3,7 +3,7 @@ use bevy::prelude::Vec2;
 /// Represents a position in PolarCoordinates.
 pub struct PolarCoordinates {
     /// The radial coordinate r, indicating our distance from the pole.
-    pub radial: f32,
+    pub radial_distance: f32,
     /// The polar angle. 0 when pointing to the right, increasing counterclockwise up to 360 after going full circle.
     pub angle: f32,
 }
@@ -19,15 +19,15 @@ impl PolarCoordinates {
         }
 
         Self {
-            radial: (pos.x * pos.x + pos.y * pos.y).sqrt(),
+            radial_distance: (pos.x * pos.x + pos.y * pos.y).sqrt(),
             angle: angle_in_radians.to_degrees(),
         }
     }
 
     pub fn to_cartesian(&self) -> Vec2 {
         Vec2 {
-            x: self.radial * self.angle.cos(),
-            y: self.radial * self.angle.sin(),
+            x: self.radial_distance * self.angle.cos(),
+            y: self.radial_distance * self.angle.sin(),
         }
     }
 }

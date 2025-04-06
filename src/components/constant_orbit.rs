@@ -16,7 +16,10 @@ impl ConstantOrbit {
     #[inline]
     pub fn new(polar_coordinates: PolarCoordinates, center_mass: &SolarMass) -> Self {
         Self {
-            velocity: Self::calculate_orbit_velocity(polar_coordinates.radial, center_mass),
+            velocity: Self::calculate_orbit_velocity(
+                polar_coordinates.radial_distance,
+                center_mass,
+            ),
             polar_coordinates,
         }
     }

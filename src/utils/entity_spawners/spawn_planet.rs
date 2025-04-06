@@ -1,7 +1,6 @@
 use crate::components::{ConstantOrbit, PlanetComponent, SelectableEntity};
 use crate::persistence::{PlanetIdMap, PlanetKindSaveData, SectorPlanetSaveData};
 use crate::simulation::prelude::simulation_transform::SimulationScale;
-use crate::simulation::ship_ai::AutoTradeBehavior;
 use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::utils::polar_coordinates::PolarCoordinates;
 use crate::utils::{PlanetEntity, SectorEntity, SolarMass};
@@ -31,7 +30,6 @@ pub fn spawn_planet(
         .spawn((
             Name::new(planet_data.name.clone()),
             SelectableEntity::Planet,
-            AutoTradeBehavior::default(),
             Sprite::from_image(sprites.planet.clone()),
             simulation_transform.as_bevy_transform(constants::z_layers::PLANET_AND_STARS),
             simulation_transform,

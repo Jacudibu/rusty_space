@@ -39,8 +39,8 @@ impl PrecomputedOrbitDirections {
         let b = self.directions[next_index];
 
         Vec2 {
-            x: pos.radial * a.x.lerp(b.x, t),
-            y: pos.radial * a.y.lerp(b.y, t),
+            x: pos.radial_distance * a.x.lerp(b.x, t),
+            y: pos.radial_distance * a.y.lerp(b.y, t),
         }
     }
 }

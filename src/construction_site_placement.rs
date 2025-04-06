@@ -1,6 +1,6 @@
 use crate::components::{
-    GateComponent, PlanetComponent, SectorComponent, SectorPlanetsComponent, SectorStarComponent,
-    StarComponent, StationComponent,
+    ConstantOrbit, GateComponent, PlanetComponent, SectorComponent, SectorPlanetsComponent,
+    SectorStarComponent, StarComponent, StationComponent,
 };
 use crate::entity_selection::MouseCursor;
 use crate::game_data::{
@@ -10,6 +10,7 @@ use crate::map_layout::MapLayout;
 use crate::persistence::{ConstructionSiteIdMap, StationIdMap};
 use crate::utils::entity_spawners::{ConstructionSiteSpawnData, StationSpawnData, spawn_station};
 use crate::utils::intersections;
+use crate::utils::polar_coordinates::PolarCoordinates;
 use crate::{SpriteHandles, constants};
 use bevy::app::{App, Plugin};
 use bevy::input::ButtonInput;
@@ -269,7 +270,7 @@ fn update_target_position(
     )>,
     all_stations: Query<&Transform, With<StationComponent>>,
     all_gates: Query<&Transform, With<GateComponent>>,
-    all_planets: Query<&Transform, With<PlanetComponent>>,
+    all_planets: Query<(&Transform, Option<&ConstantOrbit>), With<PlanetComponent>>,
     all_stars: Query<&Transform, With<StarComponent>>,
     map_layout: Res<MapLayout>,
 ) {
@@ -293,7 +294,7 @@ fn is_construction_site_position_valid(
     )>,
     all_stations: &Query<&Transform, With<StationComponent>>,
     all_gates: &Query<&Transform, With<GateComponent>>,
-    all_planets: &Query<&Transform, With<PlanetComponent>>,
+    all_planets: &Query<(&Transform, Option<&ConstantOrbit>), With<PlanetComponent>>,
     all_stars: &Query<&Transform, With<StarComponent>>,
     map_layout: &MapLayout,
 ) -> Result<(), PositionValidationError> {
@@ -349,13 +350,13 @@ fn is_construction_site_position_valid(
     // Planets
     if let Some(planets) = sector_planets {
         for planet in &planets.planets {
-            let Ok(gate) = all_planets.get(planet.into()) else {
+            let Ok((planet_pos, _)) = all_planets.get(planet.into()) else {
                 warn!("Planet in sector with ID {:?} did not exist!", planet);
                 continue;
             };
 
-            if is_item_too_close(gate, world_pos) {
-                conflicts.push(gate.translation.truncate());
+            if is_item_too_close(planet_pos, world_pos) {
+                conflicts.push(planet_pos.translation.truncate());
             }
         }
     }
@@ -369,6 +370,32 @@ fn is_construction_site_position_valid(
         } else {
             warn!("Star in sector with ID {:?} did not exist!", star.entity);
         };
+
+        // TODO: Snapping logic. Pull it out of this method, and add the snapped position as function argument
+        if let Some(sector_planets) = sector_planets {
+            for planet_entity in &sector_planets.planets {
+                let (_, orbit) = all_planets.get(planet_entity.into()).unwrap();
+                let orbit = orbit.unwrap();
+
+                let orbit_distance = orbit.polar_coordinates.radial_distance;
+                let min = orbit_distance - constants::MINIMUM_DISTANCE_BETWEEN_STATIONS;
+                let max = orbit_distance - constants::MINIMUM_DISTANCE_BETWEEN_STATIONS;
+
+                // TODO: only preview render min if its > 0
+                let local_pos = sector_pos.sector_position.local_position;
+                let mut desired_polar_pos = PolarCoordinates::from_cartesian(&local_pos);
+
+                let snap = desired_polar_pos.radial_distance > min
+                    && desired_polar_pos.radial_distance < max;
+                if snap {
+                    desired_polar_pos.radial_distance = orbit_distance;
+                    // TODO: Return this and add the radial distance to preview
+                    let target_pos = desired_polar_pos.to_cartesian();
+                } else {
+                    continue;
+                }
+            }
+        }
 
         // TODO: Check for Orbit conflicts with all gates, stations and planets. This will be a bit of a headache.
         //       Bonus points if we draw funny orbit gizmos and snap the position onto existing orbits when nearby.
