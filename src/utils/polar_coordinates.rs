@@ -24,10 +24,44 @@ impl PolarCoordinates {
         }
     }
 
+    /// Converts self into a [Vec2]
     pub fn to_cartesian(&self) -> Vec2 {
         Vec2 {
-            x: self.radial_distance * self.angle.cos(),
-            y: self.radial_distance * self.angle.sin(),
+            x: self.radial_distance * self.angle.to_radians().cos(),
+            y: self.radial_distance * self.angle.to_radians().sin(),
         }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use rstest::rstest;
+
+    // TODO: Extract into some type of test crate or use approx or something
+    macro_rules! assert_floating_eq {
+        ($x:expr, $y:expr, $d:expr) => {
+            if $x - $y > $d || $y - $x > $d {
+                panic!(
+                    r#"assertion failed: `(left == right (with max difference < {:?})`
+   left: `{:?}`,
+  right: `{:?}`"#,
+                    $d, $x, $y
+                );
+            }
+        };
+    }
+
+    #[rstest]
+    #[case(11.0, 55.0)]
+    #[case(-22.0, 66.0)]
+    #[case(33.0, -77.0)]
+    #[case(-44.0, -88.0)]
+    fn round_trip(#[case] x: f32, #[case] y: f32) {
+        let vec = Vec2::new(x, y);
+        let polar = PolarCoordinates::from_cartesian(&vec);
+        let back = polar.to_cartesian();
+        assert_floating_eq!(vec.x, back.x, 0.0001);
+        assert_floating_eq!(vec.y, back.y, 0.0001);
     }
 }

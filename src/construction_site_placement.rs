@@ -9,17 +9,17 @@ use crate::game_data::{
 use crate::map_layout::MapLayout;
 use crate::persistence::{ConstructionSiteIdMap, StationIdMap};
 use crate::utils::entity_spawners::{ConstructionSiteSpawnData, StationSpawnData, spawn_station};
-use crate::utils::intersections;
 use crate::utils::polar_coordinates::PolarCoordinates;
+use crate::utils::{SectorPosition, intersections};
 use crate::{SpriteHandles, constants};
 use bevy::app::{App, Plugin};
 use bevy::input::ButtonInput;
 use bevy::log::warn;
 use bevy::prelude::{
     AppExtStates, AppGizmoBuilder, Commands, Component, Entity, GizmoConfigGroup, Gizmos,
-    IntoSystemConfigs, Isometry2d, KeyCode, MouseButton, Name, NextState, OnEnter, OnExit, Query,
-    Reflect, Res, ResMut, Resource, State, States, Transform, Update, Vec2, Visibility, With,
-    Without, in_state,
+    IntoSystemConfigs, Isometry2d, KeyCode, MouseButton, Name, NextState, OnEnter, OnExit, Or,
+    Query, Reflect, Res, ResMut, Resource, State, States, Transform, Update, Vec2, Visibility,
+    With, Without, in_state,
 };
 use bevy::sprite::Sprite;
 
@@ -115,12 +115,16 @@ fn despawn_construction_preview_entity(
 
 #[derive(Resource)]
 struct PreviewTargetPosition {
+    pub world_pos: Option<Vec2>,
+    pub sector_pos: Option<SectorPosition>,
     pub position_state: Result<(), PositionValidationError>,
 }
 
 impl Default for PreviewTargetPosition {
     fn default() -> Self {
         PreviewTargetPosition {
+            world_pos: None,
+            sector_pos: None,
             position_state: Err(PositionValidationError::InvalidPosition),
         }
     }
@@ -129,7 +133,6 @@ impl Default for PreviewTargetPosition {
 /// Updates the color and position of all entities marked with a [PreviewEntityComponent].
 #[allow(clippy::type_complexity)]
 fn update_preview_entity(
-    mouse_cursor: Res<MouseCursor>,
     preview_target: Res<PreviewTargetPosition>,
     mut preview_query: Query<
         (&mut Transform, &mut Sprite, &mut Visibility),
@@ -180,7 +183,7 @@ fn update_preview_entity(
 
         sprite.color = color;
 
-        let center = mouse_cursor.world_space.unwrap();
+        let center = preview_target.world_pos.unwrap();
         transform.translation = center.extend(constants::z_layers::TRANSPARENT_PREVIEW_ITEM);
         gizmos.circle_2d(
             Isometry2d::from_translation(center),
@@ -201,7 +204,6 @@ fn create_construction_site_on_mouse_click(
     sprites: Res<SpriteHandles>,
     item_manifest: Res<ItemManifest>,
     recipe_manifest: Res<RecipeManifest>,
-    mouse_cursor: Res<MouseCursor>,
     mouse: Res<ButtonInput<MouseButton>>,
     preview_target: Res<PreviewTargetPosition>,
 ) {
@@ -214,22 +216,15 @@ fn create_construction_site_on_mouse_click(
     }
 
     // TODO: This should fire an event, which is then either processed locally or sent to the server
-    let Some(sector_pos) = &mouse_cursor.sector_space else {
+    let Some(sector_pos) = &preview_target.sector_pos else {
         return;
     };
-
-    // TODO: Test whether position is valid: Too close to other stations or sector edge
-    // TODO: Snap position to nearby orbits to avoid collisions / overlaps
 
     let construction_site =
         ConstructionSiteSpawnData::new(vec![ConstructableModuleId::ProductionModule(
             SILICA_PRODUCTION_MODULE_ID,
         )]);
-    let data = StationSpawnData::new(
-        "Fancy Station",
-        construction_site,
-        sector_pos.sector_position,
-    );
+    let data = StationSpawnData::new("Fancy Station", construction_site, *sector_pos);
 
     spawn_station(
         &mut commands,
@@ -268,137 +263,160 @@ fn update_target_position(
         Option<&SectorPlanetsComponent>,
         Option<&SectorStarComponent>,
     )>,
-    all_stations: Query<&Transform, With<StationComponent>>,
-    all_gates: Query<&Transform, With<GateComponent>>,
-    all_planets: Query<(&Transform, Option<&ConstantOrbit>), With<PlanetComponent>>,
-    all_stars: Query<&Transform, With<StarComponent>>,
+    orbiting_objects: Query<&ConstantOrbit>,
+    potentially_blocking_transforms: Query<
+        &Transform,
+        Or<(
+            With<StationComponent>,
+            With<PlanetComponent>,
+            With<StarComponent>,
+            With<GateComponent>,
+        )>,
+    >,
     map_layout: Res<MapLayout>,
 ) {
-    preview_target.position_state = is_construction_site_position_valid(
-        &mouse_cursor,
-        &all_sectors,
-        &all_stations,
-        &all_gates,
-        &all_planets,
-        &all_stars,
-        &map_layout,
-    );
-}
-
-fn is_construction_site_position_valid(
-    position: &MouseCursor,
-    all_sectors: &Query<(
-        &SectorComponent,
-        Option<&SectorPlanetsComponent>,
-        Option<&SectorStarComponent>,
-    )>,
-    all_stations: &Query<&Transform, With<StationComponent>>,
-    all_gates: &Query<&Transform, With<GateComponent>>,
-    all_planets: &Query<(&Transform, Option<&ConstantOrbit>), With<PlanetComponent>>,
-    all_stars: &Query<&Transform, With<StarComponent>>,
-    map_layout: &MapLayout,
-) -> Result<(), PositionValidationError> {
-    let Some(world_pos) = position.world_space else {
-        return Err(PositionValidationError::InvalidPosition);
+    let Some(world_pos) = mouse_cursor.world_space else {
+        preview_target.position_state = Err(PositionValidationError::InvalidPosition);
+        return;
     };
 
-    let Some(sector_pos) = &position.sector_space else {
-        return Err(PositionValidationError::NotWithinSector);
+    let Some(sector_pos) = &mouse_cursor.sector_space else {
+        preview_target.world_pos = Some(world_pos);
+        preview_target.sector_pos = None;
+        preview_target.position_state = Err(PositionValidationError::NotWithinSector);
+        return;
     };
 
     let (sector, sector_planets, sector_star) = all_sectors
         .get(sector_pos.sector_position.sector.into())
         .expect("Sector Position within mouse sector pos should always be valid!");
 
+    let blocking_entities = collect_blocking_sector_entities(sector, sector_planets, sector_star);
+
+    // TODO: Add a definitive marker component for orbit mechanics rather than just checking the star. That way we could easily orbit other things in the future!
+    let local_target_pos = if sector_star.is_some() {
+        let polar = calculate_snapped_polar_coordinates(
+            &blocking_entities,
+            sector_pos.sector_position.local_position,
+            &orbiting_objects,
+        );
+        // TODO: Add orbit gizmo
+        polar.to_cartesian()
+    } else {
+        sector_pos.sector_position.local_position
+    };
+
+    preview_target.world_pos = Some(local_target_pos + sector.world_pos);
+    preview_target.sector_pos = Some(SectorPosition {
+        local_position: local_target_pos,
+        sector: sector_pos.sector_position.sector,
+    });
+    preview_target.position_state = is_construction_site_position_valid(
+        sector.world_pos,
+        local_target_pos + sector.world_pos,
+        blocking_entities,
+        &map_layout,
+        &potentially_blocking_transforms,
+    );
+}
+
+fn collect_blocking_sector_entities(
+    sector: &SectorComponent,
+    sector_planets: Option<&SectorPlanetsComponent>,
+    sector_star: Option<&SectorStarComponent>,
+) -> Vec<Entity> {
+    let mut sector_celestials: Vec<Entity> = sector
+        .stations
+        .iter()
+        .map(Entity::from)
+        .chain(sector.gates.iter().map(|x| Entity::from(x.1.from)))
+        .collect();
+
+    if let Some(sector_planets) = sector_planets {
+        sector_celestials.extend(sector_planets.planets.iter().map(Entity::from));
+    }
+
+    if let Some(sector_star) = sector_star {
+        sector_celestials.push(sector_star.entity.into());
+    }
+
+    sector_celestials
+}
+
+/// Calculates the polar coordinates for our new station within a sector with orbit mechanics
+fn calculate_snapped_polar_coordinates(
+    sector_celestials: &Vec<Entity>,
+    local_pos: Vec2,
+    orbiting_objects: &Query<&ConstantOrbit>,
+) -> PolarCoordinates {
+    let desired_polar_pos = PolarCoordinates::from_cartesian(&local_pos);
+
+    for entity in sector_celestials {
+        let Ok(orbit) = orbiting_objects.get(*entity) else {
+            // Must be the star
+            continue;
+        };
+
+        let orbit_distance = orbit.polar_coordinates.radial_distance;
+        let min = orbit_distance - constants::MINIMUM_DISTANCE_BETWEEN_STATIONS;
+        let max = orbit_distance + constants::MINIMUM_DISTANCE_BETWEEN_STATIONS;
+
+        let snap = desired_polar_pos.radial_distance > min - constants::STATION_GATE_PLANET_RADIUS
+            && desired_polar_pos.radial_distance < max + constants::STATION_GATE_PLANET_RADIUS;
+        if snap {
+            return PolarCoordinates {
+                angle: desired_polar_pos.angle,
+                radial_distance: orbit_distance,
+            };
+        } else {
+            continue;
+        }
+    }
+
+    desired_polar_pos
+}
+
+#[allow(clippy::type_complexity)]
+fn is_construction_site_position_valid(
+    sector_world_pos: Vec2,
+    site_world_pos: Vec2,
+    blocking_entities: Vec<Entity>,
+    map_layout: &MapLayout,
+    potentially_blocking_transforms: &Query<
+        &Transform,
+        Or<(
+            With<StationComponent>,
+            With<PlanetComponent>,
+            With<StarComponent>,
+            With<GateComponent>,
+        )>,
+    >,
+) -> Result<(), PositionValidationError> {
     // Sector Edges
     for edge in map_layout.hex_edge_vertices {
         if intersections::intersect_line_with_circle(
-            edge[0] + sector.world_pos,
-            edge[1] + sector.world_pos,
-            world_pos,
+            edge[0] + sector_world_pos,
+            edge[1] + sector_world_pos,
+            site_world_pos,
             constants::MINIMUM_DISTANCE_BETWEEN_STATIONS,
         ) {
             return Err(PositionValidationError::TooCloseToSectorEdge);
         }
     }
 
-    // Other Stations
     let mut conflicts = Vec::new();
-    for entity in &sector.stations {
-        let Ok(station) = all_stations.get(entity.into()) else {
-            warn!("Station in sector with ID {:?} did not exist!", entity);
+    for entity in blocking_entities {
+        let Ok(transform) = potentially_blocking_transforms.get(entity) else {
+            warn!(
+                "Object that should block construction in sector with ID {:?} did not exist!",
+                entity
+            );
             continue;
         };
 
-        if is_item_too_close(station, world_pos) {
-            conflicts.push(station.translation.truncate());
+        if is_item_too_close(transform, site_world_pos) {
+            conflicts.push(transform.translation.truncate());
         }
-    }
-
-    // Gates
-    for (_, gate_pair) in &sector.gates {
-        let Ok(gate) = all_gates.get(gate_pair.from.into()) else {
-            warn!("Gate in sector with ID {:?} did not exist!", gate_pair.from);
-            continue;
-        };
-
-        if is_item_too_close(gate, world_pos) {
-            conflicts.push(gate.translation.truncate());
-        }
-    }
-
-    // Planets
-    if let Some(planets) = sector_planets {
-        for planet in &planets.planets {
-            let Ok((planet_pos, _)) = all_planets.get(planet.into()) else {
-                warn!("Planet in sector with ID {:?} did not exist!", planet);
-                continue;
-            };
-
-            if is_item_too_close(planet_pos, world_pos) {
-                conflicts.push(planet_pos.translation.truncate());
-            }
-        }
-    }
-
-    // Celestials
-    if let Some(star) = sector_star {
-        if let Ok(star) = all_stars.get(star.entity.into()) {
-            if is_item_too_close(star, world_pos) {
-                conflicts.push(star.translation.truncate());
-            }
-        } else {
-            warn!("Star in sector with ID {:?} did not exist!", star.entity);
-        };
-
-        // TODO: Snapping logic. Pull it out of this method, and add the snapped position as function argument
-        if let Some(sector_planets) = sector_planets {
-            for planet_entity in &sector_planets.planets {
-                let (_, orbit) = all_planets.get(planet_entity.into()).unwrap();
-                let orbit = orbit.unwrap();
-
-                let orbit_distance = orbit.polar_coordinates.radial_distance;
-                let min = orbit_distance - constants::MINIMUM_DISTANCE_BETWEEN_STATIONS;
-                let max = orbit_distance - constants::MINIMUM_DISTANCE_BETWEEN_STATIONS;
-
-                // TODO: only preview render min if its > 0
-                let local_pos = sector_pos.sector_position.local_position;
-                let mut desired_polar_pos = PolarCoordinates::from_cartesian(&local_pos);
-
-                let snap = desired_polar_pos.radial_distance > min
-                    && desired_polar_pos.radial_distance < max;
-                if snap {
-                    desired_polar_pos.radial_distance = orbit_distance;
-                    // TODO: Return this and add the radial distance to preview
-                    let target_pos = desired_polar_pos.to_cartesian();
-                } else {
-                    continue;
-                }
-            }
-        }
-
-        // TODO: Check for Orbit conflicts with all gates, stations and planets. This will be a bit of a headache.
-        //       Bonus points if we draw funny orbit gizmos and snap the position onto existing orbits when nearby.
     }
 
     if conflicts.is_empty() {
