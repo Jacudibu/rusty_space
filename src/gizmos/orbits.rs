@@ -1,6 +1,7 @@
 use bevy::prelude::{GizmoConfigGroup, GizmoConfigStore, Gizmos, Query, Reflect, ResMut, With};
 
 use crate::components::{ConstantOrbit, InSector, SectorComponent};
+use crate::constants;
 use crate::entity_selection::Selected;
 
 #[derive(Default, Reflect, GizmoConfigGroup)]
@@ -23,7 +24,7 @@ pub fn draw_orbit_circles(
             .circle_2d(
                 center,
                 orbit.polar_coordinates.radial_distance,
-                bevy::color::palettes::css::INDIGO,
+                constants::colors::ORBIT_PREVIEW_COLOR,
             )
             .resolution(32 + (orbit.polar_coordinates.radial_distance / 5.0) as u32);
     }

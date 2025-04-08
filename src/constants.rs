@@ -4,7 +4,6 @@
 //! by the player and mods.
 
 use crate::simulation::prelude::Milliseconds;
-use bevy::color::{Color, LinearRgba};
 use std::ops::Range;
 
 #[cfg(debug_assertions)]
@@ -35,10 +34,6 @@ pub const TICKS_PER_SECOND: f64 = 10.0;
 /// How big should our sectors be?
 pub const SECTOR_SIZE: f32 = 600.0;
 
-/// The color which should be used for valid preview items.
-pub const VALID_PREVIEW_COLOR: Color = Color::LinearRgba(LinearRgba::new(0.0, 1.0, 0.0, 0.75));
-/// The color which should be used for invalid preview items.
-pub const INVALID_PREVIEW_COLOR: Color = Color::LinearRgba(LinearRgba::new(1.0, 0.0, 0.0, 0.75));
 /// The minimum distance between stations, to the sector edges and between planet orbits.
 pub const MINIMUM_DISTANCE_BETWEEN_STATIONS: f32 = 100.0;
 /// The radius of objects in space.
@@ -59,6 +54,18 @@ pub const DOCKING_DISTANCE_TO_STATION_SQUARED: f32 =
     DOCKING_DISTANCE_TO_STATION * DOCKING_DISTANCE_TO_STATION;
 
 pub const SECONDS_BETWEEN_SHIP_BEHAVIOR_IDLE_UPDATES: u64 = 2;
+
+pub mod colors {
+    use bevy::color::{Color, LinearRgba};
+
+    /// The color which should be used for valid preview items.
+    pub const VALID_PREVIEW_COLOR: Color = Color::LinearRgba(LinearRgba::new(0.0, 1.0, 0.0, 0.75));
+    /// The color which should be used for invalid preview items.
+    pub const INVALID_PREVIEW_COLOR: Color =
+        Color::LinearRgba(LinearRgba::new(1.0, 0.0, 0.0, 0.75));
+    /// The color which should be used for orbit previews
+    pub const ORBIT_PREVIEW_COLOR: Color = Color::linear_rgba(0.0, 0.0, 1.0, 0.75);
+}
 
 pub mod z_layers {
     pub const ASTEROID: f32 = 0.0;

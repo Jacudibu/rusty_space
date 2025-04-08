@@ -13,13 +13,14 @@ use crate::utils::polar_coordinates::PolarCoordinates;
 use crate::utils::{SectorPosition, intersections};
 use crate::{SpriteHandles, constants};
 use bevy::app::{App, Plugin};
+use bevy::ecs::query::QueryFilter;
 use bevy::input::ButtonInput;
 use bevy::log::warn;
 use bevy::prelude::{
-    AppExtStates, AppGizmoBuilder, Color, Commands, Component, Entity, GizmoConfig,
-    GizmoConfigGroup, GizmoLineStyle, Gizmos, IntoSystemConfigs, Isometry2d, KeyCode, MouseButton,
-    Name, NextState, OnEnter, OnExit, Or, Query, Reflect, Res, ResMut, Resource, State, States,
-    Transform, Update, Vec2, Visibility, With, Without, in_state,
+    AppExtStates, AppGizmoBuilder, Commands, Component, Entity, GizmoConfig, GizmoConfigGroup,
+    GizmoLineStyle, Gizmos, IntoSystemConfigs, Isometry2d, KeyCode, MouseButton, Name, NextState,
+    OnEnter, OnExit, Or, Query, Reflect, Res, ResMut, Resource, State, States, Transform, Update,
+    Vec2, Visibility, With, Without, in_state,
 };
 use bevy::sprite::Sprite;
 
@@ -33,6 +34,7 @@ impl Plugin for ConstructionSitePlacementPlugin {
             DottedConstructionSitePreviewGizmos,
             GizmoConfig {
                 line_style: GizmoLineStyle::Dotted,
+                line_width: 1.0,
                 ..Default::default()
             },
         );
@@ -92,11 +94,11 @@ struct PreviewEntityComponent {}
 
 /// [GizmoConfigGroup] for all gizmos related to Construction Site Previews.
 #[derive(Default, Reflect, GizmoConfigGroup)]
-pub struct ConstructionSitePreviewGizmos;
+struct ConstructionSitePreviewGizmos;
 
 /// [GizmoConfigGroup] for all gizmos related to Construction Site Previews with dotted lines.
 #[derive(Default, Reflect, GizmoConfigGroup)]
-pub struct DottedConstructionSitePreviewGizmos;
+struct DottedConstructionSitePreviewGizmos;
 
 fn spawn_construction_preview_entity(mut commands: Commands, sprites: Res<SpriteHandles>) {
     commands.spawn((
@@ -104,7 +106,7 @@ fn spawn_construction_preview_entity(mut commands: Commands, sprites: Res<Sprite
         PreviewEntityComponent {},
         Sprite {
             image: sprites.station.clone(),
-            color: constants::INVALID_PREVIEW_COLOR,
+            color: constants::colors::INVALID_PREVIEW_COLOR,
             ..Default::default()
         },
     ));
@@ -164,61 +166,52 @@ fn update_preview_entity(
     mut gizmos: Gizmos<ConstructionSitePreviewGizmos>,
     mut gizmos_dotted: Gizmos<DottedConstructionSitePreviewGizmos>,
 ) {
-    for (mut transform, mut sprite, mut visibility) in preview_query.iter_mut() {
-        let color = match &preview_target.position_state {
-            Ok(_) => {
-                *visibility = Visibility::Visible;
-                constants::VALID_PREVIEW_COLOR
+    let (mut preview_transform, mut preview_sprite, mut preview_visibility) =
+        preview_query.single_mut();
+
+    match &preview_target.position_state {
+        Ok(_) => {}
+        Err(e) => match e {
+            PositionValidationError::InvalidPosition => {
+                *preview_visibility = Visibility::Hidden;
+                return;
             }
-            Err(e) => match e {
-                PositionValidationError::InvalidPosition => {
-                    *visibility = Visibility::Hidden;
-                    continue;
+            PositionValidationError::NotWithinSector => {}
+            PositionValidationError::TooCloseToSectorEdge => {}
+            PositionValidationError::TooCloseTo(conflicts) => {
+                for pos in conflicts {
+                    gizmos.circle_2d(
+                        Isometry2d::from_translation(*pos),
+                        constants::STATION_GATE_PLANET_RADIUS,
+                        constants::colors::INVALID_PREVIEW_COLOR,
+                    );
                 }
-                PositionValidationError::NotWithinSector => {
-                    *visibility = Visibility::Visible;
-                    constants::INVALID_PREVIEW_COLOR
-                }
-                PositionValidationError::TooCloseToSectorEdge => {
-                    *visibility = Visibility::Visible;
-                    constants::INVALID_PREVIEW_COLOR
-                }
-                PositionValidationError::TooCloseTo(conflicts) => {
-                    *visibility = Visibility::Visible;
-
-                    for pos in conflicts {
-                        gizmos.circle_2d(
-                            Isometry2d::from_translation(*pos),
-                            constants::STATION_GATE_PLANET_RADIUS,
-                            constants::INVALID_PREVIEW_COLOR,
-                        );
-                    }
-
-                    constants::INVALID_PREVIEW_COLOR
-                }
-            },
-        };
-
-        sprite.color = color;
-
-        let center = preview_target.world_pos.unwrap();
-        transform.translation = center.extend(constants::z_layers::TRANSPARENT_PREVIEW_ITEM);
-        gizmos.circle_2d(
-            Isometry2d::from_translation(center),
-            constants::MINIMUM_DISTANCE_BETWEEN_STATIONS,
-            color,
-        );
-    }
-
-    let Some(world_pos) = preview_target.world_pos else {
-        return;
+            }
+        },
     };
+
+    *preview_visibility = Visibility::Visible;
+
+    let color = if preview_target.position_state.is_ok() {
+        constants::colors::VALID_PREVIEW_COLOR
+    } else {
+        constants::colors::INVALID_PREVIEW_COLOR
+    };
+
+    preview_sprite.color = color;
+
+    let world_pos = preview_target.world_pos.unwrap();
+    preview_transform.translation = world_pos.extend(constants::z_layers::TRANSPARENT_PREVIEW_ITEM);
+    gizmos.circle_2d(
+        Isometry2d::from_translation(world_pos),
+        constants::MINIMUM_DISTANCE_BETWEEN_STATIONS,
+        color,
+    );
 
     let Some(sector_pos) = preview_target.sector_pos else {
         return;
     };
 
-    const ORBIT_PREVIEW_COLOR: Color = Color::Srgba(bevy::color::palettes::tailwind::BLUE_500);
     let sector_center = world_pos - sector_pos.local_position;
     for gizmo in preview_target.gizmos.iter() {
         match gizmo {
@@ -226,18 +219,18 @@ fn update_preview_entity(
                 gizmos.circle_2d(
                     Isometry2d::from_translation(sector_center),
                     *radius,
-                    ORBIT_PREVIEW_COLOR,
+                    constants::colors::ORBIT_PREVIEW_COLOR,
                 );
 
                 gizmos_dotted.circle_2d(
                     Isometry2d::from_translation(sector_center),
                     radius + constants::MINIMUM_DISTANCE_BETWEEN_STATIONS,
-                    ORBIT_PREVIEW_COLOR,
+                    constants::colors::ORBIT_PREVIEW_COLOR,
                 );
                 gizmos_dotted.circle_2d(
                     Isometry2d::from_translation(sector_center),
                     radius - constants::MINIMUM_DISTANCE_BETWEEN_STATIONS,
-                    ORBIT_PREVIEW_COLOR,
+                    constants::colors::ORBIT_PREVIEW_COLOR,
                 );
             }
         }
@@ -304,6 +297,20 @@ enum PositionValidationError {
     TooCloseTo(Vec<Vec2>),
 }
 
+/// A [QueryFilter] which filters for all objects big enough to block a construction site.
+#[derive(QueryFilter)]
+#[allow(clippy::type_complexity)]
+struct ConstructionBlockingItemFilter {
+    tuple: (
+        Or<(
+            With<StationComponent>,
+            With<PlanetComponent>,
+            With<StarComponent>,
+            With<GateComponent>,
+        )>,
+    ),
+}
+
 /// Updates the [PreviewTargetPosition] resource before any of the systems depending on it are run.
 #[allow(clippy::too_many_arguments)]
 fn update_target_position(
@@ -315,15 +322,7 @@ fn update_target_position(
         Option<&SectorStarComponent>,
     )>,
     orbiting_objects: Query<&ConstantOrbit>,
-    potentially_blocking_transforms: Query<
-        &Transform,
-        Or<(
-            With<StationComponent>,
-            With<PlanetComponent>,
-            With<StarComponent>,
-            With<GateComponent>,
-        )>,
-    >,
+    potentially_blocking_transforms: Query<&Transform, ConstructionBlockingItemFilter>,
     map_layout: Res<MapLayout>,
 ) {
     preview_target.gizmos.clear();
@@ -442,15 +441,7 @@ fn is_construction_site_position_valid(
     site_world_pos: Vec2,
     blocking_entities: Vec<Entity>,
     map_layout: &MapLayout,
-    potentially_blocking_transforms: &Query<
-        &Transform,
-        Or<(
-            With<StationComponent>,
-            With<PlanetComponent>,
-            With<StarComponent>,
-            With<GateComponent>,
-        )>,
-    >,
+    potentially_blocking_transforms: &Query<&Transform, ConstructionBlockingItemFilter>,
 ) -> Result<(), PositionValidationError> {
     // Sector Edges
     for edge in map_layout.hex_edge_vertices {

@@ -1,14 +1,17 @@
 use crate::camera::main_camera::MainCamera;
 use crate::camera::{ZOOM_SPEED_KEYBOARD, ZOOM_SPEED_MOUSE};
-use bevy::input::mouse::MouseWheel;
 use bevy::input::ButtonInput;
+use bevy::input::mouse::MouseWheel;
 use bevy::math::VectorSpace;
 use bevy::prelude::{
     Component, EventReader, KeyCode, OrthographicProjection, Query, Real, Res, Time, With,
 };
 
+/// How far can we zoom in?
 const MIN_ZOOM: f32 = 0.25;
-const MAX_ZOOM: f32 = 4.0;
+/// How far can we zoom out?
+const MAX_ZOOM: f32 = 6.0;
+/// How swiftly should the zooming motion slow down?
 const ZOOM_SLOWDOWN: f32 = 10.0;
 
 pub fn zoom_camera_with_buttons(
