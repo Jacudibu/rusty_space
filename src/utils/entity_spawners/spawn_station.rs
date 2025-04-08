@@ -15,8 +15,9 @@ use crate::utils::{ConstructionSiteEntity, SectorPosition, StationEntity};
 use crate::{SpriteHandles, constants};
 use bevy::core::Name;
 use bevy::math::Vec2;
-use bevy::prelude::{Commands, Query, Sprite, default};
+use bevy::prelude::{BuildChildren, Commands, Query, Sprite, Transform, default};
 use bevy::sprite::Anchor;
+use hexx::Vec3;
 use std::ops::Not;
 
 /// Spawn Data for new Stations.
@@ -127,14 +128,14 @@ pub fn spawn_station(
     );
 
     // TODO: Icon EntityID needs to be persisted since we want to be able to change it
-    let _icon_entity = commands
+    let icon_entity = commands
         .spawn((
             Name::new(format!("{} (Icon)", data.name)),
             Sprite {
                 image: icon_sprite,
                 ..default()
             },
-            simulation_transform.as_bevy_transform(constants::z_layers::STATION_ICON),
+            Transform::from_translation(Vec3::new(0.0, 0.0, constants::z_layers::STATION_ICON)),
         ))
         .id();
 
@@ -161,11 +162,13 @@ pub fn spawn_station(
             &data.name,
             data.sector_position,
             entity.into(),
+            star.map(|x| star_query.get(x.entity.into()).unwrap()),
             construction_site,
         )
     });
 
     let mut entity_commands = commands.entity(entity);
+    entity_commands.add_child(icon_entity);
     entity_commands.insert(StationComponent::new(data.id, construction_site));
 
     let buy_sell_and_production_count = {
@@ -301,6 +304,7 @@ fn spawn_construction_site(
     station_name: &str,
     sector_position: SectorPosition,
     station_entity: StationEntity,
+    star: Option<&StarComponent>,
     data: ConstructionSiteSpawnData,
 ) -> ConstructionSiteEntity {
     let simulation_transform =
@@ -323,22 +327,30 @@ fn spawn_construction_site(
     //         (only necessary in sectors with some form of perpetual motion)
     let entity = commands
         .spawn((
-            Name::new(station_name.to_string() + " (Build Site)"),
+            Name::new(station_name.to_string() + " (Construction Site)"),
             construction_site,
             simulation_transform.as_bevy_transform(constants::z_layers::BUILD_SITE),
+            SimulationTransform::new(
+                simulation_transform.translation,
+                simulation_transform.rotation,
+            ),
+            SimulationScale::default(),
             Sprite {
                 image: sprites.construction_site.clone(),
                 anchor: Anchor::Custom(Vec2::splat(-0.7)),
                 ..Default::default()
             },
-            SimulationTransform::new(
-                simulation_transform.translation,
-                simulation_transform.rotation,
-            ),
             Inventory::new(u32::MAX), // TODO: This should be a special inventory with precise capacities for the required materials
             BuyOrders::default(), // TODO: These should sync with the inventory capacities. Prices are a bit complicated, but MAX is enough for starters.
         ))
         .id();
+
+    if let Some(star) = star {
+        let polar_coordinates = PolarCoordinates::from_cartesian(&sector_position.local_position);
+        commands
+            .entity(entity)
+            .insert(ConstantOrbit::new(polar_coordinates, &star.mass));
+    }
 
     let entity = ConstructionSiteEntity::from(entity);
     construction_site_id_map.insert(data.id, entity);
