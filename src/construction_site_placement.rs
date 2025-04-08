@@ -16,10 +16,10 @@ use bevy::app::{App, Plugin};
 use bevy::input::ButtonInput;
 use bevy::log::warn;
 use bevy::prelude::{
-    AppExtStates, AppGizmoBuilder, Commands, Component, Entity, GizmoConfigGroup, Gizmos,
-    IntoSystemConfigs, Isometry2d, KeyCode, MouseButton, Name, NextState, OnEnter, OnExit, Or,
-    Query, Reflect, Res, ResMut, Resource, State, States, Transform, Update, Vec2, Visibility,
-    With, Without, in_state,
+    AppExtStates, AppGizmoBuilder, Color, Commands, Component, Entity, GizmoConfig,
+    GizmoConfigGroup, GizmoLineStyle, Gizmos, IntoSystemConfigs, Isometry2d, KeyCode, MouseButton,
+    Name, NextState, OnEnter, OnExit, Or, Query, Reflect, Res, ResMut, Resource, State, States,
+    Transform, Update, Vec2, Visibility, With, Without, in_state,
 };
 use bevy::sprite::Sprite;
 
@@ -29,6 +29,13 @@ impl Plugin for ConstructionSitePlacementPlugin {
     fn build(&self, app: &mut App) {
         app.insert_state(ConstructionMode::Off);
         app.init_gizmo_group::<ConstructionSitePreviewGizmos>();
+        app.insert_gizmo_config(
+            DottedConstructionSitePreviewGizmos,
+            GizmoConfig {
+                line_style: GizmoLineStyle::Dotted,
+                ..Default::default()
+            },
+        );
         app.add_systems(
             OnEnter(ConstructionMode::On),
             spawn_construction_preview_entity,
@@ -87,6 +94,10 @@ struct PreviewEntityComponent {}
 #[derive(Default, Reflect, GizmoConfigGroup)]
 pub struct ConstructionSitePreviewGizmos;
 
+/// [GizmoConfigGroup] for all gizmos related to Construction Site Previews with dotted lines.
+#[derive(Default, Reflect, GizmoConfigGroup)]
+pub struct DottedConstructionSitePreviewGizmos;
+
 fn spawn_construction_preview_entity(mut commands: Commands, sprites: Res<SpriteHandles>) {
     commands.spawn((
         Name::new("Construction Site Preview"),
@@ -113,11 +124,16 @@ fn despawn_construction_preview_entity(
     commands.remove_resource::<PreviewTargetPosition>()
 }
 
+enum PreviewGizmos {
+    PolarRadius { radius: f32 },
+}
+
 #[derive(Resource)]
 struct PreviewTargetPosition {
     pub world_pos: Option<Vec2>,
     pub sector_pos: Option<SectorPosition>,
     pub position_state: Result<(), PositionValidationError>,
+    pub gizmos: Vec<PreviewGizmos>,
 }
 
 impl Default for PreviewTargetPosition {
@@ -126,6 +142,7 @@ impl Default for PreviewTargetPosition {
             world_pos: None,
             sector_pos: None,
             position_state: Err(PositionValidationError::InvalidPosition),
+            gizmos: Vec::default(),
         }
     }
 }
@@ -145,6 +162,7 @@ fn update_preview_entity(
         ),
     >,
     mut gizmos: Gizmos<ConstructionSitePreviewGizmos>,
+    mut gizmos_dotted: Gizmos<DottedConstructionSitePreviewGizmos>,
 ) {
     for (mut transform, mut sprite, mut visibility) in preview_query.iter_mut() {
         let color = match &preview_target.position_state {
@@ -190,6 +208,39 @@ fn update_preview_entity(
             constants::MINIMUM_DISTANCE_BETWEEN_STATIONS,
             color,
         );
+    }
+
+    let Some(world_pos) = preview_target.world_pos else {
+        return;
+    };
+
+    let Some(sector_pos) = preview_target.sector_pos else {
+        return;
+    };
+
+    const ORBIT_PREVIEW_COLOR: Color = Color::Srgba(bevy::color::palettes::tailwind::BLUE_500);
+    let sector_center = world_pos - sector_pos.local_position;
+    for gizmo in preview_target.gizmos.iter() {
+        match gizmo {
+            PreviewGizmos::PolarRadius { radius } => {
+                gizmos.circle_2d(
+                    Isometry2d::from_translation(sector_center),
+                    *radius,
+                    ORBIT_PREVIEW_COLOR,
+                );
+
+                gizmos_dotted.circle_2d(
+                    Isometry2d::from_translation(sector_center),
+                    radius + constants::MINIMUM_DISTANCE_BETWEEN_STATIONS,
+                    ORBIT_PREVIEW_COLOR,
+                );
+                gizmos_dotted.circle_2d(
+                    Isometry2d::from_translation(sector_center),
+                    radius - constants::MINIMUM_DISTANCE_BETWEEN_STATIONS,
+                    ORBIT_PREVIEW_COLOR,
+                );
+            }
+        }
     }
 }
 
@@ -275,6 +326,7 @@ fn update_target_position(
     >,
     map_layout: Res<MapLayout>,
 ) {
+    preview_target.gizmos.clear();
     let Some(world_pos) = mouse_cursor.world_space else {
         preview_target.position_state = Err(PositionValidationError::InvalidPosition);
         return;
@@ -300,7 +352,9 @@ fn update_target_position(
             sector_pos.sector_position.local_position,
             &orbiting_objects,
         );
-        // TODO: Add orbit gizmo
+        preview_target.gizmos.push(PreviewGizmos::PolarRadius {
+            radius: polar.radial_distance,
+        });
         polar.to_cartesian()
     } else {
         sector_pos.sector_position.local_position
