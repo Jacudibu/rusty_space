@@ -9,6 +9,14 @@ pub struct PolarCoordinates {
 }
 
 impl PolarCoordinates {
+    /// Creates a new instance of [Self]
+    pub fn new(radial_distance: f32, angle: f32) -> Self {
+        Self {
+            radial_distance,
+            angle,
+        }
+    }
+
     /// Converts a regular position represented as a [Vec2] into [PolarCoordinates].
     pub fn from_cartesian(pos: &Vec2) -> Self {
         let mut angle_in_radians = pos.y.atan2(pos.x);

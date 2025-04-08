@@ -7,6 +7,7 @@ use crate::game_data::{
 use crate::persistence::local_hex_position::LocalHexPosition;
 use crate::persistence::test_universe::coordinates::{BOTTOM_LEFT, CENTER};
 use crate::persistence::{SaveDataCollection, StationSaveData};
+use crate::utils::polar_coordinates::PolarCoordinates;
 use bevy::prelude::Vec2;
 
 pub fn create_test_data() -> SaveDataCollection<StationSaveData> {
@@ -14,22 +15,7 @@ pub fn create_test_data() -> SaveDataCollection<StationSaveData> {
 
     result
         .add(
-            LocalHexPosition::new(CENTER, Vec2::new(0.0, 200.0)),
-            "Crystal Processor".into(),
-        )
-        .with_production(1, SILICA_PRODUCTION_MODULE_ID, SILICA_RECIPE_ID)
-        .with_buys(vec![CRYSTAL_ORE_ITEM_ID])
-        .with_sells(vec![SILICA_ITEM_ID])
-        .with_construction_site(
-            vec![ConstructableModuleId::ProductionModule(
-                SILICA_PRODUCTION_MODULE_ID,
-            )],
-            0.0,
-        );
-
-    result
-        .add(
-            LocalHexPosition::new(BOTTOM_LEFT, Vec2::new(-200.0, -200.0)),
+            LocalHexPosition::from_polar(BOTTOM_LEFT, PolarCoordinates::new(200.0, 220.0)),
             "Forge".into(),
         )
         .with_production(
@@ -49,7 +35,22 @@ pub fn create_test_data() -> SaveDataCollection<StationSaveData> {
 
     result
         .add(
-            LocalHexPosition::new(CENTER, Vec2::new(200.0, -200.0)),
+            LocalHexPosition::from_polar(CENTER, PolarCoordinates::new(200.0, 90.0)),
+            "Crystal Processor".into(),
+        )
+        .with_production(1, SILICA_PRODUCTION_MODULE_ID, SILICA_RECIPE_ID)
+        .with_buys(vec![CRYSTAL_ORE_ITEM_ID])
+        .with_sells(vec![SILICA_ITEM_ID])
+        .with_construction_site(
+            vec![ConstructableModuleId::ProductionModule(
+                SILICA_PRODUCTION_MODULE_ID,
+            )],
+            0.0,
+        );
+
+    result
+        .add(
+            LocalHexPosition::from_polar(CENTER, PolarCoordinates::new(200.0, 300.0)),
             "Wafer Fab".into(),
         )
         .with_production(3, WAFERS_PRODUCTION_MODULE_ID, WAFERS_RECIPE_ID)
@@ -66,10 +67,7 @@ pub fn create_test_data() -> SaveDataCollection<StationSaveData> {
         );
 
     result
-        .add(
-            LocalHexPosition::new(CENTER, Vec2::new(0.0, 0.0)),
-            "Shipyard".into(),
-        )
+        .add(LocalHexPosition::new(CENTER, Vec2::ZERO), "Shipyard".into())
         .with_shipyard(2, MOCK_SHIPYARD_MODULE_ID)
         .with_buys(vec![REFINED_METALS_ITEM_ID, WAFER_ITEM_ID]);
 

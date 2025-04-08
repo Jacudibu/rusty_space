@@ -24,14 +24,14 @@ pub fn create_test_data(
         .with_star(SectorStarSaveData::new())
         .with_planet(SectorPlanetSaveData::new(
             PolarCoordinates {
-                radial_distance: 50.0,
+                radial_distance: 120.0,
                 angle: 100.0,
             }
             .to_cartesian(),
         ))
         .with_planet(SectorPlanetSaveData::new(
             PolarCoordinates {
-                radial_distance: 200.0,
+                radial_distance: 240.0,
                 angle: 210.0,
             }
             .to_cartesian(),
@@ -39,7 +39,7 @@ pub fn create_test_data(
         .with_planet(
             SectorPlanetSaveData::new(
                 PolarCoordinates {
-                    radial_distance: 350.0,
+                    radial_distance: 360.0,
                     angle: 0.0,
                 }
                 .to_cartesian(),

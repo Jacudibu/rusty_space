@@ -2,15 +2,19 @@ use crate::components::{InSector, SectorComponent};
 use crate::persistence::SectorIdMap;
 use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::utils::SectorPosition;
+use crate::utils::polar_coordinates::PolarCoordinates;
 use bevy::math::Vec2;
 use bevy::prelude::Query;
 use hexx::Hex;
 use serde::{Deserialize, Serialize};
 
+/// Represents a persist-able local position of an object within a specific hexagon.
 #[derive(Serialize, Deserialize)]
 #[cfg_attr(test, derive(Clone, Debug, PartialEq))]
 pub struct LocalHexPosition {
+    /// The [Hex] representing the sector of this position.
     pub sector: Hex,
+    /// The local position within the sector.
     pub position: Vec2,
 }
 
@@ -18,6 +22,15 @@ impl LocalHexPosition {
     #[inline]
     pub fn new(sector: Hex, position: Vec2) -> Self {
         Self { sector, position }
+    }
+
+    /// Creates a new instance of [LocalHexPosition] from [PolarCoordinates]
+    #[inline]
+    pub fn from_polar(sector: Hex, position: PolarCoordinates) -> Self {
+        Self {
+            sector,
+            position: position.to_cartesian(),
+        }
     }
 
     #[inline]
