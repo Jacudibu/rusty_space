@@ -33,7 +33,7 @@ pub const ASTEROID_ROTATION_RANDOM_RANGE: Range<f32> = -0.001..0.001;
 pub const TICKS_PER_SECOND: f64 = 10.0;
 
 /// How big should our sectors be?
-pub const SECTOR_SIZE: f32 = 500.0;
+pub const SECTOR_SIZE: f32 = 600.0;
 
 /// The color which should be used for valid preview items.
 pub const VALID_PREVIEW_COLOR: Color = Color::LinearRgba(LinearRgba::new(0.0, 1.0, 0.0, 0.75));

@@ -351,6 +351,8 @@ fn calculate_snapped_polar_coordinates(
 ) -> PolarCoordinates {
     let desired_polar_pos = PolarCoordinates::from_cartesian(&local_pos);
 
+    let mut closest_position = None;
+    let mut closest_distance = f32::MAX;
     for entity in sector_celestials {
         let Ok(orbit) = orbiting_objects.get(*entity) else {
             // Must be the star
@@ -364,16 +366,20 @@ fn calculate_snapped_polar_coordinates(
         let snap = desired_polar_pos.radial_distance > min - constants::STATION_GATE_PLANET_RADIUS
             && desired_polar_pos.radial_distance < max + constants::STATION_GATE_PLANET_RADIUS;
         if snap {
-            return PolarCoordinates {
-                angle: desired_polar_pos.angle,
-                radial_distance: orbit_distance,
-            };
+            let distance_to_orbit = (orbit_distance - desired_polar_pos.radial_distance).abs();
+            if distance_to_orbit < closest_distance {
+                closest_distance = distance_to_orbit;
+                closest_position = Some(PolarCoordinates {
+                    angle: desired_polar_pos.angle,
+                    radial_distance: orbit_distance,
+                });
+            }
         } else {
             continue;
         }
     }
 
-    desired_polar_pos
+    closest_position.unwrap_or(desired_polar_pos)
 }
 
 #[allow(clippy::type_complexity)]
