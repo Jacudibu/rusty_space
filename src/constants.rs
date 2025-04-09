@@ -3,6 +3,7 @@
 //! Ideally, the values in here should be extracted into a resource at some point to be configurable
 //! by the player and mods.
 
+use crate::constants;
 use crate::simulation::prelude::Milliseconds;
 use std::ops::Range;
 
@@ -31,16 +32,17 @@ pub const ASTEROID_ROTATION_RANDOM_RANGE: Range<f32> = -0.001..0.001;
 
 pub const TICKS_PER_SECOND: f64 = 10.0;
 
-/// How big should our sectors be?
+/// How big should our sectors be? This is the radius of the hexagon's circumcircle (The circle which touches all six corners).
 pub const SECTOR_SIZE: f32 = 600.0;
+/// How much of [SECTOR_SIZE] is actually part of the sector. This is where the borders are drawn and stuff starts despawning.
+pub const SECTOR_AREA_PERCENTAGE: f32 = 0.99;
+/// The Radius of a sector's incircle (the circle which touches all six edges) with [SECTOR_AREA_PERCENTAGE] taken into account.
+pub const SECTOR_INCIRCLE_RADIUS: f32 = SECTOR_SIZE * SECTOR_AREA_PERCENTAGE * 0.8666666;
 
 /// The minimum distance between stations, to the sector edges and between planet orbits.
 pub const MINIMUM_DISTANCE_BETWEEN_STATIONS: f32 = 100.0;
 /// The radius of objects in space.
 pub const STATION_GATE_PLANET_RADIUS: f32 = 16.0;
-
-/// How much of [SECTOR_SIZE] is actually part of the sector. This is where the borders are drawn and stuff starts despawning.
-pub const SECTOR_AREA_PERCENTAGE: f32 = 0.99;
 
 pub const ASTEROID_RESPAWN_TIME: Milliseconds = 5000;
 

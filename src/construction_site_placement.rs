@@ -345,7 +345,8 @@ fn update_target_position(
     let blocking_entities = collect_blocking_sector_entities(sector, sector_planets, sector_star);
 
     // TODO: Add a definitive marker component for orbit mechanics rather than just checking the star. That way we could easily orbit other things in the future!
-    let local_target_pos = if sector_star.is_some() {
+    let has_orbit_mechanics = sector_star.is_some();
+    let local_target_pos = if has_orbit_mechanics {
         let polar = calculate_snapped_polar_coordinates(
             &blocking_entities,
             sector_pos.sector_position.local_position,
@@ -366,9 +367,11 @@ fn update_target_position(
     });
     preview_target.position_state = is_construction_site_position_valid(
         sector.world_pos,
+        local_target_pos,
         local_target_pos + sector.world_pos,
         blocking_entities,
         &map_layout,
+        has_orbit_mechanics,
         &potentially_blocking_transforms,
     );
 }
@@ -438,20 +441,30 @@ fn calculate_snapped_polar_coordinates(
 #[allow(clippy::type_complexity)]
 fn is_construction_site_position_valid(
     sector_world_pos: Vec2,
+    site_local_pos: Vec2,
     site_world_pos: Vec2,
     blocking_entities: Vec<Entity>,
     map_layout: &MapLayout,
+    has_orbit_mechanic: bool,
     potentially_blocking_transforms: &Query<&Transform, ConstructionBlockingItemFilter>,
 ) -> Result<(), PositionValidationError> {
     // Sector Edges
-    for edge in map_layout.hex_edge_vertices {
-        if intersections::intersect_line_with_circle(
-            edge[0] + sector_world_pos,
-            edge[1] + sector_world_pos,
-            site_world_pos,
-            constants::MINIMUM_DISTANCE_BETWEEN_STATIONS,
-        ) {
+    if has_orbit_mechanic {
+        if site_local_pos.length()
+            > constants::SECTOR_INCIRCLE_RADIUS - constants::MINIMUM_DISTANCE_BETWEEN_STATIONS
+        {
             return Err(PositionValidationError::TooCloseToSectorEdge);
+        }
+    } else {
+        for edge in map_layout.hex_edge_vertices {
+            if intersections::intersect_line_with_circle(
+                edge[0] + sector_world_pos,
+                edge[1] + sector_world_pos,
+                site_world_pos,
+                constants::MINIMUM_DISTANCE_BETWEEN_STATIONS,
+            ) {
+                return Err(PositionValidationError::TooCloseToSectorEdge);
+            }
         }
     }
 
@@ -477,6 +490,7 @@ fn is_construction_site_position_valid(
     }
 }
 
+#[inline]
 fn is_item_too_close(construction_pos: &Transform, pos: Vec2) -> bool {
     pos.distance(construction_pos.translation.truncate())
         < constants::MINIMUM_DISTANCE_BETWEEN_STATIONS + constants::STATION_GATE_PLANET_RADIUS
