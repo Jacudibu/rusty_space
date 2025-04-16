@@ -333,6 +333,8 @@ fn list_selection_details(
     images: Res<UiIcons>,
     gui_data: Res<GuiDataCache>,
     selected: Query<SelectableComponents, With<Selected>>,
+    buy_orders: Query<&BuyOrders>,
+    sell_orders: Query<&SellOrders>,
     construction_sites: Query<&ConstructionSiteComponent>,
     names: Query<&Name>,
 ) {
@@ -439,26 +441,10 @@ fn list_selection_details(
                 }
 
                 if let Some(buy_orders) = item.buy_orders {
-                    ui.heading("Buy Orders");
-                    for (item_id, data) in buy_orders.orders() {
-                        ui.label(format!(
-                            "Buying {}x{} for {}C",
-                            data.amount,
-                            game_data.items.get_by_ref(item_id).unwrap().name,
-                            data.price
-                        ));
-                    }
+                    list_buy_orders(&game_data, ui, buy_orders);
                 }
                 if let Some(sell_orders) = item.sell_orders {
-                    ui.heading("Sell Orders");
-                    for (item_id, data) in sell_orders.orders() {
-                        ui.label(format!(
-                            "Selling {}x{} for {}C",
-                            data.amount,
-                            game_data.items.get_by_ref(item_id).unwrap().name,
-                            data.price
-                        ));
-                    }
+                    list_sell_orders(&game_data, ui, sell_orders);
                 }
 
                 if let Some(shipyard) = item.shipyard {
@@ -520,10 +506,27 @@ fn list_selection_details(
                         };
 
                         let current_build = construction_site.current_build_progress;
-                        ui.image(images.construct);
-                        ui.label(format!(
-                            "Build Site ({current_build:.0} / {required_build_power})"
-                        ));
+
+                        ui.horizontal(|ui| {
+                            ui.image(images.construct);
+                            egui::CollapsingHeader::new(format!(
+                                "Construction Site ({current_build:.0} / {required_build_power})"
+                            ))
+                            .default_open(true)
+                            .id_salt("construction_site")
+                            .show(ui, |ui| {
+                                if let Ok(buy_orders) =
+                                    buy_orders.get(construction_site_entity.into())
+                                {
+                                    list_buy_orders(&game_data, ui, buy_orders);
+                                }
+                                if let Ok(sell_orders) =
+                                    sell_orders.get(construction_site_entity.into())
+                                {
+                                    list_sell_orders(&game_data, ui, sell_orders);
+                                }
+                            });
+                        });
                     }
                 }
 
@@ -613,6 +616,30 @@ fn list_selection_details(
                 draw_summary_row(&images, ui, &item);
             }
         });
+}
+
+fn list_sell_orders(game_data: &GameData, ui: &mut Ui, sell_orders: &SellOrders) {
+    ui.heading("Sell Orders");
+    for (item_id, data) in sell_orders.orders() {
+        ui.label(format!(
+            "Selling {}x{} for {}C",
+            data.amount,
+            game_data.items.get_by_ref(item_id).unwrap().name,
+            data.price
+        ));
+    }
+}
+
+fn list_buy_orders(game_data: &GameData, ui: &mut Ui, buy_orders: &BuyOrders) {
+    ui.heading("Buy Orders");
+    for (item_id, data) in buy_orders.orders() {
+        ui.label(format!(
+            "Buying {}x{} for {}C",
+            data.amount,
+            game_data.items.get_by_ref(item_id).unwrap().name,
+            data.price
+        ));
+    }
 }
 
 fn draw_summary_row(images: &UiIcons, ui: &mut Ui, item: &SelectableComponentsItem) {

@@ -1,16 +1,17 @@
 use crate::components::{
-    ConstantOrbit, GateComponent, PlanetComponent, SectorComponent, SectorPlanetsComponent,
-    SectorStarComponent, StarComponent, StationComponent,
+    BuyOrderData, BuyOrders, ConstantOrbit, GateComponent, PlanetComponent, SectorComponent,
+    SectorPlanetsComponent, SectorStarComponent, StarComponent, StationComponent,
 };
 use crate::entity_selection::MouseCursor;
 use crate::game_data::{
-    ConstructableModuleId, ItemManifest, RecipeManifest, SILICA_PRODUCTION_MODULE_ID,
+    ConstructableModuleId, ItemId, ItemManifest, ProductionModuleManifest, RecipeManifest,
+    SILICA_PRODUCTION_MODULE_ID, ShipyardModuleManifest,
 };
 use crate::map_layout::MapLayout;
 use crate::persistence::{ConstructionSiteIdMap, StationIdMap};
 use crate::utils::entity_spawners::{ConstructionSiteSpawnData, StationSpawnData, spawn_station};
 use crate::utils::polar_coordinates::PolarCoordinates;
-use crate::utils::{SectorPosition, intersections};
+use crate::utils::{PriceSetting, SectorPosition, intersections};
 use crate::{SpriteHandles, constants};
 use bevy::app::{App, Plugin};
 use bevy::ecs::query::QueryFilter;
@@ -23,6 +24,7 @@ use bevy::prelude::{
     Vec2, Visibility, With, Without, in_state,
 };
 use bevy::sprite::Sprite;
+use bevy::utils::HashMap;
 
 /// Plugin for placing new Construction Sites.
 pub struct ConstructionSitePlacementPlugin;
@@ -53,7 +55,7 @@ impl Plugin for ConstructionSitePlacementPlugin {
                 (
                     update_target_position,
                     update_preview_entity.after(update_target_position),
-                    create_construction_site_on_mouse_click.after(update_target_position),
+                    spawn_construction_site_on_mouse_click.after(update_target_position),
                 )
                     .run_if(in_state(ConstructionMode::On)),
             ),
@@ -239,13 +241,15 @@ fn update_preview_entity(
 
 /// Creates a new Construction Site when the player clicks the left mouse button.
 #[allow(clippy::too_many_arguments)]
-fn create_construction_site_on_mouse_click(
+fn spawn_construction_site_on_mouse_click(
     mut commands: Commands,
     mut sector_query: Query<(&mut SectorComponent, Option<&SectorStarComponent>)>,
     mut station_id_map: ResMut<StationIdMap>,
     mut construction_site_id_map: ResMut<ConstructionSiteIdMap>,
     stars: Query<&StarComponent>,
     sprites: Res<SpriteHandles>,
+    production_module_manifest: Res<ProductionModuleManifest>,
+    shipyard_module_manifest: Res<ShipyardModuleManifest>,
     item_manifest: Res<ItemManifest>,
     recipe_manifest: Res<RecipeManifest>,
     mouse: Res<ButtonInput<MouseButton>>,
@@ -264,11 +268,57 @@ fn create_construction_site_on_mouse_click(
         return;
     };
 
-    let construction_site =
-        ConstructionSiteSpawnData::new(vec![ConstructableModuleId::ProductionModule(
-            SILICA_PRODUCTION_MODULE_ID,
-        )]);
-    let data = StationSpawnData::new("Fancy Station", construction_site, *sector_pos);
+    // TODO: Planned modules and materials should already exist at this point - they should be set up in some kind of dialogue.
+    let planned_modules = vec![ConstructableModuleId::ProductionModule(
+        SILICA_PRODUCTION_MODULE_ID,
+    )];
+
+    let mut total_materials = HashMap::<ItemId, u32>::new();
+    for x in &planned_modules {
+        let materials = match x {
+            ConstructableModuleId::ProductionModule(id) => {
+                &production_module_manifest
+                    .get_by_ref(id)
+                    .unwrap()
+                    .required_materials
+            }
+            ConstructableModuleId::ShipyardModule(id) => {
+                &shipyard_module_manifest
+                    .get_by_ref(id)
+                    .unwrap()
+                    .required_materials
+            }
+        };
+
+        for x in materials {
+            if let Some(existing_amount) = total_materials.get_mut(&x.item_id) {
+                *existing_amount += x.amount;
+            } else {
+                total_materials.insert(x.item_id, x.amount);
+            }
+        }
+    }
+
+    let buy_orders = BuyOrders {
+        orders: total_materials
+            .into_iter()
+            .map(|(id, amount)| {
+                let price = item_manifest.get_by_ref(&id).unwrap().price.max;
+                (
+                    id,
+                    BuyOrderData {
+                        amount,
+                        price,
+                        buy_up_to: amount,
+                        price_setting: PriceSetting::Fixed(price),
+                    },
+                )
+            })
+            .collect(),
+    };
+
+    let construction_spawn_data = ConstructionSiteSpawnData::new(planned_modules, buy_orders);
+    let station_data = StationSpawnData::new("Fancy Station", construction_spawn_data, *sector_pos);
 
     spawn_station(
         &mut commands,
@@ -279,7 +329,7 @@ fn create_construction_site_on_mouse_click(
         &sprites,
         &item_manifest,
         &recipe_manifest,
-        data,
+        station_data,
     );
 }
 

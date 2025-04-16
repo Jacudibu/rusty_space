@@ -1,4 +1,4 @@
-use crate::components::{SectorComponent, SectorStarComponent, StarComponent};
+use crate::components::{BuyOrders, SectorComponent, SectorStarComponent, StarComponent};
 use crate::game_data::{
     ConstructableModuleId, ItemId, ItemManifest, ProductionModuleId, RecipeId, RecipeManifest,
     ShipyardModuleId,
@@ -209,10 +209,10 @@ impl StationSaveData {
             production,
             buys,
             sells,
-            construction_site: self
-                .construction_site
-                .clone()
-                .map(|x| ConstructionSiteSpawnData::new(x.queue).with_progress(x.current_progress)),
+            construction_site: self.construction_site.clone().map(|x| {
+                ConstructionSiteSpawnData::new(x.queue, BuyOrders::default()) // TODO
+                    .with_progress(x.current_progress)
+            }),
         };
 
         entity_spawners::spawn_station(

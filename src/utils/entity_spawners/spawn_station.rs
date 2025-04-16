@@ -68,6 +68,8 @@ pub struct ConstructionSiteSpawnData {
     pub build_order: Vec<ConstructableModuleId>,
     /// The current progress in building this site. Defaults to 0.
     pub current_progress: f32,
+    /// The materials required to build this construction site.
+    pub buys: BuyOrders,
 }
 
 impl ConstructionSiteSpawnData {
@@ -79,7 +81,7 @@ impl ConstructionSiteSpawnData {
 
 impl ConstructionSiteSpawnData {
     /// Validates the provided arguments and returns a new instance of [ConstructionSiteSpawnData] with defaults for all values which should only be set when loading save games.
-    pub fn new(build_order: Vec<ConstructableModuleId>) -> Self {
+    pub fn new(build_order: Vec<ConstructableModuleId>, buy_orders: BuyOrders) -> Self {
         debug_assert!(
             build_order.is_empty().not(),
             "New ConstructionSite build_order should never be empty!"
@@ -89,6 +91,7 @@ impl ConstructionSiteSpawnData {
             id: PersistentConstructionSiteId::next(),
             build_order,
             current_progress: 0.0,
+            buys: buy_orders,
         }
     }
 }
@@ -321,10 +324,6 @@ fn spawn_construction_site(
         status: ConstructionSiteStatus::MissingBuilders,
     };
 
-    // TODO: Build site has buy orders and an inventory
-    // TODO: Figure out the least painful way to sync simulation transform to the position of the station
-    //         (probably a new marker component + system that's run after the regular transform update)
-    //         (only necessary in sectors with some form of perpetual motion)
     let entity = commands
         .spawn((
             Name::new(station_name.to_string() + " (Construction Site)"),
@@ -340,8 +339,8 @@ fn spawn_construction_site(
                 anchor: Anchor::Custom(Vec2::splat(-0.7)),
                 ..Default::default()
             },
-            Inventory::new(u32::MAX), // TODO: This should be a special inventory with precise capacities for the required materials
-            BuyOrders::default(), // TODO: These should sync with the inventory capacities. Prices are a bit complicated, but MAX is enough for starters.
+            Inventory::new(u32::MAX),
+            data.buys,
         ))
         .id();
 

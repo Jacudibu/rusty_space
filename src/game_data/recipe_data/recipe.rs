@@ -1,6 +1,6 @@
+use crate::game_data::ItemId;
 use crate::game_data::generic_manifest_without_raw_data::DataCanBeUsedAsRawData;
 use crate::game_data::recipe_data::RecipeId;
-use crate::game_data::ItemId;
 use crate::simulation::prelude::Milliseconds;
 use bevy::prelude::TypePath;
 use serde::Deserialize;
@@ -23,8 +23,11 @@ pub struct RecipeData {
 
 impl DataCanBeUsedAsRawData for RecipeData {}
 
+/// Defines an item with a given quantity.
 #[derive(Deserialize, Copy, Clone)]
 pub struct RecipeElement {
+    /// The item represented by this object
     pub item_id: ItemId,
+    /// The quantity of the assigned item.
     pub amount: u32,
 }

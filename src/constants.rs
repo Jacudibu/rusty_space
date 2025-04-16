@@ -3,7 +3,6 @@
 //! Ideally, the values in here should be extracted into a resource at some point to be configurable
 //! by the player and mods.
 
-use crate::constants;
 use crate::simulation::prelude::Milliseconds;
 use std::ops::Range;
 

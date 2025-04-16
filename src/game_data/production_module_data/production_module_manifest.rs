@@ -5,7 +5,8 @@ use crate::game_data::production_module_data::{
     SILICA_PRODUCTION_MODULE_NAME, WAFERS_PRODUCTION_MODULE_NAME,
 };
 use crate::game_data::{
-    ProductionModuleData, REFINED_METALS_PRODUCTION_MODULE_ID, REFINED_METALS_RECIPE_ID,
+    CRYSTAL_ORE_ITEM_ID, IRON_ORE_ITEM_ID, ProductionModuleData, REFINED_METALS_ITEM_ID,
+    REFINED_METALS_PRODUCTION_MODULE_ID, REFINED_METALS_RECIPE_ID, RecipeElement, SILICA_ITEM_ID,
     SILICA_RECIPE_ID, WAFERS_PRODUCTION_MODULE_ID, WAFERS_RECIPE_ID,
 };
 use bevy::prelude::World;
@@ -25,6 +26,10 @@ impl FromMockData for ProductionModuleManifest {
                     name: SILICA_PRODUCTION_MODULE_NAME.into(),
                     available_recipes: vec![SILICA_RECIPE_ID],
                     required_build_power: 1000,
+                    required_materials: vec![RecipeElement {
+                        item_id: CRYSTAL_ORE_ITEM_ID,
+                        amount: 100,
+                    }],
                 },
             ),
             (
@@ -34,6 +39,10 @@ impl FromMockData for ProductionModuleManifest {
                     name: REFINED_METALS_PRODUCTION_MODULE_NAME.into(),
                     available_recipes: vec![REFINED_METALS_RECIPE_ID],
                     required_build_power: 1000,
+                    required_materials: vec![RecipeElement {
+                        item_id: IRON_ORE_ITEM_ID,
+                        amount: 100,
+                    }],
                 },
             ),
             (
@@ -43,6 +52,16 @@ impl FromMockData for ProductionModuleManifest {
                     name: WAFERS_PRODUCTION_MODULE_NAME.into(),
                     available_recipes: vec![WAFERS_RECIPE_ID],
                     required_build_power: 1000,
+                    required_materials: vec![
+                        RecipeElement {
+                            item_id: REFINED_METALS_ITEM_ID,
+                            amount: 100,
+                        },
+                        RecipeElement {
+                            item_id: SILICA_ITEM_ID,
+                            amount: 42,
+                        },
+                    ],
                 },
             ),
         ]);

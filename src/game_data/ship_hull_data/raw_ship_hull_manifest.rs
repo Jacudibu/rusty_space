@@ -1,6 +1,6 @@
 use crate::game_data::ship_hull_data::raw_ship_hull::{RawShipHullData, ShipManeuverability};
 use crate::game_data::ship_hull_data::{SHIP_HULL_MINER_NAME, SHIP_HULL_TRANSPORT_NAME};
-use crate::game_data::{RecipeElement, REFINED_METALS_ITEM_ID, WAFER_ITEM_ID};
+use crate::game_data::{REFINED_METALS_ITEM_ID, RecipeElement, WAFER_ITEM_ID};
 use crate::utils::ShipSize;
 use bevy::asset::Asset;
 use bevy::prelude::TypePath;

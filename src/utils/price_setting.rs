@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 #[cfg_attr(test, derive(Debug, PartialEq))]
 pub enum PriceSetting {
     Dynamic(PriceRange),
+    Fixed(u32),
 }
 
 impl PriceSetting {
@@ -13,6 +14,7 @@ impl PriceSetting {
             PriceSetting::Dynamic(range) => {
                 range.calculate(currently_in_storage as f32 / item_capacity as f32)
             }
+            PriceSetting::Fixed(value) => *value,
         }
     }
 }

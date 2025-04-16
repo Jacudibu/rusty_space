@@ -7,7 +7,7 @@ use bevy::utils::HashMap;
 
 #[derive(Component, Default)]
 pub struct BuyOrders {
-    orders: HashMap<ItemId, BuyOrderData>,
+    pub(crate) orders: HashMap<ItemId, BuyOrderData>,
 }
 
 pub struct BuyOrderData {
