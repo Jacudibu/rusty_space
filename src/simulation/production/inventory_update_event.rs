@@ -1,4 +1,4 @@
-use crate::components::{BuyOrders, Inventory, SellOrders};
+use crate::components::{BuyOrders, InventoryComponent, SellOrders};
 use crate::game_data::{ItemManifest, RecipeElement, RecipeManifest, ShipyardModuleId};
 use crate::session_data::{ShipConfigId, ShipConfigurationManifest};
 use crate::simulation::prelude::{RunningProductionQueueElement, SimulationTime};
@@ -39,7 +39,7 @@ pub fn handle_inventory_updates(
         (
             Option<&mut ProductionComponent>,
             Option<&mut ShipyardComponent>,
-            &mut Inventory,
+            &mut InventoryComponent,
             Option<&mut BuyOrders>,
             Option<&mut SellOrders>,
         ),
@@ -207,7 +207,7 @@ pub fn handle_inventory_updates(
 
 /// Tests if there are enough items in stock to start a production run
 pub fn has_all_required_materials(
-    inventory: &mut Inventory,
+    inventory: &mut InventoryComponent,
     input: &Vec<RecipeElement>,
     multiplier: u32,
 ) -> bool {
@@ -228,7 +228,7 @@ pub fn has_all_required_materials(
 
 /// Tests if there's enough storage space available to store all production yields.
 fn has_enough_storage_for_yields(
-    inventory: &mut Inventory,
+    inventory: &mut InventoryComponent,
     output: &Vec<RecipeElement>,
     item_manifest: &ItemManifest,
 ) -> bool {
@@ -250,7 +250,7 @@ fn has_enough_storage_for_yields(
 
 /// Removes all ingredients for a recipe from this inventory
 fn remove_recipe_items(
-    inventory: &mut Inventory,
+    inventory: &mut InventoryComponent,
     items: &Vec<RecipeElement>,
     multiplier: u32,
     item_manifest: &ItemManifest,

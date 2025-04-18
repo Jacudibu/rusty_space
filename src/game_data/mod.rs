@@ -84,3 +84,45 @@ impl GameData<'_> {
         world.insert_resource(asteroids);
     }
 }
+
+pub trait Constructable {
+    fn get_constructable_data(&self) -> &ConstructableSiteData;
+}
+
+/// Contains common data necessary for everything that can be constructed in space.
+#[derive(Deserialize)] // TODO: Not necessary once we implement raw constructable module data
+pub struct ConstructableSiteData {
+    /// The amount of build power necessary to build this module.
+    pub required_build_power: u32,
+    /// How much progress is necessary to advance between individual steps.
+    pub progress_per_step: f32,
+    /// The bill of materials required to build this module
+    pub required_materials: Vec<RecipeElement>,
+    /// required_materials split up into multiple steps.
+    pub required_materials_per_step: Vec<Vec<RecipeElement>>,
+}
+
+impl ConstructableSiteData {
+    pub fn new(required_build_power: u32, required_materials: Vec<RecipeElement>) -> Self {
+        let step_count = 10; // TODO: Dynamically set step count depending on required build power
+        let mut required_materials_per_step = Vec::default();
+        for _ in 0..step_count {
+            let mut step_materials = Vec::default();
+            for ingredient in &required_materials {
+                step_materials.push(RecipeElement {
+                    item_id: ingredient.item_id,
+                    amount: ingredient.amount / step_count, // TODO: handle fractions, right now every value needs to be divisible by step_count
+                })
+            }
+
+            required_materials_per_step.push(step_materials);
+        }
+
+        Self {
+            required_build_power,
+            required_materials,
+            required_materials_per_step,
+            progress_per_step: required_build_power as f32 / step_count as f32,
+        }
+    }
+}

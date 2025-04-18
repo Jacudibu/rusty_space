@@ -1,8 +1,8 @@
-use crate::components::Inventory;
+use crate::components::InventoryComponent;
 use crate::persistence::data::v1::*;
 
-impl From<&Inventory> for InventorySaveData {
-    fn from(value: &Inventory) -> Self {
+impl From<&InventoryComponent> for InventorySaveData {
+    fn from(value: &InventoryComponent) -> Self {
         Self {
             items: value
                 .inventory()

@@ -1,7 +1,11 @@
 use crate::components::{
-    ConstructionSiteComponent, ConstructionSiteStatus, InSector, SectorComponent, StationComponent,
+    BuyOrders, ConstructionSiteComponent, ConstructionSiteStatus, InSector, InventoryComponent,
+    SectorComponent, StationComponent,
 };
-use crate::game_data::{ConstructableModuleId, ProductionModuleManifest, ShipyardModuleManifest};
+use crate::game_data::{
+    Constructable, ConstructableModuleId, ItemId, ItemManifest, ProductionModuleManifest,
+    ShipyardModuleManifest,
+};
 use crate::simulation::prelude::{
     ConstructTaskComponent, ProductionComponent, ProductionModule, ShipyardComponent,
     ShipyardModule,
@@ -10,9 +14,11 @@ use crate::simulation::ship_ai::TaskFinishedEvent;
 use crate::states::SimulationState;
 use crate::utils::ConstructionSiteEntity;
 use bevy::prelude::{
-    App, Commands, Entity, Event, EventReader, EventWriter, Fixed, FixedUpdate, IntoSystemConfigs,
-    Plugin, Query, Res, Time, error, in_state,
+    App, Commands, Entity, Event, EventReader, EventWriter, FixedUpdate, IntoSystemConfigs, Plugin,
+    Query, Res, Time, error, in_state,
 };
+use bevy::utils::HashSet;
+use std::ops::Not;
 
 pub struct ConstructionSiteUpdaterPlugin;
 
@@ -34,53 +40,96 @@ pub struct ConstructionFinishedEvent {
 }
 
 fn construction_site_updater(
-    time: Res<Time<Fixed>>,
-    mut all_construction_sites: Query<(Entity, &mut ConstructionSiteComponent)>,
+    time: Res<Time>,
+    mut all_construction_sites: Query<(
+        Entity,
+        &mut ConstructionSiteComponent,
+        &mut InventoryComponent,
+        &mut BuyOrders,
+    )>,
     production_modules: Res<ProductionModuleManifest>,
     shipyard_modules: Res<ShipyardModuleManifest>,
+    item_manifest: Res<ItemManifest>,
     mut event_writer: EventWriter<ConstructionFinishedEvent>,
 ) {
     let delta = time.delta_secs();
 
-    all_construction_sites
-        .iter_mut()
-        .for_each(|(entity, mut site)| {
-            // TODO: Check for missing materials
+    all_construction_sites.iter_mut().for_each(
+        |(entity, mut site, mut inventory, mut buy_orders)| {
+            let module = site.build_order.first().unwrap();
+            // TODO: construction site data should be available through a sub-struct on each constructable
+            let constructable_data = match module {
+                ConstructableModuleId::ProductionModule(id) => production_modules
+                    .get_by_ref(id)
+                    .unwrap()
+                    .get_constructable_data(),
+                ConstructableModuleId::ShipyardModule(id) => shipyard_modules
+                    .get_by_ref(id)
+                    .unwrap()
+                    .get_constructable_data(),
+            };
 
-            // TODO: Consume materials if there are enough to progress.
+            if site.progress_until_next_step <= site.current_build_progress {
+                let mut missing_materials = HashSet::new();
+                let ingredients_for_step =
+                    &constructable_data.required_materials_per_step[site.next_construction_step];
+                for ingredient in ingredients_for_step {
+                    let Some(inventory_element) = inventory.get(&ingredient.item_id) else {
+                        missing_materials.insert(ingredient.item_id);
+                        continue;
+                    };
 
-            // TODO: Persist how far we can progress given the consumed materials
+                    if inventory_element.available_right_now() < ingredient.amount {
+                        missing_materials.insert(ingredient.item_id);
+                        continue;
+                    }
+                }
+
+                if missing_materials.is_empty().not() {
+                    let mut missing_items = missing_materials.into_iter().collect::<Vec<ItemId>>();
+                    missing_items.sort();
+                    site.status = ConstructionSiteStatus::MissingMaterials(missing_items);
+                    return;
+                }
+
+                // TODO: Maybe move the rest below the point where we set the state to missing builders so resources are only consumed when building actually happens
+                for ingredient in ingredients_for_step {
+                    buy_orders
+                        .orders
+                        .get_mut(&ingredient.item_id)
+                        .unwrap()
+                        .amount -= ingredient.amount;
+                    inventory.remove_item(ingredient.item_id, ingredient.amount, &item_manifest);
+                }
+
+                site.next_construction_step += 1;
+                if site.next_construction_step
+                    == constructable_data.required_materials_per_step.len()
+                {
+                    // Final step, all necessary materials have been consumed, no need to check this ever again. Also allows overflowing build power into next module.
+                    site.progress_until_next_step = f32::MAX;
+                } else {
+                    site.progress_until_next_step += constructable_data.progress_per_step;
+                }
+            }
 
             if site.construction_ships.is_empty() {
                 site.status = ConstructionSiteStatus::MissingBuilders;
             }
 
-            site.current_build_progress += site.total_build_power as f32 * delta;
+            let now_progress =
+                site.current_build_progress + site.total_build_power_of_ships as f32 * delta;
+            site.current_build_progress = site.progress_until_next_step.min(now_progress);
             site.status = ConstructionSiteStatus::Ok;
 
-            let module = site.build_order.first().unwrap();
-            let required_build_power = match module {
-                ConstructableModuleId::ProductionModule(id) => {
-                    production_modules
-                        .get_by_ref(id)
-                        .unwrap()
-                        .required_build_power
-                }
-                ConstructableModuleId::ShipyardModule(id) => {
-                    shipyard_modules
-                        .get_by_ref(id)
-                        .unwrap()
-                        .required_build_power
-                }
-            };
-
-            if site.current_build_progress as u32 > required_build_power {
-                site.current_build_progress -= required_build_power as f32;
+            if site.current_build_progress as u32 >= constructable_data.required_build_power {
+                site.current_build_progress -= constructable_data.required_build_power as f32;
                 event_writer.send(ConstructionFinishedEvent {
                     entity: entity.into(),
                 });
             }
-        });
+        },
+    );
 }
 
 fn construction_site_finisher(

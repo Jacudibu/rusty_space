@@ -31,12 +31,14 @@ impl InventoryElement {
     }
 
     /// Adds the given amount of items to this inventory.
+    #[inline]
     pub fn add(&mut self, amount: u32) {
         self.current += amount;
         self.total += amount;
     }
 
     /// Removes the given amount of items from this inventory.
+    #[inline]
     pub fn remove(&mut self, amount: u32) {
         self.current -= amount;
         self.total -= amount;
@@ -47,6 +49,12 @@ impl InventoryElement {
     pub fn add_incoming(&mut self, amount: u32) {
         self.planned_incoming += amount;
         self.total += amount;
+    }
+
+    /// The amount of unreserved goods currently available in this inventory
+    #[inline]
+    pub fn available_right_now(&self) -> u32 {
+        self.current - self.planned_selling
     }
 
     /// Returns the highest amount of space that's reserved for this item.

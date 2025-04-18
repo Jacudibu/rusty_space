@@ -21,6 +21,12 @@ pub struct ConstructionSiteComponent {
     /// The total amount of build power that's already been applied to the first element inside our [build_order].
     pub current_build_progress: f32,
 
+    /// Reaching this amount of progress will trigger the next construction step.
+    pub progress_until_next_step: f32,
+
+    /// Used to identify which materials will be consumed once we exceed the progress required for the next step.
+    pub next_construction_step: usize,
+
     /// The Current Status of this Construction Site, indicating why things aren't progressing.
     pub status: ConstructionSiteStatus,
 
@@ -29,7 +35,7 @@ pub struct ConstructionSiteComponent {
 
     /// The total construction power of all construction ships currently working on this site.
     /// A higher [construction_ship_count] means less of this will be applied due to inefficiencies.
-    pub total_build_power: u32,
+    pub total_build_power_of_ships: u32,
 }
 
 pub enum ConstructionSiteStatus {

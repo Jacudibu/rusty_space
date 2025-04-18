@@ -4,8 +4,8 @@ use crate::components::{
 };
 use crate::entity_selection::MouseCursor;
 use crate::game_data::{
-    ConstructableModuleId, ItemId, ItemManifest, ProductionModuleManifest, RecipeManifest,
-    SILICA_PRODUCTION_MODULE_ID, ShipyardModuleManifest,
+    Constructable, ConstructableModuleId, ItemId, ItemManifest, ProductionModuleManifest,
+    RecipeManifest, SILICA_PRODUCTION_MODULE_ID, ShipyardModuleManifest,
 };
 use crate::map_layout::MapLayout;
 use crate::persistence::{ConstructionSiteIdMap, StationIdMap};
@@ -280,12 +280,14 @@ fn spawn_construction_site_on_mouse_click(
                 &production_module_manifest
                     .get_by_ref(id)
                     .unwrap()
+                    .get_constructable_data()
                     .required_materials
             }
             ConstructableModuleId::ShipyardModule(id) => {
                 &shipyard_module_manifest
                     .get_by_ref(id)
                     .unwrap()
+                    .get_constructable_data()
                     .required_materials
             }
         };

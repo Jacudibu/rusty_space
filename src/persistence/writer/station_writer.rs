@@ -1,6 +1,6 @@
 use crate::components::{
-    BuyOrderData, BuyOrders, InSector, Inventory, SectorComponent, SellOrderData, SellOrders,
-    StationComponent, TradeOrder,
+    BuyOrderData, BuyOrders, InSector, InventoryComponent, SectorComponent, SellOrderData,
+    SellOrders, StationComponent, TradeOrder,
 };
 use crate::game_data::{ItemId, ProductionModuleId, ShipyardModuleId};
 use crate::persistence::ComponentWithPersistentId;
@@ -138,7 +138,7 @@ impl StationSaveData {
             &Name,
             &InSector,
             &SimulationTransform,
-            &Inventory,
+            &InventoryComponent,
             Option<&ProductionComponent>,
             Option<&ShipyardComponent>,
             Option<&BuyOrders>,

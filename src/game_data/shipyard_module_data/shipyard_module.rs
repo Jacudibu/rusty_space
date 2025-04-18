@@ -1,5 +1,5 @@
 use crate::game_data::generic_manifest_without_raw_data::DataCanBeUsedAsRawData;
-use crate::game_data::{RecipeElement, ShipyardModuleId};
+use crate::game_data::{Constructable, ConstructableSiteData, ShipyardModuleId};
 use bevy::prelude::TypePath;
 use serde::Deserialize;
 
@@ -10,11 +10,15 @@ pub struct ShipyardModuleData {
     pub id: ShipyardModuleId,
     /// User Facing name thingy
     pub name: String,
-    /// The amount of build power necessary to build this module.
-    pub required_build_power: u32,
-    /// The bill of materials required to build this module
-    pub required_materials: Vec<RecipeElement>,
+    /// Stuff required to construct this module.
+    pub constructable_data: ConstructableSiteData,
     // TODO: Settings to only allow certain ship types should be defined here, maybe with build speed modifiers.
 }
 
 impl DataCanBeUsedAsRawData for ShipyardModuleData {}
+
+impl Constructable for ShipyardModuleData {
+    fn get_constructable_data(&self) -> &ConstructableSiteData {
+        &self.constructable_data
+    }
+}

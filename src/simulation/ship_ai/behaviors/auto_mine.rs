@@ -1,5 +1,5 @@
 use crate::components::{
-    Asteroid, BuyOrders, InSector, Inventory, SectorAsteroidComponent, SectorComponent,
+    Asteroid, BuyOrders, InSector, InventoryComponent, SectorAsteroidComponent, SectorComponent,
 };
 use crate::game_data::{ItemId, ItemManifest};
 use crate::pathfinding;
@@ -47,7 +47,7 @@ pub fn handle_idle_ships(
     simulation_time: Res<SimulationTime>,
     mut ships: Query<(Entity, &mut TaskQueue, &mut AutoMineBehavior, &InSector), ShipIsIdleFilter>,
     buy_orders: Query<(Entity, &mut BuyOrders, &InSector)>,
-    mut inventories: Query<&mut Inventory>,
+    mut inventories: Query<&mut InventoryComponent>,
     all_sectors_with_asteroids: Query<&SectorAsteroidComponent>,
     all_sectors: Query<&SectorComponent>,
     mut all_asteroids: Query<&mut Asteroid>,

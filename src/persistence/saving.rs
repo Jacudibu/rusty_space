@@ -1,6 +1,6 @@
 use crate::components::{
-    Asteroid, BuyOrders, GateComponent, InSector, Inventory, SectorComponent, SellOrders, Ship,
-    StarComponent, StationComponent,
+    Asteroid, BuyOrders, GateComponent, InSector, InventoryComponent, SectorComponent, SellOrders,
+    Ship, StarComponent, StationComponent,
 };
 use crate::persistence::AllEntityIdMaps;
 use crate::persistence::data::v1::*;
@@ -36,7 +36,7 @@ pub fn parse_session_data_into_universe_save_data(
         &SimulationTransform,
         &TaskQueue,
         &ShipVelocity,
-        &Inventory,
+        &InventoryComponent,
         Option<&AutoTradeBehavior>,
         Option<&AutoMineBehavior>,
     )>,
@@ -45,7 +45,7 @@ pub fn parse_session_data_into_universe_save_data(
         &Name,
         &InSector,
         &SimulationTransform,
-        &Inventory,
+        &InventoryComponent,
         Option<&ProductionComponent>,
         Option<&ShipyardComponent>,
         Option<&BuyOrders>,

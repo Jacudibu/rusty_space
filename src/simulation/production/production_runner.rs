@@ -1,7 +1,7 @@
 use bevy::log::error;
 use bevy::prelude::{Commands, EventWriter, Mut, Or, Query, Res, ResMut, Transform, With};
 
-use crate::components::{BuyOrders, InSector, Inventory, SectorComponent, SellOrders};
+use crate::components::{BuyOrders, InSector, InventoryComponent, SectorComponent, SellOrders};
 use crate::game_data::{ItemManifest, ProductionModuleId, RecipeManifest, ShipyardModuleId};
 use crate::persistence::{PersistentShipId, ShipIdMap};
 use crate::session_data::ShipConfigurationManifest;
@@ -29,7 +29,7 @@ pub fn check_if_production_is_finished_and_start_new_one(
         (
             Option<&mut ProductionComponent>,
             Option<&mut ShipyardComponent>,
-            &mut Inventory,
+            &mut InventoryComponent,
             Option<&mut BuyOrders>,
             Option<&mut SellOrders>,
             &Transform,
@@ -151,7 +151,7 @@ fn process_finished_item_production(
     recipes: &RecipeManifest,
     next: &SingleProductionState,
     production: Option<Mut<ProductionComponent>>,
-    inventory: &mut Inventory,
+    inventory: &mut InventoryComponent,
     module_id: &ProductionModuleId,
 ) {
     let Some(mut production) = production else {

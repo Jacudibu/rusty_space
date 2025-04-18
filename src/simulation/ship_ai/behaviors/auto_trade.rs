@@ -1,12 +1,14 @@
 use bevy::prelude::{Commands, Component, Entity, Query, Res};
 
-use crate::components::{BuyOrders, InSector, Inventory, SectorComponent, SellOrders, TradeOrder};
+use crate::components::{
+    BuyOrders, InSector, InventoryComponent, SectorComponent, SellOrders, TradeOrder,
+};
 use crate::constants;
 use crate::game_data::ItemManifest;
 use crate::simulation::prelude::{SimulationTime, SimulationTimestamp};
+use crate::simulation::ship_ai::TaskQueue;
 use crate::simulation::ship_ai::ship_is_idle_filter::ShipIsIdleFilter;
 use crate::simulation::ship_ai::task_started_event::AllTaskStartedEventWriters;
-use crate::simulation::ship_ai::TaskQueue;
 use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::trade_plan::TradePlan;
 use crate::utils::{TradeIntent, TypedEntity};
@@ -31,7 +33,7 @@ pub fn handle_idle_ships(
     mut ships: Query<(Entity, &mut TaskQueue, &mut AutoTradeBehavior, &InSector), ShipIsIdleFilter>,
     mut buy_orders: Query<(Entity, &mut BuyOrders, &InSector)>,
     mut sell_orders: Query<(Entity, &mut SellOrders, &InSector)>,
-    mut inventories: Query<&mut Inventory>,
+    mut inventories: Query<&mut InventoryComponent>,
     all_sectors: Query<&SectorComponent>,
     all_transforms: Query<&SimulationTransform>,
     item_manifest: Res<ItemManifest>,
@@ -55,7 +57,11 @@ pub fn handle_idle_ships(
                     now.add_seconds(constants::SECONDS_BETWEEN_SHIP_BEHAVIOR_IDLE_UPDATES);
                 return;
             };
-            let [mut this_inventory, mut seller_inventory, mut buyer_inventory] = inventories
+            let [
+                mut this_inventory,
+                mut seller_inventory,
+                mut buyer_inventory,
+            ] = inventories
                 .get_many_mut([ship_entity, plan.seller.into(), plan.buyer.into()])
                 .unwrap();
 
@@ -127,7 +133,7 @@ pub fn handle_idle_ships(
 
 fn update_buy_and_sell_orders_for_entity(
     entity: TypedEntity,
-    inventory: &Inventory,
+    inventory: &InventoryComponent,
     buy_orders: &mut Query<(Entity, &mut BuyOrders, &InSector)>,
     sell_orders: &mut Query<(Entity, &mut SellOrders, &InSector)>,
     item_manifest: &ItemManifest,

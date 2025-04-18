@@ -18,7 +18,7 @@ mod trade;
 
 pub use {
     asteroid::*, constant_orbit::*, construction_site_component::*, engine::Engine, gate::*,
-    gate_connection::*, interaction_queue::*, inventory::Inventory, is_docked::*, planet::*,
-    sector::*, selectable_entity::*, ship::*, ship_components::*, star_component::*,
+    gate_connection::*, interaction_queue::*, inventory::InventoryComponent, is_docked::*,
+    planet::*, sector::*, selectable_entity::*, ship::*, ship_components::*, star_component::*,
     station_component::*, trade::*,
 };

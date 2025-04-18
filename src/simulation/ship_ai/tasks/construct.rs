@@ -45,11 +45,11 @@ impl ConstructTaskComponent {
 }
 
 fn add_builder(site: &mut ConstructionSiteComponent, build_power: u32, entity: ShipEntity) {
-    site.total_build_power += build_power;
+    site.total_build_power_of_ships += build_power;
     site.construction_ships.insert(entity);
 }
 
 fn remove_builder(site: &mut ConstructionSiteComponent, build_power: u32, entity: &ShipEntity) {
-    site.total_build_power -= build_power;
+    site.total_build_power_of_ships -= build_power;
     site.construction_ships.remove(entity);
 }

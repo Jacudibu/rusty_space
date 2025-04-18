@@ -1,6 +1,6 @@
 use crate::game_data::generic_manifest_without_raw_data::DataCanBeUsedAsRawData;
 use crate::game_data::production_module_data::ProductionModuleId;
-use crate::game_data::{RecipeElement, RecipeId};
+use crate::game_data::{Constructable, ConstructableSiteData, RecipeId};
 use bevy::prelude::TypePath;
 use serde::Deserialize;
 
@@ -13,10 +13,14 @@ pub struct ProductionModuleData {
     pub name: String,
     /// List of things that can be produced
     pub available_recipes: Vec<RecipeId>,
-    /// The amount of build power necessary to build this module.
-    pub required_build_power: u32,
-    /// The bill of materials required to build this module
-    pub required_materials: Vec<RecipeElement>,
+    /// Stuff required to construct this module.
+    pub constructable_data: ConstructableSiteData,
 }
 
 impl DataCanBeUsedAsRawData for ProductionModuleData {}
+
+impl Constructable for ProductionModuleData {
+    fn get_constructable_data(&self) -> &ConstructableSiteData {
+        &self.constructable_data
+    }
+}

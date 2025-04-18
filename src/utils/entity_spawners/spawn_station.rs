@@ -1,7 +1,7 @@
 use crate::components::{
     BuyOrders, ConstantOrbit, ConstructionSiteComponent, ConstructionSiteStatus, InteractionQueue,
-    Inventory, SectorComponent, SectorStarComponent, SelectableEntity, SellOrders, StarComponent,
-    StationComponent,
+    InventoryComponent, SectorComponent, SectorStarComponent, SelectableEntity, SellOrders,
+    StarComponent, StationComponent,
 };
 use crate::game_data::{ConstructableModuleId, ItemId, ItemManifest, RecipeManifest};
 use crate::persistence::{
@@ -70,11 +70,18 @@ pub struct ConstructionSiteSpawnData {
     pub current_progress: f32,
     /// The materials required to build this construction site.
     pub buys: BuyOrders,
+    /// Calculated depending on current_progress. Defaults to 0.
+    pub next_construction_step: usize,
+    /// Calculated depending on current_progress. Defaults to 0.
+    pub progress_until_next_step: f32,
 }
 
 impl ConstructionSiteSpawnData {
     pub fn with_progress(mut self, value: f32) -> Self {
         self.current_progress = value;
+
+        // TODO: set next_construction_step and progress_until_next_step
+
         self
     }
 }
@@ -92,6 +99,8 @@ impl ConstructionSiteSpawnData {
             build_order,
             current_progress: 0.0,
             buys: buy_orders,
+            next_construction_step: 0,
+            progress_until_next_step: 0.0,
         }
     }
 }
@@ -190,7 +199,7 @@ pub fn spawn_station(
         buy_sell_and_production_count
     };
 
-    let mut inventory = Inventory::new(constants::MOCK_STATION_INVENTORY_SIZE);
+    let mut inventory = InventoryComponent::new(constants::MOCK_STATION_INVENTORY_SIZE);
 
     let fill_ratio = 2;
     // TODO: Remove mock data
@@ -319,9 +328,11 @@ fn spawn_construction_site(
         station: station_entity,
         build_order: data.build_order,
         current_build_progress: data.current_progress,
-        total_build_power: 0,
+        total_build_power_of_ships: 0,
         construction_ships: Default::default(),
         status: ConstructionSiteStatus::MissingBuilders,
+        next_construction_step: data.next_construction_step,
+        progress_until_next_step: data.progress_until_next_step,
     };
 
     let entity = commands
@@ -339,8 +350,10 @@ fn spawn_construction_site(
                 anchor: Anchor::Custom(Vec2::splat(-0.7)),
                 ..Default::default()
             },
-            Inventory::new(u32::MAX),
+            InventoryComponent::new(u32::MAX),
             data.buys,
+            // TODO: We don't really want to "dock" at construction sites, so not sure if an InteractionQueue is truly necessary
+            InteractionQueue::new(constants::SIMULTANEOUS_STATION_INTERACTIONS),
         ))
         .id();
 

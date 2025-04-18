@@ -1,5 +1,5 @@
 use crate::components::{
-    BuyOrders, GasGiant, InSector, Inventory, SectorComponent, SectorPlanetsComponent,
+    BuyOrders, GasGiant, InSector, InventoryComponent, SectorComponent, SectorPlanetsComponent,
 };
 use crate::game_data::{ItemId, ItemManifest};
 use crate::pathfinding;
@@ -30,7 +30,7 @@ pub fn handle_idle_ships(
         ShipIsIdleFilter,
     >,
     buy_orders: Query<(Entity, &mut BuyOrders, &InSector)>,
-    mut inventories: Query<&mut Inventory>,
+    mut inventories: Query<&mut InventoryComponent>,
     all_sectors_with_gas_giants: Query<&SectorPlanetsComponent>,
     all_sectors: Query<&SectorComponent>,
     all_gas_giants: Query<&GasGiant>,

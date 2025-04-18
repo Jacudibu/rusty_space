@@ -1,5 +1,5 @@
 use crate::components::{
-    AsteroidMiningComponent, Engine, GasHarvestingComponent, Inventory, SectorComponent,
+    AsteroidMiningComponent, Engine, GasHarvestingComponent, InventoryComponent, SectorComponent,
     SelectableEntity, Ship,
 };
 use crate::constants;
@@ -38,7 +38,7 @@ pub fn spawn_ship(
         SelectableEntity::Ship(ship_configuration.id),
         Engine::from(&ship_configuration.computed_stats.engine),
         velocity,
-        Inventory::new(ship_configuration.computed_stats.inventory_size),
+        InventoryComponent::new(ship_configuration.computed_stats.inventory_size),
         TaskQueue::new(),
         Sprite::from_image(ship_configuration.sprite.clone()),
         simulation_transform.as_bevy_transform(constants::z_layers::SHIP),

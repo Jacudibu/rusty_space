@@ -1,11 +1,13 @@
 use crate::SpriteHandles;
 use crate::components::{
-    Asteroid, BuyOrders, ConstructionSiteComponent, GateComponent, InSector, InteractionQueue,
-    Inventory, SelectableEntity, SellOrders, Ship, StationComponent, TradeOrder,
+    Asteroid, BuyOrders, ConstructionSiteComponent, ConstructionSiteStatus, GateComponent,
+    InSector, InteractionQueue, InventoryComponent, SelectableEntity, SellOrders, Ship,
+    StationComponent, TradeOrder,
 };
 use crate::entity_selection::{MouseCursor, Selected};
 use crate::game_data::{
-    AsteroidDataId, AsteroidManifest, ConstructableModuleId, GameData, IRON_ASTEROID_ID,
+    AsteroidDataId, AsteroidManifest, Constructable, ConstructableModuleId, GameData,
+    IRON_ASTEROID_ID,
 };
 use crate::session_data::ship_configs::ShipConfigurationAddedEvent;
 use crate::session_data::{
@@ -310,7 +312,7 @@ struct SelectableComponents {
     selectable: &'static SelectableEntity,
     name: &'static Name,
     ship: Option<&'static Ship>,
-    inventory: Option<&'static Inventory>,
+    inventory: Option<&'static InventoryComponent>,
     asteroid: Option<&'static Asteroid>,
     ship_velocity: Option<&'static ShipVelocity>,
     task_queue: Option<&'static TaskQueue>,
@@ -494,6 +496,7 @@ fn list_selection_details(
                                     .production_modules
                                     .get_by_ref(id)
                                     .unwrap()
+                                    .get_constructable_data()
                                     .required_build_power
                             }
                             ConstructableModuleId::ShipyardModule(id) => {
@@ -501,6 +504,7 @@ fn list_selection_details(
                                     .shipyard_modules
                                     .get_by_ref(id)
                                     .unwrap()
+                                    .get_constructable_data()
                                     .required_build_power
                             }
                         };
@@ -515,6 +519,22 @@ fn list_selection_details(
                             .default_open(true)
                             .id_salt("construction_site")
                             .show(ui, |ui| {
+                                match &construction_site.status {
+                                    ConstructionSiteStatus::Ok => {}
+                                    ConstructionSiteStatus::MissingMaterials(missing_materials) => {
+                                        ui.label("Missing ingredients:");
+                                        for x in missing_materials {
+                                            ui.label(format!(
+                                                "- {}",
+                                                game_data.items.get_by_ref(x).unwrap().name
+                                            ));
+                                        }
+                                    }
+                                    ConstructionSiteStatus::MissingBuilders => {
+                                        ui.label("No builders!");
+                                    }
+                                }
+
                                 if let Ok(buy_orders) =
                                     buy_orders.get(construction_site_entity.into())
                                 {

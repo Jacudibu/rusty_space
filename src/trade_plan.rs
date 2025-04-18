@@ -1,6 +1,8 @@
 use bevy::prelude::{Entity, Query};
 
-use crate::components::{BuyOrders, InSector, Inventory, SectorComponent, SellOrders, TradeOrder};
+use crate::components::{
+    BuyOrders, InSector, InventoryComponent, SectorComponent, SellOrders, TradeOrder,
+};
 use crate::game_data::{ItemId, ItemManifest};
 use crate::simulation::ship_ai::{TaskInsideQueue, TaskQueue};
 use crate::simulation::transform::simulation_transform::SimulationTransform;
@@ -20,7 +22,7 @@ pub struct TradePlan {
 impl TradePlan {
     #[must_use]
     pub fn search_for_trade_run(
-        inventory: &Inventory,
+        inventory: &InventoryComponent,
         buy_orders: &Query<(Entity, &mut BuyOrders, &InSector)>,
         sell_orders: &Query<(Entity, &mut SellOrders, &InSector)>,
         item_manifest: &ItemManifest,
@@ -78,7 +80,7 @@ impl TradePlan {
     pub fn sell_anything_from_inventory(
         seller: Entity,
         seller_sector: &InSector,
-        inventory: &Inventory,
+        inventory: &InventoryComponent,
         buy_orders: &Query<(Entity, &mut BuyOrders, &InSector)>,
     ) -> Option<Self> {
         let mut best_offer: Option<TradePlan> = None;

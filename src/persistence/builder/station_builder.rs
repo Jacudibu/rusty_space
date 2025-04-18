@@ -162,11 +162,14 @@ impl StationSaveData {
         self
     }
 
+    #[deprecated(note = "Needs fixing")]
     pub fn with_construction_site(
         &mut self,
         queue: Vec<ConstructableModuleId>,
         current_progress: f32,
     ) -> &mut Self {
+        return self;
+        // TODO: Buy orders are currently not persisted properly
         self.construction_site = Some(ConstructionSiteSaveData {
             queue,
             current_progress,
