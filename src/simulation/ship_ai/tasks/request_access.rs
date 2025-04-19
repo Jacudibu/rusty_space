@@ -3,7 +3,7 @@ use crate::simulation::prelude::{SimulationTime, TaskComponent, TaskInsideQueue,
 use crate::simulation::ship_ai::task_started_event::AllTaskStartedEventWriters;
 use crate::simulation::ship_ai::tasks;
 use crate::utils::TypedEntity;
-use bevy::prelude::{Commands, Component, Entity, Query, Res};
+use bevy::prelude::{Commands, Component, Entity, Query, Res, warn};
 
 /// Intermediate task to reserve a spot inside an [`InteractionQueue`] attached to the [`target`].
 ///
@@ -32,7 +32,29 @@ impl RequestAccess {
         let now = simulation_time.now();
 
         for (entity, task, mut task_queue) in all_ships_with_task.iter_mut() {
-            let mut interaction_queue = all_interaction_queues.get_mut(task.target.into()).unwrap();
+            let Ok(mut interaction_queue) = all_interaction_queues.get_mut(task.target.into())
+            else {
+                // TODO: Cancel dependant tasks
+                warn!(
+                    "Unable to find target entity for {:?}'s request_access task!",
+                    entity
+                );
+                // TODO: Right now we know that the next three tasks are dock, sell, undock,
+                //       but that's not always going to be a given and needs to be handled properly
+                let request_access_task = task_queue.queue.pop_front().unwrap();
+                task_queue.queue.pop_front();
+                task_queue.queue.pop_front();
+                task_queue.queue.pop_front();
+                task_queue.push_front(request_access_task);
+                tasks::remove_task_and_add_next_in_queue::<Self>(
+                    &mut commands,
+                    entity,
+                    &mut task_queue,
+                    now,
+                    &mut task_started_event_writers,
+                );
+                continue;
+            };
 
             if interaction_queue
                 .try_start_interaction(entity.into())

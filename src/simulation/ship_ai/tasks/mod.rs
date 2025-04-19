@@ -1,5 +1,5 @@
 use bevy::ecs::system::EntityCommands;
-use bevy::prelude::{Commands, Entity, EventWriter, Mut, Query};
+use bevy::prelude::{Commands, Entity, EventWriter, Mut, Query, warn};
 use std::sync::{Arc, Mutex};
 
 mod awaiting_signal;
@@ -84,8 +84,10 @@ pub fn finish_interaction(
     interaction_queues: &mut Query<&mut InteractionQueue>,
     signal_writer: &mut EventWriter<TaskFinishedEvent<AwaitingSignal>>,
 ) {
-    interaction_queues
-        .get_mut(queue_entity)
-        .unwrap()
-        .finish_interaction(signal_writer);
+    let Ok(mut queue_entity) = interaction_queues.get_mut(queue_entity) else {
+        warn!("Was unable to find queue entity in finish interaction!");
+        return;
+    };
+
+    queue_entity.finish_interaction(signal_writer);
 }

@@ -41,6 +41,9 @@ pub fn handle_idle_ships(
 ) {
     let now = simulation_time.now();
 
+    // TODO: We could collect the best deals for each system in between simulation ticks and then just work on that list
+    //       Maintaining it between ticks might be inefficient since production changes will shift everything around
+
     ships
         .iter_mut()
         .filter(|(_, _, behavior, _)| now.has_passed(behavior.next_idle_update))

@@ -6,11 +6,13 @@ Too lazy to manage a whole kanban board and issues for these things yet. Roughly
 > 
 > (These goals might change as soon as combat gets implemented, but until then, this here is the plan.)
 
-# Less Debug Values
+# Task Cancellation
+Now that unexpected things can happen, every Task needs to be cancellable, both by UI and systems (and cancellation through systems should probably count as a bug, but is still good to avoid crashes).
+Additionally, add a cancel button to GUI.
+Maybe entities should keep track of entities having tasks assigned to them to notify all dependent entities for task cancellations in case things get despawned?
 
-- ~~Probably easier with `leafwing_manifest` and maybe also `bevy_common_assets`~~ 
-- ~~Add parsing for data files, remove hardcoded Items~~ (debug stuff will remain in-code, at least until we (or someone else) got around to make `leafwing_manifest` support a folder with files instead of one single big file ([related issue](https://github.com/Leafwing-Studios/leafwing_manifest/issues/2)). Can be serialized with serde later on and is useful for debugging right now.)
-- ~~Change items and recipes to stuff that makes sense instead of calling them "item A"~~
+# Testing
+We need to figure out a proper testing strategy to support the simulation as it grows.
 
 # Improved Inventories
 ~~- Individual inventory capacities for each item~~
@@ -19,7 +21,7 @@ Too lazy to manage a whole kanban board and issues for these things yet. Roughly
 - Remove reservation for items in production lines
 
 # Automated Trade Order System
-- Automatically generate relevant buy & sell orders for stations, depending on existing station modules. Replaces more hardcoded stuff.
+- Automatically generate relevant buy and sell orders for stations, depending on existing station modules. Replaces more hardcoded stuff.
 
 # Better Camera Controls 
 - Zoom to MouseCursor
@@ -28,16 +30,17 @@ Too lazy to manage a whole kanban board and issues for these things yet. Roughly
 
 # Station Building
 
-~~- Build-Site Entities~~
-- Construction Materials go into separate inventory
-~~- Builder ships build stations (builders being near the construction site should be enough to apply their constant construction strength)~~
-~~- Multiple builders speed up construction (maybe not completely linearly, so players might want to consider bigger construction ships over a swarm of cheap small ones)~~
-  ~~- Builders just register themselves to a construction site, and the construction site itself actually increments its progress each tick~~
-- Construction Sites are loaded from save files
+- ~~Build-Site Entities~~
+- ~~Construction Materials go into separate inventory~~
+- ~~Builder ships build stations (builders being near the construction site should be enough to apply their constant construction strength)~~
+- ~~Multiple builders speed up construction (maybe not completely linearly, so players might want to consider bigger construction ships over a swarm of cheap small ones)~~
+  - ~~Builders just register themselves to a construction site, and the construction site itself actually increments its progress each tick~~
+- Construction Sites are properly loaded from save files
+  - Persist Buy/Sell Order data 
 - Station module costs increase with station size
 
-- New stations can be created in a running game
-  - Pressing C and left-clicking somewhere should just place a new construction site as a PoC
+- ~~New stations can be created in a running game~~
+  - ~~Pressing C and left-clicking somewhere should just place a new construction site as a PoC~~
 
 Modules:
 
