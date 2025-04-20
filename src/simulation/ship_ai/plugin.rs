@@ -116,10 +116,10 @@ fn complete_tasks<T: TaskComponent>(
     let now = simulation_time.now();
 
     for event in event_reader.read() {
-        if let Ok(mut queue) = all_ships_with_task.get_mut(event.entity) {
+        if let Ok(mut queue) = all_ships_with_task.get_mut(event.entity.into()) {
             tasks::remove_task_and_add_next_in_queue::<T>(
                 &mut commands,
-                event.entity,
+                event.entity.into(),
                 &mut queue,
                 now,
                 &mut task_started_event_writers,

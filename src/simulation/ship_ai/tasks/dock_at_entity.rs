@@ -90,7 +90,7 @@ impl DockAtEntity {
                         task_completions
                             .lock()
                             .unwrap()
-                            .push(TaskCompletedEvent::<Self>::new(entity));
+                            .push(TaskCompletedEvent::<Self>::new(entity.into()));
                     }
                 }
             });
@@ -104,10 +104,10 @@ impl DockAtEntity {
         mut all_ships_with_task: Query<(&mut Visibility, &Self)>,
     ) {
         for event in event_reader.read() {
-            if let Ok((mut visibility, task)) = all_ships_with_task.get_mut(event.entity) {
+            if let Ok((mut visibility, task)) = all_ships_with_task.get_mut(event.entity.into()) {
                 *visibility = Visibility::Hidden;
 
-                let mut entity_commands = commands.entity(event.entity);
+                let mut entity_commands = commands.entity(event.entity.into());
                 entity_commands.insert(components::IsDocked::new(task.target));
             } else {
                 error!(

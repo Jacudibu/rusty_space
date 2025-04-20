@@ -123,7 +123,7 @@ impl MoveToEntity {
                     TaskResult::Finished | TaskResult::Aborted => task_completions
                         .lock()
                         .unwrap()
-                        .push(TaskCompletedEvent::<Self>::new(entity)),
+                        .push(TaskCompletedEvent::<Self>::new(entity.into())),
                 }
             });
 

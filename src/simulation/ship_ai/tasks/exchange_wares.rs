@@ -86,7 +86,7 @@ impl ExchangeWares {
                 TaskResult::Finished | TaskResult::Aborted => task_completions
                     .lock()
                     .unwrap()
-                    .push(TaskCompletedEvent::<Self>::new(entity)),
+                    .push(TaskCompletedEvent::<Self>::new(entity.into())),
             });
 
         send_completion_events(event_writer, task_completions);
@@ -100,9 +100,9 @@ impl ExchangeWares {
         item_manifest: Res<ItemManifest>,
     ) {
         for event in event_reader.read() {
-            if let Ok(task) = all_ships_with_task.get_mut(event.entity) {
+            if let Ok(task) = all_ships_with_task.get_mut(event.entity.into()) {
                 task.complete(
-                    event.entity,
+                    event.entity.into(),
                     &mut all_storages,
                     &mut event_writer,
                     &item_manifest,

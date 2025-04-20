@@ -91,7 +91,7 @@ impl HarvestGas {
                     TaskResult::Finished => task_completions
                         .lock()
                         .unwrap()
-                        .push(TaskCompletedEvent::<Self>::new(entity)),
+                        .push(TaskCompletedEvent::<Self>::new(entity.into())),
                 }
             });
 
@@ -105,7 +105,7 @@ impl HarvestGas {
         mut signal_writer: EventWriter<TaskCompletedEvent<AwaitingSignal>>,
     ) {
         for event in event_reader.read() {
-            if let Ok(task) = all_ships_with_task.get_mut(event.entity) {
+            if let Ok(task) = all_ships_with_task.get_mut(event.entity.into()) {
                 finish_interaction(
                     task.target.into(),
                     &mut interaction_queues,
