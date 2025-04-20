@@ -4,9 +4,9 @@ use crate::simulation::physics::ShipVelocity;
 use crate::simulation::prelude::TaskComponent;
 use crate::simulation::prelude::simulation_transform::SimulationScale;
 use crate::simulation::ship_ai::AwaitingSignal;
-use crate::simulation::ship_ai::task_finished_event::TaskFinishedEvent;
+use crate::simulation::ship_ai::task_events::TaskCompletedEvent;
+use crate::simulation::ship_ai::task_events::TaskStartedEvent;
 use crate::simulation::ship_ai::task_result::TaskResult;
-use crate::simulation::ship_ai::task_started_event::TaskStartedEvent;
 use crate::simulation::ship_ai::tasks::{
     dock_at_entity, finish_interaction, send_completion_events,
 };
@@ -58,7 +58,7 @@ impl Undock {
     }
 
     pub fn run_tasks(
-        event_writer: EventWriter<TaskFinishedEvent<Self>>,
+        event_writer: EventWriter<TaskCompletedEvent<Self>>,
         time: Res<Time>,
         mut ships: Query<(
             Entity,
@@ -69,7 +69,7 @@ impl Undock {
             &mut ShipVelocity,
         )>,
     ) {
-        let task_completions = Arc::new(Mutex::new(Vec::<TaskFinishedEvent<Self>>::new()));
+        let task_completions = Arc::new(Mutex::new(Vec::<TaskCompletedEvent<Self>>::new()));
         let delta_seconds = time.delta_secs();
 
         ships.par_iter_mut().for_each(
@@ -84,7 +84,7 @@ impl Undock {
                 TaskResult::Finished | TaskResult::Aborted => task_completions
                     .lock()
                     .unwrap()
-                    .push(TaskFinishedEvent::<Self>::new(entity)),
+                    .push(TaskCompletedEvent::<Self>::new(entity)),
             },
         );
 
@@ -103,7 +103,7 @@ impl Undock {
         )>,
         mut started_tasks: EventReader<TaskStartedEvent<Self>>,
         mut interaction_queues: Query<&mut InteractionQueue>,
-        mut signal_writer: EventWriter<TaskFinishedEvent<AwaitingSignal>>,
+        mut signal_writer: EventWriter<TaskCompletedEvent<AwaitingSignal>>,
     ) {
         // Compared to the other task_creation thingies we can cheat a little since we got IsDocked as a useful marker
         for task in started_tasks.read() {

@@ -8,9 +8,9 @@ use crate::components::{GateComponent, InSector, SectorComponent};
 use crate::constants;
 use crate::simulation::physics::ShipVelocity;
 use crate::simulation::prelude::TaskComponent;
-use crate::simulation::ship_ai::task_finished_event::TaskFinishedEvent;
+use crate::simulation::ship_ai::task_events::TaskCompletedEvent;
+use crate::simulation::ship_ai::task_events::TaskStartedEvent;
 use crate::simulation::ship_ai::task_result::TaskResult;
-use crate::simulation::ship_ai::task_started_event::TaskStartedEvent;
 use crate::simulation::ship_ai::tasks::send_completion_events;
 use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::utils::{GateEntity, SectorEntity};
@@ -117,12 +117,12 @@ impl UseGate {
     }
 
     pub fn run_tasks(
-        event_writer: EventWriter<TaskFinishedEvent<Self>>,
+        event_writer: EventWriter<TaskCompletedEvent<Self>>,
         time: Res<Time>,
         mut ships: Query<(Entity, &mut Self, &mut SimulationTransform)>,
         transit_curve_query: Query<&GateComponent>,
     ) {
-        let task_completions = Arc::new(Mutex::new(Vec::<TaskFinishedEvent<Self>>::new()));
+        let task_completions = Arc::new(Mutex::new(Vec::<TaskCompletedEvent<Self>>::new()));
         let delta_travel = time.delta_secs() / constants::SECONDS_TO_TRAVEL_THROUGH_GATE;
 
         ships
@@ -133,7 +133,7 @@ impl UseGate {
                     TaskResult::Finished | TaskResult::Aborted => task_completions
                         .lock()
                         .unwrap()
-                        .push(TaskFinishedEvent::<Self>::new(entity)),
+                        .push(TaskCompletedEvent::<Self>::new(entity)),
                 }
             });
 
@@ -142,7 +142,7 @@ impl UseGate {
 
     pub fn complete_tasks(
         mut commands: Commands,
-        mut event_reader: EventReader<TaskFinishedEvent<Self>>,
+        mut event_reader: EventReader<TaskCompletedEvent<Self>>,
         mut all_ships_with_task: Query<(&Self, &mut ShipVelocity)>,
         mut all_sectors: Query<&mut SectorComponent>,
     ) {

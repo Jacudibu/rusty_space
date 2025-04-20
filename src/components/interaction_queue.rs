@@ -1,4 +1,4 @@
-use crate::simulation::prelude::{AwaitingSignal, TaskFinishedEvent};
+use crate::simulation::prelude::{AwaitingSignal, TaskCompletedEvent};
 use crate::utils::ShipEntity;
 use bevy::prelude::{Component, EventWriter};
 use std::collections::VecDeque;
@@ -47,13 +47,13 @@ impl InteractionQueue {
     /// Needs to be called whenever something stops interacting with the respective object!
     pub fn finish_interaction(
         &mut self,
-        event_writer: &mut EventWriter<TaskFinishedEvent<AwaitingSignal>>,
+        event_writer: &mut EventWriter<TaskCompletedEvent<AwaitingSignal>>,
     ) {
         self.currently_interacting -= 1;
         if self.currently_interacting <= self.maximum_simultaneous_interactions {
             if let Some(next) = self.waiting_queue.pop_front() {
                 self.currently_interacting += 1;
-                event_writer.send(TaskFinishedEvent::new(next.into()));
+                event_writer.send(TaskCompletedEvent::new(next.into()));
             }
         }
     }

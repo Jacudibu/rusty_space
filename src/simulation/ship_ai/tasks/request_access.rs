@@ -1,6 +1,6 @@
 use crate::components::InteractionQueue;
 use crate::simulation::prelude::{SimulationTime, TaskComponent, TaskInsideQueue, TaskQueue};
-use crate::simulation::ship_ai::task_started_event::AllTaskStartedEventWriters;
+use crate::simulation::ship_ai::task_events::AllTaskStartedEventWriters;
 use crate::simulation::ship_ai::tasks;
 use crate::utils::TypedEntity;
 use bevy::prelude::{Commands, Component, Entity, Query, Res, warn};

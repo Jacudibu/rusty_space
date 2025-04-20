@@ -4,9 +4,9 @@ use crate::simulation::prelude::{
     CurrentSimulationTimestamp, SimulationTime, SimulationTimestamp, TaskComponent,
 };
 use crate::simulation::production::InventoryUpdateForProductionEvent;
-use crate::simulation::ship_ai::task_finished_event::TaskFinishedEvent;
+use crate::simulation::ship_ai::task_events::TaskCompletedEvent;
+use crate::simulation::ship_ai::task_events::TaskStartedEvent;
 use crate::simulation::ship_ai::task_result::TaskResult;
-use crate::simulation::ship_ai::task_started_event::TaskStartedEvent;
 use crate::simulation::ship_ai::tasks::send_completion_events;
 use crate::utils::ExchangeWareData;
 use crate::utils::{TradeIntent, TypedEntity};
@@ -72,12 +72,12 @@ impl ExchangeWares {
     }
 
     pub fn run_tasks(
-        event_writer: EventWriter<TaskFinishedEvent<Self>>,
+        event_writer: EventWriter<TaskCompletedEvent<Self>>,
         simulation_time: Res<SimulationTime>,
         ships: Query<(Entity, &Self)>,
     ) {
         let now = simulation_time.now();
-        let task_completions = Arc::new(Mutex::new(Vec::<TaskFinishedEvent<Self>>::new()));
+        let task_completions = Arc::new(Mutex::new(Vec::<TaskCompletedEvent<Self>>::new()));
 
         ships
             .par_iter()
@@ -86,14 +86,14 @@ impl ExchangeWares {
                 TaskResult::Finished | TaskResult::Aborted => task_completions
                     .lock()
                     .unwrap()
-                    .push(TaskFinishedEvent::<Self>::new(entity)),
+                    .push(TaskCompletedEvent::<Self>::new(entity)),
             });
 
         send_completion_events(event_writer, task_completions);
     }
 
     pub fn complete_tasks(
-        mut event_reader: EventReader<TaskFinishedEvent<Self>>,
+        mut event_reader: EventReader<TaskCompletedEvent<Self>>,
         mut all_ships_with_task: Query<&Self>,
         mut all_storages: Query<&mut InventoryComponent>,
         mut event_writer: EventWriter<InventoryUpdateForProductionEvent>,

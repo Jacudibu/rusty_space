@@ -6,7 +6,7 @@ use crate::pathfinding;
 use crate::simulation::prelude::{SimulationTime, SimulationTimestamp};
 use crate::simulation::ship_ai::behaviors::auto_mine;
 use crate::simulation::ship_ai::ship_is_idle_filter::ShipIsIdleFilter;
-use crate::simulation::ship_ai::task_started_event::AllTaskStartedEventWriters;
+use crate::simulation::ship_ai::task_events::AllTaskStartedEventWriters;
 use crate::simulation::ship_ai::{TaskInsideQueue, TaskQueue};
 use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::trade_plan::TradePlan;

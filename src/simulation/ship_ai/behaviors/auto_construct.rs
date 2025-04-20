@@ -3,7 +3,7 @@ use crate::simulation::prelude::{
     SimulationTime, SimulationTimestamp, SimulationTransform, TaskInsideQueue, TaskQueue,
 };
 use crate::simulation::ship_ai::ship_is_idle_filter::ShipIsIdleFilter;
-use crate::simulation::ship_ai::task_started_event::AllTaskStartedEventWriters;
+use crate::simulation::ship_ai::task_events::AllTaskStartedEventWriters;
 use crate::utils::{ConstructionSiteEntity, SectorEntity, TypedEntity};
 use crate::{constants, pathfinding};
 use bevy::prelude::{Commands, Component, Entity, Query, Res};

@@ -13,11 +13,11 @@ mod request_access;
 mod undock;
 mod use_gate;
 
-use crate::simulation::prelude::{CurrentSimulationTimestamp, TaskFinishedEvent, TaskQueue};
+use crate::simulation::prelude::{CurrentSimulationTimestamp, TaskCompletedEvent, TaskQueue};
 
 use crate::components::InteractionQueue;
 use crate::simulation::ship_ai::TaskComponent;
-use crate::simulation::ship_ai::task_started_event::AllTaskStartedEventWriters;
+use crate::simulation::ship_ai::task_events::AllTaskStartedEventWriters;
 pub use {
     awaiting_signal::AwaitingSignal, construct::ConstructTaskComponent,
     dock_at_entity::DockAtEntity, exchange_wares::ExchangeWares, harvest_gas::HarvestGas,
@@ -26,8 +26,8 @@ pub use {
 };
 
 pub fn send_completion_events<T: TaskComponent>(
-    mut event_writer: EventWriter<TaskFinishedEvent<T>>,
-    task_completions: Arc<Mutex<Vec<TaskFinishedEvent<T>>>>,
+    mut event_writer: EventWriter<TaskCompletedEvent<T>>,
+    task_completions: Arc<Mutex<Vec<TaskCompletedEvent<T>>>>,
 ) {
     match Arc::try_unwrap(task_completions) {
         Ok(task_completions) => {
@@ -82,7 +82,7 @@ pub fn remove_task_and_add_next_in_queue_to_entity_commands<T: TaskComponent>(
 pub fn finish_interaction(
     queue_entity: Entity,
     interaction_queues: &mut Query<&mut InteractionQueue>,
-    signal_writer: &mut EventWriter<TaskFinishedEvent<AwaitingSignal>>,
+    signal_writer: &mut EventWriter<TaskCompletedEvent<AwaitingSignal>>,
 ) {
     let Ok(mut queue_entity) = interaction_queues.get_mut(queue_entity) else {
         warn!("Was unable to find queue entity in finish interaction!");

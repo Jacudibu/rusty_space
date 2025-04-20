@@ -1,7 +1,7 @@
 use crate::components::Engine;
 use crate::simulation::physics::ShipVelocity;
 use crate::simulation::prelude::TaskComponent;
-use crate::simulation::ship_ai::task_finished_event::TaskFinishedEvent;
+use crate::simulation::ship_ai::task_events::TaskCompletedEvent;
 use crate::simulation::ship_ai::task_result::TaskResult;
 use crate::simulation::ship_ai::tasks::send_completion_events;
 use crate::simulation::transform::simulation_transform::SimulationTransform;
@@ -98,12 +98,12 @@ pub fn move_to_entity(
 
 impl MoveToEntity {
     pub fn run_tasks(
-        event_writer: EventWriter<TaskFinishedEvent<Self>>,
+        event_writer: EventWriter<TaskCompletedEvent<Self>>,
         time: Res<Time>,
         mut ships: Query<(Entity, &Self, &Engine, &mut ShipVelocity)>,
         all_transforms: Query<&SimulationTransform>,
     ) {
-        let task_completions = Arc::new(Mutex::new(Vec::<TaskFinishedEvent<Self>>::new()));
+        let task_completions = Arc::new(Mutex::new(Vec::<TaskCompletedEvent<Self>>::new()));
         let delta_seconds = time.delta_secs();
 
         ships
@@ -123,7 +123,7 @@ impl MoveToEntity {
                     TaskResult::Finished | TaskResult::Aborted => task_completions
                         .lock()
                         .unwrap()
-                        .push(TaskFinishedEvent::<Self>::new(entity)),
+                        .push(TaskCompletedEvent::<Self>::new(entity)),
                 }
             });
 

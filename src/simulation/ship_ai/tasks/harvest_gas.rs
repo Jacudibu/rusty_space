@@ -4,7 +4,7 @@ use crate::game_data::{ItemId, ItemManifest};
 use crate::simulation::prelude::{
     AwaitingSignal, CurrentSimulationTimestamp, SimulationTime, SimulationTimestamp, TaskComponent,
 };
-use crate::simulation::ship_ai::task_finished_event::TaskFinishedEvent;
+use crate::simulation::ship_ai::task_events::TaskCompletedEvent;
 use crate::simulation::ship_ai::tasks::{finish_interaction, send_completion_events};
 use crate::utils::PlanetEntity;
 use bevy::log::error;
@@ -69,7 +69,7 @@ impl HarvestGas {
     }
 
     pub fn run_tasks(
-        event_writer: EventWriter<TaskFinishedEvent<Self>>,
+        event_writer: EventWriter<TaskCompletedEvent<Self>>,
         simulation_time: Res<SimulationTime>,
         mut ships: Query<(
             Entity,
@@ -79,7 +79,7 @@ impl HarvestGas {
         )>,
         item_manifest: Res<ItemManifest>,
     ) {
-        let task_completions = Arc::new(Mutex::new(Vec::<TaskFinishedEvent<Self>>::new()));
+        let task_completions = Arc::new(Mutex::new(Vec::<TaskCompletedEvent<Self>>::new()));
         let now = simulation_time.now();
 
         ships
@@ -91,7 +91,7 @@ impl HarvestGas {
                     TaskResult::Finished => task_completions
                         .lock()
                         .unwrap()
-                        .push(TaskFinishedEvent::<Self>::new(entity)),
+                        .push(TaskCompletedEvent::<Self>::new(entity)),
                 }
             });
 
@@ -99,10 +99,10 @@ impl HarvestGas {
     }
 
     pub fn complete_tasks(
-        mut event_reader: EventReader<TaskFinishedEvent<Self>>,
+        mut event_reader: EventReader<TaskCompletedEvent<Self>>,
         mut all_ships_with_task: Query<&Self>,
         mut interaction_queues: Query<&mut InteractionQueue>,
-        mut signal_writer: EventWriter<TaskFinishedEvent<AwaitingSignal>>,
+        mut signal_writer: EventWriter<TaskCompletedEvent<AwaitingSignal>>,
     ) {
         for event in event_reader.read() {
             if let Ok(task) = all_ships_with_task.get_mut(event.entity) {

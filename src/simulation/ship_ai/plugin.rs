@@ -1,7 +1,6 @@
 use crate::simulation::asteroids;
 use crate::simulation::prelude::{SimulationTime, TaskComponent, TaskQueue};
-use crate::simulation::ship_ai::task_finished_event::TaskFinishedEvent;
-use crate::simulation::ship_ai::task_started_event::{AllTaskStartedEventWriters, TaskStartedEvent};
+use crate::simulation::ship_ai::task_events::{AllTaskStartedEventWriters, TaskCompletedEvent, TaskStartedEvent};
 use crate::simulation::ship_ai::tasks::{
     AwaitingSignal, ConstructTaskComponent, DockAtEntity, ExchangeWares, HarvestGas, MineAsteroid, MoveToEntity,
     RequestAccess, Undock, UseGate,
@@ -33,14 +32,14 @@ impl Plugin for ShipAiPlugin {
         register_task::<HarvestGas, _, _, _>(app, None::<Nothing>, HarvestGas::run_tasks, Some(HarvestGas::complete_tasks));
 
         // Unique stuff
-        app.add_event::<TaskFinishedEvent<AwaitingSignal>>();
+        app.add_event::<TaskCompletedEvent<AwaitingSignal>>();
         app.add_systems(
             FixedUpdate,
             (
                 stop_idle_ships::stop_idle_ships,
                 
                 RequestAccess::run_tasks,
-                complete_tasks::<AwaitingSignal>.run_if(on_event::<TaskFinishedEvent<AwaitingSignal>>)
+                complete_tasks::<AwaitingSignal>.run_if(on_event::<TaskCompletedEvent<AwaitingSignal>>)
                     .after(complete_tasks::<Undock>)
                     .after(complete_tasks::<HarvestGas>) // TODO: Could be replaced with a more general "disengage orbit" task or something alike
                 ,
@@ -73,7 +72,7 @@ fn register_task<T, T1, T2, T3>(
 ) where
     T: TaskComponent,
 {
-    app.add_event::<TaskFinishedEvent<T>>();
+    app.add_event::<TaskCompletedEvent<T>>();
 
     if let Some(on_started) = on_started {
         app.add_event::<TaskStartedEvent<T>>();
@@ -89,7 +88,7 @@ fn register_task<T, T1, T2, T3>(
             (
                 run,
                 (custom_on_complete, complete_tasks::<T>)
-                    .run_if(on_event::<TaskFinishedEvent<T>>)
+                    .run_if(on_event::<TaskCompletedEvent<T>>)
                     .chain()
             )
                 .chain()
@@ -99,7 +98,7 @@ fn register_task<T, T1, T2, T3>(
             FixedUpdate,
             (
                 run,
-                complete_tasks::<T>.run_if(on_event::<TaskFinishedEvent<T>>),
+                complete_tasks::<T>.run_if(on_event::<TaskCompletedEvent<T>>),
             )
                 .chain()
                 .run_if(in_state(SimulationState::Running)),
@@ -109,7 +108,7 @@ fn register_task<T, T1, T2, T3>(
 
 fn complete_tasks<T: TaskComponent>(
     mut commands: Commands,
-    mut event_reader: EventReader<TaskFinishedEvent<T>>,
+    mut event_reader: EventReader<TaskCompletedEvent<T>>,
     mut all_ships_with_task: Query<&mut TaskQueue, With<T>>,
     simulation_time: Res<SimulationTime>,
     mut task_started_event_writers: AllTaskStartedEventWriters,

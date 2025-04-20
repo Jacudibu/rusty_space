@@ -1,7 +1,7 @@
 use crate::components::Engine;
 use crate::simulation::physics::ShipVelocity;
 use crate::simulation::prelude::TaskComponent;
-use crate::simulation::ship_ai::task_finished_event::TaskFinishedEvent;
+use crate::simulation::ship_ai::task_events::TaskCompletedEvent;
 use crate::simulation::ship_ai::task_result::TaskResult;
 use crate::simulation::ship_ai::tasks::{move_to_entity, send_completion_events};
 use crate::simulation::transform::simulation_transform::{SimulationScale, SimulationTransform};
@@ -55,7 +55,7 @@ impl DockAtEntity {
     }
 
     pub fn run_tasks(
-        event_writer: EventWriter<TaskFinishedEvent<Self>>,
+        event_writer: EventWriter<TaskCompletedEvent<Self>>,
         time: Res<Time>,
         mut ships: Query<(
             Entity,
@@ -66,7 +66,7 @@ impl DockAtEntity {
         )>,
         all_transforms: Query<&SimulationTransform>,
     ) {
-        let task_completions = Arc::new(Mutex::new(Vec::<TaskFinishedEvent<Self>>::new()));
+        let task_completions = Arc::new(Mutex::new(Vec::<TaskCompletedEvent<Self>>::new()));
 
         ships
             .par_iter_mut()
@@ -90,7 +90,7 @@ impl DockAtEntity {
                         task_completions
                             .lock()
                             .unwrap()
-                            .push(TaskFinishedEvent::<Self>::new(entity));
+                            .push(TaskCompletedEvent::<Self>::new(entity));
                     }
                 }
             });
@@ -100,7 +100,7 @@ impl DockAtEntity {
 
     pub fn complete_tasks(
         mut commands: Commands,
-        mut event_reader: EventReader<TaskFinishedEvent<Self>>,
+        mut event_reader: EventReader<TaskCompletedEvent<Self>>,
         mut all_ships_with_task: Query<(&mut Visibility, &Self)>,
     ) {
         for event in event_reader.read() {

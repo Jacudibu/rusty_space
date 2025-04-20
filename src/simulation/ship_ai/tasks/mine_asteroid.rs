@@ -4,7 +4,7 @@ use crate::game_data::ItemManifest;
 use crate::simulation::asteroids::AsteroidWasFullyMinedEvent;
 use crate::simulation::prelude::{CurrentSimulationTimestamp, SimulationTime, SimulationTimestamp};
 use crate::simulation::ship_ai::TaskComponent;
-use crate::simulation::ship_ai::task_finished_event::TaskFinishedEvent;
+use crate::simulation::ship_ai::task_events::TaskCompletedEvent;
 use crate::simulation::ship_ai::tasks::send_completion_events;
 use crate::simulation::transform::simulation_transform::SimulationScale;
 use crate::utils::AsteroidEntity;
@@ -78,7 +78,7 @@ impl MineAsteroid {
     }
 
     pub fn run_tasks(
-        event_writer: EventWriter<TaskFinishedEvent<Self>>,
+        event_writer: EventWriter<TaskCompletedEvent<Self>>,
         simulation_time: Res<SimulationTime>,
         mut ships: Query<(
             Entity,
@@ -90,7 +90,7 @@ impl MineAsteroid {
         mut asteroid_was_fully_mined_event: EventWriter<AsteroidWasFullyMinedEvent>,
         item_manifest: Res<ItemManifest>,
     ) {
-        let task_completions = Arc::new(Mutex::new(Vec::<TaskFinishedEvent<Self>>::new()));
+        let task_completions = Arc::new(Mutex::new(Vec::<TaskCompletedEvent<Self>>::new()));
         let mined_asteroids = Arc::new(Mutex::new(Vec::<(AsteroidEntity, u32)>::new()));
         let now = simulation_time.now();
 
@@ -121,7 +121,7 @@ impl MineAsteroid {
                         task_completions
                             .lock()
                             .unwrap()
-                            .push(TaskFinishedEvent::<Self>::new(entity))
+                            .push(TaskCompletedEvent::<Self>::new(entity))
                     }
                 }
             });

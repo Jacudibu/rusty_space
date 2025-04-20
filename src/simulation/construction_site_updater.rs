@@ -10,7 +10,7 @@ use crate::simulation::prelude::{
     ConstructTaskComponent, ProductionComponent, ProductionModule, ShipyardComponent,
     ShipyardModule,
 };
-use crate::simulation::ship_ai::TaskFinishedEvent;
+use crate::simulation::ship_ai::TaskCompletedEvent;
 use crate::states::SimulationState;
 use crate::utils::ConstructionSiteEntity;
 use bevy::prelude::{
@@ -141,7 +141,7 @@ fn construction_site_finisher(
         Option<&mut ProductionComponent>,
         Option<&mut ShipyardComponent>,
     )>,
-    mut task_finished_event_writer: EventWriter<TaskFinishedEvent<ConstructTaskComponent>>,
+    mut task_finished_event_writer: EventWriter<TaskCompletedEvent<ConstructTaskComponent>>,
     mut all_sectors: Query<&mut SectorComponent>,
 ) {
     for event in events.read() {
@@ -211,7 +211,7 @@ fn construction_site_finisher(
                 construction_site
                     .construction_ships
                     .iter()
-                    .map(|x| TaskFinishedEvent::new(x.into())),
+                    .map(|x| TaskCompletedEvent::new(x.into())),
             );
             all_sectors
                 .get_mut(in_sector.into())
