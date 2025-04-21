@@ -15,7 +15,11 @@ pub struct RequestAccess {
     /// The entity we want to access. Should have an [InteractionQueue].
     target: TypedEntity,
 }
-impl TaskComponent for RequestAccess {}
+impl TaskComponent for RequestAccess {
+    fn can_be_aborted() -> bool {
+        true
+    }
+}
 
 impl RequestAccess {
     pub fn new(target: TypedEntity) -> Self {

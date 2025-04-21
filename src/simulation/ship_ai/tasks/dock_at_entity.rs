@@ -21,7 +21,11 @@ pub struct DockAtEntity {
     pub target: TypedEntity,
 }
 
-impl TaskComponent for DockAtEntity {}
+impl TaskComponent for DockAtEntity {
+    fn can_be_aborted() -> bool {
+        true
+    }
+}
 
 pub fn scale_based_on_docking_distance(scale: &mut SimulationScale, ratio: f32) {
     if ratio < 0.5 {

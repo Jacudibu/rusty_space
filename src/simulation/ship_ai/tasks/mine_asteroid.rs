@@ -29,7 +29,11 @@ pub struct MineAsteroid {
     /// How much ore we have reserved from the target asteroid.
     reserved_ore_amount: u32,
 }
-impl TaskComponent for MineAsteroid {}
+impl TaskComponent for MineAsteroid {
+    fn can_be_aborted() -> bool {
+        true
+    }
+}
 
 impl MineAsteroid {
     pub fn new(target: AsteroidEntity, now: CurrentSimulationTimestamp, reserved: u32) -> Self {

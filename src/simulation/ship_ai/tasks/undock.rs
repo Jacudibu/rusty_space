@@ -19,11 +19,16 @@ use std::sync::{Arc, Mutex};
 
 /// Ships with this [TaskComponent] are currently undocking from another entity.
 /// They'll move in a straight line away from said entity whilst scaling into existence, after which this task completes.
+/// This task cannot be canceled.
 #[derive(Component)]
 pub struct Undock {
     start_position: Option<Vec2>,
 }
-impl TaskComponent for Undock {}
+impl TaskComponent for Undock {
+    fn can_be_aborted() -> bool {
+        false
+    }
+}
 
 impl Undock {
     pub fn new() -> Self {

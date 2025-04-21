@@ -14,7 +14,7 @@ use bevy::prelude::{Component, Entity, EventReader, EventWriter, Query, Res, err
 use std::sync::{Arc, Mutex};
 
 /// Ships with this [TaskComponent] are currently trading wares with the specified target entity.
-/// (They basically just wait until a timer runs out and then finish the transfer)
+/// (They basically just wait until a timer runs out and then transfer the items)
 #[derive(Component)]
 pub struct ExchangeWares {
     /// The [SimulationTimestamp] at which this transaction is supposed to finish.
@@ -27,7 +27,11 @@ pub struct ExchangeWares {
     pub data: ExchangeWareData,
 }
 
-impl TaskComponent for ExchangeWares {}
+impl TaskComponent for ExchangeWares {
+    fn can_be_aborted() -> bool {
+        false
+    }
+}
 
 impl ExchangeWares {
     fn run(&self, now: CurrentSimulationTimestamp) -> TaskResult {

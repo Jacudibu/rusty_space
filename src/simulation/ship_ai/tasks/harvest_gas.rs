@@ -30,7 +30,11 @@ pub struct HarvestGas {
     next_update: SimulationTimestamp,
 }
 
-impl TaskComponent for HarvestGas {}
+impl TaskComponent for HarvestGas {
+    fn can_be_aborted() -> bool {
+        true
+    }
+}
 
 impl HarvestGas {
     pub fn new(target: PlanetEntity, gas: ItemId, now: CurrentSimulationTimestamp) -> Self {

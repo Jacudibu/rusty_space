@@ -17,6 +17,7 @@ use crate::utils::{GateEntity, SectorEntity};
 use crate::utils::{ShipEntity, interpolation};
 
 /// Ships with this [TaskComponent] are currently using a [GateComponent].
+/// This task cannot be canceled.
 #[derive(Component)]
 pub struct UseGate {
     /// How far along the line connecting the two gates we are.
@@ -32,7 +33,11 @@ pub struct UseGate {
     pub exit_sector: SectorEntity,
 }
 
-impl TaskComponent for UseGate {}
+impl TaskComponent for UseGate {
+    fn can_be_aborted() -> bool {
+        false
+    }
+}
 
 /// Gate Traversal is split up into different states
 /// Ranging from "Getting sucked into it" to "traversing along the connection at full speed"

@@ -22,7 +22,11 @@ pub struct MoveToEntity {
     /// 0 would be right on top.
     pub distance_to_target: f32,
 }
-impl TaskComponent for MoveToEntity {}
+impl TaskComponent for MoveToEntity {
+    fn can_be_aborted() -> bool {
+        true
+    }
+}
 
 pub fn move_to_entity(
     this_entity: Entity,

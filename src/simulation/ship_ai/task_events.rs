@@ -8,18 +8,21 @@ use std::marker::PhantomData;
 pub mod event_kind {
     pub struct Started;
     pub struct Completed;
+    pub struct Aborted;
     pub struct Canceled;
 }
 
-/// Indicates that a Task was just started.
+/// Indicates that a new active Task was just started.
 pub type TaskStartedEvent<T> = TaskEvent<T, event_kind::Started>;
-/// Indicates that a Task was just completed.
+/// Indicates that an active Task was just completed.
 pub type TaskCompletedEvent<T> = TaskEvent<T, event_kind::Completed>;
-/// Indicates that a Task was just canceled.
+/// Indicates that an active Task was aborted during execution.
+pub type TaskAbortedEvent<T> = TaskEvent<T, event_kind::Aborted>;
+/// Indicates that a Task inside the TaskQueue was canceled.
 pub type TaskCanceledEvent<T> = TaskEvent<T, event_kind::Canceled>;
 
 /// Generic base class for all task-related events.
-/// Use [TaskStartedEvent], [TaskCompletedEvent] and [TaskCanceledEvent] for better readability.
+/// Use [TaskStartedEvent], [TaskCompletedEvent], [TaskAbortedEvent] and [TaskCanceledEvent] for better readability.
 #[derive(Event, Copy, Clone)]
 pub struct TaskEvent<Task: TaskComponent, Kind> {
     /// The [TaskComponent] type a

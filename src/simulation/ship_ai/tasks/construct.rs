@@ -10,7 +10,11 @@ use bevy::prelude::{Component, EventReader, Query, Res, error};
 pub struct ConstructTaskComponent {
     pub target: ConstructionSiteEntity,
 }
-impl TaskComponent for ConstructTaskComponent {}
+impl TaskComponent for ConstructTaskComponent {
+    fn can_be_aborted() -> bool {
+        true
+    }
+}
 
 impl ConstructTaskComponent {
     pub fn on_task_started(
