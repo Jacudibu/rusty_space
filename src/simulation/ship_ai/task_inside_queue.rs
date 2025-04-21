@@ -12,7 +12,9 @@ use bevy::ecs::system::EntityCommands;
 /// Defines a Task inside the [TaskQueue]. New task components can be created from these.
 pub enum TaskInsideQueue {
     /// Indicates that our ship is waiting for an external entity (e.g. a station or the player) to signal the ship to continue with it next task.
-    AwaitingSignal,
+    AwaitingSignal {
+        target: TypedEntity,
+    },
     Construct {
         target: ConstructionSiteEntity,
     },
@@ -102,8 +104,8 @@ impl TaskInsideQueue {
             TaskInsideQueue::HarvestGas { target, gas } => {
                 entity_commands.insert(tasks::HarvestGas::new(*target, *gas, now));
             }
-            TaskInsideQueue::AwaitingSignal => {
-                entity_commands.insert(tasks::AwaitingSignal {});
+            TaskInsideQueue::AwaitingSignal { target: from } => {
+                entity_commands.insert(tasks::AwaitingSignal { from: *from });
             }
             TaskInsideQueue::Construct { target } => {
                 task_started_event_writers

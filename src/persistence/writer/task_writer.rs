@@ -1,5 +1,5 @@
-use crate::persistence::data::v1::*;
 use crate::persistence::AllEntityIdMaps;
+use crate::persistence::data::v1::*;
 use crate::simulation::ship_ai::TaskInsideQueue;
 use crate::utils::ExchangeWareData;
 
@@ -35,7 +35,7 @@ impl TaskSaveData {
                 gas: *gas,
             },
             TaskInsideQueue::DockAtEntity { .. } => todo!(),
-            TaskInsideQueue::AwaitingSignal => todo!(),
+            TaskInsideQueue::AwaitingSignal { .. } => todo!(),
             TaskInsideQueue::RequestAccess { .. } => todo!(),
             TaskInsideQueue::Undock => todo!(),
             TaskInsideQueue::Construct { .. } => todo!(),

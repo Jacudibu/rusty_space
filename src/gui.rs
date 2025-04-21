@@ -142,7 +142,7 @@ impl UiIcons {
             },
             TaskInsideQueue::MineAsteroid { .. } => *self.asteroids.get(&IRON_ASTEROID_ID).unwrap(),
             TaskInsideQueue::HarvestGas { .. } => self.planet,
-            TaskInsideQueue::AwaitingSignal => self.awaiting_signal,
+            TaskInsideQueue::AwaitingSignal { .. } => self.awaiting_signal,
             TaskInsideQueue::RequestAccess { .. } => self.awaiting_signal,
             TaskInsideQueue::DockAtEntity { .. } => self.dock_at,
             TaskInsideQueue::Undock { .. } => self.undock,
@@ -598,8 +598,11 @@ fn list_selection_details(
                                             names.get(target.into()).unwrap()
                                         )
                                     }
-                                    TaskInsideQueue::AwaitingSignal => {
-                                        "Awaiting Signal".to_string()
+                                    TaskInsideQueue::AwaitingSignal { target } => {
+                                        format!(
+                                            "Awaiting Signal from {}",
+                                            names.get(target.into()).unwrap()
+                                        )
                                     }
                                     TaskInsideQueue::RequestAccess { target } => {
                                         format!(

@@ -64,7 +64,12 @@ impl RequestAccess {
                 .try_start_interaction(entity.into())
                 .is_err()
             {
-                task_queue.insert(1, TaskInsideQueue::AwaitingSignal);
+                task_queue.insert(
+                    1,
+                    TaskInsideQueue::AwaitingSignal {
+                        target: task.target,
+                    },
+                );
             }
 
             tasks::remove_task_and_add_next_in_queue::<Self>(
