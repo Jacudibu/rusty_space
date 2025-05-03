@@ -1,8 +1,8 @@
 use crate::components::InSector;
 use crate::utils::{ConstructionSiteEntity, GateEntity, SectorEntity, ShipEntity, StationEntity};
 use bevy::math::Vec2;
+use bevy::platform::collections::{HashMap, HashSet};
 use bevy::prelude::{Commands, Component};
-use bevy::utils::{HashMap, HashSet};
 use hexx::Hex;
 
 /// Main Component for Sector Entities. Keeps track of common entities which can be found inside all sectors.

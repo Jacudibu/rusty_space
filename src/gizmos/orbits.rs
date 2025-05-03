@@ -9,7 +9,7 @@ pub struct OrbitLineGizmos;
 
 pub fn configure(mut config_store: ResMut<GizmoConfigStore>) {
     let (config, _) = config_store.config_mut::<OrbitLineGizmos>();
-    config.line_width = 1.0;
+    config.line.width = 1.0;
 }
 
 pub fn draw_orbit_circles(

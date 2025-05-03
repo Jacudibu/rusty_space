@@ -1,6 +1,6 @@
+use bevy::platform::collections::HashMap;
+use bevy::platform::collections::hash_map::Iter;
 use bevy::prelude::Resource;
-use bevy::utils::hashbrown::hash_map::Iter;
-use bevy::utils::HashMap;
 use leafwing_manifest::identifier::Id;
 use std::ops::Index;
 

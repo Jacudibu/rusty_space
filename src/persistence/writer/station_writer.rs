@@ -11,8 +11,7 @@ use crate::simulation::production::{
     ShipyardModule,
 };
 use crate::simulation::transform::simulation_transform::SimulationTransform;
-use bevy::core::Name;
-use bevy::prelude::Query;
+use bevy::prelude::{Name, Query};
 
 impl ProductionSaveData {
     pub fn from(production: &ProductionComponent) -> Self {

@@ -4,8 +4,8 @@ use crate::game_data::shipyard_module_data::shipyard_module::ShipyardModuleData;
 use crate::game_data::{
     ConstructableSiteData, MOCK_SHIPYARD_MODULE_ID, REFINED_METALS_ITEM_ID, RecipeElement,
 };
+use bevy::platform::collections::HashMap;
 use bevy::prelude::World;
-use bevy::utils::HashMap;
 
 pub type ShipyardModuleManifest = GenericManifestWithoutRawData<ShipyardModuleData>;
 

@@ -1,7 +1,7 @@
 use crate::session_data::ShipConfiguration;
 use crate::session_data::ship_configs::version;
 use crate::session_data::ship_configs::version::Version;
-use bevy::utils::HashMap;
+use bevy::platform::collections::HashMap;
 use serde::Deserialize;
 use std::hash::{Hash, Hasher};
 

@@ -143,7 +143,7 @@ impl MineAsteroid {
                         asteroid.ore -= mined_amount;
                         scale.scale = asteroid.scale_depending_on_current_ore_volume();
                         if asteroid.ore == 0 {
-                            asteroid_was_fully_mined_event.send(AsteroidWasFullyMinedEvent {
+                            asteroid_was_fully_mined_event.write(AsteroidWasFullyMinedEvent {
                                 asteroid: asteroid_entity,
                                 despawn_timer: asteroid.despawn_timestamp,
                             });

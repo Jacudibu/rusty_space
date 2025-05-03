@@ -1,8 +1,8 @@
 use crate::game_data::{ConstructableModuleId, ItemId};
 use crate::persistence::PersistentConstructionSiteId;
 use crate::utils::{ShipEntity, StationEntity};
+use bevy::platform::collections::HashSet;
 use bevy::prelude::Component;
-use bevy::utils::HashSet;
 
 /// Marker component for ConstructionSites.
 /// These are always directly owned by a station, but have their own inventory and buy orders.

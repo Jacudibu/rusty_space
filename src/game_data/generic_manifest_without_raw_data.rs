@@ -1,6 +1,6 @@
 use bevy::asset::Asset;
+use bevy::platform::collections::HashMap;
 use bevy::prelude::{Resource, TypePath, World};
-use bevy::utils::HashMap;
 use leafwing_manifest::identifier::Id;
 use leafwing_manifest::manifest::{Manifest, ManifestFormat};
 use serde::Deserialize;

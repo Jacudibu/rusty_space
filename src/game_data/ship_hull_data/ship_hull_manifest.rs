@@ -1,12 +1,12 @@
+use crate::game_data::ShipHullId;
 use crate::game_data::from_mock_data::FromMockData;
 use crate::game_data::generic_manifest::GenericManifest;
+use crate::game_data::ship_hull_data::ShipHullData;
 use crate::game_data::ship_hull_data::raw_ship_hull::RawShipHullData;
 use crate::game_data::ship_hull_data::raw_ship_hull_manifest::RawShipHullManifest;
-use crate::game_data::ship_hull_data::ShipHullData;
-use crate::game_data::ShipHullId;
 use bevy::asset::AssetServer;
+use bevy::platform::collections::HashMap;
 use bevy::prelude::World;
-use bevy::utils::HashMap;
 use leafwing_manifest::identifier::Id;
 use leafwing_manifest::manifest::{Manifest, ManifestFormat};
 

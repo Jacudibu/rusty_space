@@ -33,7 +33,7 @@ pub fn send_completion_events<T: TaskComponent>(
         Ok(task_completions) => {
             let batch = task_completions.into_inner().unwrap();
             if !batch.is_empty() {
-                event_writer.send_batch(batch);
+                event_writer.write_batch(batch);
             }
         }
         Err(_) => {

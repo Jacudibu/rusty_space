@@ -4,7 +4,7 @@ use crate::simulation::production::{
 };
 use crate::states::SimulationState;
 use bevy::app::{App, Plugin};
-use bevy::prelude::{in_state, FixedUpdate, IntoSystemConfigs};
+use bevy::prelude::{FixedUpdate, IntoScheduleConfigs, in_state};
 
 /// Handles everything production related.
 pub struct ProductionPlugin;

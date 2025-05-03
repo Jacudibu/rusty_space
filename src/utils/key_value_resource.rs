@@ -1,5 +1,5 @@
+use bevy::platform::collections::HashMap;
 use bevy::prelude::Resource;
-use bevy::utils::HashMap;
 use std::ops::{Deref, DerefMut};
 
 /// Generic Resource type just containing a [HashMap] and implementing [Deref] and [DerefMut] for easy access.

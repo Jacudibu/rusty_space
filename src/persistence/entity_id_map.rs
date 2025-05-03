@@ -7,8 +7,8 @@ use crate::utils::{
     StarEntity, StationEntity, TypedEntity,
 };
 use bevy::ecs::system::SystemParam;
+use bevy::platform::collections::HashMap;
 use bevy::prelude::{Res, Resource};
-use bevy::utils::HashMap;
 use hexx::Hex;
 use std::hash::Hash;
 

@@ -2,7 +2,7 @@ use crate::initialize_data;
 use crate::persistence::builder::{gate_builder, sector_builder, ship_builder, station_builder};
 use crate::persistence::test_universe;
 use bevy::app::{App, Plugin, Startup};
-use bevy::prelude::IntoSystemConfigs;
+use bevy::prelude::IntoScheduleConfigs;
 
 pub struct UniverseSaveDataLoadingOnStartupPlugin;
 

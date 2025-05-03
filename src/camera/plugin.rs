@@ -1,6 +1,6 @@
 use crate::camera::{moving, zooming};
 use crate::gui::MouseCursorOverUiState;
-use bevy::prelude::{in_state, App, IntoSystemConfigs, Plugin, Update};
+use bevy::prelude::{App, IntoScheduleConfigs, Plugin, Update, in_state};
 
 pub struct CameraControllerPlugin;
 impl Plugin for CameraControllerPlugin {

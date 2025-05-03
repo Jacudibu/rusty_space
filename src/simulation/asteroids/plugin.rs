@@ -3,7 +3,7 @@ use crate::simulation::asteroids::fading::{FadingAsteroidsIn, FadingAsteroidsOut
 use crate::simulation::asteroids::{despawning, fading, respawning};
 use crate::states::SimulationState;
 use bevy::app::{App, Plugin};
-use bevy::prelude::{in_state, on_event, FixedUpdate, IntoSystemConfigs, Update};
+use bevy::prelude::{FixedUpdate, IntoScheduleConfigs, Update, in_state, on_event};
 
 /// ### General Idea
 /// Every Sector may have asteroids inside it, defined by its [SectorAsteroidData].

@@ -5,8 +5,8 @@ use crate::game_data::ship_weapon_data::{
     CONSTRUCTION_TOOL_ID, GAS_COLLECTOR_ID, ORE_MINING_LASER_ID,
 };
 use crate::game_data::{REFINED_METALS_ITEM_ID, RecipeElement, SILICA_ITEM_ID};
+use bevy::platform::collections::HashMap;
 use bevy::prelude::World;
-use bevy::utils::HashMap;
 
 /// Contains all parsed Ship Weapon Modules.
 pub type ShipWeaponManifest = GenericManifestWithoutRawData<ShipWeaponData>;

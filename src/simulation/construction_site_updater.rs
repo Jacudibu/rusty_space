@@ -13,11 +13,11 @@ use crate::simulation::prelude::{
 use crate::simulation::ship_ai::TaskCompletedEvent;
 use crate::states::SimulationState;
 use crate::utils::ConstructionSiteEntity;
+use bevy::platform::collections::HashSet;
 use bevy::prelude::{
-    App, Commands, Entity, Event, EventReader, EventWriter, FixedUpdate, IntoSystemConfigs, Plugin,
-    Query, Res, Time, error, in_state,
+    App, Commands, Entity, Event, EventReader, EventWriter, FixedUpdate, IntoScheduleConfigs,
+    Plugin, Query, Res, Time, error, in_state,
 };
-use bevy::utils::HashSet;
 use std::ops::Not;
 
 pub struct ConstructionSiteUpdaterPlugin;
@@ -124,7 +124,7 @@ fn construction_site_updater(
 
             if site.current_build_progress as u32 >= constructable_data.required_build_power {
                 site.current_build_progress -= constructable_data.required_build_power as f32;
-                event_writer.send(ConstructionFinishedEvent {
+                event_writer.write(ConstructionFinishedEvent {
                     entity: entity.into(),
                 });
             }
@@ -207,7 +207,7 @@ fn construction_site_finisher(
         if construction_site.build_order.is_empty() {
             // TODO: This should probably also be handled as an event?
             station.construction_site = None;
-            task_finished_event_writer.send_batch(
+            task_finished_event_writer.write_batch(
                 construction_site
                     .construction_ships
                     .iter()

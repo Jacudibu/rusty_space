@@ -1,8 +1,9 @@
 use crate::components::SectorComponent;
 use crate::utils::SectorEntity;
 use bevy::ecs::query::{QueryData, ReadOnlyQueryData};
+use bevy::platform::collections::HashSet;
+use bevy::platform::hash::FixedHasher;
 use bevy::prelude::Query;
-use bevy::utils::HashSet;
 use std::cmp::Ordering;
 use std::ops::Not;
 
@@ -42,7 +43,7 @@ where
     TSearchQueryData: QueryData + ReadOnlyQueryData,
     TSearchFunction: Fn(TSearchQueryData::Item<'a>) -> bool,
 {
-    let mut visited = HashSet::default();
+    let mut visited = HashSet::<&SectorEntity, FixedHasher>::default();
     let mut next = vec![&from];
     let mut result = Vec::new();
 

@@ -9,8 +9,8 @@ use crate::game_data::{
     REFINED_METALS_ITEM_ID, REFINED_METALS_PRODUCTION_MODULE_ID, REFINED_METALS_RECIPE_ID,
     RecipeElement, SILICA_ITEM_ID, SILICA_RECIPE_ID, WAFERS_PRODUCTION_MODULE_ID, WAFERS_RECIPE_ID,
 };
+use bevy::platform::collections::HashMap;
 use bevy::prelude::World;
-use bevy::utils::HashMap;
 
 /// Contains all parsed Production Modules.
 pub type ProductionModuleManifest = GenericManifestWithoutRawData<ProductionModuleData>;

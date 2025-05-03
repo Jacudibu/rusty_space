@@ -2,8 +2,8 @@ use crate::components::inventory::InventoryElement;
 use crate::components::{OrderData, TradeOrder};
 use crate::game_data::ItemId;
 use crate::utils::PriceSetting;
+use bevy::platform::collections::HashMap;
 use bevy::prelude::Component;
-use bevy::utils::HashMap;
 
 #[derive(Component, Default)]
 pub struct BuyOrders {

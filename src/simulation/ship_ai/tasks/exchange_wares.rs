@@ -61,8 +61,8 @@ impl ExchangeWares {
                         other_inv.complete_order(item_id, TradeIntent::Buy, amount, item_manifest);
                     }
                 }
-                event_writer.send(InventoryUpdateForProductionEvent::new(this_entity));
-                event_writer.send(InventoryUpdateForProductionEvent::new(self.target.into()));
+                event_writer.write(InventoryUpdateForProductionEvent::new(this_entity));
+                event_writer.write(InventoryUpdateForProductionEvent::new(self.target.into()));
                 TaskResult::Finished
             }
             Err(e) => {

@@ -10,9 +10,8 @@ use crate::simulation::prelude::simulation_transform::SimulationScale;
 use crate::simulation::ship_ai::{BehaviorBuilder, TaskQueue};
 use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::utils::{SectorEntity, ShipEntity};
-use bevy::core::Name;
 use bevy::math::Vec2;
-use bevy::prelude::{Commands, Query, Rot2, Sprite};
+use bevy::prelude::{Commands, Name, Query, Rot2, Sprite};
 
 pub fn spawn_ship(
     commands: &mut Commands,

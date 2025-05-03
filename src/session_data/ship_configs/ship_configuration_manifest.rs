@@ -13,8 +13,8 @@ use crate::session_data::ship_configs::{
 use crate::session_data::{ShipConfigId, ShipConfiguration, ShipConfigurationVersions};
 use bevy::asset::Asset;
 use bevy::ecs::system::SystemState;
+use bevy::platform::collections::HashMap;
 use bevy::prelude::{Assets, Event, EventWriter, Image, Res, ResMut, Resource, TypePath, World};
-use bevy::utils::HashMap;
 use leafwing_manifest::identifier::Id;
 use leafwing_manifest::manifest::{Manifest, ManifestFormat};
 use serde::Deserialize;
@@ -53,7 +53,7 @@ impl ShipConfigurationManifest {
         self.items
             .insert(id, ShipConfigurationVersions::new(initial_configuration));
 
-        added_events.send(ShipConfigurationAddedEvent {
+        added_events.write(ShipConfigurationAddedEvent {
             id: ShipConfigId {
                 id,
                 version: version::INITIAL_VERSION,

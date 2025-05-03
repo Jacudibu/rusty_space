@@ -1,9 +1,8 @@
 use crate::game_data::GameData;
 use bevy::DefaultPlugins;
 use bevy::asset::AssetServer;
-use bevy::core::Name;
 use bevy::prelude::{
-    App, Assets, Camera2d, Commands, Handle, Image, ImagePlugin, PluginGroup, Res, ResMut,
+    App, Assets, Camera2d, Commands, Handle, Image, ImagePlugin, Name, PluginGroup, Res, ResMut,
     Resource, Startup, Window, WindowPlugin,
 };
 mod camera;
@@ -42,9 +41,11 @@ fn main() {
     GameData::initialize_mock_data(app.world_mut());
 
     app.add_plugins((
-        bevy_egui::EguiPlugin,
+        bevy_egui::EguiPlugin {
+            enable_multipass_for_primary_context: true,
+        },
         camera::CameraControllerPlugin,
-        diagnostics::DiagnosticsPlugin,
+        // diagnostics::DiagnosticsPlugin,
         entity_selection::EntitySelectionPlugin,
         gizmos::GizmoPlugin,
         gui::GUIPlugin,

@@ -3,9 +3,7 @@ use crate::camera::{ZOOM_SPEED_KEYBOARD, ZOOM_SPEED_MOUSE};
 use bevy::input::ButtonInput;
 use bevy::input::mouse::MouseWheel;
 use bevy::math::VectorSpace;
-use bevy::prelude::{
-    Component, EventReader, KeyCode, OrthographicProjection, Query, Real, Res, Time, With,
-};
+use bevy::prelude::{Component, EventReader, KeyCode, Projection, Query, Real, Res, Time, With};
 
 /// How far can we zoom in?
 const MIN_ZOOM: f32 = 0.25;
@@ -31,7 +29,7 @@ pub fn zoom_camera_with_buttons(
         return;
     }
 
-    let mut zoom_factor = query.get_single_mut().unwrap();
+    let mut zoom_factor = query.single_mut().unwrap();
 
     zoom_factor.target += dir * time.delta_secs() * ZOOM_SPEED_KEYBOARD;
     zoom_factor.target = zoom_factor.target.clamp(MIN_ZOOM, MAX_ZOOM);
@@ -42,7 +40,7 @@ pub fn zoom_camera_with_scroll_wheel(
     mut query: Query<&mut SmoothZooming, With<MainCamera>>,
 ) {
     for event in scroll_event.read() {
-        let mut zoom_factor = query.get_single_mut().unwrap();
+        let mut zoom_factor = query.single_mut().unwrap();
         zoom_factor.target += -event.y * ZOOM_SPEED_MOUSE;
         zoom_factor.target = zoom_factor.target.clamp(MIN_ZOOM, MAX_ZOOM);
     }
@@ -50,9 +48,12 @@ pub fn zoom_camera_with_scroll_wheel(
 
 pub fn animate_smooth_camera_zoom(
     time: Res<Time<Real>>,
-    mut query: Query<(&mut OrthographicProjection, &SmoothZooming), With<MainCamera>>,
+    mut query: Query<(&mut Projection, &SmoothZooming), With<MainCamera>>,
 ) {
-    let (mut projection, smooth_zoom) = query.get_single_mut().unwrap();
+    let (mut projection, smooth_zoom) = query.single_mut().unwrap();
+    let Projection::Orthographic(ref mut projection) = *projection else {
+        panic!("We should only ever have orthographic projections");
+    };
     if projection.scale == smooth_zoom.target {
         return;
     }

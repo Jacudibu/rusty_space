@@ -6,6 +6,9 @@
 use crate::simulation::prelude::Milliseconds;
 use std::ops::Range;
 
+/// Wrapper for [bevy::prelude::Result] to avoid confusion with rust's built-in [Result] type.
+pub type BevyResult = bevy::prelude::Result;
+
 #[cfg(debug_assertions)]
 pub const TRADE_SHIP_COUNT: u32 = 20;
 #[cfg(not(debug_assertions))]

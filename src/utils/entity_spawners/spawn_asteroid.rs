@@ -3,13 +3,12 @@ use crate::constants;
 use crate::game_data::{AsteroidDataId, AsteroidManifest};
 use crate::persistence::{AsteroidIdMap, PersistentAsteroidId};
 use crate::simulation::physics::ConstantVelocity;
-use crate::simulation::prelude::simulation_transform::SimulationScale;
 use crate::simulation::prelude::SimulationTimestamp;
+use crate::simulation::prelude::simulation_transform::SimulationScale;
 use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::utils::{AsteroidEntity, AsteroidEntityWithTimestamp, SectorEntity};
-use bevy::core::Name;
 use bevy::math::Vec2;
-use bevy::prelude::{Alpha, Commands, Rot2, Sprite};
+use bevy::prelude::{Alpha, Commands, Name, Rot2, Sprite};
 use leafwing_manifest::manifest::Manifest;
 
 #[allow(clippy::too_many_arguments)]

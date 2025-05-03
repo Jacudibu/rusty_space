@@ -12,7 +12,7 @@ const GIZMO_COLOR: Srgba = bevy::color::palettes::css::CORNFLOWER_BLUE;
 
 pub fn configure(mut config_store: ResMut<GizmoConfigStore>) {
     let (config, _) = config_store.config_mut::<SelectedShipTaskGizmos>();
-    config.line_width = 4.0;
+    config.line.width = 4.0;
 }
 
 pub fn draw_selected_ship_task(

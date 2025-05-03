@@ -86,7 +86,7 @@ pub fn handle_inventory_updates(
                         module.queued_recipes.push(queue_element);
                     }
 
-                    production_start_event_writer.send(ProductionStartedEvent::new(
+                    production_start_event_writer.write(ProductionStartedEvent::new(
                         event.entity,
                         ProductionKind::Item(*id),
                         finish_timestamp,
@@ -193,7 +193,7 @@ pub fn handle_inventory_updates(
                 shipyard.queue.remove(next_index);
                 ships_built_this_frame += 1;
 
-                production_start_event_writer.send(ProductionStartedEvent::new(
+                production_start_event_writer.write(ProductionStartedEvent::new(
                     event.entity,
                     ProductionKind::Shipyard(module_id),
                     finish_timestamp,

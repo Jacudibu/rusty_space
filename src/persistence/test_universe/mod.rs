@@ -2,7 +2,7 @@ use crate::game_data::AsteroidManifest;
 use crate::initialize_data;
 use crate::session_data::SessionData;
 use bevy::app::{App, Plugin};
-use bevy::prelude::{IntoSystemConfigs, Startup, World};
+use bevy::prelude::{IntoScheduleConfigs, Startup, World};
 
 mod coordinates;
 mod gate_test_data;

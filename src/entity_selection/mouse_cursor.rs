@@ -1,3 +1,4 @@
+use crate::constants::BevyResult;
 use crate::map_layout::MapLayout;
 use crate::persistence::SectorIdMap;
 use crate::utils::SectorPosition;
@@ -34,9 +35,9 @@ pub fn update_mouse_cursor_position(
     map: Res<MapLayout>,
     sectors: Res<SectorIdMap>,
     mut cursor: ResMut<MouseCursor>,
-) {
-    if let Some(position) = windows.single().cursor_position() {
-        let (camera, transform) = camera.single();
+) -> BevyResult {
+    if let Some(position) = windows.single()?.cursor_position() {
+        let (camera, transform) = camera.single()?;
         let world_pos = camera.viewport_to_world_2d(transform, position);
 
         cursor.screen_space = Some(position);
@@ -52,6 +53,8 @@ pub fn update_mouse_cursor_position(
         cursor.world_space = None;
         cursor.sector_space = None;
     }
+
+    Ok(())
 }
 
 /// Converts the position of the mouse cursor to a sector position. None if there is no sector at the position.

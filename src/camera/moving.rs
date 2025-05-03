@@ -1,17 +1,15 @@
-use crate::camera::main_camera::MainCamera;
 use crate::camera::CAMERA_SPEED;
+use crate::camera::main_camera::MainCamera;
 use bevy::input::ButtonInput;
 use bevy::math::Vec3;
-use bevy::prelude::{
-    Component, KeyCode, OrthographicProjection, Query, Real, Res, Time, Transform, With,
-};
+use bevy::prelude::{Component, KeyCode, Projection, Query, Real, Res, Time, Transform, With};
 
 const MOVEMENT_SLOWDOWN: f32 = 13.0;
 
 pub fn move_camera(
     keys: Res<ButtonInput<KeyCode>>,
     time: Res<Time<Real>>,
-    mut query: Query<(&mut SmoothMoving, &OrthographicProjection), With<MainCamera>>,
+    mut query: Query<(&mut SmoothMoving, &Projection), With<MainCamera>>,
 ) {
     let mut dir = Vec3::ZERO;
 
@@ -32,7 +30,10 @@ pub fn move_camera(
         return;
     }
 
-    let (mut smooth_moving, projection) = query.get_single_mut().unwrap();
+    let (mut smooth_moving, projection) = query.single_mut().unwrap();
+    let Projection::Orthographic(projection) = projection else {
+        panic!("We should only ever have orthographic projections");
+    };
     let zoom_factor = 1.0 / projection.scale;
     smooth_moving.target += ((dir * CAMERA_SPEED) / zoom_factor) * time.delta_secs();
 }
@@ -41,7 +42,7 @@ pub fn animate_smooth_camera_movement(
     time: Res<Time<Real>>,
     mut query: Query<(&mut Transform, &SmoothMoving), With<MainCamera>>,
 ) {
-    let (mut transform, smooth_move) = query.get_single_mut().unwrap();
+    let (mut transform, smooth_move) = query.single_mut().unwrap();
     if transform.translation == smooth_move.target {
         return;
     }

@@ -1,7 +1,7 @@
 use crate::components::InSector;
 use crate::utils::{PlanetEntity, SectorEntity};
+use bevy::platform::collections::HashSet;
 use bevy::prelude::{Commands, Component};
-use bevy::utils::HashSet;
 
 /// A sector with this component features planets.
 #[derive(Component)]

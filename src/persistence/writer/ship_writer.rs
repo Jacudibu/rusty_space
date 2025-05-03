@@ -5,8 +5,7 @@ use crate::persistence::{AllEntityIdMaps, ComponentWithPersistentId};
 use crate::simulation::physics::ShipVelocity;
 use crate::simulation::ship_ai::{AutoMineBehavior, AutoTradeBehavior, TaskQueue};
 use crate::simulation::transform::simulation_transform::SimulationTransform;
-use bevy::core::Name;
-use bevy::prelude::Query;
+use bevy::prelude::{Name, Query};
 
 impl ShipSaveData {
     pub fn from(

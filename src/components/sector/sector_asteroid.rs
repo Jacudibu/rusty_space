@@ -6,8 +6,8 @@ use crate::simulation::physics::ConstantVelocity;
 use crate::simulation::prelude::SimulationTimestamp;
 use crate::utils::{AsteroidEntityWithTimestamp, SectorEntity};
 use bevy::math::Vec2;
+use bevy::platform::collections::HashMap;
 use bevy::prelude::{Commands, Component};
-use bevy::utils::HashMap;
 use std::cmp::Ordering;
 use std::collections::{BTreeSet, BinaryHeap};
 

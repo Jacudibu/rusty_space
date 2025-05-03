@@ -5,8 +5,8 @@ use crate::game_data::{
     REFINED_METALS_RECIPE_ID, RecipeData, RecipeElement, SILICA_ITEM_ID, SILICA_RECIPE_ID,
     WAFER_ITEM_ID, WAFERS_RECIPE_ID,
 };
+use bevy::platform::collections::HashMap;
 use bevy::prelude::World;
-use bevy::utils::HashMap;
 
 /// Contains all parsed crafting recipes.
 pub type RecipeManifest = GenericManifestWithoutRawData<RecipeData>;

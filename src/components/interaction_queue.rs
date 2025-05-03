@@ -53,7 +53,7 @@ impl InteractionQueue {
         if self.currently_interacting <= self.maximum_simultaneous_interactions {
             if let Some(next) = self.waiting_queue.pop_front() {
                 self.currently_interacting += 1;
-                event_writer.send(TaskCompletedEvent::new(next));
+                event_writer.write(TaskCompletedEvent::new(next));
             }
         }
     }

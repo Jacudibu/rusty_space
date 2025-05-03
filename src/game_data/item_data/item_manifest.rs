@@ -5,8 +5,8 @@ use crate::game_data::item_data::raw_item_manifest::RawItemManifest;
 use crate::game_data::{ItemData, ItemId};
 use crate::utils::PriceRange;
 use bevy::asset::AssetServer;
+use bevy::platform::collections::HashMap;
 use bevy::prelude::World;
-use bevy::utils::HashMap;
 use leafwing_manifest::identifier::Id;
 use leafwing_manifest::manifest::{Manifest, ManifestFormat};
 

@@ -1,8 +1,8 @@
 use crate::components::InventoryComponent;
 use crate::components::inventory::InventoryElement;
 use crate::game_data::{ItemId, ItemManifest};
+use bevy::platform::collections::HashMap;
 use bevy::prelude::Component;
-use bevy::utils::HashMap;
 
 pub trait TradeOrder<TOrderData: OrderData>: Default + Component {
     fn orders(&self) -> &HashMap<ItemId, TOrderData>;

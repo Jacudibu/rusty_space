@@ -17,14 +17,14 @@ use bevy::app::{App, Plugin};
 use bevy::ecs::query::QueryFilter;
 use bevy::input::ButtonInput;
 use bevy::log::warn;
+use bevy::platform::collections::HashMap;
 use bevy::prelude::{
-    AppExtStates, AppGizmoBuilder, Commands, Component, Entity, GizmoConfig, GizmoConfigGroup,
-    GizmoLineStyle, Gizmos, IntoSystemConfigs, Isometry2d, KeyCode, MouseButton, Name, NextState,
-    OnEnter, OnExit, Or, Query, Reflect, Res, ResMut, Resource, State, States, Transform, Update,
-    Vec2, Visibility, With, Without, in_state,
+    AppExtStates, AppGizmoBuilder, BevyError, Commands, Component, Entity, GizmoConfig,
+    GizmoConfigGroup, GizmoLineConfig, GizmoLineStyle, Gizmos, IntoScheduleConfigs, Isometry2d,
+    KeyCode, MouseButton, Name, NextState, OnEnter, OnExit, Or, Query, Reflect, Res, ResMut,
+    Resource, State, States, Transform, Update, Vec2, Visibility, With, Without, in_state,
 };
 use bevy::sprite::Sprite;
-use bevy::utils::HashMap;
 
 /// Plugin for placing new Construction Sites.
 pub struct ConstructionSitePlacementPlugin;
@@ -35,8 +35,11 @@ impl Plugin for ConstructionSitePlacementPlugin {
         app.insert_gizmo_config(
             DottedConstructionSitePreviewGizmos,
             GizmoConfig {
-                line_style: GizmoLineStyle::Dotted,
-                line_width: 1.0,
+                line: GizmoLineConfig {
+                    style: GizmoLineStyle::Dotted,
+                    width: 1.0,
+                    ..Default::default()
+                },
                 ..Default::default()
             },
         );
@@ -167,16 +170,16 @@ fn update_preview_entity(
     >,
     mut gizmos: Gizmos<ConstructionSitePreviewGizmos>,
     mut gizmos_dotted: Gizmos<DottedConstructionSitePreviewGizmos>,
-) {
+) -> Result<(), BevyError> {
     let (mut preview_transform, mut preview_sprite, mut preview_visibility) =
-        preview_query.single_mut();
+        preview_query.single_mut()?;
 
     match &preview_target.position_state {
         Ok(_) => {}
         Err(e) => match e {
             PositionValidationError::InvalidPosition => {
                 *preview_visibility = Visibility::Hidden;
-                return;
+                return Ok(());
             }
             PositionValidationError::NotWithinSector => {}
             PositionValidationError::TooCloseToSectorEdge => {}
@@ -211,7 +214,7 @@ fn update_preview_entity(
     );
 
     let Some(sector_pos) = preview_target.sector_pos else {
-        return;
+        return Ok(());
     };
 
     let sector_center = world_pos - sector_pos.local_position;
@@ -237,6 +240,8 @@ fn update_preview_entity(
             }
         }
     }
+
+    Ok(())
 }
 
 /// Creates a new Construction Site when the player clicks the left mouse button.

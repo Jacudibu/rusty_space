@@ -66,7 +66,7 @@ impl TaskInsideQueue {
             TaskInsideQueue::ExchangeWares { target, data } => {
                 task_started_event_writers
                     .exchange_wares
-                    .send(TaskStartedEvent::new(entity));
+                    .write(TaskStartedEvent::new(entity));
                 entity_commands.insert(tasks::ExchangeWares {
                     finishes_at: SimulationTimestamp::MAX,
                     target: *target,
@@ -90,7 +90,7 @@ impl TaskInsideQueue {
             } => {
                 task_started_event_writers
                     .use_gate
-                    .send(TaskStartedEvent::new(entity));
+                    .write(TaskStartedEvent::new(entity));
                 entity_commands.insert(tasks::UseGate {
                     progress: 0.0,
                     traversal_state: Default::default(),
@@ -110,7 +110,7 @@ impl TaskInsideQueue {
             TaskInsideQueue::Construct { target } => {
                 task_started_event_writers
                     .construct
-                    .send(TaskStartedEvent::new(entity));
+                    .write(TaskStartedEvent::new(entity));
                 entity_commands.insert(tasks::ConstructTaskComponent { target: *target });
             }
             TaskInsideQueue::RequestAccess { target } => {
@@ -122,7 +122,7 @@ impl TaskInsideQueue {
             TaskInsideQueue::Undock => {
                 task_started_event_writers
                     .undock
-                    .send(TaskStartedEvent::new(entity));
+                    .write(TaskStartedEvent::new(entity));
                 entity_commands.insert(tasks::Undock::new());
             }
         }

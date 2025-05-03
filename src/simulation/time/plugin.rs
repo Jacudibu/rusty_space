@@ -1,6 +1,6 @@
 use crate::simulation::prelude::SimulationTime;
 use crate::states::SimulationState;
-use bevy::prelude::{in_state, App, FixedFirst, IntoSystemConfigs, Plugin, Res, ResMut, Time};
+use bevy::prelude::{App, FixedFirst, IntoScheduleConfigs, Plugin, Res, ResMut, Time, in_state};
 use bevy::time::Fixed;
 
 pub struct SimulationTimePlugin;

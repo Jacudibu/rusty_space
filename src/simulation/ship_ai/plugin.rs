@@ -1,106 +1,167 @@
 use crate::simulation::asteroids;
 use crate::simulation::prelude::{SimulationTime, TaskComponent, TaskQueue};
-use crate::simulation::ship_ai::task_events::{AllTaskStartedEventWriters, TaskCompletedEvent, TaskStartedEvent};
+use crate::simulation::ship_ai::task_events::{
+    AllTaskStartedEventWriters, TaskCompletedEvent, TaskStartedEvent,
+};
 use crate::simulation::ship_ai::tasks::{
-    AwaitingSignal, ConstructTaskComponent, DockAtEntity, ExchangeWares, HarvestGas, MineAsteroid, MoveToEntity,
-    RequestAccess, Undock, UseGate,
+    AwaitingSignal, ConstructTaskComponent, DockAtEntity, ExchangeWares, HarvestGas, MineAsteroid,
+    MoveToEntity, RequestAccess, Undock, UseGate,
 };
 use crate::simulation::ship_ai::{behaviors, stop_idle_ships, tasks};
 use crate::states::SimulationState;
 use bevy::app::App;
-use bevy::ecs::schedule::SystemConfigs;
 use bevy::log::error;
-use bevy::prelude::{in_state, on_event, Commands, EventReader, FixedPostUpdate, FixedUpdate, IntoSystemConfigs, IntoSystemSet, Plugin, Query, Res, With};
+use bevy::prelude::{
+    Commands, EventReader, FixedPostUpdate, FixedUpdate, IntoScheduleConfigs, Plugin, Query, Res,
+    With, in_state, on_event,
+};
 
 pub struct ShipAiPlugin;
 impl Plugin for ShipAiPlugin {
-    #[rustfmt::skip]
     fn build(&self, app: &mut App) {
-        register_behavior(app, behaviors::auto_construct::handle_idle_ships);
-        register_behavior(app, behaviors::auto_trade::handle_idle_ships);
-        register_behavior(app, behaviors::auto_harvest::handle_idle_ships);
-        register_behavior(app, behaviors::auto_mine::handle_idle_ships.before(asteroids::respawn_asteroids));
+        app.add_systems(
+            FixedUpdate,
+            (
+                behaviors::auto_construct::handle_idle_ships,
+                behaviors::auto_trade::handle_idle_ships,
+                behaviors::auto_harvest::handle_idle_ships,
+                behaviors::auto_mine::handle_idle_ships
+                    .before(asteroids::respawn_asteroids)
+                    .run_if(in_state(SimulationState::Running)),
+            ),
+        );
 
-        register_task::<Undock, _, _, _>(app, Some(Undock::on_task_started), Undock::run_tasks, None::<Nothing>);
-        register_task::<ExchangeWares, _, _, _>(app, Some(ExchangeWares::on_task_started), ExchangeWares::run_tasks, Some(ExchangeWares::complete_tasks));
-        register_task::<UseGate, _, _, _>(app, Some(UseGate::on_task_started), UseGate::run_tasks, Some(UseGate::complete_tasks));
-        register_task::<ConstructTaskComponent, _, _, _>(app, Some(ConstructTaskComponent::on_task_started), ConstructTaskComponent::run_tasks, None::<Nothing>);
+        app.add_event::<TaskCompletedEvent<Undock>>();
+        app.add_event::<TaskStartedEvent<Undock>>();
+        app.add_systems(
+            FixedPostUpdate,
+            Undock::on_task_started.run_if(in_state(SimulationState::Running)),
+        );
+        app.add_systems(
+            FixedUpdate,
+            (
+                Undock::run_tasks,
+                complete_tasks::<Undock>.run_if(on_event::<TaskCompletedEvent<Undock>>),
+            )
+                .chain()
+                .run_if(in_state(SimulationState::Running)),
+        );
 
-        register_task::<MoveToEntity, _, _, _>(app, None::<Nothing>, MoveToEntity::run_tasks, None::<Nothing>);
-        register_task::<DockAtEntity, _, _, _>(app, None::<Nothing>, DockAtEntity::run_tasks, Some(DockAtEntity::complete_tasks));
-        register_task::<MineAsteroid, _, _, _>(app, None::<Nothing>, MineAsteroid::run_tasks, None::<Nothing>);
-        register_task::<HarvestGas, _, _, _>(app, None::<Nothing>, HarvestGas::run_tasks, Some(HarvestGas::complete_tasks));
+        app.add_event::<TaskCompletedEvent<ExchangeWares>>();
+        app.add_event::<TaskStartedEvent<ExchangeWares>>();
+        app.add_systems(
+            FixedPostUpdate,
+            ExchangeWares::on_task_started.run_if(in_state(SimulationState::Running)),
+        );
+        app.add_systems(
+            FixedUpdate,
+            (
+                ExchangeWares::run_tasks,
+                (
+                    ExchangeWares::complete_tasks,
+                    complete_tasks::<ExchangeWares>,
+                )
+                    .chain()
+                    .run_if(on_event::<TaskCompletedEvent<ExchangeWares>>),
+            )
+                .chain()
+                .run_if(in_state(SimulationState::Running)),
+        );
 
-        // Unique stuff
+        app.add_event::<TaskCompletedEvent<UseGate>>();
+        app.add_event::<TaskStartedEvent<UseGate>>();
+        app.add_systems(
+            FixedPostUpdate,
+            UseGate::on_task_started.run_if(in_state(SimulationState::Running)),
+        );
+        app.add_systems(
+            FixedUpdate,
+            (
+                UseGate::run_tasks,
+                (UseGate::complete_tasks, complete_tasks::<UseGate>)
+                    .chain()
+                    .run_if(on_event::<TaskCompletedEvent<UseGate>>),
+            )
+                .chain()
+                .run_if(in_state(SimulationState::Running)),
+        );
+
+        app.add_event::<TaskCompletedEvent<ConstructTaskComponent>>();
+        app.add_event::<TaskStartedEvent<ConstructTaskComponent>>();
+        app.add_systems(
+            FixedPostUpdate,
+            (ConstructTaskComponent::on_task_started,).run_if(in_state(SimulationState::Running)),
+        );
+        app.add_systems(
+            FixedUpdate,
+            (
+                ConstructTaskComponent::run_tasks,
+                complete_tasks::<ConstructTaskComponent>
+                    .run_if(on_event::<TaskCompletedEvent<ConstructTaskComponent>>),
+            )
+                .chain()
+                .run_if(in_state(SimulationState::Running)),
+        );
+
+        app.add_event::<TaskCompletedEvent<MoveToEntity>>();
+        app.add_systems(
+            FixedUpdate,
+            (
+                MoveToEntity::run_tasks,
+                complete_tasks::<MoveToEntity>.run_if(on_event::<TaskCompletedEvent<MoveToEntity>>),
+            )
+                .chain()
+                .run_if(in_state(SimulationState::Running)),
+        );
+
+        app.add_event::<TaskCompletedEvent<DockAtEntity>>();
+        app.add_systems(
+            FixedUpdate,
+            (
+                DockAtEntity::run_tasks,
+                (DockAtEntity::complete_tasks, complete_tasks::<DockAtEntity>)
+                    .chain()
+                    .run_if(on_event::<TaskCompletedEvent<DockAtEntity>>),
+            )
+                .chain()
+                .run_if(in_state(SimulationState::Running)),
+        );
+
+        app.add_event::<TaskCompletedEvent<MineAsteroid>>();
+        app.add_systems(
+            FixedUpdate,
+            (
+                MineAsteroid::run_tasks,
+                complete_tasks::<MineAsteroid>.run_if(on_event::<TaskCompletedEvent<MineAsteroid>>),
+            )
+                .chain()
+                .run_if(in_state(SimulationState::Running)),
+        );
+
+        app.add_event::<TaskCompletedEvent<HarvestGas>>();
+        app.add_systems(
+            FixedUpdate,
+            (
+                HarvestGas::run_tasks,
+                (HarvestGas::complete_tasks, complete_tasks::<HarvestGas>)
+                    .chain()
+                    .run_if(on_event::<TaskCompletedEvent<HarvestGas>>),
+            )
+                .chain()
+                .run_if(in_state(SimulationState::Running)),
+        );
+
         app.add_event::<TaskCompletedEvent<AwaitingSignal>>();
         app.add_systems(
             FixedUpdate,
             (
                 stop_idle_ships::stop_idle_ships,
-                
                 RequestAccess::run_tasks,
-                complete_tasks::<AwaitingSignal>.run_if(on_event::<TaskCompletedEvent<AwaitingSignal>>)
+                complete_tasks::<AwaitingSignal>
+                    .run_if(on_event::<TaskCompletedEvent<AwaitingSignal>>)
                     .after(complete_tasks::<Undock>)
-                    .after(complete_tasks::<HarvestGas>) // TODO: Could be replaced with a more general "disengage orbit" task or something alike
-                ,
+                    .after(complete_tasks::<HarvestGas>), // TODO: Could be replaced with a more general "disengage orbit" task or something alike
             )
-                .run_if(in_state(SimulationState::Running)),
-        );
-    }
-}
-
-/// Empty IntoSystemConfigs impl to make compiler happy
-struct Nothing;
-impl IntoSystemConfigs<u8> for Nothing {
-    fn into_configs(self) -> SystemConfigs {
-        panic!("This should never happen!")
-    }
-}
-
-fn register_behavior<T>(app: &mut App, system: impl IntoSystemConfigs<T>) {
-    app.add_systems(
-        FixedUpdate,
-        system.run_if(in_state(SimulationState::Running)),
-    );
-}
-
-fn register_task<T, T1, T2, T3>(
-    app: &mut App,
-    on_started: Option<impl IntoSystemConfigs<T1>>,
-    run: impl IntoSystemConfigs<T2> + IntoSystemSet<T2> + Copy,
-    custom_on_complete: Option<impl IntoSystemConfigs<T3>>,
-) where
-    T: TaskComponent,
-{
-    app.add_event::<TaskCompletedEvent<T>>();
-
-    if let Some(on_started) = on_started {
-        app.add_event::<TaskStartedEvent<T>>();
-        app.add_systems(
-            FixedPostUpdate,
-            on_started.run_if(in_state(SimulationState::Running)),
-        );
-    }
-
-    if let Some(custom_on_complete) = custom_on_complete {
-        app.add_systems(
-            FixedUpdate,
-            (
-                run,
-                (custom_on_complete, complete_tasks::<T>)
-                    .run_if(on_event::<TaskCompletedEvent<T>>)
-                    .chain()
-            )
-                .chain()
-                .run_if(in_state(SimulationState::Running)));
-    } else {
-        app.add_systems(
-            FixedUpdate,
-            (
-                run,
-                complete_tasks::<T>.run_if(on_event::<TaskCompletedEvent<T>>),
-            )
-                .chain()
                 .run_if(in_state(SimulationState::Running)),
         );
     }
@@ -126,9 +187,9 @@ fn complete_tasks<T: TaskComponent>(
             );
         } else {
             error!(
-                    "Unable to find entity for task completion: {}",
-                    event.entity
-                );
+                "Unable to find entity for task completion: {}",
+                event.entity
+            );
         }
     }
 }

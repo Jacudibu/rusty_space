@@ -1,11 +1,11 @@
-use crate::simulation::prelude::simulation_transform::SimulationScale;
 use crate::simulation::prelude::SimulationTime;
+use crate::simulation::prelude::simulation_transform::SimulationScale;
 use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::states::SimulationState;
 use bevy::app::{App, FixedPreUpdate, Plugin, Update};
 use bevy::prelude::{
-    in_state, DetectChanges, Fixed, IntoSystemConfigs, Local, Mut, Query, Res, Time, Transform,
-    ViewVisibility,
+    DetectChanges, Fixed, IntoScheduleConfigs, Local, Mut, Query, Res, Time, Transform,
+    ViewVisibility, in_state,
 };
 
 /// Interpolates the transforms used for the visual representation to their respective simulation values.

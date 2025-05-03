@@ -2,8 +2,8 @@ use crate::components::inventory::inventory_element::InventoryElement;
 use crate::game_data::{ItemId, ItemManifest, RecipeData};
 use crate::utils::TradeIntent;
 use bevy::log::error;
+use bevy::platform::collections::HashMap;
 use bevy::prelude::{Component, warn};
-use bevy::utils::HashMap;
 
 /// A component for storing all kinds of items.
 #[derive(Component)]

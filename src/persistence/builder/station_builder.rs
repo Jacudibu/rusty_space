@@ -15,8 +15,8 @@ use crate::utils::entity_spawners::{ConstructionSiteSpawnData, StationSpawnData}
 use crate::utils::{PriceRange, PriceSetting, SectorPosition, entity_spawners};
 use crate::{SpriteHandles, constants};
 use bevy::ecs::system::SystemParam;
+use bevy::platform::collections::HashMap;
 use bevy::prelude::{Commands, Query, Res};
-use bevy::utils::hashbrown::HashMap;
 
 #[derive(SystemParam)]
 pub struct Args<'w, 's> {

@@ -9,8 +9,7 @@ use crate::simulation::physics::{ConstantVelocity, ShipVelocity};
 use crate::simulation::production::{ProductionComponent, ShipyardComponent};
 use crate::simulation::ship_ai::{AutoMineBehavior, AutoTradeBehavior, TaskQueue};
 use crate::simulation::transform::simulation_transform::SimulationTransform;
-use bevy::core::Name;
-use bevy::prelude::{Commands, Query};
+use bevy::prelude::{Commands, Name, Query};
 
 /// Stores all relevant entities in SaveDataCollection Resources.
 /// Ideally, later on this should be completely decoupled from the main loop, maybe start an async

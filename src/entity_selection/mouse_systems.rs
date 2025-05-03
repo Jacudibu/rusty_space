@@ -1,10 +1,11 @@
-use crate::components::{SelectableEntity, RADIUS_CURSOR};
+use crate::components::{RADIUS_CURSOR, SelectableEntity};
+use crate::constants::BevyResult;
 use crate::entity_selection::mouse_interaction::{LastMouseInteraction, MouseInteraction};
-use crate::entity_selection::{MouseCursor, Selected, DOUBLE_CLICK_TIME};
+use crate::entity_selection::{DOUBLE_CLICK_TIME, MouseCursor, Selected};
 use crate::gui::MouseCursorOverUiState;
 use crate::simulation::physics;
-use bevy::input::mouse::MouseButtonInput;
 use bevy::input::ButtonState;
+use bevy::input::mouse::MouseButtonInput;
 use bevy::prelude::{
     Camera, Commands, Entity, EventReader, GlobalTransform, InheritedVisibility, MouseButton,
     Query, Real, Res, ResMut, State, Time, Vec2, With, Without,
@@ -27,7 +28,7 @@ pub fn process_mouse_clicks(
     camera: Query<(&Camera, &GlobalTransform)>,
     selected_entities: Query<Entity, With<Selected>>,
     mouse_cursor_over_ui_state: Res<State<MouseCursorOverUiState>>,
-) {
+) -> BevyResult {
     for event in mouse_button_events.read() {
         if event.button != MouseButton::Left {
             continue;
@@ -40,7 +41,7 @@ pub fn process_mouse_clicks(
         match event.state {
             ButtonState::Pressed => {
                 if mouse_cursor_over_ui_state.get() == &MouseCursorOverUiState::OverUI {
-                    return;
+                    return Ok(());
                 }
 
                 commands.insert_resource(MouseInteraction::new(cursor_world_pos, time.elapsed()));
@@ -69,7 +70,7 @@ pub fn process_mouse_clicks(
                             &selectables,
                             &camera,
                             entity_selectable,
-                        );
+                        )?;
                     } else {
                         select_entity(&mut commands, entity);
                     }
@@ -87,6 +88,8 @@ pub fn process_mouse_clicks(
             }
         }
     }
+
+    Ok(())
 }
 
 fn process_double_click(
@@ -99,8 +102,8 @@ fn process_double_click(
     )>,
     camera: &Query<(&Camera, &GlobalTransform)>,
     entity_selectable: &SelectableEntity,
-) {
-    let (camera, camera_transform) = camera.single();
+) -> BevyResult {
+    let (camera, camera_transform) = camera.single()?;
     let rect = camera.logical_viewport_rect().unwrap();
     let offset = Vec2::new(
         camera_transform.translation().x - rect.max.x * 0.5,
@@ -135,6 +138,8 @@ fn process_double_click(
         .for_each(|(entity, _, _, _)| {
             select_entity(commands, entity);
         });
+
+    Ok(())
 }
 
 fn is_double_click(

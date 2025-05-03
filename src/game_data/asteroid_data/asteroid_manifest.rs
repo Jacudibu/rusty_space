@@ -1,15 +1,15 @@
+use crate::game_data::asteroid_data::AsteroidDataId;
 use crate::game_data::asteroid_data::asteroid_data_struct::AsteroidData;
 use crate::game_data::asteroid_data::raw_asteroid_data::RawAsteroidData;
 use crate::game_data::asteroid_data::raw_asteroid_manifest::RawAsteroidManifest;
-use crate::game_data::asteroid_data::AsteroidDataId;
 use crate::game_data::from_mock_data::FromMockData;
 use crate::game_data::generic_manifest::GenericManifest;
 use crate::image_generator;
 use bevy::asset::Assets;
 use bevy::ecs::system::SystemState;
 use bevy::image::Image;
+use bevy::platform::collections::HashMap;
 use bevy::prelude::{AssetServer, Res, ResMut, World};
-use bevy::utils::HashMap;
 use leafwing_manifest::identifier::Id;
 use leafwing_manifest::manifest::{Manifest, ManifestFormat};
 

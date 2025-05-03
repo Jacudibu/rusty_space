@@ -4,6 +4,7 @@ use crate::components::{
     InSector, InteractionQueue, InventoryComponent, SelectableEntity, SellOrders, Ship,
     StationComponent, TradeOrder,
 };
+use crate::constants::BevyResult;
 use crate::entity_selection::{MouseCursor, Selected};
 use crate::game_data::{
     AsteroidDataId, AsteroidManifest, Constructable, ConstructableModuleId, GameData,
@@ -21,15 +22,14 @@ use crate::simulation::ship_ai::TaskQueue;
 use crate::utils::ExchangeWareData;
 use bevy::app::App;
 use bevy::ecs::query::QueryData;
+use bevy::platform::collections::{HashMap, HashSet};
 use bevy::prelude::{
-    AppExtStates, AssetServer, Commands, Entity, EventReader, IntoSystemConfigs, Name, NextState,
-    Plugin, PreUpdate, Query, Res, ResMut, Resource, Startup, State, States, Update, With,
-    on_event,
+    AppExtStates, AssetServer, Commands, Entity, EventReader, IntoScheduleConfigs, Name, NextState,
+    Plugin, PreUpdate, Query, Res, ResMut, Resource, Startup, State, States, With, on_event,
 };
-use bevy::utils::{HashMap, HashSet};
 use bevy_egui::egui::load::SizedTexture;
 use bevy_egui::egui::{Align2, Shadow, Ui};
-use bevy_egui::{EguiContexts, EguiStartupSet, egui};
+use bevy_egui::{EguiContextPass, EguiContexts, EguiStartupSet, egui};
 
 pub struct GUIPlugin;
 impl Plugin for GUIPlugin {
@@ -46,7 +46,7 @@ impl Plugin for GUIPlugin {
             )
             .add_systems(PreUpdate, detect_mouse_cursor_over_ui)
             .add_systems(
-                Update,
+                EguiContextPass,
                 (
                     draw_sector_info,
                     list_selection_icons_and_counts,
@@ -339,14 +339,14 @@ fn list_selection_details(
     sell_orders: Query<&SellOrders>,
     construction_sites: Query<&ConstructionSiteComponent>,
     names: Query<&Name>,
-) {
+) -> BevyResult {
     let counts = selected.iter().fold(
         SelectableCount::new(&game_data.asteroids, &gui_data),
         |acc, x| acc.add(x.selectable),
     );
 
     if counts.total() == 0 {
-        return;
+        return Ok(());
     }
 
     if counts.total() == 1 {
@@ -357,7 +357,7 @@ fn list_selection_details(
             .collapsible(false)
             .resizable(false)
             .show(context.ctx_mut(), |ui| {
-                let item = selected.single();
+                let item = selected.single().unwrap();
                 draw_summary_row(&images, ui, &item);
 
                 if let Some(in_sector) = item.in_sector {
@@ -625,7 +625,7 @@ fn list_selection_details(
                 }
             });
 
-        return;
+        return Ok(());
     }
 
     egui::Window::new("Selection Details")
@@ -639,6 +639,8 @@ fn list_selection_details(
                 draw_summary_row(&images, ui, &item);
             }
         });
+
+    Ok(())
 }
 
 fn list_sell_orders(game_data: &GameData, ui: &mut Ui, sell_orders: &SellOrders) {
