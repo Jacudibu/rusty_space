@@ -1,4 +1,4 @@
-use crate::components::{Asteroid, SectorAsteroidComponent, SelectableEntity};
+use crate::components::{Asteroid, SectorWithAsteroids, SelectableEntity};
 use crate::constants;
 use crate::game_data::{AsteroidDataId, AsteroidManifest};
 use crate::persistence::{AsteroidIdMap, PersistentAsteroidId};
@@ -18,7 +18,7 @@ pub fn spawn_asteroid(
     asteroid_data_id: AsteroidDataId,
     asteroid_manifest: &AsteroidManifest,
     global_pos: Vec2,
-    asteroid_feature: &mut SectorAsteroidComponent,
+    asteroid_feature: &mut SectorWithAsteroids,
     sector_entity: SectorEntity,
     velocity: Vec2,
     ore_current: u32,

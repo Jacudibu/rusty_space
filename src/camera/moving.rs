@@ -1,5 +1,5 @@
 use crate::camera::CAMERA_SPEED;
-use crate::camera::main_camera::MainCamera;
+use crate::camera::main_camera::MainCameraComponent;
 use bevy::input::ButtonInput;
 use bevy::math::Vec3;
 use bevy::prelude::{Component, KeyCode, Projection, Query, Real, Res, Time, Transform, With};
@@ -9,7 +9,7 @@ const MOVEMENT_SLOWDOWN: f32 = 13.0;
 pub fn move_camera(
     keys: Res<ButtonInput<KeyCode>>,
     time: Res<Time<Real>>,
-    mut query: Query<(&mut SmoothMoving, &Projection), With<MainCamera>>,
+    mut query: Query<(&mut SmoothMoving, &Projection), With<MainCameraComponent>>,
 ) {
     let mut dir = Vec3::ZERO;
 
@@ -40,7 +40,7 @@ pub fn move_camera(
 
 pub fn animate_smooth_camera_movement(
     time: Res<Time<Real>>,
-    mut query: Query<(&mut Transform, &SmoothMoving), With<MainCamera>>,
+    mut query: Query<(&mut Transform, &SmoothMoving), With<MainCameraComponent>>,
 ) {
     let (mut transform, smooth_move) = query.single_mut().unwrap();
     if transform.translation == smooth_move.target {

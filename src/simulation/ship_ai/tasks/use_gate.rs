@@ -4,7 +4,7 @@ use bevy::prelude::{
 };
 use std::sync::{Arc, Mutex};
 
-use crate::components::{GateComponent, InSector, SectorComponent};
+use crate::components::{Gate, InSector, Sector};
 use crate::constants;
 use crate::simulation::physics::ShipVelocity;
 use crate::simulation::prelude::TaskComponent;
@@ -16,7 +16,7 @@ use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::utils::{GateEntity, SectorEntity};
 use crate::utils::{ShipEntity, interpolation};
 
-/// Ships with this [TaskComponent] are currently using a [GateComponent].
+/// Ships with this [TaskComponent] are currently using a [Gate].
 /// This task cannot be canceled.
 #[derive(Component)]
 pub struct UseGate {
@@ -93,7 +93,7 @@ impl UseGate {
         &mut self,
         delta_travel: f32,
         transform: &mut SimulationTransform,
-        transit_curve_query: &Query<&GateComponent>,
+        transit_curve_query: &Query<&Gate>,
     ) -> TaskResult {
         self.progress += delta_travel;
         let curve = &transit_curve_query
@@ -125,7 +125,7 @@ impl UseGate {
         event_writer: EventWriter<TaskCompletedEvent<Self>>,
         time: Res<Time>,
         mut ships: Query<(Entity, &mut Self, &mut SimulationTransform)>,
-        transit_curve_query: Query<&GateComponent>,
+        transit_curve_query: Query<&Gate>,
     ) {
         let task_completions = Arc::new(Mutex::new(Vec::<TaskCompletedEvent<Self>>::new()));
         let delta_travel = time.delta_secs() / constants::SECONDS_TO_TRAVEL_THROUGH_GATE;
@@ -149,7 +149,7 @@ impl UseGate {
         mut commands: Commands,
         mut event_reader: EventReader<TaskCompletedEvent<Self>>,
         mut all_ships_with_task: Query<(&Self, &mut ShipVelocity)>,
-        mut all_sectors: Query<&mut SectorComponent>,
+        mut all_sectors: Query<&mut Sector>,
     ) {
         for event in event_reader.read() {
             if let Ok((task, mut velocity)) = all_ships_with_task.get_mut(event.entity.into()) {
@@ -176,7 +176,7 @@ impl UseGate {
         mut commands: Commands,
         query: Query<&InSector, With<Self>>,
         mut triggers: EventReader<TaskStartedEvent<Self>>,
-        mut all_sectors: Query<&mut SectorComponent>,
+        mut all_sectors: Query<&mut Sector>,
     ) {
         for x in triggers.read() {
             let Ok(in_sector) = query.get(x.entity.into()) else {

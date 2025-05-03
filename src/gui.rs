@@ -1,11 +1,10 @@
 use crate::SpriteHandles;
 use crate::components::{
-    Asteroid, BuyOrders, ConstructionSiteComponent, ConstructionSiteStatus, GateComponent,
-    InSector, InteractionQueue, InventoryComponent, SelectableEntity, SellOrders, Ship,
-    StationComponent, TradeOrder,
+    Asteroid, BuyOrders, ConstructionSite, ConstructionSiteStatus, Gate, InSector,
+    InteractionQueue, Inventory, SelectableEntity, SellOrders, Ship, Station, TradeOrder,
 };
 use crate::constants::BevyResult;
-use crate::entity_selection::{MouseCursor, Selected};
+use crate::entity_selection::{IsEntitySelected, MouseCursor};
 use crate::game_data::{
     AsteroidDataId, AsteroidManifest, Constructable, ConstructableModuleId, GameData,
     IRON_ASTEROID_ID,
@@ -16,7 +15,7 @@ use crate::session_data::{
 };
 use crate::simulation::physics::ShipVelocity;
 use crate::simulation::prelude::SimulationTime;
-use crate::simulation::production::{ProductionComponent, ShipyardComponent};
+use crate::simulation::production::{ProductionFacility, Shipyard};
 use crate::simulation::ship_ai::TaskInsideQueue;
 use crate::simulation::ship_ai::TaskQueue;
 use crate::utils::ExchangeWareData;
@@ -250,7 +249,7 @@ pub fn on_ship_configuration_added(
 pub fn list_selection_icons_and_counts(
     mut context: EguiContexts,
     images: Res<UiIcons>,
-    selected: Query<&SelectableEntity, With<Selected>>,
+    selected: Query<&SelectableEntity, With<IsEntitySelected>>,
     asteroid_manifest: Res<AsteroidManifest>,
     gui_data: Res<GuiDataCache>,
 ) {
@@ -312,16 +311,16 @@ struct SelectableComponents {
     selectable: &'static SelectableEntity,
     name: &'static Name,
     ship: Option<&'static Ship>,
-    inventory: Option<&'static InventoryComponent>,
+    inventory: Option<&'static Inventory>,
     asteroid: Option<&'static Asteroid>,
     ship_velocity: Option<&'static ShipVelocity>,
     task_queue: Option<&'static TaskQueue>,
     buy_orders: Option<&'static BuyOrders>,
     sell_orders: Option<&'static SellOrders>,
-    station: Option<&'static StationComponent>,
-    production: Option<&'static ProductionComponent>,
-    shipyard: Option<&'static ShipyardComponent>,
-    gate: Option<&'static GateComponent>,
+    station: Option<&'static Station>,
+    production: Option<&'static ProductionFacility>,
+    shipyard: Option<&'static Shipyard>,
+    gate: Option<&'static Gate>,
     in_sector: Option<&'static InSector>,
     interaction_queue: Option<&'static InteractionQueue>,
 }
@@ -334,10 +333,10 @@ fn list_selection_details(
     simulation_time: Res<SimulationTime>,
     images: Res<UiIcons>,
     gui_data: Res<GuiDataCache>,
-    selected: Query<SelectableComponents, With<Selected>>,
+    selected: Query<SelectableComponents, With<IsEntitySelected>>,
     buy_orders: Query<&BuyOrders>,
     sell_orders: Query<&SellOrders>,
-    construction_sites: Query<&ConstructionSiteComponent>,
+    construction_sites: Query<&ConstructionSite>,
     names: Query<&Name>,
 ) -> BevyResult {
     let counts = selected.iter().fold(

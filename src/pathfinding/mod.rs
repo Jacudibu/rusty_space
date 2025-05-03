@@ -4,7 +4,7 @@ mod path_element;
 mod search_node;
 pub mod surrounding_sector_search;
 
-use crate::components::SectorComponent;
+use crate::components::Sector;
 use crate::utils::SectorEntity;
 use bevy::prelude::{Query, Vec2};
 
@@ -14,7 +14,7 @@ pub use {create_tasks_following_path::create_tasks_to_follow_path, path_element:
 /// Returns the fastest gate-path between `from` and `to`.
 #[must_use]
 pub fn find_path(
-    sectors: &Query<&SectorComponent>,
+    sectors: &Query<&Sector>,
     gate_positions: &Query<&SimulationTransform>,
     from: SectorEntity,
     from_position: Vec2,

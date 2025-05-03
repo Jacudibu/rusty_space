@@ -5,6 +5,7 @@ use crate::utils::PriceSetting;
 use bevy::platform::collections::HashMap;
 use bevy::prelude::Component;
 
+/// A component for any entity that actively looks to buy items.
 #[derive(Component, Default)]
 pub struct BuyOrders {
     pub(crate) orders: HashMap<ItemId, BuyOrderData>,

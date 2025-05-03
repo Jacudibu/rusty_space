@@ -1,14 +1,12 @@
 use crate::components::{
-    BuyOrders, ConstructionSiteComponent, ConstructionSiteStatus, InSector, InventoryComponent,
-    SectorComponent, StationComponent,
+    BuyOrders, ConstructionSite, ConstructionSiteStatus, InSector, Inventory, Sector, Station,
 };
 use crate::game_data::{
     Constructable, ConstructableModuleId, ItemId, ItemManifest, ProductionModuleManifest,
     ShipyardModuleManifest,
 };
 use crate::simulation::prelude::{
-    ConstructTaskComponent, ProductionComponent, ProductionModule, ShipyardComponent,
-    ShipyardModule,
+    Construct, ProductionFacility, ProductionModule, Shipyard, ShipyardModule,
 };
 use crate::simulation::ship_ai::TaskCompletedEvent;
 use crate::states::SimulationState;
@@ -43,8 +41,8 @@ fn construction_site_updater(
     time: Res<Time>,
     mut all_construction_sites: Query<(
         Entity,
-        &mut ConstructionSiteComponent,
-        &mut InventoryComponent,
+        &mut ConstructionSite,
+        &mut Inventory,
         &mut BuyOrders,
     )>,
     production_modules: Res<ProductionModuleManifest>,
@@ -135,14 +133,14 @@ fn construction_site_updater(
 fn construction_site_finisher(
     mut commands: Commands,
     mut events: EventReader<ConstructionFinishedEvent>,
-    mut all_construction_sites: Query<(&mut ConstructionSiteComponent, &InSector)>,
+    mut all_construction_sites: Query<(&mut ConstructionSite, &InSector)>,
     mut all_stations: Query<(
-        &mut StationComponent,
-        Option<&mut ProductionComponent>,
-        Option<&mut ShipyardComponent>,
+        &mut Station,
+        Option<&mut ProductionFacility>,
+        Option<&mut Shipyard>,
     )>,
-    mut task_finished_event_writer: EventWriter<TaskCompletedEvent<ConstructTaskComponent>>,
-    mut all_sectors: Query<&mut SectorComponent>,
+    mut task_finished_event_writer: EventWriter<TaskCompletedEvent<Construct>>,
+    mut all_sectors: Query<&mut Sector>,
 ) {
     for event in events.read() {
         let (mut construction_site, in_sector) =
@@ -171,7 +169,7 @@ fn construction_site_finisher(
                         }
                     }
                 } else {
-                    let component = ProductionComponent {
+                    let component = ProductionFacility {
                         modules: [(id, ProductionModule::default())].into(),
                     };
 
@@ -192,7 +190,7 @@ fn construction_site_finisher(
                         }
                     }
                 } else {
-                    let component = ShipyardComponent {
+                    let component = Shipyard {
                         modules: [(id, ShipyardModule::default())].into(),
                         queue: Default::default(),
                     };

@@ -1,4 +1,4 @@
-use crate::components::{ConstructionSiteComponent, Ship};
+use crate::components::{ConstructionSite, Ship};
 use crate::session_data::ShipConfigurationManifest;
 use crate::simulation::prelude::TaskComponent;
 use crate::simulation::ship_ai::task_events::TaskStartedEvent;
@@ -7,19 +7,20 @@ use bevy::prelude::{Component, EventReader, Query, Res, error};
 
 /// Ships with this [TaskComponent] are actively working on a construction site.
 #[derive(Component)]
-pub struct ConstructTaskComponent {
+#[component(immutable)]
+pub struct Construct {
     pub target: ConstructionSiteEntity,
 }
-impl TaskComponent for ConstructTaskComponent {
+impl TaskComponent for Construct {
     fn can_be_aborted() -> bool {
         true
     }
 }
 
-impl ConstructTaskComponent {
+impl Construct {
     pub fn on_task_started(
         construction_tasks: Query<(&Self, &Ship)>,
-        mut construction_sites: Query<&mut ConstructionSiteComponent>,
+        mut construction_sites: Query<&mut ConstructionSite>,
         mut event_reader: EventReader<TaskStartedEvent<Self>>,
         ship_configurations: Res<ShipConfigurationManifest>,
     ) {
@@ -48,12 +49,12 @@ impl ConstructTaskComponent {
     }
 }
 
-fn add_builder(site: &mut ConstructionSiteComponent, build_power: u32, entity: ShipEntity) {
+fn add_builder(site: &mut ConstructionSite, build_power: u32, entity: ShipEntity) {
     site.total_build_power_of_ships += build_power;
     site.construction_ships.insert(entity);
 }
 
-fn remove_builder(site: &mut ConstructionSiteComponent, build_power: u32, entity: &ShipEntity) {
+fn remove_builder(site: &mut ConstructionSite, build_power: u32, entity: &ShipEntity) {
     site.total_build_power_of_ships -= build_power;
     site.construction_ships.remove(entity);
 }

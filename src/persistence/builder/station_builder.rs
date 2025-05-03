@@ -1,4 +1,4 @@
-use crate::components::{BuyOrders, SectorComponent, SectorStarComponent, StarComponent};
+use crate::components::{BuyOrders, Sector, SectorWithStar, Star};
 use crate::game_data::{
     ConstructableModuleId, ItemId, ItemManifest, ProductionModuleId, RecipeId, RecipeManifest,
     ShipyardModuleId,
@@ -8,8 +8,7 @@ use crate::persistence::local_hex_position::LocalHexPosition;
 use crate::persistence::{ConstructionSiteIdMap, PersistentStationId, SectorIdMap, StationIdMap};
 use crate::simulation::prelude::{ProductionQueueElement, RunningProductionQueueElement};
 use crate::simulation::production::{
-    OngoingShipConstructionOrder, ProductionComponent, ProductionModule, ShipyardComponent,
-    ShipyardModule,
+    OngoingShipConstructionOrder, ProductionFacility, ProductionModule, Shipyard, ShipyardModule,
 };
 use crate::utils::entity_spawners::{ConstructionSiteSpawnData, StationSpawnData};
 use crate::utils::{PriceRange, PriceSetting, SectorPosition, entity_spawners};
@@ -22,18 +21,11 @@ use bevy::prelude::{Commands, Query, Res};
 pub struct Args<'w, 's> {
     commands: Commands<'w, 's>,
     sprites: Res<'w, SpriteHandles>,
-    sectors: Query<
-        'w,
-        's,
-        (
-            &'static mut SectorComponent,
-            Option<&'static SectorStarComponent>,
-        ),
-    >,
+    sectors: Query<'w, 's, (&'static mut Sector, Option<&'static SectorWithStar>)>,
     sector_id_map: Res<'w, SectorIdMap>,
     items: Res<'w, ItemManifest>,
     recipes: Res<'w, RecipeManifest>,
-    stars: Query<'w, 's, &'static StarComponent>,
+    stars: Query<'w, 's, &'static Star>,
 }
 
 type SaveData = SaveDataCollection<StationSaveData>;
@@ -233,8 +225,8 @@ impl StationSaveData {
 }
 
 impl ProductionSaveData {
-    pub fn parse(&self) -> ProductionComponent {
-        ProductionComponent {
+    pub fn parse(&self) -> ProductionFacility {
+        ProductionFacility {
             modules: HashMap::from_iter(self.modules.iter().map(|x| x.parse())),
         }
     }
@@ -268,8 +260,8 @@ impl ProductionModuleSaveData {
 }
 
 impl ShipyardSaveData {
-    pub fn parse(&self) -> ShipyardComponent {
-        ShipyardComponent {
+    pub fn parse(&self) -> Shipyard {
+        Shipyard {
             modules: HashMap::from_iter(self.modules.iter().map(|x| x.parse())),
             queue: self.queue.clone(),
         }

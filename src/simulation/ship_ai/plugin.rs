@@ -4,8 +4,8 @@ use crate::simulation::ship_ai::task_events::{
     AllTaskStartedEventWriters, TaskCompletedEvent, TaskStartedEvent,
 };
 use crate::simulation::ship_ai::tasks::{
-    AwaitingSignal, ConstructTaskComponent, DockAtEntity, ExchangeWares, HarvestGas, MineAsteroid,
-    MoveToEntity, RequestAccess, Undock, UseGate,
+    AwaitingSignal, Construct, DockAtEntity, ExchangeWares, HarvestGas, MineAsteroid, MoveToEntity,
+    RequestAccess, Undock, UseGate,
 };
 use crate::simulation::ship_ai::{behaviors, stop_idle_ships, tasks};
 use crate::states::SimulationState;
@@ -86,18 +86,17 @@ impl Plugin for ShipAiPlugin {
                 .run_if(in_state(SimulationState::Running)),
         );
 
-        app.add_event::<TaskCompletedEvent<ConstructTaskComponent>>();
-        app.add_event::<TaskStartedEvent<ConstructTaskComponent>>();
+        app.add_event::<TaskCompletedEvent<Construct>>();
+        app.add_event::<TaskStartedEvent<Construct>>();
         app.add_systems(
             FixedPostUpdate,
-            (ConstructTaskComponent::on_task_started,).run_if(in_state(SimulationState::Running)),
+            (Construct::on_task_started,).run_if(in_state(SimulationState::Running)),
         );
         app.add_systems(
             FixedUpdate,
             (
-                ConstructTaskComponent::run_tasks,
-                complete_tasks::<ConstructTaskComponent>
-                    .run_if(on_event::<TaskCompletedEvent<ConstructTaskComponent>>),
+                Construct::run_tasks,
+                complete_tasks::<Construct>.run_if(on_event::<TaskCompletedEvent<Construct>>),
             )
                 .chain()
                 .run_if(in_state(SimulationState::Running)),

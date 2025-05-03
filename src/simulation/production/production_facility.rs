@@ -7,12 +7,12 @@ use std::collections::BinaryHeap;
 
 /// Component used for item production/processing facilities.
 #[derive(Component)]
-pub struct ProductionComponent {
+pub struct ProductionFacility {
     /// The modules which have been built inside this component, each managing their own production queues.
     pub modules: HashMap<ProductionModuleId, ProductionModule>,
 }
 
-/// Represents all production modules with a specific [ProductionModuleId] inside a [ProductionComponent].
+/// Represents all production modules with a specific [ProductionModuleId] inside a [ProductionFacility].
 pub struct ProductionModule {
     /// The amount of modules available
     pub amount: u32,

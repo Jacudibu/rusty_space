@@ -11,6 +11,7 @@ use bevy::prelude::{Commands, Component, Entity, Query, Res, warn};
 ///  - free: proceeding with the next task in this entity's local [`TaskQueue`]
 ///  - busy: spawning an [`AwaitingSignal`] Task
 #[derive(Component)]
+#[component(immutable)]
 pub struct RequestAccess {
     /// The entity we want to access. Should have an [InteractionQueue].
     target: TypedEntity,

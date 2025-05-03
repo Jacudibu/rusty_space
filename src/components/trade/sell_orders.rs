@@ -5,6 +5,7 @@ use crate::utils::PriceSetting;
 use bevy::platform::collections::HashMap;
 use bevy::prelude::Component;
 
+/// A component for any entity that actively tries to sell things.
 #[derive(Component, Default)]
 pub struct SellOrders {
     orders: HashMap<ItemId, SellOrderData>,

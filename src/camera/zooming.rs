@@ -1,4 +1,4 @@
-use crate::camera::main_camera::MainCamera;
+use crate::camera::main_camera::MainCameraComponent;
 use crate::camera::{ZOOM_SPEED_KEYBOARD, ZOOM_SPEED_MOUSE};
 use bevy::input::ButtonInput;
 use bevy::input::mouse::MouseWheel;
@@ -15,7 +15,7 @@ const ZOOM_SLOWDOWN: f32 = 10.0;
 pub fn zoom_camera_with_buttons(
     keys: Res<ButtonInput<KeyCode>>,
     time: Res<Time<Real>>,
-    mut query: Query<&mut SmoothZooming, With<MainCamera>>,
+    mut query: Query<&mut SmoothZooming, With<MainCameraComponent>>,
 ) {
     let mut dir: f32 = 0.0;
     if keys.pressed(KeyCode::KeyR) {
@@ -37,7 +37,7 @@ pub fn zoom_camera_with_buttons(
 
 pub fn zoom_camera_with_scroll_wheel(
     mut scroll_event: EventReader<MouseWheel>,
-    mut query: Query<&mut SmoothZooming, With<MainCamera>>,
+    mut query: Query<&mut SmoothZooming, With<MainCameraComponent>>,
 ) {
     for event in scroll_event.read() {
         let mut zoom_factor = query.single_mut().unwrap();
@@ -48,7 +48,7 @@ pub fn zoom_camera_with_scroll_wheel(
 
 pub fn animate_smooth_camera_zoom(
     time: Res<Time<Real>>,
-    mut query: Query<(&mut Projection, &SmoothZooming), With<MainCamera>>,
+    mut query: Query<(&mut Projection, &SmoothZooming), With<MainCameraComponent>>,
 ) {
     let (mut projection, smooth_zoom) = query.single_mut().unwrap();
     let Projection::Orthographic(ref mut projection) = *projection else {

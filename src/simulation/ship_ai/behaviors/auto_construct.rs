@@ -1,4 +1,4 @@
-use crate::components::{InSector, SectorComponent};
+use crate::components::{InSector, Sector};
 use crate::simulation::prelude::{
     SimulationTime, SimulationTimestamp, SimulationTransform, TaskInsideQueue, TaskQueue,
 };
@@ -9,8 +9,10 @@ use crate::{constants, pathfinding};
 use bevy::prelude::{Commands, Component, Entity, Query, Res};
 use std::ops::Not;
 
+/// Ships with this behavior will automatically search out construction sites and share their build power.
 #[derive(Component)]
 pub struct AutoConstructBehavior {
+    /// The [SimulationTimestamp] at which we search for a new task.
     pub next_idle_update: SimulationTimestamp,
 }
 
@@ -27,7 +29,7 @@ pub fn handle_idle_ships(
         ),
         ShipIsIdleFilter,
     >,
-    all_sectors: Query<&SectorComponent>,
+    all_sectors: Query<&Sector>,
     all_transforms: Query<&SimulationTransform>,
     mut all_task_started_event_writers: AllTaskStartedEventWriters,
 ) {
@@ -78,7 +80,7 @@ pub fn handle_idle_ships(
 
 #[must_use]
 fn find_nearby_sector_with_build_site(
-    all_sectors: &Query<&SectorComponent>,
+    all_sectors: &Query<&Sector>,
     in_sector: &InSector,
 ) -> Option<(SectorEntity, ConstructionSiteEntity)> {
     let nearby_sectors_with_build_sites =

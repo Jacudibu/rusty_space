@@ -8,7 +8,7 @@ use bevy::prelude::Component;
 /// These are always directly owned by a station, but have their own inventory and buy orders.
 /// Build Sites disappear once everything has been built.
 #[derive(Component)]
-pub struct ConstructionSiteComponent {
+pub struct ConstructionSite {
     /// The PersistentEntityId of this ConstructionSite.
     pub id: PersistentConstructionSiteId,
 

@@ -14,8 +14,9 @@ use bevy::prelude::{
 use std::sync::{Arc, Mutex};
 
 /// Ships with this [TaskComponent] are currently docking at the specified target entity.
-/// They'll move into the target and scale out of existence, then this task will complete.
+/// They'll move into the target and scale out of existence, after which this task will be completed.
 #[derive(Component)]
+#[component(immutable)]
 pub struct DockAtEntity {
     /// The Entity this ship is currently docking at.
     pub target: TypedEntity,

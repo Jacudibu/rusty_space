@@ -1,4 +1,4 @@
-use crate::components::{GasHarvestingComponent, InteractionQueue, InventoryComponent};
+use crate::components::{GasHarvester, InteractionQueue, Inventory};
 use crate::constants;
 use crate::game_data::{ItemId, ItemManifest};
 use crate::simulation::prelude::{
@@ -49,9 +49,9 @@ impl HarvestGas {
 impl HarvestGas {
     fn run(
         &mut self,
-        inventory: &mut InventoryComponent,
+        inventory: &mut Inventory,
         now: CurrentSimulationTimestamp,
-        harvesting_component: &GasHarvestingComponent,
+        harvesting_component: &GasHarvester,
         item_manifest: &ItemManifest,
     ) -> TaskResult {
         if now.has_not_passed(self.next_update) {
@@ -75,12 +75,7 @@ impl HarvestGas {
     pub fn run_tasks(
         event_writer: EventWriter<TaskCompletedEvent<Self>>,
         simulation_time: Res<SimulationTime>,
-        mut ships: Query<(
-            Entity,
-            &mut Self,
-            &mut InventoryComponent,
-            &GasHarvestingComponent,
-        )>,
+        mut ships: Query<(Entity, &mut Self, &mut Inventory, &GasHarvester)>,
         item_manifest: Res<ItemManifest>,
     ) {
         let task_completions = Arc::new(Mutex::new(Vec::<TaskCompletedEvent<Self>>::new()));

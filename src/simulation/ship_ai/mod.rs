@@ -15,7 +15,7 @@ pub use plugin::ShipAiPlugin;
 pub use task_events::TaskCompletedEvent;
 pub use task_inside_queue::TaskInsideQueue;
 pub use task_queue::TaskQueue;
-pub use tasks::{AwaitingSignal, ConstructTaskComponent};
+pub use tasks::{AwaitingSignal, Construct};
 
 use bevy::prelude::Component;
 

@@ -19,10 +19,9 @@ use crate::components::InteractionQueue;
 use crate::simulation::ship_ai::TaskComponent;
 use crate::simulation::ship_ai::task_events::AllTaskStartedEventWriters;
 pub use {
-    awaiting_signal::AwaitingSignal, construct::ConstructTaskComponent,
-    dock_at_entity::DockAtEntity, exchange_wares::ExchangeWares, harvest_gas::HarvestGas,
-    mine_asteroid::MineAsteroid, move_to_entity::MoveToEntity, request_access::RequestAccess,
-    undock::Undock, use_gate::UseGate,
+    awaiting_signal::AwaitingSignal, construct::Construct, dock_at_entity::DockAtEntity,
+    exchange_wares::ExchangeWares, harvest_gas::HarvestGas, mine_asteroid::MineAsteroid,
+    move_to_entity::MoveToEntity, request_access::RequestAccess, undock::Undock, use_gate::UseGate,
 };
 
 pub fn send_completion_events<T: TaskComponent>(

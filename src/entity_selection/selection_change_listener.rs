@@ -1,14 +1,14 @@
+use crate::SpriteHandles;
 use crate::components::SelectableEntity;
-use crate::entity_selection::Selected;
+use crate::entity_selection::IsEntitySelected;
 use crate::game_data::AsteroidManifest;
 use crate::session_data::ShipConfigurationManifest;
-use crate::SpriteHandles;
 use bevy::prelude::{Added, Entity, Query, RemovedComponents, Res, Sprite};
 
 pub fn on_selection_changed(
     mut selectables: Query<(&SelectableEntity, &mut Sprite)>,
-    new_selections: Query<Entity, Added<Selected>>,
-    mut removed_selections: RemovedComponents<Selected>,
+    new_selections: Query<Entity, Added<IsEntitySelected>>,
+    mut removed_selections: RemovedComponents<IsEntitySelected>,
     asteroid_manifest: Res<AsteroidManifest>,
     ship_configs: Res<ShipConfigurationManifest>,
     sprite_handles: Res<SpriteHandles>,

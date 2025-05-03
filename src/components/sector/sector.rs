@@ -7,7 +7,7 @@ use hexx::Hex;
 
 /// Main Component for Sector Entities. Keeps track of common entities which can be found inside all sectors.
 #[derive(Component)]
-pub struct SectorComponent {
+pub struct Sector {
     pub coordinate: Hex,
     pub world_pos: Vec2,
 
@@ -26,9 +26,9 @@ pub struct GatePairInSector {
     pub to: GateEntity,
 }
 
-impl SectorComponent {
+impl Sector {
     pub fn new(coordinate: Hex, world_pos: Vec2) -> Self {
-        SectorComponent {
+        Sector {
             coordinate,
             world_pos,
             gates: HashMap::new(),

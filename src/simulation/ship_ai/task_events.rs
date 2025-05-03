@@ -1,4 +1,4 @@
-use crate::simulation::prelude::{ConstructTaskComponent, TaskComponent};
+use crate::simulation::prelude::{Construct, TaskComponent};
 use crate::simulation::ship_ai::tasks::{ExchangeWares, Undock, UseGate};
 use crate::utils::ShipEntity;
 use bevy::ecs::system::SystemParam;
@@ -50,5 +50,5 @@ pub struct AllTaskStartedEventWriters<'w> {
     pub exchange_wares: EventWriter<'w, TaskStartedEvent<ExchangeWares>>,
     pub use_gate: EventWriter<'w, TaskStartedEvent<UseGate>>,
     pub undock: EventWriter<'w, TaskStartedEvent<Undock>>,
-    pub construct: EventWriter<'w, TaskStartedEvent<ConstructTaskComponent>>,
+    pub construct: EventWriter<'w, TaskStartedEvent<Construct>>,
 }

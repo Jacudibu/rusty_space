@@ -7,6 +7,7 @@ use std::ops::{Deref, DerefMut};
 /// A queue of [ShipTask]s.
 #[derive(Component)]
 pub struct TaskQueue {
+    /// A queue of tasks which will be executed in order.
     pub queue: VecDeque<TaskInsideQueue>,
 }
 

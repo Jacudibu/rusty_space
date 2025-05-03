@@ -1,6 +1,4 @@
-use crate::components::{
-    Asteroid, BuyOrders, InSector, InventoryComponent, SectorAsteroidComponent, SectorComponent,
-};
+use crate::components::{Asteroid, BuyOrders, InSector, Inventory, Sector, SectorWithAsteroids};
 use crate::game_data::{ItemId, ItemManifest};
 use crate::pathfinding;
 use crate::simulation::prelude::{SimulationTime, SimulationTimestamp};
@@ -34,6 +32,7 @@ impl AutoMineState {
     }
 }
 
+/// Ships with this behavior will alternate between mining asteroids and selling off their inventory.
 #[derive(Component)]
 pub struct AutoMineBehavior {
     pub next_idle_update: SimulationTimestamp,
@@ -47,9 +46,9 @@ pub fn handle_idle_ships(
     simulation_time: Res<SimulationTime>,
     mut ships: Query<(Entity, &mut TaskQueue, &mut AutoMineBehavior, &InSector), ShipIsIdleFilter>,
     buy_orders: Query<(Entity, &mut BuyOrders, &InSector)>,
-    mut inventories: Query<&mut InventoryComponent>,
-    all_sectors_with_asteroids: Query<&SectorAsteroidComponent>,
-    all_sectors: Query<&SectorComponent>,
+    mut inventories: Query<&mut Inventory>,
+    all_sectors_with_asteroids: Query<&SectorWithAsteroids>,
+    all_sectors: Query<&Sector>,
     mut all_asteroids: Query<&mut Asteroid>,
     all_transforms: Query<&SimulationTransform>,
     item_manifest: Res<ItemManifest>,
@@ -199,8 +198,8 @@ pub fn handle_idle_ships(
 
 #[must_use]
 fn find_nearby_sector_with_asteroids(
-    all_sectors_with_asteroids: &Query<&SectorAsteroidComponent>,
-    all_sectors: &Query<&SectorComponent>,
+    all_sectors_with_asteroids: &Query<&SectorWithAsteroids>,
+    all_sectors: &Query<&Sector>,
     in_sector: &InSector,
     requested_material: &ItemId,
 ) -> Option<SectorEntity> {

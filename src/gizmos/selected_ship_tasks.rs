@@ -1,5 +1,5 @@
-use crate::components::GateComponent;
-use crate::entity_selection::Selected;
+use crate::components::Gate;
+use crate::entity_selection::IsEntitySelected;
 use crate::simulation::ship_ai::{TaskInsideQueue, TaskQueue};
 use bevy::prelude::{
     GizmoConfigGroup, GizmoConfigStore, Gizmos, Query, Reflect, ResMut, Srgba, Transform, With,
@@ -17,9 +17,9 @@ pub fn configure(mut config_store: ResMut<GizmoConfigStore>) {
 
 pub fn draw_selected_ship_task(
     mut gizmos: Gizmos<SelectedShipTaskGizmos>,
-    selected_ships: Query<(&TaskQueue, &Transform), With<Selected>>,
+    selected_ships: Query<(&TaskQueue, &Transform), With<IsEntitySelected>>,
     all_transforms: Query<&Transform>,
-    all_gates: Query<&GateComponent>,
+    all_gates: Query<&Gate>,
 ) {
     for (tasks, transform) in selected_ships.iter() {
         let mut current_position = transform.translation;

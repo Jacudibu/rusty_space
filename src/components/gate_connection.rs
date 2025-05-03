@@ -1,11 +1,12 @@
-use crate::components::SectorComponent;
+use crate::components::Sector;
 use crate::constants;
 use crate::utils::GateEntity;
 use bevy::math::Vec3;
 use bevy::prelude::{Component, CubicBezier, CubicCurve, CubicGenerator, Vec2};
 
+/// A component to mark the entity representing the line between two gates.
 #[derive(Component)]
-pub struct GateConnectionComponent {
+pub struct GateConnection {
     pub from: GateEntity,
     pub to: GateEntity,
     pub render_positions: Vec<Vec3>,
@@ -13,9 +14,10 @@ pub struct GateConnectionComponent {
 
 /// Marker Component to filter out connections in between gates which move
 #[derive(Component)]
+#[component(immutable)]
 pub struct MovingGateConnection;
 
-impl GateConnectionComponent {
+impl GateConnection {
     pub fn new(from: GateEntity, to: GateEntity, from_to_curve: &CubicCurve<Vec2>) -> Self {
         Self {
             from,
@@ -32,9 +34,9 @@ impl GateConnectionComponent {
     }
 
     pub fn calculate_curves_from_local_positions(
-        from_sector: &SectorComponent,
+        from_sector: &Sector,
         from_pos: Vec2,
-        to_sector: &SectorComponent,
+        to_sector: &Sector,
         to_pos: Vec2,
     ) -> (CubicCurve<Vec2>, CubicCurve<Vec2>) {
         let a = from_sector.world_pos + from_pos;

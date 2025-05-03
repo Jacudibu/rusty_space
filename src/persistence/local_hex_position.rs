@@ -1,4 +1,4 @@
-use crate::components::{InSector, SectorComponent};
+use crate::components::{InSector, Sector};
 use crate::persistence::SectorIdMap;
 use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::utils::SectorPosition;
@@ -34,7 +34,7 @@ impl LocalHexPosition {
     }
 
     #[inline]
-    pub fn from(sector: &SectorComponent, transform: &SimulationTransform) -> Self {
+    pub fn from(sector: &Sector, transform: &SimulationTransform) -> Self {
         Self {
             sector: sector.coordinate,
             position: transform.translation - sector.world_pos,
@@ -45,7 +45,7 @@ impl LocalHexPosition {
     pub fn from_in_sector(
         in_sector: &InSector,
         transform: &SimulationTransform,
-        sectors: &Query<&SectorComponent>,
+        sectors: &Query<&Sector>,
     ) -> Self {
         let sector = sectors.get(in_sector.sector.into()).unwrap();
         Self {

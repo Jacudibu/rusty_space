@@ -3,21 +3,24 @@ use crate::persistence::PersistentPlanetId;
 use crate::utils::EarthMass;
 use bevy::prelude::Component;
 
+/// Overarching marker component for Planet Entities.
 #[derive(Component)]
-pub struct PlanetComponent {
+#[component(immutable)]
+pub struct Planet {
     pub id: PersistentPlanetId,
     pub mass: EarthMass,
 }
 
-impl PlanetComponent {
+impl Planet {
     #[inline]
     pub fn new(id: PersistentPlanetId, mass: EarthMass) -> Self {
         Self { id, mass }
     }
 }
 
-/// Marker Component for Planets with harvestable gases
+/// Marker Component for [Planet]s with harvestable gases
 #[derive(Component)]
+#[component(immutable)]
 pub struct GasGiant {
     pub resources: Vec<ItemId>,
 }

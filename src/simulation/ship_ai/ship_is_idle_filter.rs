@@ -9,7 +9,7 @@ pub struct ShipIsIdleFilter {
     tuple: (
         With<components::Ship>,
         Without<tasks::AwaitingSignal>,
-        Without<tasks::ConstructTaskComponent>,
+        Without<tasks::Construct>,
         Without<tasks::DockAtEntity>,
         Without<tasks::ExchangeWares>,
         Without<tasks::HarvestGas>,

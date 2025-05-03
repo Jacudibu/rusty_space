@@ -6,7 +6,8 @@ use bevy::prelude::Component;
 
 /// A component on [StationEntity]s which keeps track of ship building modules and requests.
 #[derive(Component)]
-pub struct ShipyardComponent {
+pub struct Shipyard {
+    /// The available modules which have been constructed at this shipyard.
     pub modules: HashMap<ShipyardModuleId, ShipyardModule>,
 
     /// The ships which are queued to be built in the near future at this shipyard.

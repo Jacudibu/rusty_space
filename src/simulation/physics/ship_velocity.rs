@@ -4,7 +4,10 @@ use bevy::prelude::Component;
 /// Fake Physics for ship movement. Has some helper methods to stir the ship depending on its engine.
 #[derive(Component, Default)]
 pub struct ShipVelocity {
+    /// The ships' current forward velocity
     pub forward: f32,
+
+    /// The ships' current angular velocity
     pub angular: f32,
 }
 

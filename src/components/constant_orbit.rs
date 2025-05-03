@@ -3,7 +3,7 @@ use crate::utils::SolarMass;
 use crate::utils::polar_coordinates::PolarCoordinates;
 use bevy::prelude::Component;
 
-/// Used to simulate a celestial body which permanently orbits some point in space in a fixed, circular shape
+/// A component used to simulate a celestial body which permanently orbits some point in space in a fixed, circular shape
 #[derive(Component)]
 pub struct ConstantOrbit {
     /// The current position of this entity represented as [PolarCoordinates].

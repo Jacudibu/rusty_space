@@ -1,12 +1,11 @@
 use crate::components::{
-    Asteroid, BuyOrders, GateComponent, InSector, InventoryComponent, SectorComponent, SellOrders,
-    Ship, StarComponent, StationComponent,
+    Asteroid, BuyOrders, Gate, InSector, Inventory, Sector, SellOrders, Ship, Star, Station,
 };
 use crate::persistence::AllEntityIdMaps;
 use crate::persistence::data::v1::*;
 use crate::persistence::writer::sector_writer::SectorSaveDataQuery;
 use crate::simulation::physics::{ConstantVelocity, ShipVelocity};
-use crate::simulation::production::{ProductionComponent, ShipyardComponent};
+use crate::simulation::production::{ProductionFacility, Shipyard};
 use crate::simulation::ship_ai::{AutoMineBehavior, AutoTradeBehavior, TaskQueue};
 use crate::simulation::transform::simulation_transform::SimulationTransform;
 use bevy::prelude::{Commands, Name, Query};
@@ -23,10 +22,10 @@ use bevy::prelude::{Commands, Name, Query};
 #[allow(unused)] // That's gonna fix itself as soon as we actually load stuff from disk
 pub fn parse_session_data_into_universe_save_data(
     mut commands: Commands,
-    all_sectors: Query<&SectorComponent>,
-    stars: Query<&StarComponent>,
+    all_sectors: Query<&Sector>,
+    stars: Query<&Star>,
     asteroids: Query<(&Asteroid, &SimulationTransform, &ConstantVelocity)>,
-    gates: Query<(&GateComponent, &InSector, &SimulationTransform)>,
+    gates: Query<(&Gate, &InSector, &SimulationTransform)>,
     sectors_to_save: Query<SectorSaveDataQuery>,
     ships: Query<(
         &Ship,
@@ -35,18 +34,18 @@ pub fn parse_session_data_into_universe_save_data(
         &SimulationTransform,
         &TaskQueue,
         &ShipVelocity,
-        &InventoryComponent,
+        &Inventory,
         Option<&AutoTradeBehavior>,
         Option<&AutoMineBehavior>,
     )>,
     stations: Query<(
-        &StationComponent,
+        &Station,
         &Name,
         &InSector,
         &SimulationTransform,
-        &InventoryComponent,
-        Option<&ProductionComponent>,
-        Option<&ShipyardComponent>,
+        &Inventory,
+        Option<&ProductionFacility>,
+        Option<&Shipyard>,
         Option<&BuyOrders>,
         Option<&SellOrders>,
     )>,

@@ -1,20 +1,19 @@
 use crate::components::{
-    BuyOrderData, BuyOrders, InSector, InventoryComponent, SectorComponent, SellOrderData,
-    SellOrders, StationComponent, TradeOrder,
+    BuyOrderData, BuyOrders, InSector, Inventory, Sector, SellOrderData, SellOrders, Station,
+    TradeOrder,
 };
 use crate::game_data::{ItemId, ProductionModuleId, ShipyardModuleId};
 use crate::persistence::ComponentWithPersistentId;
 use crate::persistence::data::v1::*;
 use crate::persistence::local_hex_position::LocalHexPosition;
 use crate::simulation::production::{
-    OngoingShipConstructionOrder, ProductionComponent, ProductionModule, ShipyardComponent,
-    ShipyardModule,
+    OngoingShipConstructionOrder, ProductionFacility, ProductionModule, Shipyard, ShipyardModule,
 };
 use crate::simulation::transform::simulation_transform::SimulationTransform;
 use bevy::prelude::{Name, Query};
 
 impl ProductionSaveData {
-    pub fn from(production: &ProductionComponent) -> Self {
+    pub fn from(production: &ProductionFacility) -> Self {
         Self {
             modules: production
                 .modules
@@ -61,7 +60,7 @@ impl ShipyardModuleSaveData {
 }
 
 impl ShipyardSaveData {
-    pub fn from(shipyard: &ShipyardComponent) -> Self {
+    pub fn from(shipyard: &Shipyard) -> Self {
         Self {
             queue: shipyard.queue.clone(),
             modules: shipyard
@@ -133,17 +132,17 @@ impl StationSaveData {
             buy_orders,
             sell_orders,
         ): (
-            &StationComponent,
+            &Station,
             &Name,
             &InSector,
             &SimulationTransform,
-            &InventoryComponent,
-            Option<&ProductionComponent>,
-            Option<&ShipyardComponent>,
+            &Inventory,
+            Option<&ProductionFacility>,
+            Option<&Shipyard>,
             Option<&BuyOrders>,
             Option<&SellOrders>,
         ),
-        sectors: &Query<&SectorComponent>,
+        sectors: &Query<&Sector>,
     ) -> Self {
         #[allow(unreachable_code)]
         Self {

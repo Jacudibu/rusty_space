@@ -1,4 +1,4 @@
-use crate::components::{ConstantOrbit, InSector, SectorComponent};
+use crate::components::{ConstantOrbit, InSector, Sector};
 use crate::simulation::precomputed_orbit_directions::PrecomputedOrbitDirections;
 use crate::simulation::prelude::SimulationTransform;
 use bevy::prelude::{Fixed, Query, Res, Time};
@@ -7,7 +7,7 @@ pub fn orbit_system(
     time: Res<Time<Fixed>>,
     orbit_directions: Res<PrecomputedOrbitDirections>,
     mut orbits: Query<(&mut ConstantOrbit, &mut SimulationTransform, &InSector)>,
-    sectors: Query<&SectorComponent>,
+    sectors: Query<&Sector>,
 ) {
     let delta = time.delta_secs();
 

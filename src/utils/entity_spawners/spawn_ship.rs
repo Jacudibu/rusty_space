@@ -1,6 +1,5 @@
 use crate::components::{
-    AsteroidMiningComponent, Engine, GasHarvestingComponent, InventoryComponent, SectorComponent,
-    SelectableEntity, Ship,
+    AsteroidMiner, Engine, GasHarvester, Inventory, Sector, SelectableEntity, Ship,
 };
 use crate::constants;
 use crate::persistence::{PersistentShipId, ShipIdMap};
@@ -17,7 +16,7 @@ pub fn spawn_ship(
     commands: &mut Commands,
     id: PersistentShipId,
     name: String,
-    sector_query: &mut Query<&mut SectorComponent>,
+    sector_query: &mut Query<&mut Sector>,
     sector: SectorEntity,
     position: Vec2,
     rotation: f32,
@@ -37,7 +36,7 @@ pub fn spawn_ship(
         SelectableEntity::Ship(ship_configuration.id),
         Engine::from(&ship_configuration.computed_stats.engine),
         velocity,
-        InventoryComponent::new(ship_configuration.computed_stats.inventory_size),
+        Inventory::new(ship_configuration.computed_stats.inventory_size),
         TaskQueue::new(),
         Sprite::from_image(ship_configuration.sprite.clone()),
         simulation_transform.as_bevy_transform(constants::z_layers::SHIP),
@@ -46,13 +45,13 @@ pub fn spawn_ship(
     ));
 
     if let Some(asteroid_mining_amount) = ship_configuration.computed_stats.asteroid_mining_amount {
-        entity_commands.insert(AsteroidMiningComponent {
+        entity_commands.insert(AsteroidMiner {
             amount_per_second: asteroid_mining_amount,
         });
     }
 
     if let Some(gas_harvesting_amount) = ship_configuration.computed_stats.gas_harvesting_amount {
-        entity_commands.insert(GasHarvestingComponent {
+        entity_commands.insert(GasHarvester {
             amount_per_second: gas_harvesting_amount,
         });
     }

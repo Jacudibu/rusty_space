@@ -4,6 +4,7 @@ use bevy::prelude::Component;
 
 /// Marker Component for Ships
 #[derive(Component)]
+#[component(immutable)]
 pub struct Ship {
     id: PersistentShipId,
     config_id: ShipConfigId,

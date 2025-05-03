@@ -1,6 +1,4 @@
-use crate::components::{
-    BuyOrders, GasGiant, InSector, InventoryComponent, SectorComponent, SectorPlanetsComponent,
-};
+use crate::components::{BuyOrders, GasGiant, InSector, Inventory, Sector, SectorWithPlanets};
 use crate::game_data::{ItemId, ItemManifest};
 use crate::pathfinding;
 use crate::simulation::prelude::{SimulationTime, SimulationTimestamp};
@@ -13,6 +11,7 @@ use crate::trade_plan::TradePlan;
 use crate::utils::{SectorEntity, TradeIntent, TypedEntity};
 use bevy::prelude::{Commands, Component, Entity, Query, Res};
 
+/// Ships with this behavior will alternate between harvesting gas from gas giants and selling their inventory to stations.
 #[derive(Component)]
 pub struct AutoHarvestBehavior {
     // TODO: Maybe(?) could just be AutoMineBehavior<T> with T: MineAsteroid | HarvestGas
@@ -30,9 +29,9 @@ pub fn handle_idle_ships(
         ShipIsIdleFilter,
     >,
     buy_orders: Query<(Entity, &mut BuyOrders, &InSector)>,
-    mut inventories: Query<&mut InventoryComponent>,
-    all_sectors_with_gas_giants: Query<&SectorPlanetsComponent>,
-    all_sectors: Query<&SectorComponent>,
+    mut inventories: Query<&mut Inventory>,
+    all_sectors_with_gas_giants: Query<&SectorWithPlanets>,
+    all_sectors: Query<&Sector>,
     all_gas_giants: Query<&GasGiant>,
     all_transforms: Query<&SimulationTransform>,
     item_manifest: Res<ItemManifest>,
@@ -171,8 +170,8 @@ pub fn handle_idle_ships(
 #[must_use]
 fn find_nearby_sector_with_gas_giants(
     all_gas_giants: &Query<&GasGiant>,
-    all_sectors_with_planets: &Query<&SectorPlanetsComponent>,
-    all_sectors: &Query<&SectorComponent>,
+    all_sectors_with_planets: &Query<&SectorWithPlanets>,
+    all_sectors: &Query<&Sector>,
     in_sector: &InSector,
     gas: &ItemId,
 ) -> Option<SectorEntity> {

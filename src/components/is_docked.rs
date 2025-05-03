@@ -3,6 +3,7 @@ use bevy::prelude::Component;
 
 /// Marker Component for Ships which are docked and thus hidden.
 #[derive(Component)]
+#[component(immutable)]
 pub struct IsDocked {
     pub at: TypedEntity,
 }

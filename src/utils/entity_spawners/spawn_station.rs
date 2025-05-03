@@ -1,14 +1,13 @@
 use crate::components::{
-    BuyOrders, ConstantOrbit, ConstructionSiteComponent, ConstructionSiteStatus, InteractionQueue,
-    InventoryComponent, SectorComponent, SectorStarComponent, SelectableEntity, SellOrders,
-    StarComponent, StationComponent,
+    BuyOrders, ConstantOrbit, ConstructionSite, ConstructionSiteStatus, InteractionQueue,
+    Inventory, Sector, SectorWithStar, SelectableEntity, SellOrders, Star, Station,
 };
 use crate::game_data::{ConstructableModuleId, ItemId, ItemManifest, RecipeManifest};
 use crate::persistence::{
     ConstructionSiteIdMap, PersistentConstructionSiteId, PersistentStationId, StationIdMap,
 };
 use crate::simulation::prelude::simulation_transform::SimulationScale;
-use crate::simulation::production::{ProductionComponent, ShipyardComponent};
+use crate::simulation::production::{ProductionFacility, Shipyard};
 use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::utils::polar_coordinates::PolarCoordinates;
 use crate::utils::{ConstructionSiteEntity, SectorPosition, StationEntity};
@@ -34,9 +33,9 @@ pub struct StationSpawnData {
     /// Sell data for this Station.
     pub sells: Vec<ItemId>,
     /// Production data for this Station.
-    pub production: Option<ProductionComponent>,
+    pub production: Option<ProductionFacility>,
     /// The shipyard component for this station.
-    pub shipyard: Option<ShipyardComponent>,
+    pub shipyard: Option<Shipyard>,
 }
 
 impl StationSpawnData {
@@ -109,8 +108,8 @@ impl ConstructionSiteSpawnData {
 #[allow(clippy::too_many_arguments)] // It's hopeless... :')
 pub fn spawn_station(
     commands: &mut Commands,
-    sector_query: &mut Query<(&mut SectorComponent, Option<&SectorStarComponent>)>,
-    star_query: &Query<&StarComponent>,
+    sector_query: &mut Query<(&mut Sector, Option<&SectorWithStar>)>,
+    star_query: &Query<&Star>,
     station_id_map: &mut StationIdMap,
     construction_site_id_map: &mut ConstructionSiteIdMap,
     sprites: &SpriteHandles,
@@ -180,7 +179,7 @@ pub fn spawn_station(
 
     let mut entity_commands = commands.entity(entity);
     entity_commands.add_child(icon_entity);
-    entity_commands.insert(StationComponent::new(data.id, construction_site));
+    entity_commands.insert(Station::new(data.id, construction_site));
 
     let buy_sell_and_production_count = {
         // This doesn't yet account for duplicates in case we ever want to copy this somewhere after the mock-data era is over
@@ -198,7 +197,7 @@ pub fn spawn_station(
         buy_sell_and_production_count
     };
 
-    let mut inventory = InventoryComponent::new(constants::MOCK_STATION_INVENTORY_SIZE);
+    let mut inventory = Inventory::new(constants::MOCK_STATION_INVENTORY_SIZE);
 
     let fill_ratio = 2;
     // TODO: Remove mock data
@@ -310,19 +309,19 @@ pub fn spawn_station(
 fn spawn_construction_site(
     commands: &mut Commands,
     construction_site_id_map: &mut ConstructionSiteIdMap,
-    sector: &mut SectorComponent,
+    sector: &mut Sector,
     sprites: &SpriteHandles,
     station_name: &str,
     sector_position: SectorPosition,
     station_entity: StationEntity,
-    star: Option<&StarComponent>,
+    star: Option<&Star>,
     data: ConstructionSiteSpawnData,
 ) -> ConstructionSiteEntity {
     let simulation_transform =
         SimulationTransform::from_translation(sector_position.local_position + sector.world_pos);
 
     // TODO: implement proper construction site... constructing
-    let construction_site = ConstructionSiteComponent {
+    let construction_site = ConstructionSite {
         id: data.id,
         station: station_entity,
         build_order: data.build_order,
@@ -349,7 +348,7 @@ fn spawn_construction_site(
                 anchor: Anchor::Custom(Vec2::splat(-0.7)),
                 ..Default::default()
             },
-            InventoryComponent::new(u32::MAX),
+            Inventory::new(u32::MAX),
             data.buys,
             // TODO: We don't really want to "dock" at construction sites, so not sure if an InteractionQueue is truly necessary
             InteractionQueue::new(constants::SIMULTANEOUS_STATION_INTERACTIONS),

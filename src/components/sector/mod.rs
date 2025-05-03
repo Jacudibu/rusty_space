@@ -1,9 +1,9 @@
 mod in_sector;
-mod sector_asteroid;
-mod sector_component;
-mod sector_planets;
-mod sector_star;
+mod sector;
+mod sector_with_asteroid;
+mod sector_with_planets;
+mod sector_with_star;
 
 pub use {
-    in_sector::*, sector_asteroid::*, sector_component::*, sector_planets::*, sector_star::*,
+    in_sector::*, sector::*, sector_with_asteroid::*, sector_with_planets::*, sector_with_star::*,
 };

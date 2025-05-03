@@ -1,6 +1,6 @@
 use crate::components::{
-    BuyOrderData, BuyOrders, ConstantOrbit, GateComponent, PlanetComponent, SectorComponent,
-    SectorPlanetsComponent, SectorStarComponent, StarComponent, StationComponent,
+    BuyOrderData, BuyOrders, ConstantOrbit, Gate, Planet, Sector, SectorWithPlanets,
+    SectorWithStar, Star, Station,
 };
 use crate::entity_selection::MouseCursor;
 use crate::game_data::{
@@ -93,9 +93,10 @@ fn toggle_construction_mode(
     }
 }
 
-/// Marker component for the construction preview entity
+/// Marker component for the construction site preview entity.
 #[derive(Component)]
-struct PreviewEntityComponent {}
+#[component(immutable)]
+struct ConstructionSitePreviewEntity {}
 
 /// [GizmoConfigGroup] for all gizmos related to Construction Site Previews.
 #[derive(Default, Reflect, GizmoConfigGroup)]
@@ -108,7 +109,7 @@ struct DottedConstructionSitePreviewGizmos;
 fn spawn_construction_preview_entity(mut commands: Commands, sprites: Res<SpriteHandles>) {
     commands.spawn((
         Name::new("Construction Site Preview"),
-        PreviewEntityComponent {},
+        ConstructionSitePreviewEntity {},
         Sprite {
             image: sprites.station.clone(),
             color: constants::colors::INVALID_PREVIEW_COLOR,
@@ -119,10 +120,10 @@ fn spawn_construction_preview_entity(mut commands: Commands, sprites: Res<Sprite
     commands.insert_resource(PreviewTargetPosition::default());
 }
 
-/// Despawns all entities marked with a [PreviewEntityComponent]
+/// Despawns all entities marked with a [ConstructionSitePreviewEntity]
 fn despawn_construction_preview_entity(
     mut commands: Commands,
-    query: Query<Entity, With<PreviewEntityComponent>>,
+    query: Query<Entity, With<ConstructionSitePreviewEntity>>,
 ) {
     for x in query.iter() {
         commands.entity(x).despawn();
@@ -154,18 +155,18 @@ impl Default for PreviewTargetPosition {
     }
 }
 
-/// Updates the color and position of all entities marked with a [PreviewEntityComponent].
+/// Updates the color and position of all entities marked with a [ConstructionSitePreviewEntity].
 #[allow(clippy::type_complexity)]
 fn update_preview_entity(
     preview_target: Res<PreviewTargetPosition>,
     mut preview_query: Query<
         (&mut Transform, &mut Sprite, &mut Visibility),
         (
-            With<PreviewEntityComponent>,
-            Without<StationComponent>,
-            Without<GateComponent>,
-            Without<PlanetComponent>,
-            Without<StarComponent>,
+            With<ConstructionSitePreviewEntity>,
+            Without<Station>,
+            Without<Gate>,
+            Without<Planet>,
+            Without<Star>,
         ),
     >,
     mut gizmos: Gizmos<ConstructionSitePreviewGizmos>,
@@ -248,10 +249,10 @@ fn update_preview_entity(
 #[allow(clippy::too_many_arguments)]
 fn spawn_construction_site_on_mouse_click(
     mut commands: Commands,
-    mut sector_query: Query<(&mut SectorComponent, Option<&SectorStarComponent>)>,
+    mut sector_query: Query<(&mut Sector, Option<&SectorWithStar>)>,
     mut station_id_map: ResMut<StationIdMap>,
     mut construction_site_id_map: ResMut<ConstructionSiteIdMap>,
-    stars: Query<&StarComponent>,
+    stars: Query<&Star>,
     sprites: Res<SpriteHandles>,
     production_module_manifest: Res<ProductionModuleManifest>,
     shipyard_module_manifest: Res<ShipyardModuleManifest>,
@@ -358,14 +359,7 @@ enum PositionValidationError {
 #[derive(QueryFilter)]
 #[allow(clippy::type_complexity)]
 struct ConstructionBlockingItemFilter {
-    tuple: (
-        Or<(
-            With<StationComponent>,
-            With<PlanetComponent>,
-            With<StarComponent>,
-            With<GateComponent>,
-        )>,
-    ),
+    tuple: (Or<(With<Station>, With<Planet>, With<Star>, With<Gate>)>,),
 }
 
 /// Updates the [PreviewTargetPosition] resource before any of the systems depending on it are run.
@@ -373,11 +367,7 @@ struct ConstructionBlockingItemFilter {
 fn update_target_position(
     mut preview_target: ResMut<PreviewTargetPosition>,
     mouse_cursor: Res<MouseCursor>,
-    all_sectors: Query<(
-        &SectorComponent,
-        Option<&SectorPlanetsComponent>,
-        Option<&SectorStarComponent>,
-    )>,
+    all_sectors: Query<(&Sector, Option<&SectorWithPlanets>, Option<&SectorWithStar>)>,
     orbiting_objects: Query<&ConstantOrbit>,
     potentially_blocking_transforms: Query<&Transform, ConstructionBlockingItemFilter>,
     map_layout: Res<MapLayout>,
@@ -434,9 +424,9 @@ fn update_target_position(
 }
 
 fn collect_blocking_sector_entities(
-    sector: &SectorComponent,
-    sector_planets: Option<&SectorPlanetsComponent>,
-    sector_star: Option<&SectorStarComponent>,
+    sector: &Sector,
+    sector_planets: Option<&SectorWithPlanets>,
+    sector_star: Option<&SectorWithStar>,
 ) -> Vec<Entity> {
     let mut sector_celestials: Vec<Entity> = sector
         .stations

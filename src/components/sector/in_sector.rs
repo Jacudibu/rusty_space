@@ -1,11 +1,12 @@
 use crate::utils::SectorEntity;
 use bevy::prelude::{Commands, Component, Entity};
 
-/// Component for entities inside sectors.
+/// Component for all entities inside sectors.
 ///
 /// These are managed by [Sector], so if you feel a need to manually add or remove them,
 /// you should probably use the respective functions there.
 #[derive(Component, PartialEq, Eq)]
+#[component(immutable)]
 pub struct InSector {
     pub(crate) sector: SectorEntity,
 }

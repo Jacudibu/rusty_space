@@ -1,13 +1,11 @@
-use crate::components::{BuyOrders, InventoryComponent, SellOrders};
+use crate::components::{BuyOrders, Inventory, SellOrders};
 use crate::game_data::{ItemManifest, RecipeElement, RecipeManifest, ShipyardModuleId};
 use crate::session_data::{ShipConfigId, ShipConfigurationManifest};
 use crate::simulation::prelude::{RunningProductionQueueElement, SimulationTime};
-use crate::simulation::production::ProductionComponent;
+use crate::simulation::production::ProductionFacility;
 use crate::simulation::production::production_kind::ProductionKind;
 use crate::simulation::production::production_started_event::ProductionStartedEvent;
-use crate::simulation::production::shipyard_component::{
-    OngoingShipConstructionOrder, ShipyardComponent,
-};
+use crate::simulation::production::shipyard::{OngoingShipConstructionOrder, Shipyard};
 use crate::utils;
 use bevy::log::error;
 use bevy::prelude::{Entity, Event, EventReader, EventWriter, Or, Query, Res, With};
@@ -37,13 +35,13 @@ pub fn handle_inventory_updates(
     mut production_start_event_writer: EventWriter<ProductionStartedEvent>,
     mut query: Query<
         (
-            Option<&mut ProductionComponent>,
-            Option<&mut ShipyardComponent>,
-            &mut InventoryComponent,
+            Option<&mut ProductionFacility>,
+            Option<&mut Shipyard>,
+            &mut Inventory,
             Option<&mut BuyOrders>,
             Option<&mut SellOrders>,
         ),
-        Or<(With<ProductionComponent>, With<ShipyardComponent>)>,
+        Or<(With<ProductionFacility>, With<Shipyard>)>,
     >,
     item_manifest: Res<ItemManifest>,
 ) {
@@ -207,7 +205,7 @@ pub fn handle_inventory_updates(
 
 /// Tests if there are enough items in stock to start a production run
 pub fn has_all_required_materials(
-    inventory: &mut InventoryComponent,
+    inventory: &mut Inventory,
     input: &Vec<RecipeElement>,
     multiplier: u32,
 ) -> bool {
@@ -228,7 +226,7 @@ pub fn has_all_required_materials(
 
 /// Tests if there's enough storage space available to store all production yields.
 fn has_enough_storage_for_yields(
-    inventory: &mut InventoryComponent,
+    inventory: &mut Inventory,
     output: &Vec<RecipeElement>,
     item_manifest: &ItemManifest,
 ) -> bool {
@@ -250,7 +248,7 @@ fn has_enough_storage_for_yields(
 
 /// Removes all ingredients for a recipe from this inventory
 fn remove_recipe_items(
-    inventory: &mut InventoryComponent,
+    inventory: &mut Inventory,
     items: &Vec<RecipeElement>,
     multiplier: u32,
     item_manifest: &ItemManifest,

@@ -1,8 +1,8 @@
 use bevy::prelude::{Commands, CubicCurve, Name, Query, Sprite, Vec2};
 
 use crate::components::{
-    ConstantOrbit, GateComponent, GateConnectionComponent, MovingGateConnection, SectorComponent,
-    SectorStarComponent, SelectableEntity, StarComponent,
+    ConstantOrbit, Gate, GateConnection, MovingGateConnection, Sector, SectorWithStar,
+    SelectableEntity, Star,
 };
 use crate::persistence::{GateIdMap, PersistentGateId};
 use crate::simulation::prelude::simulation_transform::SimulationScale;
@@ -16,8 +16,8 @@ use crate::{SpriteHandles, constants};
 pub fn spawn_gate_pair(
     commands: &mut Commands,
     gate_id_map: &mut GateIdMap,
-    sectors: &mut Query<(&mut SectorComponent, Option<&SectorStarComponent>)>,
-    stars: &Query<&StarComponent>,
+    sectors: &mut Query<(&mut Sector, Option<&SectorWithStar>)>,
+    stars: &Query<&Star>,
     sprites: &SpriteHandles,
     from_id: PersistentGateId,
     from_pos: SectorPosition,
@@ -28,7 +28,7 @@ pub fn spawn_gate_pair(
         .get_many_mut([from_pos.sector.into(), to_pos.sector.into()])
         .unwrap();
 
-    let (from_curve, to_curve) = GateConnectionComponent::calculate_curves_from_local_positions(
+    let (from_curve, to_curve) = GateConnection::calculate_curves_from_local_positions(
         &from_sector,
         from_pos.local_position,
         &to_sector,
@@ -77,7 +77,7 @@ fn spawn_gate_connection(
     to: GateEntity,
     has_orbital_mechanics: bool,
 ) {
-    let mut entity_commands = commands.spawn(GateConnectionComponent::new(from, to, from_to_curve));
+    let mut entity_commands = commands.spawn(GateConnection::new(from, to, from_to_curve));
 
     if has_orbital_mechanics {
         entity_commands.insert(MovingGateConnection);
@@ -91,10 +91,10 @@ fn spawn_gate(
     gate_id_map: &mut GateIdMap,
     sprites: &SpriteHandles,
     pos: &SectorPosition,
-    from: &mut SectorComponent,
-    to: &SectorComponent,
+    from: &mut Sector,
+    to: &Sector,
     ship_curve: CubicCurve<Vec2>,
-    star: Option<&StarComponent>,
+    star: Option<&Star>,
 ) -> GateEntity {
     let simulation_transform =
         SimulationTransform::from_translation(from.world_pos + pos.local_position);
@@ -103,7 +103,7 @@ fn spawn_gate(
             "Gate [{},{}] -> [{},{}]",
             from.coordinate.x, from.coordinate.y, to.coordinate.x, to.coordinate.y
         )),
-        GateComponent::new(id, ship_curve),
+        Gate::new(id, ship_curve),
         SelectableEntity::Gate,
         Sprite::from_image(sprites.gate.clone()),
         simulation_transform.as_bevy_transform(constants::z_layers::GATE),

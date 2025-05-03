@@ -13,8 +13,7 @@ use std::collections::{BTreeSet, BinaryHeap};
 
 /// A sector with this component features small asteroids floating through it.
 #[derive(Component)]
-#[allow(dead_code)]
-pub struct SectorAsteroidComponent {
+pub struct SectorWithAsteroids {
     average_velocity: Vec2,
 
     /// The kind of materials which can be found in asteroids within this sector. These should never change during runtime.
@@ -27,7 +26,7 @@ pub struct SectorAsteroidComponent {
     pub asteroid_respawns: HashMap<ItemId, BinaryHeap<std::cmp::Reverse<RespawningAsteroidData>>>,
 }
 
-impl SectorAsteroidComponent {
+impl SectorWithAsteroids {
     #[must_use]
     pub fn new(average_velocity: Vec2, asteroid_materials: Vec<ItemId>) -> Self {
         Self {

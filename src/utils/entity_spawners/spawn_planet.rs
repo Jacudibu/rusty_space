@@ -1,4 +1,4 @@
-use crate::components::{ConstantOrbit, PlanetComponent, SelectableEntity};
+use crate::components::{ConstantOrbit, Planet, SelectableEntity};
 use crate::persistence::{PlanetIdMap, PlanetKindSaveData, SectorPlanetSaveData};
 use crate::simulation::prelude::simulation_transform::SimulationScale;
 use crate::simulation::transform::simulation_transform::SimulationTransform;
@@ -12,7 +12,7 @@ use bevy::sprite::Sprite;
 #[allow(clippy::too_many_arguments)]
 pub fn spawn_planet(
     commands: &mut Commands,
-    sector_planet_component: &mut components::SectorPlanetsComponent,
+    sector_planet_component: &mut components::SectorWithPlanets,
     planet_id_map: &mut PlanetIdMap,
     sprites: &SpriteHandles,
     planet_data: &SectorPlanetSaveData,
@@ -20,7 +20,7 @@ pub fn spawn_planet(
     sector_entity: SectorEntity,
     orbit_mass: Option<SolarMass>,
 ) {
-    let planet = PlanetComponent::new(planet_data.id, planet_data.mass);
+    let planet = Planet::new(planet_data.id, planet_data.mass);
 
     let simulation_transform =
         SimulationTransform::new(sector_pos + planet_data.local_position, Rot2::IDENTITY);

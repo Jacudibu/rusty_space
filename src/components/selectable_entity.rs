@@ -3,7 +3,9 @@ use crate::session_data::ShipConfigId;
 use bevy::prelude::Component;
 
 /// Marker component for anything interactable.
+/// The individual enum values might further specify the selection.
 #[derive(Component, Eq, PartialEq)]
+#[component(immutable)]
 pub enum SelectableEntity {
     Asteroid(AsteroidDataId),
     Gate,

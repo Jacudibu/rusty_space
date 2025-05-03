@@ -3,6 +3,8 @@ use crate::utils::ShipEntity;
 use bevy::prelude::{Component, EventWriter};
 use std::collections::VecDeque;
 
+/// Entities with an [InteractionQueue] only allow a set amount of entities to interact with it at once.
+/// Once that limit is reached, they'll be queued up and notified for their turn.  
 #[derive(Component)]
 pub struct InteractionQueue {
     maximum_simultaneous_interactions: u32,

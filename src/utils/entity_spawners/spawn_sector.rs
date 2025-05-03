@@ -1,6 +1,4 @@
-use crate::components::{
-    InSector, SectorAsteroidComponent, SectorComponent, SectorStarComponent, SelectableEntity,
-};
+use crate::components::{InSector, Sector, SectorWithAsteroids, SectorWithStar, SelectableEntity};
 use crate::game_data::AsteroidManifest;
 use crate::persistence::{AsteroidIdMap, PlanetIdMap, SectorFeatureSaveData};
 use crate::simulation::prelude::simulation_transform::SimulationScale;
@@ -28,7 +26,7 @@ pub fn spawn_sector(
 
     let entity_commands = commands.spawn((
         Name::new(format!("[{},{}]", coordinate.x, coordinate.y)),
-        SectorComponent::new(coordinate, position),
+        Sector::new(coordinate, position),
         simulation_transform.as_bevy_transform(0.0),
         simulation_transform,
     ));
@@ -37,7 +35,7 @@ pub fn spawn_sector(
     let sector = SectorEntity::from(sector_entity);
 
     if let Some(asteroids) = &features.asteroids {
-        let mut component = SectorAsteroidComponent::new(
+        let mut component = SectorWithAsteroids::new(
             asteroids.average_velocity,
             asteroids.asteroid_materials.clone(),
         );
@@ -72,7 +70,7 @@ pub fn spawn_sector(
         let star_entity = commands
             .spawn((
                 Name::new(format!("[{},{}] Star", coordinate.x, coordinate.y)),
-                components::StarComponent::new(coordinate, star.mass),
+                components::Star::new(coordinate, star.mass),
                 InSector { sector },
                 SelectableEntity::Star,
                 Sprite::from_image(sprites.star.clone()),
@@ -82,13 +80,13 @@ pub fn spawn_sector(
             ))
             .id();
 
-        commands.entity(sector_entity).insert(SectorStarComponent {
+        commands.entity(sector_entity).insert(SectorWithStar {
             entity: StarEntity::from(star_entity),
         });
     }
 
     if let Some(planets) = &features.planets {
-        let mut component = components::SectorPlanetsComponent {
+        let mut component = components::SectorWithPlanets {
             planets: Default::default(),
         };
 

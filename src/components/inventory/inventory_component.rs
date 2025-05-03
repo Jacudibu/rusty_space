@@ -7,7 +7,7 @@ use bevy::prelude::{Component, warn};
 
 /// A component for storing all kinds of items.
 #[derive(Component)]
-pub struct InventoryComponent {
+pub struct Inventory {
     /// Total storage capacity for this inventory
     capacity: u32,
 
@@ -21,7 +21,7 @@ pub struct InventoryComponent {
     inventory: HashMap<ItemId, InventoryElement>,
 }
 
-impl InventoryComponent {
+impl Inventory {
     pub fn new(capacity: u32) -> Self {
         Self {
             capacity,
@@ -293,7 +293,7 @@ mod test {
 
     #[rstest]
     fn add_item(item_manifest: &ItemManifest) {
-        let mut inventory = InventoryComponent::new(25);
+        let mut inventory = Inventory::new(25);
         assert_eq!(0.0, inventory.ratio());
 
         inventory.add_item(ITEM_WITH_SIZE_1_ID, 5, item_manifest);
@@ -317,7 +317,7 @@ mod test {
         #[case] expected_result: u32,
         #[case] id: ItemId,
     ) {
-        let inventory = InventoryComponent::new(25);
+        let inventory = Inventory::new(25);
         assert_eq!(
             expected_result,
             inventory.remaining_space_for(&id, item_manifest)

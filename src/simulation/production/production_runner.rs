@@ -1,16 +1,16 @@
 use bevy::log::error;
 use bevy::prelude::{Commands, EventWriter, Mut, Or, Query, Res, ResMut, Transform, With};
 
-use crate::components::{BuyOrders, InSector, InventoryComponent, SectorComponent, SellOrders};
+use crate::components::{BuyOrders, InSector, Inventory, Sector, SellOrders};
 use crate::game_data::{ItemManifest, ProductionModuleId, RecipeManifest, ShipyardModuleId};
 use crate::persistence::{PersistentShipId, ShipIdMap};
 use crate::session_data::ShipConfigurationManifest;
 use crate::simulation::physics::ShipVelocity;
 use crate::simulation::prelude::{CurrentSimulationTimestamp, SimulationTime, SimulationTimestamp};
 use crate::simulation::production::production_kind::ProductionKind;
-use crate::simulation::production::shipyard_component::ShipyardComponent;
+use crate::simulation::production::shipyard::Shipyard;
 use crate::simulation::production::state::{GlobalProductionState, SingleProductionState};
-use crate::simulation::production::{InventoryUpdateForProductionEvent, ProductionComponent};
+use crate::simulation::production::{InventoryUpdateForProductionEvent, ProductionFacility};
 use crate::simulation::ship_ai::BehaviorBuilder;
 use crate::utils;
 use crate::utils::entity_spawners;
@@ -18,7 +18,7 @@ use crate::utils::entity_spawners;
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
 pub fn check_if_production_is_finished_and_start_new_one(
     mut commands: Commands,
-    mut sector_query: Query<&mut SectorComponent>,
+    mut sector_query: Query<&mut Sector>,
     mut ship_id_map: ResMut<ShipIdMap>,
     simulation_time: Res<SimulationTime>,
     mut global_production_state: ResMut<GlobalProductionState>,
@@ -27,15 +27,15 @@ pub fn check_if_production_is_finished_and_start_new_one(
     mut inventory_update_writer: EventWriter<InventoryUpdateForProductionEvent>,
     mut producer_query: Query<
         (
-            Option<&mut ProductionComponent>,
-            Option<&mut ShipyardComponent>,
-            &mut InventoryComponent,
+            Option<&mut ProductionFacility>,
+            Option<&mut Shipyard>,
+            &mut Inventory,
             Option<&mut BuyOrders>,
             Option<&mut SellOrders>,
             &Transform,
             &InSector,
         ),
-        Or<(With<ProductionComponent>, With<ShipyardComponent>)>,
+        Or<(With<ProductionFacility>, With<Shipyard>)>,
     >,
     item_manifest: Res<ItemManifest>,
 ) {
@@ -94,12 +94,12 @@ pub fn check_if_production_is_finished_and_start_new_one(
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
 fn process_finished_ship_production(
     commands: &mut Commands,
-    sector_query: &mut Query<&mut SectorComponent>,
+    sector_query: &mut Query<&mut Sector>,
     ship_id_map: &mut ResMut<ShipIdMap>,
     ship_configs: &ShipConfigurationManifest,
     now: CurrentSimulationTimestamp,
     next: &SingleProductionState,
-    shipyard: Option<Mut<ShipyardComponent>>,
+    shipyard: Option<Mut<Shipyard>>,
     transform: &Transform,
     in_sector: &InSector,
     module_id: &ShipyardModuleId,
@@ -150,8 +150,8 @@ fn process_finished_ship_production(
 fn process_finished_item_production(
     recipes: &RecipeManifest,
     next: &SingleProductionState,
-    production: Option<Mut<ProductionComponent>>,
-    inventory: &mut InventoryComponent,
+    production: Option<Mut<ProductionFacility>>,
+    inventory: &mut Inventory,
     module_id: &ProductionModuleId,
 ) {
     let Some(mut production) = production else {

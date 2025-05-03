@@ -1,9 +1,13 @@
 use bevy::prelude::{Component, Vec2};
 
-/// Guaranteed to never change.
+/// An entity with a [ConstantVelocity] applied to it will always move in the specified position.
 #[derive(Component, Default)]
+#[component(immutable)]
 pub struct ConstantVelocity {
+    /// constant velocity in global space
     velocity: Vec2,
+
+    /// constant rotational velocity
     sprite_rotation: f32,
 }
 

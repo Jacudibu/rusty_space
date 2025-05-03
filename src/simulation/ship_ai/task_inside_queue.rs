@@ -81,7 +81,7 @@ impl TaskInsideQueue {
                 entity_commands.insert(MoveToEntity {
                     target: *target,
                     stop_at_target: *stop_at_target,
-                    distance_to_target: *distance,
+                    desired_distance_to_target: *distance,
                 });
             }
             TaskInsideQueue::UseGate {
@@ -111,7 +111,7 @@ impl TaskInsideQueue {
                 task_started_event_writers
                     .construct
                     .write(TaskStartedEvent::new(entity));
-                entity_commands.insert(tasks::ConstructTaskComponent { target: *target });
+                entity_commands.insert(tasks::Construct { target: *target });
             }
             TaskInsideQueue::RequestAccess { target } => {
                 entity_commands.insert(tasks::RequestAccess::new(*target));

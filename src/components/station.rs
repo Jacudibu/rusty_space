@@ -2,9 +2,10 @@ use crate::persistence::{ComponentWithPersistentId, PersistentStationId, TypedPe
 use crate::utils::ConstructionSiteEntity;
 use bevy::prelude::Component;
 
-/// Marker Component for Stations
+/// Marker Component for immovable, player-constructed objects in space.
+/// Depending on the modules built inside them, they are usually used for ship construction or resource processing.
 #[derive(Component)]
-pub struct StationComponent {
+pub struct Station {
     /// The PersistentEntityId assigned to this Station.
     pub id: PersistentStationId,
 
@@ -12,17 +13,17 @@ pub struct StationComponent {
     pub construction_site: Option<ConstructionSiteEntity>,
 }
 
-impl ComponentWithPersistentId<StationComponent> for StationComponent {
+impl ComponentWithPersistentId<Station> for Station {
     #[inline]
-    fn id(&self) -> TypedPersistentEntityId<StationComponent> {
+    fn id(&self) -> TypedPersistentEntityId<Station> {
         self.id
     }
 }
 
-impl StationComponent {
+impl Station {
     #[inline]
     pub fn new(
-        id: TypedPersistentEntityId<StationComponent>,
+        id: TypedPersistentEntityId<Station>,
         construction_site: Option<ConstructionSiteEntity>,
     ) -> Self {
         Self {

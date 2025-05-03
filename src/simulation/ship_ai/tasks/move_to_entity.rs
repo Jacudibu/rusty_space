@@ -11,6 +11,7 @@ use std::sync::{Arc, Mutex};
 
 /// Ships with this [TaskComponent] are currently moving towards another entity.
 #[derive(Component)]
+#[component(immutable)]
 pub struct MoveToEntity {
     /// The entity to which we are moving.
     pub target: TypedEntity,
@@ -20,7 +21,7 @@ pub struct MoveToEntity {
 
     /// In case that we stop at the target, how far from it would be the perfect distance to do so?
     /// 0 would be right on top.
-    pub distance_to_target: f32,
+    pub desired_distance_to_target: f32,
 }
 impl TaskComponent for MoveToEntity {
     fn can_be_aborted() -> bool {
@@ -116,7 +117,7 @@ impl MoveToEntity {
                 match move_to_entity(
                     entity,
                     task.target,
-                    task.distance_to_target,
+                    task.desired_distance_to_target,
                     task.stop_at_target,
                     &all_transforms,
                     engine,

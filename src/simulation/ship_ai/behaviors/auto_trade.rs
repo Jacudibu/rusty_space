@@ -1,8 +1,6 @@
 use bevy::prelude::{Commands, Component, Entity, Query, Res};
 
-use crate::components::{
-    BuyOrders, InSector, InventoryComponent, SectorComponent, SellOrders, TradeOrder,
-};
+use crate::components::{BuyOrders, InSector, Inventory, Sector, SellOrders, TradeOrder};
 use crate::constants;
 use crate::game_data::ItemManifest;
 use crate::simulation::prelude::{SimulationTime, SimulationTimestamp};
@@ -13,6 +11,7 @@ use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::trade_plan::TradePlan;
 use crate::utils::{TradeIntent, TypedEntity};
 
+/// Ships with this behavior will attempt to buy low and sell high.
 #[derive(Component)]
 pub struct AutoTradeBehavior {
     pub next_idle_update: SimulationTimestamp,
@@ -33,8 +32,8 @@ pub fn handle_idle_ships(
     mut ships: Query<(Entity, &mut TaskQueue, &mut AutoTradeBehavior, &InSector), ShipIsIdleFilter>,
     mut buy_orders: Query<(Entity, &mut BuyOrders, &InSector)>,
     mut sell_orders: Query<(Entity, &mut SellOrders, &InSector)>,
-    mut inventories: Query<&mut InventoryComponent>,
-    all_sectors: Query<&SectorComponent>,
+    mut inventories: Query<&mut Inventory>,
+    all_sectors: Query<&Sector>,
     all_transforms: Query<&SimulationTransform>,
     item_manifest: Res<ItemManifest>,
     mut all_task_started_event_writers: AllTaskStartedEventWriters,
@@ -136,7 +135,7 @@ pub fn handle_idle_ships(
 
 fn update_buy_and_sell_orders_for_entity(
     entity: TypedEntity,
-    inventory: &InventoryComponent,
+    inventory: &Inventory,
     buy_orders: &mut Query<(Entity, &mut BuyOrders, &InSector)>,
     sell_orders: &mut Query<(Entity, &mut SellOrders, &InSector)>,
     item_manifest: &ItemManifest,

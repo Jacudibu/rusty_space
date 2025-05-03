@@ -1,4 +1,4 @@
-use crate::components::InventoryComponent;
+use crate::components::Inventory;
 use crate::components::inventory::InventoryElement;
 use crate::game_data::{ItemId, ItemManifest};
 use bevy::platform::collections::HashMap;
@@ -9,7 +9,7 @@ pub trait TradeOrder<TOrderData: OrderData>: Default + Component {
     fn orders_mut(&mut self) -> &mut HashMap<ItemId, TOrderData>;
 
     /// Updates the prices for all orders given the current inventory situation.
-    fn update(&mut self, inventory: &InventoryComponent, item_manifest: &ItemManifest) {
+    fn update(&mut self, inventory: &Inventory, item_manifest: &ItemManifest) {
         for (item_id, order) in self.orders_mut() {
             order.update_price(
                 inventory.remaining_space_for(item_id, item_manifest),

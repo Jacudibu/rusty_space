@@ -1,6 +1,6 @@
 use crate::components::inventory::InventoryElement;
 use crate::components::{
-    BuyOrderData, BuyOrders, InventoryComponent, OrderData, SellOrderData, SellOrders, TradeOrder,
+    BuyOrderData, BuyOrders, Inventory, OrderData, SellOrderData, SellOrders, TradeOrder,
 };
 use crate::constants;
 use crate::game_data::{ItemData, ItemManifest};
@@ -39,7 +39,7 @@ impl SellOrders {
     pub fn mock(
         buys: &[&ItemData],
         sells: &Vec<&ItemData>,
-        inventory: &mut InventoryComponent,
+        inventory: &mut Inventory,
         item_manifest: &ItemManifest,
     ) -> Self {
         let sharing_count = (buys.len() + sells.len()) as u32;

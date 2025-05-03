@@ -1,4 +1,4 @@
-use crate::components::{Asteroid, AsteroidMiningComponent, InventoryComponent};
+use crate::components::{Asteroid, AsteroidMiner, Inventory};
 use crate::constants;
 use crate::game_data::ItemManifest;
 use crate::simulation::asteroids::AsteroidWasFullyMinedEvent;
@@ -48,10 +48,10 @@ impl MineAsteroid {
 impl MineAsteroid {
     fn run(
         &mut self,
-        inventory: &mut InventoryComponent,
+        inventory: &mut Inventory,
         now: CurrentSimulationTimestamp,
         all_asteroids: &Query<(&mut Asteroid, &mut SimulationScale)>,
-        mining_component: &AsteroidMiningComponent,
+        mining_component: &AsteroidMiner,
         item_manifest: &ItemManifest,
     ) -> TaskResult {
         if now.has_not_passed(self.next_update) {
@@ -84,12 +84,7 @@ impl MineAsteroid {
     pub fn run_tasks(
         event_writer: EventWriter<TaskCompletedEvent<Self>>,
         simulation_time: Res<SimulationTime>,
-        mut ships: Query<(
-            Entity,
-            &mut Self,
-            &mut InventoryComponent,
-            &AsteroidMiningComponent,
-        )>,
+        mut ships: Query<(Entity, &mut Self, &mut Inventory, &AsteroidMiner)>,
         mut all_asteroids: Query<(&mut Asteroid, &mut SimulationScale)>,
         mut asteroid_was_fully_mined_event: EventWriter<AsteroidWasFullyMinedEvent>,
         item_manifest: Res<ItemManifest>,

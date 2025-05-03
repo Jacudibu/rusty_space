@@ -1,4 +1,4 @@
-use crate::components::InventoryComponent;
+use crate::components::Inventory;
 use crate::game_data::ItemManifest;
 use crate::simulation::prelude::{
     CurrentSimulationTimestamp, SimulationTime, SimulationTimestamp, TaskComponent,
@@ -45,7 +45,7 @@ impl ExchangeWares {
     fn complete(
         &self,
         this_entity: Entity,
-        all_storages: &mut Query<&mut InventoryComponent>,
+        all_storages: &mut Query<&mut Inventory>,
         event_writer: &mut EventWriter<InventoryUpdateForProductionEvent>,
         item_manifest: &ItemManifest,
     ) -> TaskResult {
@@ -99,7 +99,7 @@ impl ExchangeWares {
     pub fn complete_tasks(
         mut event_reader: EventReader<TaskCompletedEvent<Self>>,
         mut all_ships_with_task: Query<&Self>,
-        mut all_storages: Query<&mut InventoryComponent>,
+        mut all_storages: Query<&mut Inventory>,
         mut event_writer: EventWriter<InventoryUpdateForProductionEvent>,
         item_manifest: Res<ItemManifest>,
     ) {

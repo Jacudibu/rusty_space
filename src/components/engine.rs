@@ -1,7 +1,9 @@
 use crate::session_data::ship_configs::EngineStats;
 use bevy::prelude::Component;
 
+/// A component for all entities which can move through space on their own, holding all relevant values.
 #[derive(Component)]
+#[component(immutable)]
 pub struct Engine {
     pub max_speed: f32,
     pub acceleration: f32,

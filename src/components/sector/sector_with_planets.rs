@@ -3,13 +3,14 @@ use crate::utils::{PlanetEntity, SectorEntity};
 use bevy::platform::collections::HashSet;
 use bevy::prelude::{Commands, Component};
 
-/// A sector with this component features planets.
+/// A [Sector] with this component features planets.
 #[derive(Component)]
-pub struct SectorPlanetsComponent {
+#[component(immutable)]
+pub struct SectorWithPlanets {
     pub planets: HashSet<PlanetEntity>,
 }
 
-impl SectorPlanetsComponent {
+impl SectorWithPlanets {
     /// Adds the given `planet_entity` and inserts the [InSector] component to it.
     pub fn add_planet(
         &mut self,

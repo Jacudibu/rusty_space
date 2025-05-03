@@ -1,4 +1,4 @@
-use crate::components::SectorComponent;
+use crate::components::Sector;
 use crate::utils::SectorEntity;
 use bevy::ecs::query::{QueryData, ReadOnlyQueryData};
 use bevy::platform::collections::HashSet;
@@ -32,7 +32,7 @@ impl PartialOrd for SearchResult {
 /// # Returns
 /// A Vec containing the [`SearchResult`]s matching the provided `search_fn`, ordered by their sector distance to `from`.
 pub fn surrounding_sector_search<'a, TSearchQueryData, TSearchFunction>(
-    all_sectors: &Query<&SectorComponent>,
+    all_sectors: &Query<&Sector>,
     from: SectorEntity,
     min_range: u8,
     max_range: u8,
@@ -83,7 +83,7 @@ where
 
 #[cfg(test)]
 mod test {
-    use crate::components::{SectorAsteroidComponent, SectorComponent};
+    use crate::components::{Sector, SectorWithAsteroids};
     use crate::pathfinding::surrounding_sector_search::surrounding_sector_search;
     use crate::persistence::local_hex_position::LocalHexPosition;
     use crate::persistence::{SectorAsteroidSaveData, SectorIdMap, UniverseSaveData};
@@ -95,7 +95,7 @@ mod test {
     const CENTER: Hex = Hex::new(0, 0);
     const RIGHT: Hex = Hex::new(1, 0);
 
-    fn has_asteroids(_: &SectorAsteroidComponent) -> bool {
+    fn has_asteroids(_: &SectorWithAsteroids) -> bool {
         true
     }
 
@@ -108,9 +108,9 @@ mod test {
     ) {
         world
             .run_system_once(
-                move |sectors: Query<&SectorComponent>,
+                move |sectors: Query<&Sector>,
                       sector_id_map: Res<SectorIdMap>,
-                      search_query: Query<&SectorAsteroidComponent>| {
+                      search_query: Query<&SectorWithAsteroids>| {
                     let from_entity = sector_id_map.id_to_entity()[&from_sector];
 
                     let result = surrounding_sector_search(
