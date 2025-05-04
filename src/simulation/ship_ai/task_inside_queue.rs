@@ -3,7 +3,8 @@ use crate::simulation::ship_ai::task_events::{AllTaskStartedEventWriters, TaskSt
 use crate::simulation::ship_ai::tasks;
 use crate::simulation::ship_ai::tasks::MoveToEntity;
 use crate::utils::{
-    AsteroidEntity, ConstructionSiteEntity, ExchangeWareData, PlanetEntity, ShipEntity, TypedEntity,
+    AsteroidEntity, CelestialEntity, ConstructionSiteEntity, ExchangeWareData, ShipEntity,
+    TypedEntity,
 };
 use crate::utils::{GateEntity, SectorEntity};
 use bevy::ecs::system::EntityCommands;
@@ -48,7 +49,7 @@ pub enum TaskInsideQueue {
         reserved: u32,
     },
     HarvestGas {
-        target: PlanetEntity,
+        target: CelestialEntity,
         /// The [ItemId] for the gas which is supposed to be harvested. We need this since Gas Giants may contain multiple gases.
         gas: ItemId,
     },

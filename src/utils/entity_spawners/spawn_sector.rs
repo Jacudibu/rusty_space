@@ -1,13 +1,11 @@
-use crate::components::{InSector, Sector, SectorWithAsteroids, SectorWithStar, SelectableEntity};
+use crate::SpriteHandles;
+use crate::components::{Sector, SectorWithAsteroids, SectorWithCelestials};
 use crate::game_data::AsteroidManifest;
-use crate::persistence::{AsteroidIdMap, PlanetIdMap, SectorFeatureSaveData};
-use crate::simulation::prelude::simulation_transform::SimulationScale;
+use crate::persistence::{AsteroidIdMap, CelestialIdMap, SectorFeatureSaveData};
 use crate::simulation::transform::simulation_transform::SimulationTransform;
-use crate::utils::entity_spawners::spawn_planet::spawn_planet;
-use crate::utils::{SectorEntity, StarEntity, entity_spawners};
-use crate::{SpriteHandles, components};
-use bevy::prelude::{Commands, Name, Sprite, Vec2};
-use common::constants;
+use crate::utils::entity_spawners::spawn_planet::spawn_celestial;
+use crate::utils::{SectorEntity, entity_spawners};
+use bevy::prelude::{Commands, Name, Vec2};
 use hexx::{Hex, HexLayout};
 
 pub fn spawn_sector(
@@ -17,7 +15,7 @@ pub fn spawn_sector(
     features: &SectorFeatureSaveData, // Create a feature list if we ever want to spawn sectors from something else than save data, but for now that's enough
     sprites: &SpriteHandles,
     asteroid_id_map: &mut AsteroidIdMap,
-    planet_id_map: &mut PlanetIdMap,
+    celestial_id_map: &mut CelestialIdMap,
     asteroid_manifest: &AsteroidManifest,
 ) -> SectorEntity {
     let position = layout.hex_to_world_pos(coordinate);
@@ -63,44 +61,20 @@ pub fn spawn_sector(
         commands.entity(sector_entity).insert(component);
     }
 
-    let mut gravitation_well_mass = None;
-    if let Some(star) = &features.star {
-        gravitation_well_mass = Some(star.mass);
-        let simulation_transform = SimulationTransform::from_translation(position);
+    if let Some(celestials) = &features.celestials {
+        let center_mass = Some(celestials.center_mass);
+        let mut component = SectorWithCelestials::new(celestials.center_mass);
 
-        let star_entity = commands
-            .spawn((
-                Name::new(format!("[{},{}] Star", coordinate.x, coordinate.y)),
-                components::Star::new(coordinate, star.mass),
-                InSector { sector },
-                SelectableEntity::Star,
-                Sprite::from_image(sprites.star.clone()),
-                simulation_transform.as_bevy_transform(constants::z_layers::PLANET_AND_STARS),
-                simulation_transform,
-                SimulationScale::default(),
-            ))
-            .id();
-
-        commands.entity(sector_entity).insert(SectorWithStar {
-            entity: StarEntity::from(star_entity),
-        });
-    }
-
-    if let Some(planets) = &features.planets {
-        let mut component = components::SectorWithPlanets {
-            planets: Default::default(),
-        };
-
-        for planet in planets {
-            spawn_planet(
+        for celestial_data in &celestials.celestials {
+            spawn_celestial(
                 commands,
                 &mut component,
-                planet_id_map,
+                celestial_id_map,
                 sprites,
-                planet,
+                celestial_data,
                 position,
                 sector,
-                gravitation_well_mass,
+                center_mass,
             );
         }
 

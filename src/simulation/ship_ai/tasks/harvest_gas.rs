@@ -3,7 +3,7 @@ use crate::game_data::{ItemId, ItemManifest};
 use crate::simulation::prelude::{AwaitingSignal, TaskComponent};
 use crate::simulation::ship_ai::task_events::TaskCompletedEvent;
 use crate::simulation::ship_ai::tasks::{finish_interaction, send_completion_events};
-use crate::utils::PlanetEntity;
+use crate::utils::CelestialEntity;
 use bevy::log::error;
 use bevy::prelude::{Component, Entity, EventReader, EventWriter, Query, Res};
 use common::constants;
@@ -20,7 +20,7 @@ enum TaskResult {
 #[derive(Component)]
 pub struct HarvestGas {
     /// The entity of the gas giant from which we are harvesting.
-    pub target: PlanetEntity,
+    pub target: CelestialEntity,
 
     /// The gas which we are collecting
     pub gas: ItemId,
@@ -36,7 +36,7 @@ impl TaskComponent for HarvestGas {
 }
 
 impl HarvestGas {
-    pub fn new(target: PlanetEntity, gas: ItemId, now: CurrentSimulationTimestamp) -> Self {
+    pub fn new(target: CelestialEntity, gas: ItemId, now: CurrentSimulationTimestamp) -> Self {
         Self {
             target,
             gas,

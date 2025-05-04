@@ -1,5 +1,15 @@
 use serde::{Deserialize, Serialize};
 
+/// Enum to differentiate between different classes of mass.
+#[derive(Copy, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(test, derive(Debug))]
+pub enum CelestialMass {
+    /// Mass given as [SolarMass]
+    SolarMass(SolarMass),
+    /// Mass given as [EarthMass]
+    EarthMass(EarthMass),
+}
+
 /// Solar Mass represented as integer.
 /// Stellar Mass = 0.01 Solar Masses. The smallest stars are about 0.08 Solar Masses. For anything smaller than that, use [`EarthMass`].
 /// The biggest known stars are 250 Solar Masses (with a theoretical maximum of 300 at the early stage of a universe)

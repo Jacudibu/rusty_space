@@ -1,18 +1,17 @@
 use crate::utils::{
-    AsteroidEntity, ConstructionSiteEntity, GateEntity, PlanetEntity, SectorEntity, ShipEntity,
-    StarEntity, StationEntity,
+    AsteroidEntity, CelestialEntity, ConstructionSiteEntity, GateEntity, SectorEntity, ShipEntity,
+    StationEntity,
 };
 use bevy::prelude::Entity;
 
 #[derive(Copy, Clone, Debug)]
 pub enum TypedEntity {
     Asteroid(AsteroidEntity),
+    Celestial(CelestialEntity),
     ConstructionSite(ConstructionSiteEntity),
     Gate(GateEntity),
-    Planet(PlanetEntity),
     Sector(SectorEntity),
     Ship(ShipEntity),
-    Star(StarEntity),
     Station(StationEntity),
     AnyWithInventory(Entity),
 }
@@ -21,12 +20,11 @@ impl From<TypedEntity> for Entity {
     fn from(value: TypedEntity) -> Self {
         match value {
             TypedEntity::Asteroid(inner) => inner.into(),
+            TypedEntity::Celestial(inner) => inner.into(),
             TypedEntity::ConstructionSite(inner) => inner.into(),
             TypedEntity::Gate(inner) => inner.into(),
-            TypedEntity::Planet(inner) => inner.into(),
             TypedEntity::Sector(inner) => inner.into(),
             TypedEntity::Ship(inner) => inner.into(),
-            TypedEntity::Star(inner) => inner.into(),
             TypedEntity::Station(inner) => inner.into(),
             TypedEntity::AnyWithInventory(inner) => inner,
         }
@@ -37,12 +35,11 @@ impl From<&TypedEntity> for Entity {
     fn from(value: &TypedEntity) -> Self {
         match value {
             TypedEntity::Asteroid(inner) => inner.into(),
+            TypedEntity::Celestial(inner) => inner.into(),
             TypedEntity::ConstructionSite(inner) => inner.into(),
             TypedEntity::Gate(inner) => inner.into(),
-            TypedEntity::Planet(inner) => inner.into(),
             TypedEntity::Sector(inner) => inner.into(),
             TypedEntity::Ship(inner) => inner.into(),
-            TypedEntity::Star(inner) => inner.into(),
             TypedEntity::Station(inner) => inner.into(),
             TypedEntity::AnyWithInventory(inner) => *inner,
         }
@@ -55,27 +52,21 @@ impl From<AsteroidEntity> for TypedEntity {
     }
 }
 
+impl From<CelestialEntity> for TypedEntity {
+    fn from(value: CelestialEntity) -> Self {
+        Self::Celestial(value)
+    }
+}
+
 impl From<GateEntity> for TypedEntity {
     fn from(value: GateEntity) -> Self {
         Self::Gate(value)
     }
 }
 
-impl From<PlanetEntity> for TypedEntity {
-    fn from(value: PlanetEntity) -> Self {
-        Self::Planet(value)
-    }
-}
-
 impl From<ShipEntity> for TypedEntity {
     fn from(value: ShipEntity) -> Self {
         Self::Ship(value)
-    }
-}
-
-impl From<StarEntity> for TypedEntity {
-    fn from(value: StarEntity) -> Self {
-        Self::Star(value)
     }
 }
 

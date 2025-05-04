@@ -1,7 +1,7 @@
 use crate::SpriteHandles;
 use crate::components::{
     BuyOrders, ConstantOrbit, ConstructionSite, ConstructionSiteStatus, InteractionQueue,
-    Inventory, Sector, SectorWithStar, SelectableEntity, SellOrders, Star, Station,
+    Inventory, Sector, SectorWithCelestials, SelectableEntity, SellOrders, Station,
 };
 use crate::game_data::{ConstructableModuleId, ItemId, ItemManifest, RecipeManifest};
 use crate::persistence::{
@@ -11,7 +11,7 @@ use crate::simulation::prelude::simulation_transform::SimulationScale;
 use crate::simulation::production::{ProductionFacility, Shipyard};
 use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::utils::polar_coordinates::PolarCoordinates;
-use crate::utils::{ConstructionSiteEntity, SectorPosition, StationEntity};
+use crate::utils::{CelestialMass, ConstructionSiteEntity, SectorPosition, StationEntity};
 use bevy::math::Vec2;
 use bevy::prelude::{Commands, Name, Query, Sprite, Transform, default};
 use bevy::sprite::Anchor;
@@ -109,8 +109,7 @@ impl ConstructionSiteSpawnData {
 #[allow(clippy::too_many_arguments)] // It's hopeless... :')
 pub fn spawn_station(
     commands: &mut Commands,
-    sector_query: &mut Query<(&mut Sector, Option<&SectorWithStar>)>,
-    star_query: &Query<&Star>,
+    sector_query: &mut Query<(&mut Sector, Option<&SectorWithCelestials>)>,
     station_id_map: &mut StationIdMap,
     construction_site_id_map: &mut ConstructionSiteIdMap,
     sprites: &SpriteHandles,
@@ -118,7 +117,7 @@ pub fn spawn_station(
     recipe_manifest: &RecipeManifest,
     data: StationSpawnData,
 ) -> StationEntity {
-    let (mut sector, star) = sector_query
+    let (mut sector, sector_with_celestials) = sector_query
         .get_mut(data.sector_position.sector.into())
         .unwrap();
 
@@ -173,7 +172,7 @@ pub fn spawn_station(
             &data.name,
             data.sector_position,
             entity.into(),
-            star.map(|x| star_query.get(x.entity.into()).unwrap()),
+            sector_with_celestials.map(|x| &x.center_mass),
             construction_site,
         )
     });
@@ -282,17 +281,13 @@ pub fn spawn_station(
         entity_commands.insert(shipyard);
     }
 
-    if let Some(star) = star {
-        let star = star_query.get(star.entity.into()).unwrap_or_else(|_| {
-            panic!(
-                "Unable to find star for sector with SectorStarComponent: {:?}",
-                sector.coordinate
-            )
-        });
-
+    if let Some(center_mass) = sector_with_celestials {
         let polar_coordinates =
             PolarCoordinates::from_cartesian(&data.sector_position.local_position);
-        entity_commands.insert(ConstantOrbit::new(polar_coordinates, &star.mass));
+        entity_commands.insert(ConstantOrbit::new(
+            polar_coordinates,
+            &center_mass.center_mass,
+        ));
     }
 
     entity_commands.insert(inventory);
@@ -315,7 +310,7 @@ fn spawn_construction_site(
     station_name: &str,
     sector_position: SectorPosition,
     station_entity: StationEntity,
-    star: Option<&Star>,
+    center_mass: Option<&CelestialMass>,
     data: ConstructionSiteSpawnData,
 ) -> ConstructionSiteEntity {
     let simulation_transform =
@@ -356,11 +351,11 @@ fn spawn_construction_site(
         ))
         .id();
 
-    if let Some(star) = star {
+    if let Some(center_mass) = center_mass {
         let polar_coordinates = PolarCoordinates::from_cartesian(&sector_position.local_position);
         commands
             .entity(entity)
-            .insert(ConstantOrbit::new(polar_coordinates, &star.mass));
+            .insert(ConstantOrbit::new(polar_coordinates, center_mass));
     }
 
     let entity = ConstructionSiteEntity::from(entity);

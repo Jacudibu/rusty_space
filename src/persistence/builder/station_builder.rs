@@ -1,5 +1,6 @@
 use crate::SpriteHandles;
-use crate::components::{BuyOrders, Sector, SectorWithStar, Star};
+use crate::components::celestials::Celestial;
+use crate::components::{BuyOrders, Sector, SectorWithCelestials};
 use crate::game_data::{
     ConstructableModuleId, ItemId, ItemManifest, ProductionModuleId, RecipeId, RecipeManifest,
     ShipyardModuleId,
@@ -22,11 +23,11 @@ use common::constants;
 pub struct Args<'w, 's> {
     commands: Commands<'w, 's>,
     sprites: Res<'w, SpriteHandles>,
-    sectors: Query<'w, 's, (&'static mut Sector, Option<&'static SectorWithStar>)>,
+    sectors: Query<'w, 's, (&'static mut Sector, Option<&'static SectorWithCelestials>)>,
     sector_id_map: Res<'w, SectorIdMap>,
     items: Res<'w, ItemManifest>,
     recipes: Res<'w, RecipeManifest>,
-    stars: Query<'w, 's, &'static Star>,
+    celestials: Query<'w, 's, &'static Celestial>,
 }
 
 type SaveData = SaveDataCollection<StationSaveData>;
@@ -214,7 +215,6 @@ impl StationSaveData {
         entity_spawners::spawn_station(
             &mut args.commands,
             &mut args.sectors,
-            &args.stars,
             station_id_map,
             construction_site_id_map,
             &args.sprites,

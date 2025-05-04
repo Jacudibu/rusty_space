@@ -3,8 +3,8 @@ use crate::game_data::{AsteroidDataId, AsteroidManifest};
 use crate::map_layout::MapLayout;
 use crate::persistence::data::v1::{SaveDataCollection, SectorAsteroidSaveData, SectorSaveData};
 use crate::persistence::{
-    AsteroidIdMap, AsteroidSaveData, PersistentAsteroidId, PlanetIdMap, SectorFeatureSaveData,
-    SectorIdMap, SectorPlanetSaveData, SectorStarSaveData,
+    AsteroidIdMap, AsteroidSaveData, CelestialIdMap, PersistentAsteroidId, SectorCelestialSaveData,
+    SectorCelestialsSaveData, SectorFeatureSaveData, SectorIdMap,
 };
 use crate::utils::{SectorEntity, UniverseSeed, entity_spawners};
 use bevy::ecs::system::SystemParam;
@@ -29,7 +29,7 @@ type SaveData = SaveDataCollection<SectorSaveData>;
 pub fn spawn_all(data: Res<SaveData>, mut args: Args) {
     let mut sector_id_map = SectorIdMap::new();
     let mut asteroid_id_map = AsteroidIdMap::new();
-    let mut planet_id_map = PlanetIdMap::new();
+    let mut planet_id_map = CelestialIdMap::new();
     for builder in &data.data {
         let coordinate = builder.coordinate;
         let entity = builder.build(&mut args, &mut asteroid_id_map, &mut planet_id_map);
@@ -57,7 +57,7 @@ impl SectorSaveData {
         &self,
         args: &mut Args,
         asteroid_id_map: &mut AsteroidIdMap,
-        planet_id_map: &mut PlanetIdMap,
+        planet_id_map: &mut CelestialIdMap,
     ) -> SectorEntity {
         entity_spawners::spawn_sector(
             &mut args.commands,
@@ -71,22 +71,20 @@ impl SectorSaveData {
         )
     }
 
-    pub fn with_star(&mut self, data: SectorStarSaveData) -> &mut Self {
-        self.features.star = Some(data);
+    pub fn with_celestial(&mut self, celestial: SectorCelestialSaveData) -> &mut Self {
+        if let Some(data) = &mut self.features.celestials {
+            data.celestials.push(celestial);
+        } else {
+            self.features.celestials = Some(SectorCelestialsSaveData {
+                center_mass: celestial.mass,
+                celestials: vec![celestial],
+            });
+        }
         self
     }
 
     pub fn with_asteroids(&mut self, data: SectorAsteroidSaveData) -> &mut Self {
         self.features.asteroids = Some(data);
-        self
-    }
-
-    pub fn with_planet(&mut self, data: SectorPlanetSaveData) -> &mut Self {
-        if let Some(planets) = &mut self.features.planets {
-            planets.push(data);
-        } else {
-            self.features.planets = Some(vec![data]);
-        }
         self
     }
 }

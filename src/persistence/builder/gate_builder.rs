@@ -1,5 +1,6 @@
 use crate::SpriteHandles;
-use crate::components::{Sector, SectorWithStar, Star};
+use crate::components::celestials::Celestial;
+use crate::components::{Sector, SectorWithCelestials};
 use crate::persistence::data::v1::*;
 use crate::persistence::local_hex_position::LocalHexPosition;
 use crate::persistence::{GateIdMap, PersistentGateId, SectorIdMap};
@@ -11,8 +12,8 @@ use bevy::prelude::{Commands, Query, Res};
 pub struct Args<'w, 's> {
     commands: Commands<'w, 's>,
     sprites: Res<'w, SpriteHandles>,
-    sectors: Query<'w, 's, (&'static mut Sector, Option<&'static SectorWithStar>)>,
-    stars: Query<'w, 's, &'static Star>,
+    sectors: Query<'w, 's, (&'static mut Sector, Option<&'static SectorWithCelestials>)>,
+    celestials: Query<'w, 's, &'static Celestial>,
 
     sector_id_map: Res<'w, SectorIdMap>,
 }
@@ -49,7 +50,6 @@ impl GatePairSaveData {
             &mut args.commands,
             gate_id_map,
             &mut args.sectors,
-            &args.stars,
             &args.sprites,
             self.from_id,
             self.from_position.to_sector_position(&args.sector_id_map),

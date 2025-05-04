@@ -2,11 +2,11 @@ use crate::game_data::{AsteroidManifest, CRYSTAL_ASTEROID_ID, HYDROGEN_ITEM_ID, 
 use crate::map_layout::MapLayout;
 use crate::persistence::test_universe::coordinates;
 use crate::persistence::{
-    PlanetKindSaveData, SaveDataCollection, SectorAsteroidSaveData, SectorPlanetSaveData,
-    SectorSaveData, SectorStarSaveData,
+    CelestialKindSaveData, SaveDataCollection, SectorAsteroidSaveData, SectorCelestialSaveData,
+    SectorSaveData,
 };
-use crate::utils::UniverseSeed;
 use crate::utils::polar_coordinates::PolarCoordinates;
+use crate::utils::{CelestialMass, SolarMass, UniverseSeed};
 use bevy::math::Vec2;
 use common::constants;
 
@@ -21,33 +21,43 @@ pub fn create_test_data(
 
     sectors
         .add(coordinates::RIGHT)
-        .with_star(SectorStarSaveData::new())
-        .with_planet(SectorPlanetSaveData::new(
+        .with_celestial(
+            SectorCelestialSaveData::new(
+                CelestialKindSaveData::Star,
+                PolarCoordinates {
+                    radial_distance: 0.0,
+                    angle: 0.0,
+                }
+                .to_cartesian(),
+            )
+            .with_mass(CelestialMass::SolarMass(SolarMass::from_solar_mass(1, 0))),
+        )
+        .with_celestial(SectorCelestialSaveData::new(
+            CelestialKindSaveData::Terrestrial,
             PolarCoordinates {
                 radial_distance: 120.0,
                 angle: 100.0,
             }
             .to_cartesian(),
         ))
-        .with_planet(SectorPlanetSaveData::new(
+        .with_celestial(SectorCelestialSaveData::new(
+            CelestialKindSaveData::Terrestrial,
             PolarCoordinates {
                 radial_distance: 240.0,
                 angle: 210.0,
             }
             .to_cartesian(),
         ))
-        .with_planet(
-            SectorPlanetSaveData::new(
-                PolarCoordinates {
-                    radial_distance: 360.0,
-                    angle: 0.0,
-                }
-                .to_cartesian(),
-            )
-            .with_kind(PlanetKindSaveData::GasGiant {
+        .with_celestial(SectorCelestialSaveData::new(
+            CelestialKindSaveData::GasGiant {
                 resources: vec![HYDROGEN_ITEM_ID],
-            }),
-        );
+            },
+            PolarCoordinates {
+                radial_distance: 360.0,
+                angle: 0.0,
+            }
+            .to_cartesian(),
+        ));
 
     sectors.add(coordinates::TOP_RIGHT).with_asteroids(
         SectorAsteroidSaveData::new()

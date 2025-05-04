@@ -1,7 +1,7 @@
 use crate::SpriteHandles;
+use crate::components::celestials::{Planet, Star};
 use crate::components::{
-    BuyOrderData, BuyOrders, ConstantOrbit, Gate, Planet, Sector, SectorWithPlanets,
-    SectorWithStar, Star, Station,
+    BuyOrderData, BuyOrders, ConstantOrbit, Gate, Sector, SectorWithCelestials, Station,
 };
 use crate::entity_selection::MouseCursor;
 use crate::game_data::{
@@ -250,10 +250,9 @@ fn update_preview_entity(
 #[allow(clippy::too_many_arguments)]
 fn spawn_construction_site_on_mouse_click(
     mut commands: Commands,
-    mut sector_query: Query<(&mut Sector, Option<&SectorWithStar>)>,
+    mut sector_query: Query<(&mut Sector, Option<&SectorWithCelestials>)>,
     mut station_id_map: ResMut<StationIdMap>,
     mut construction_site_id_map: ResMut<ConstructionSiteIdMap>,
-    stars: Query<&Star>,
     sprites: Res<SpriteHandles>,
     production_module_manifest: Res<ProductionModuleManifest>,
     shipyard_module_manifest: Res<ShipyardModuleManifest>,
@@ -332,7 +331,6 @@ fn spawn_construction_site_on_mouse_click(
     spawn_station(
         &mut commands,
         &mut sector_query,
-        &stars,
         &mut station_id_map,
         &mut construction_site_id_map,
         &sprites,
@@ -368,7 +366,7 @@ struct ConstructionBlockingItemFilter {
 fn update_target_position(
     mut preview_target: ResMut<PreviewTargetPosition>,
     mouse_cursor: Res<MouseCursor>,
-    all_sectors: Query<(&Sector, Option<&SectorWithPlanets>, Option<&SectorWithStar>)>,
+    all_sectors: Query<(&Sector, Option<&SectorWithCelestials>)>,
     orbiting_objects: Query<&ConstantOrbit>,
     potentially_blocking_transforms: Query<&Transform, ConstructionBlockingItemFilter>,
     map_layout: Res<MapLayout>,
@@ -386,14 +384,14 @@ fn update_target_position(
         return;
     };
 
-    let (sector, sector_planets, sector_star) = all_sectors
+    let (sector, sector_with_celestials) = all_sectors
         .get(sector_pos.sector_position.sector.into())
         .expect("Sector Position within mouse sector pos should always be valid!");
 
-    let blocking_entities = collect_blocking_sector_entities(sector, sector_planets, sector_star);
+    let blocking_entities = collect_blocking_sector_entities(sector, sector_with_celestials);
 
     // TODO: Add a definitive marker component for orbit mechanics rather than just checking the star. That way we could easily orbit other things in the future!
-    let has_orbit_mechanics = sector_star.is_some();
+    let has_orbit_mechanics = sector_with_celestials.is_some();
     let local_target_pos = if has_orbit_mechanics {
         let polar = calculate_snapped_polar_coordinates(
             &blocking_entities,
@@ -426,25 +424,22 @@ fn update_target_position(
 
 fn collect_blocking_sector_entities(
     sector: &Sector,
-    sector_planets: Option<&SectorWithPlanets>,
-    sector_star: Option<&SectorWithStar>,
+    sector_celestials: Option<&SectorWithCelestials>,
 ) -> Vec<Entity> {
-    let mut sector_celestials: Vec<Entity> = sector
+    let mut blocking_celestials: Vec<Entity> = sector
         .stations
         .iter()
         .map(Entity::from)
         .chain(sector.gates.iter().map(|x| Entity::from(x.1.from)))
         .collect();
 
-    if let Some(sector_planets) = sector_planets {
-        sector_celestials.extend(sector_planets.planets.iter().map(Entity::from));
+    if let Some(sector_celestials) = sector_celestials {
+        blocking_celestials.extend(sector_celestials.planets.iter().map(Entity::from));
+        blocking_celestials.extend(sector_celestials.stars.iter().map(Entity::from));
+        blocking_celestials.extend(sector_celestials.gas_giants.iter().map(Entity::from));
     }
 
-    if let Some(sector_star) = sector_star {
-        sector_celestials.push(sector_star.entity.into());
-    }
-
-    sector_celestials
+    blocking_celestials
 }
 
 /// Calculates the polar coordinates for our new station within a sector with orbit mechanics

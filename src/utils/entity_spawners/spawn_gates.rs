@@ -1,14 +1,14 @@
 use crate::SpriteHandles;
 use crate::components::{
-    ConstantOrbit, Gate, GateConnection, MovingGateConnection, Sector, SectorWithStar,
-    SelectableEntity, Star,
+    ConstantOrbit, Gate, GateConnection, MovingGateConnection, Sector, SectorWithCelestials,
+    SelectableEntity,
 };
 use crate::persistence::{GateIdMap, PersistentGateId};
 use crate::simulation::prelude::simulation_transform::SimulationScale;
 use crate::simulation::transform::simulation_transform::SimulationTransform;
-use crate::utils::GateEntity;
 use crate::utils::SectorPosition;
 use crate::utils::polar_coordinates::PolarCoordinates;
+use crate::utils::{CelestialMass, GateEntity};
 use bevy::prelude::{Commands, CubicCurve, Name, Query, Sprite, Vec2};
 use common::constants;
 
@@ -16,15 +16,17 @@ use common::constants;
 pub fn spawn_gate_pair(
     commands: &mut Commands,
     gate_id_map: &mut GateIdMap,
-    sectors: &mut Query<(&mut Sector, Option<&SectorWithStar>)>,
-    stars: &Query<&Star>,
+    sectors: &mut Query<(&mut Sector, Option<&SectorWithCelestials>)>,
     sprites: &SpriteHandles,
     from_id: PersistentGateId,
     from_pos: SectorPosition,
     to_id: PersistentGateId,
     to_pos: SectorPosition,
 ) {
-    let [(mut from_sector, from_star), (mut to_sector, to_star)] = sectors
+    let [
+        (mut from_sector, from_celestial),
+        (mut to_sector, to_celestial),
+    ] = sectors
         .get_many_mut([from_pos.sector.into(), to_pos.sector.into()])
         .unwrap();
 
@@ -44,7 +46,7 @@ pub fn spawn_gate_pair(
         &mut from_sector,
         &to_sector,
         from_curve.clone(),
-        from_star.map(|x| stars.get(x.entity.into()).unwrap()),
+        from_celestial.map(|x| &x.center_mass),
     );
     let to_gate = spawn_gate(
         commands,
@@ -55,7 +57,7 @@ pub fn spawn_gate_pair(
         &mut to_sector,
         &from_sector,
         to_curve,
-        to_star.map(|x| stars.get(x.entity.into()).unwrap()),
+        to_celestial.map(|x| &x.center_mass),
     );
 
     spawn_gate_connection(
@@ -63,7 +65,7 @@ pub fn spawn_gate_pair(
         &from_curve,
         from_gate,
         to_gate,
-        from_star.is_some() || to_star.is_some(),
+        from_celestial.is_some() || to_celestial.is_some(),
     );
 
     from_sector.add_gate(commands, from_pos.sector, from_gate, to_pos.sector, to_gate);
@@ -94,7 +96,7 @@ fn spawn_gate(
     from: &mut Sector,
     to: &Sector,
     ship_curve: CubicCurve<Vec2>,
-    star: Option<&Star>,
+    center_mass: Option<&CelestialMass>,
 ) -> GateEntity {
     let simulation_transform =
         SimulationTransform::from_translation(from.world_pos + pos.local_position);
@@ -111,9 +113,9 @@ fn spawn_gate(
         SimulationScale::default(),
     ));
 
-    if let Some(star) = star {
+    if let Some(center_mass) = center_mass {
         let polar_coordinates = PolarCoordinates::from_cartesian(&pos.local_position);
-        entity_commands.insert(ConstantOrbit::new(polar_coordinates, &star.mass));
+        entity_commands.insert(ConstantOrbit::new(polar_coordinates, center_mass));
     }
 
     let entity = entity_commands.id();

@@ -9,7 +9,7 @@ use bevy::prelude::Component;
 pub enum SelectableEntity {
     Asteroid(AsteroidDataId),
     Gate,
-    Planet,
+    Celestial,
     Ship(ShipConfigId),
     Star,
     Station,
@@ -28,7 +28,7 @@ impl SelectableEntity {
         match self {
             SelectableEntity::Asteroid(_) => RADIUS_ASTEROID,
             SelectableEntity::Gate => RADIUS_GATE,
-            SelectableEntity::Planet => RADIUS_PLANET,
+            SelectableEntity::Celestial => RADIUS_PLANET,
             SelectableEntity::Ship(_) => RADIUS_SHIP,
             SelectableEntity::Star => RADIUS_STAR,
             SelectableEntity::Station => RADIUS_STATION,

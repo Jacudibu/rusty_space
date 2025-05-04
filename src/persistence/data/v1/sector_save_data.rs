@@ -1,10 +1,11 @@
 use crate::game_data::{AsteroidDataId, ItemId};
-use crate::persistence::{PersistentAsteroidId, SectorPlanetSaveData};
+use crate::persistence::{PersistentAsteroidId, PersistentCelestialId};
 use crate::simulation::prelude::SimulationTimestamp;
-use crate::utils::SolarMass;
+use crate::utils::CelestialMass;
 use bevy::math::Vec2;
 use hexx::Hex;
 use serde::{Deserialize, Serialize};
+use std::fmt::{Display, Formatter};
 
 #[derive(Serialize, Deserialize)]
 #[cfg_attr(test, derive(Clone, Debug, PartialEq))]
@@ -42,17 +43,45 @@ pub struct SectorAsteroidSaveData {
 }
 
 #[derive(Serialize, Deserialize)]
+#[cfg_attr(test, derive(Clone, Debug, PartialEq))]
+pub struct SectorCelestialSaveData {
+    pub id: PersistentCelestialId,
+    pub kind: CelestialKindSaveData,
+    pub name: String,
+    pub mass: CelestialMass,
+    pub local_position: Vec2,
+}
+
+#[derive(Serialize, Deserialize)]
+#[cfg_attr(test, derive(Clone, Debug, PartialEq))]
+pub enum CelestialKindSaveData {
+    Star,
+    Terrestrial,
+    GasGiant { resources: Vec<ItemId> },
+}
+
+impl Display for CelestialKindSaveData {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            CelestialKindSaveData::Star => f.write_str("Star"),
+            CelestialKindSaveData::Terrestrial => f.write_str("Planet"),
+            CelestialKindSaveData::GasGiant { .. } => f.write_str("Gas Giant"),
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize)]
 #[cfg_attr(test, derive(Debug, PartialEq, Clone))]
-pub struct SectorStarSaveData {
-    pub mass: SolarMass,
+pub struct SectorCelestialsSaveData {
+    pub center_mass: CelestialMass,
+    pub celestials: Vec<SectorCelestialSaveData>,
 }
 
 #[derive(Serialize, Deserialize, Default)]
 #[cfg_attr(test, derive(Debug, PartialEq, Clone))]
 pub struct SectorFeatureSaveData {
-    pub star: Option<SectorStarSaveData>,
     pub asteroids: Option<SectorAsteroidSaveData>,
-    pub planets: Option<Vec<SectorPlanetSaveData>>,
+    pub celestials: Option<SectorCelestialsSaveData>,
 }
 
 #[derive(Serialize, Deserialize)]

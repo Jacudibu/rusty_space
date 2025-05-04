@@ -1,4 +1,4 @@
-use crate::utils::SolarMass;
+use crate::utils::CelestialMass;
 use crate::utils::polar_coordinates::PolarCoordinates;
 use bevy::prelude::Component;
 use common::constants;
@@ -14,7 +14,7 @@ pub struct ConstantOrbit {
 
 impl ConstantOrbit {
     #[inline]
-    pub fn new(polar_coordinates: PolarCoordinates, center_mass: &SolarMass) -> Self {
+    pub fn new(polar_coordinates: PolarCoordinates, center_mass: &CelestialMass) -> Self {
         Self {
             velocity: Self::calculate_orbit_velocity(
                 polar_coordinates.radial_distance,
@@ -24,9 +24,16 @@ impl ConstantOrbit {
         }
     }
 
-    fn calculate_orbit_velocity(orbit_radius: f32, center_mass: &SolarMass) -> f32 {
+    fn calculate_orbit_velocity(orbit_radius: f32, center_mass: &CelestialMass) -> f32 {
         // Instead of using the true gravitational constant, we can just adjust this value for our simulation until it "feels" right.
-        ((constants::GRAVITATIONAL_CONSTANT * center_mass.inner() as f32) / orbit_radius).sqrt()
+        let center_mass = match center_mass {
+            CelestialMass::SolarMass(mass) => mass.inner() as f32,
+            CelestialMass::EarthMass(_mass) => {
+                todo!("Super slow!")
+            }
+        };
+
+        ((constants::GRAVITATIONAL_CONSTANT * center_mass) / orbit_radius).sqrt()
     }
 
     /// Moves this celestial body forward in its rotational path.

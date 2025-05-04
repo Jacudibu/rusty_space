@@ -1,8 +1,8 @@
 //! This Module provides builder methods for the latest persistent data version.
 //! Can be used for hard-coded maps during debugging and tutorials or tests.
 
+pub mod celestial_builder;
 pub mod gate_builder;
-pub mod planet_builder;
 pub mod sector_builder;
 pub mod ship_builder;
 pub mod station_builder;
@@ -12,12 +12,12 @@ pub use crate::persistence::loading_plugin::UniverseSaveDataLoadingOnStartupPlug
 #[cfg(test)]
 mod test_helpers {
     use super::*;
+    use crate::SpriteHandles;
     use crate::game_data::GameData;
     use crate::map_layout::MapLayout;
     use crate::persistence::data::v1::UniverseSaveData;
     use crate::session_data::SessionData;
     use crate::simulation::precomputed_orbit_directions::PrecomputedOrbitDirections;
-    use crate::SpriteHandles;
     use bevy::prelude::*;
 
     impl UniverseSaveData {

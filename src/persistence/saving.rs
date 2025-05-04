@@ -1,5 +1,6 @@
+use crate::components::celestials::Star;
 use crate::components::{
-    Asteroid, BuyOrders, Gate, InSector, Inventory, Sector, SellOrders, Ship, Star, Station,
+    Asteroid, BuyOrders, Gate, InSector, Inventory, Sector, SellOrders, Ship, Station,
 };
 use crate::persistence::AllEntityIdMaps;
 use crate::persistence::data::v1::*;

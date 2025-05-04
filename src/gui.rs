@@ -92,7 +92,7 @@ impl SelectableCount {
         match selectable_entity {
             SelectableEntity::Asteroid(id) => *self.asteroids.get_mut(id).unwrap() += 1,
             SelectableEntity::Gate => self.gates += 1,
-            SelectableEntity::Planet => self.planets += 1,
+            SelectableEntity::Celestial => self.planets += 1,
             SelectableEntity::Ship(id) => *self.ships.get_mut(id).unwrap() += 1,
             SelectableEntity::Star => self.stars += 1,
             SelectableEntity::Station => self.stations += 1,
@@ -125,7 +125,7 @@ impl UiIcons {
         match selectable {
             SelectableEntity::Asteroid(id) => self.asteroids[id],
             SelectableEntity::Gate => self.gate,
-            SelectableEntity::Planet => self.planet,
+            SelectableEntity::Celestial => self.planet,
             SelectableEntity::Ship(id) => self.ships[id],
             SelectableEntity::Star => self.star,
             SelectableEntity::Station => self.station,

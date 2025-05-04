@@ -1,4 +1,5 @@
-use crate::components::{Asteroid, ConstructionSite, Gate, Planet, Ship, Station};
+use crate::components::celestials::Celestial;
+use crate::components::{Asteroid, ConstructionSite, Gate, Ship, Station};
 use bevy::prelude::Component;
 use hexx::Hex;
 use serde::{Deserialize, Serialize};
@@ -8,14 +9,15 @@ use std::hash::{Hash, Hasher};
 use std::marker::PhantomData;
 use std::sync::atomic::{AtomicU32, Ordering};
 
-/// A unique ID that's the same between session and across different clients in multiplayer sessions.
+/// A unique ID used to identify all entities relevant for the simulation.
+/// It's supposed to always remain the same between sessions and across different clients in multiplayer sessions.
 /// Should be used for persistence and networking.
 #[derive(Serialize, Deserialize)]
 #[cfg_attr(test, derive(Clone, Debug, PartialEq))]
 pub enum PersistentEntityId {
     Asteroid(PersistentAsteroidId),
     Gate(PersistentGateId),
-    Planet(PersistentPlanetId),
+    Celestial(PersistentCelestialId),
     Ship(PersistentShipId),
     Station(PersistentStationId),
     ConstructionSite(PersistentConstructionSiteId),
@@ -67,10 +69,10 @@ pub type PersistentGateId = TypedPersistentEntityId<Gate>;
 impl_traits!(PersistentGateId, Gate);
 impl_typed_persistent_entity_id!(Gate, NEXT_GATE_ID);
 
-/// A [PersistentEntityId] for [Planet]s.
-pub type PersistentPlanetId = TypedPersistentEntityId<Planet>;
-impl_traits!(PersistentPlanetId, Planet);
-impl_typed_persistent_entity_id!(Planet, NEXT_PLANET_ID);
+/// A [PersistentEntityId] for [Celestial]s.
+pub type PersistentCelestialId = TypedPersistentEntityId<Celestial>;
+impl_traits!(PersistentCelestialId, Celestial);
+impl_typed_persistent_entity_id!(Celestial, NEXT_PLANET_ID);
 
 /// A [PersistentEntityId] for [Ship]s.
 pub type PersistentShipId = TypedPersistentEntityId<Ship>;

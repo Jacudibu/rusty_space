@@ -31,7 +31,7 @@ impl TaskSaveData {
                 reserved: *reserved,
             },
             TaskInsideQueue::HarvestGas { target, gas } => Self::HarvestGas {
-                target: all_entity_id_maps.planets.entity_to_id()[target],
+                target: all_entity_id_maps.celestials.entity_to_id()[target],
                 gas: *gas,
             },
             TaskInsideQueue::DockAtEntity { .. } => todo!(),

@@ -1,63 +1,88 @@
-use crate::components::{ConstantOrbit, Planet, SelectableEntity};
-use crate::persistence::{PlanetIdMap, PlanetKindSaveData, SectorPlanetSaveData};
+use crate::components::celestials::{Celestial, GasGiant, Planet, Star};
+use crate::components::{ConstantOrbit, SectorWithCelestials, SelectableEntity};
+use crate::persistence::{CelestialIdMap, CelestialKindSaveData, SectorCelestialSaveData};
 use crate::simulation::prelude::simulation_transform::SimulationScale;
 use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::utils::polar_coordinates::PolarCoordinates;
-use crate::utils::{PlanetEntity, SectorEntity, SolarMass};
+use crate::utils::{CelestialEntity, CelestialMass, SectorEntity};
 use crate::{SpriteHandles, components};
 use bevy::math::Vec2;
-use bevy::prelude::{Commands, Name, Rot2};
+use bevy::prelude::{Commands, Handle, Image, Name, Rot2};
 use bevy::sprite::Sprite;
 use common::constants;
 
+fn get_sprite(kind: &CelestialKindSaveData, sprites: &SpriteHandles) -> Handle<Image> {
+    match kind {
+        CelestialKindSaveData::Star => sprites.star.clone(),
+        CelestialKindSaveData::Terrestrial => sprites.planet.clone(),
+        CelestialKindSaveData::GasGiant { .. } => sprites.planet.clone(),
+    }
+}
+
 #[allow(clippy::too_many_arguments)]
-pub fn spawn_planet(
+pub fn spawn_celestial(
     commands: &mut Commands,
-    sector_planet_component: &mut components::SectorWithPlanets,
-    planet_id_map: &mut PlanetIdMap,
+    sector_with_celestials: &mut SectorWithCelestials,
+    celestial_id_map: &mut CelestialIdMap,
     sprites: &SpriteHandles,
-    planet_data: &SectorPlanetSaveData,
+    celestial_data: &SectorCelestialSaveData,
     sector_pos: Vec2,
     sector_entity: SectorEntity,
-    orbit_mass: Option<SolarMass>,
+    orbit_mass: Option<CelestialMass>,
 ) {
-    let planet = Planet::new(planet_data.id, planet_data.mass);
-
     let simulation_transform =
-        SimulationTransform::new(sector_pos + planet_data.local_position, Rot2::IDENTITY);
+        SimulationTransform::new(sector_pos + celestial_data.local_position, Rot2::IDENTITY);
 
     let entity = commands
         .spawn((
-            Name::new(planet_data.name.clone()),
-            SelectableEntity::Planet,
-            Sprite::from_image(sprites.planet.clone()),
+            Name::new(celestial_data.name.clone()),
+            Sprite::from_image(get_sprite(&celestial_data.kind, sprites)),
             simulation_transform.as_bevy_transform(constants::z_layers::PLANET_AND_STARS),
             simulation_transform,
             SimulationScale::default(),
-            planet,
+            Celestial {
+                mass: celestial_data.mass,
+                id: celestial_data.id,
+            },
         ))
         .id();
 
     if let Some(orbit_mass) = orbit_mass {
-        let polar_coordinates = PolarCoordinates::from_cartesian(&planet_data.local_position);
-        commands
-            .entity(entity)
-            .insert(ConstantOrbit::new(polar_coordinates, &orbit_mass));
+        // Prevent the center object from receiving unnecessary orbit logic
+        if celestial_data.local_position.length_squared() > 5.0 {
+            let polar_coordinates =
+                PolarCoordinates::from_cartesian(&celestial_data.local_position);
+            commands
+                .entity(entity)
+                .insert(ConstantOrbit::new(polar_coordinates, &orbit_mass));
+        }
     }
 
-    match &planet_data.kind {
-        PlanetKindSaveData::Terrestrial => {}
-        PlanetKindSaveData::GasGiant { resources } => {
+    match &celestial_data.kind {
+        CelestialKindSaveData::Star => {
+            commands
+                .entity(entity)
+                .insert((Star {}, SelectableEntity::Star));
+            sector_with_celestials.add_star(commands, sector_entity, entity.into());
+        }
+        CelestialKindSaveData::Terrestrial => {
+            commands
+                .entity(entity)
+                .insert((Planet {}, SelectableEntity::Celestial));
+            sector_with_celestials.add_planet(commands, sector_entity, entity.into());
+        }
+        CelestialKindSaveData::GasGiant { resources } => {
             commands.entity(entity).insert((
-                components::GasGiant {
+                GasGiant {
                     resources: resources.clone(),
                 },
+                SelectableEntity::Celestial,
                 components::InteractionQueue::new(constants::SIMULTANEOUS_PLANET_INTERACTIONS),
             ));
+            sector_with_celestials.add_gas_giant(commands, sector_entity, entity.into());
         }
     };
 
-    let planet_entity = PlanetEntity::from(entity);
-    planet_id_map.insert(planet_data.id, planet_entity);
-    sector_planet_component.add_planet(commands, sector_entity, planet_entity);
+    let celestial_entity = CelestialEntity::from(entity);
+    celestial_id_map.insert(celestial_data.id, celestial_entity);
 }

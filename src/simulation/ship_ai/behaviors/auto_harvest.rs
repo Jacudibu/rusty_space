@@ -1,4 +1,5 @@
-use crate::components::{BuyOrders, GasGiant, InSector, Inventory, Sector, SectorWithPlanets};
+use crate::components::celestials::GasGiant;
+use crate::components::{BuyOrders, InSector, Inventory, Sector, SectorWithCelestials};
 use crate::game_data::{ItemId, ItemManifest};
 use crate::pathfinding;
 use crate::simulation::prelude::{SimulationTime, SimulationTimestamp};
@@ -30,7 +31,7 @@ pub fn handle_idle_ships(
     >,
     buy_orders: Query<(Entity, &mut BuyOrders, &InSector)>,
     mut inventories: Query<&mut Inventory>,
-    all_sectors_with_gas_giants: Query<&SectorWithPlanets>,
+    all_sectors_with_gas_giants: Query<&SectorWithCelestials>,
     all_sectors: Query<&Sector>,
     all_gas_giants: Query<&GasGiant>,
     all_transforms: Query<&SimulationTransform>,
@@ -72,12 +73,12 @@ pub fn handle_idle_ships(
                             })
                         {
                             queue.push_back(TaskInsideQueue::MoveToEntity {
-                                target: TypedEntity::Planet(*closest_planet),
+                                target: TypedEntity::Celestial(*closest_planet),
                                 stop_at_target: true,
                                 distance_to_target: 0.0,
                             });
                             queue.push_back(TaskInsideQueue::RequestAccess {
-                                target: TypedEntity::Planet(*closest_planet),
+                                target: TypedEntity::Celestial(*closest_planet),
                             });
                             queue.push_back(TaskInsideQueue::HarvestGas {
                                 target: *closest_planet,
@@ -170,7 +171,7 @@ pub fn handle_idle_ships(
 #[must_use]
 fn find_nearby_sector_with_gas_giants(
     all_gas_giants: &Query<&GasGiant>,
-    all_sectors_with_planets: &Query<&SectorWithPlanets>,
+    all_sectors_with_planets: &Query<&SectorWithCelestials>,
     all_sectors: &Query<&Sector>,
     in_sector: &InSector,
     gas: &ItemId,

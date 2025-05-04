@@ -20,7 +20,7 @@ pub fn on_selection_changed(
                     asteroid_manifest.get_by_ref(id).unwrap().sprite.clone()
                 }
                 SelectableEntity::Gate => sprite_handles.gate.clone(),
-                SelectableEntity::Planet => sprite_handles.planet.clone(),
+                SelectableEntity::Celestial => sprite_handles.planet.clone(),
                 SelectableEntity::Ship(id) => ship_configs.get_by_id(id).unwrap().sprite.clone(),
                 SelectableEntity::Star => sprite_handles.star.clone(),
                 SelectableEntity::Station => sprite_handles.station.clone(),
@@ -37,7 +37,7 @@ pub fn on_selection_changed(
                     .sprite_selected
                     .clone(),
                 SelectableEntity::Gate => sprite_handles.gate_selected.clone(),
-                SelectableEntity::Planet => sprite_handles.planet_selected.clone(),
+                SelectableEntity::Celestial => sprite_handles.planet_selected.clone(),
                 SelectableEntity::Ship(id) => {
                     ship_configs.get_by_id(id).unwrap().sprite_selected.clone()
                 }
