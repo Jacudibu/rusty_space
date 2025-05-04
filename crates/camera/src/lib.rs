@@ -11,7 +11,7 @@ mod zooming;
 pub use camera_settings::CameraSettings;
 
 use crate::main_camera::MainCamera;
-use common::states::{AppState, MouseCursorOverUiState};
+use common::states::{ApplicationState, MouseCursorOverUiState};
 
 /// Inserts the main camera and offers ways to control it.
 /// May be configured by editing [CameraSettings].
@@ -19,8 +19,8 @@ pub struct CameraPlugin;
 impl Plugin for CameraPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<CameraSettings>();
-        app.add_systems(OnEnter(AppState::MainGame), spawn_camera);
-        app.add_systems(OnExit(AppState::MainGame), despawn_camera);
+        app.add_systems(OnEnter(ApplicationState::InGame), spawn_camera);
+        app.add_systems(OnExit(ApplicationState::InGame), despawn_camera);
         app.add_systems(
             Update,
             (

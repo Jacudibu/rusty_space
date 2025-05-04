@@ -1,12 +1,12 @@
 use crate::constants;
 use crate::simulation::precomputed_orbit_directions::PrecomputedOrbitDirections;
 use crate::simulation::*;
-use crate::states::{ApplicationState, SimulationState};
 use bevy::prelude::{
     App, ButtonInput, IntoScheduleConfigs, KeyCode, NextState, Plugin, Res, ResMut, State, Time,
     Update, Virtual, in_state,
 };
 use bevy::time::Fixed;
+use common::states::{ApplicationState, SimulationState};
 
 pub struct SimulationPlugin;
 impl Plugin for SimulationPlugin {

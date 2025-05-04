@@ -2,10 +2,9 @@ use crate::game_data::GameData;
 use bevy::DefaultPlugins;
 use bevy::asset::AssetServer;
 use bevy::prelude::{
-    App, AppExtStates, Assets, Commands, Handle, Image, ImagePlugin, PluginGroup, Res, ResMut,
-    Resource, Startup, Window, WindowPlugin,
+    App, Assets, Commands, Handle, Image, ImagePlugin, PluginGroup, Res, ResMut, Resource, Startup,
+    Window, WindowPlugin,
 };
-use common::states::AppState;
 
 mod components;
 mod constants;
@@ -21,7 +20,6 @@ mod pathfinding;
 mod persistence;
 mod session_data;
 mod simulation;
-mod states;
 mod trade_plan;
 mod utils;
 
@@ -46,6 +44,7 @@ fn main() {
             enable_multipass_for_primary_context: true,
         },
         camera::CameraPlugin,
+        common::CommonPlugin,
         // diagnostics::DiagnosticsPlugin,
         entity_selection::EntitySelectionPlugin,
         gizmos::GizmoPlugin,
@@ -53,12 +52,10 @@ fn main() {
         persistence::UniverseSaveDataLoadingOnStartupPlugin,
         persistence::test_universe::TestUniverseDataPlugin,
         simulation::plugin::SimulationPlugin,
-        states::StatePlugin,
         session_data::SessionDataPlugin,
         construction_site_placement::ConstructionSitePlacementPlugin,
     ))
     .add_systems(Startup, initialize_data);
-    app.init_state::<AppState>();
 
     app.run();
 }

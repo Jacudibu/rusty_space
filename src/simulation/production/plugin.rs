@@ -2,9 +2,9 @@ use crate::simulation::production::state::GlobalProductionState;
 use crate::simulation::production::{
     inventory_update_event, production_runner, production_started_event,
 };
-use crate::states::SimulationState;
 use bevy::app::{App, Plugin};
 use bevy::prelude::{FixedUpdate, IntoScheduleConfigs, in_state};
+use common::states::SimulationState;
 
 /// Handles everything production related.
 pub struct ProductionPlugin;

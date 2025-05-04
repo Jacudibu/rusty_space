@@ -1,4 +1,4 @@
-use bevy::prelude::States;
+use bevy::prelude::{StateSet, States, SubStates};
 
 #[derive(Debug, Clone, Copy, Default, Eq, PartialEq, Hash, States)]
 pub enum MouseCursorOverUiState {
@@ -8,7 +8,24 @@ pub enum MouseCursorOverUiState {
 }
 
 #[derive(Debug, Clone, Copy, Default, Eq, PartialEq, Hash, States)]
-pub enum AppState {
+pub enum ApplicationState {
+    #[allow(dead_code)]
+    Menu,
     #[default]
-    MainGame,
+    InGame,
+}
+
+#[derive(Debug, Clone, Copy, Default, Eq, PartialEq, Hash, SubStates)]
+#[source(ApplicationState = ApplicationState::InGame)]
+pub enum SimulationState {
+    #[default]
+    Running,
+    Paused,
+}
+
+#[derive(Debug, Clone, Copy, Default, Eq, PartialEq, Hash, SubStates)]
+#[source(ApplicationState = ApplicationState::Menu)]
+pub enum MenuState {
+    #[default]
+    MainMenu,
 }

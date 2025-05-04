@@ -1,7 +1,7 @@
 use crate::simulation::prelude::SimulationTime;
-use crate::states::SimulationState;
 use bevy::prelude::{App, FixedFirst, IntoScheduleConfigs, Plugin, Res, ResMut, Time, in_state};
 use bevy::time::Fixed;
+use common::states::SimulationState;
 
 pub struct SimulationTimePlugin;
 impl Plugin for SimulationTimePlugin {

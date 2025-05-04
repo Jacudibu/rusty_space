@@ -8,13 +8,13 @@ use crate::simulation::ship_ai::tasks::{
     RequestAccess, Undock, UseGate,
 };
 use crate::simulation::ship_ai::{behaviors, stop_idle_ships, tasks};
-use crate::states::SimulationState;
 use bevy::app::App;
 use bevy::log::error;
 use bevy::prelude::{
     Commands, EventReader, FixedPostUpdate, FixedUpdate, IntoScheduleConfigs, Plugin, Query, Res,
     With, in_state, on_event,
 };
+use common::states::SimulationState;
 
 pub struct ShipAiPlugin;
 impl Plugin for ShipAiPlugin {

@@ -9,13 +9,13 @@ use crate::simulation::prelude::{
     Construct, ProductionFacility, ProductionModule, Shipyard, ShipyardModule,
 };
 use crate::simulation::ship_ai::TaskCompletedEvent;
-use crate::states::SimulationState;
 use crate::utils::ConstructionSiteEntity;
 use bevy::platform::collections::HashSet;
 use bevy::prelude::{
     App, Commands, Entity, Event, EventReader, EventWriter, FixedUpdate, IntoScheduleConfigs,
     Plugin, Query, Res, Time, error, in_state,
 };
+use common::states::SimulationState;
 use std::ops::Not;
 
 pub struct ConstructionSiteUpdaterPlugin;
