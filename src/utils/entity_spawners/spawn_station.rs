@@ -1,3 +1,4 @@
+use crate::SpriteHandles;
 use crate::components::{
     BuyOrders, ConstantOrbit, ConstructionSite, ConstructionSiteStatus, InteractionQueue,
     Inventory, Sector, SectorWithStar, SelectableEntity, SellOrders, Star, Station,
@@ -11,10 +12,10 @@ use crate::simulation::production::{ProductionFacility, Shipyard};
 use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::utils::polar_coordinates::PolarCoordinates;
 use crate::utils::{ConstructionSiteEntity, SectorPosition, StationEntity};
-use crate::{SpriteHandles, constants};
 use bevy::math::Vec2;
 use bevy::prelude::{Commands, Name, Query, Sprite, Transform, default};
 use bevy::sprite::Anchor;
+use common::constants;
 use hexx::Vec3;
 use std::ops::Not;
 

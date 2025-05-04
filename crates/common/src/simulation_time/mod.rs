@@ -10,8 +10,6 @@ pub use simulation_timestamp::SimulationTimestamp;
 
 pub type Milliseconds = u64;
 
-const MILLIS_PER_SECOND: u64 = 1000;
-
 /// Keeps track of the simulation in seconds. Used to process anything that's supposed to happen at a specific time.
 /// Use [SimulationTimestamp] to schedule when things are supposed to happen at (or shortly past) a specific point in time.
 #[derive(Resource)]

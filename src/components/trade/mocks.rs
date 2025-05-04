@@ -2,9 +2,9 @@ use crate::components::inventory::InventoryElement;
 use crate::components::{
     BuyOrderData, BuyOrders, Inventory, OrderData, SellOrderData, SellOrders, TradeOrder,
 };
-use crate::constants;
 use crate::game_data::{ItemData, ItemManifest};
 use crate::utils::PriceSetting;
+use common::constants;
 
 impl BuyOrders {
     pub fn mock(buys: &Vec<&ItemData>, sells: &[&ItemData]) -> Self {

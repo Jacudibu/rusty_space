@@ -1,12 +1,13 @@
 use crate::components::{InSector, Sector};
+use crate::pathfinding;
 use crate::simulation::prelude::{
     SimulationTime, SimulationTimestamp, SimulationTransform, TaskInsideQueue, TaskQueue,
 };
 use crate::simulation::ship_ai::ship_is_idle_filter::ShipIsIdleFilter;
 use crate::simulation::ship_ai::task_events::AllTaskStartedEventWriters;
 use crate::utils::{ConstructionSiteEntity, SectorEntity, TypedEntity};
-use crate::{constants, pathfinding};
 use bevy::prelude::{Commands, Component, Entity, Query, Res};
+use common::constants;
 use std::ops::Not;
 
 /// Ships with this behavior will automatically search out construction sites and share their build power.

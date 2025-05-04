@@ -1,8 +1,8 @@
 use bevy::prelude::{GizmoConfigGroup, GizmoConfigStore, Gizmos, Query, Reflect, ResMut, With};
 
 use crate::components::{ConstantOrbit, InSector, Sector};
-use crate::constants;
 use crate::entity_selection::IsEntitySelected;
+use common::constants;
 
 #[derive(Default, Reflect, GizmoConfigGroup)]
 pub struct OrbitLineGizmos;

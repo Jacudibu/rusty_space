@@ -2,6 +2,7 @@ use crate::simulation_time::SimulationTimePlugin;
 use bevy::app::{App, Plugin};
 use bevy::prelude::AppExtStates;
 
+pub mod constants;
 pub mod simulation_time;
 pub mod states;
 

@@ -1,7 +1,6 @@
 use crate::components::{
     AsteroidMiner, Engine, GasHarvester, Inventory, Sector, SelectableEntity, Ship,
 };
-use crate::constants;
 use crate::persistence::{PersistentShipId, ShipIdMap};
 use crate::session_data::ShipConfiguration;
 use crate::simulation::physics::ShipVelocity;
@@ -11,6 +10,7 @@ use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::utils::{SectorEntity, ShipEntity};
 use bevy::math::Vec2;
 use bevy::prelude::{Commands, Name, Query, Rot2, Sprite};
+use common::constants;
 
 pub fn spawn_ship(
     commands: &mut Commands,

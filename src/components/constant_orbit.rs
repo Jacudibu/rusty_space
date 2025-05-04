@@ -1,7 +1,7 @@
-use crate::constants;
 use crate::utils::SolarMass;
 use crate::utils::polar_coordinates::PolarCoordinates;
 use bevy::prelude::Component;
+use common::constants;
 
 /// A component used to simulate a celestial body which permanently orbits some point in space in a fixed, circular shape
 #[derive(Component)]

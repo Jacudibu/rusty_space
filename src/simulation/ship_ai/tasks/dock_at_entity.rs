@@ -1,3 +1,4 @@
+use crate::components;
 use crate::components::Engine;
 use crate::simulation::physics::ShipVelocity;
 use crate::simulation::prelude::TaskComponent;
@@ -6,11 +7,11 @@ use crate::simulation::ship_ai::task_result::TaskResult;
 use crate::simulation::ship_ai::tasks::{move_to_entity, send_completion_events};
 use crate::simulation::transform::simulation_transform::{SimulationScale, SimulationTransform};
 use crate::utils::TypedEntity;
-use crate::{components, constants};
 use bevy::log::error;
 use bevy::prelude::{
     Commands, Component, Entity, EventReader, EventWriter, FloatExt, Query, Res, Time, Visibility,
 };
+use common::constants;
 use std::sync::{Arc, Mutex};
 
 /// Ships with this [TaskComponent] are currently docking at the specified target entity.

@@ -5,7 +5,6 @@ use bevy::prelude::{
 use std::sync::{Arc, Mutex};
 
 use crate::components::{Gate, InSector, Sector};
-use crate::constants;
 use crate::simulation::physics::ShipVelocity;
 use crate::simulation::prelude::TaskComponent;
 use crate::simulation::ship_ai::task_events::TaskCompletedEvent;
@@ -15,6 +14,7 @@ use crate::simulation::ship_ai::tasks::send_completion_events;
 use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::utils::{GateEntity, SectorEntity};
 use crate::utils::{ShipEntity, interpolation};
+use common::constants;
 
 /// Ships with this [TaskComponent] are currently using a [Gate].
 /// This task cannot be canceled.

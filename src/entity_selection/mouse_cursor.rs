@@ -1,8 +1,8 @@
-use crate::constants::BevyResult;
 use crate::map_layout::MapLayout;
 use crate::persistence::SectorIdMap;
 use crate::utils::SectorPosition;
 use bevy::prelude::{Camera, GlobalTransform, Query, Res, ResMut, Resource, Vec2, Window};
+use common::constants::BevyResult;
 use hexx::Hex;
 
 /// The Current position of the mouse, in various formats.

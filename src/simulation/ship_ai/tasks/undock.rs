@@ -1,5 +1,4 @@
 use crate::components::{Engine, InteractionQueue, IsDocked};
-use crate::constants;
 use crate::simulation::physics::ShipVelocity;
 use crate::simulation::prelude::TaskComponent;
 use crate::simulation::prelude::simulation_transform::SimulationScale;
@@ -15,6 +14,7 @@ use bevy::log::error;
 use bevy::prelude::{
     Commands, Component, Entity, EventReader, EventWriter, Query, Res, Time, Vec2, Visibility,
 };
+use common::constants;
 use std::sync::{Arc, Mutex};
 
 /// Ships with this [TaskComponent] are currently undocking from another entity.

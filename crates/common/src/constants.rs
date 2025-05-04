@@ -3,7 +3,7 @@
 //! Ideally, the values in here should be extracted into a resource at some point to be configurable
 //! by the player and mods.
 
-use crate::simulation::prelude::Milliseconds;
+use crate::simulation_time::Milliseconds;
 use std::ops::Range;
 
 /// Wrapper for [bevy::prelude::Result] to avoid confusion with rust's built-in [Result] type.

@@ -1,6 +1,6 @@
-use crate::constants;
 use bevy::math::Vec2;
 use bevy::prelude::Resource;
+use common::constants;
 use hexx::{Hex, HexLayout, HexOrientation};
 
 #[derive(Resource)]

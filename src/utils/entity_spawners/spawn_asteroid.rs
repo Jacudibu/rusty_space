@@ -1,5 +1,4 @@
 use crate::components::{Asteroid, SectorWithAsteroids, SelectableEntity};
-use crate::constants;
 use crate::game_data::{AsteroidDataId, AsteroidManifest};
 use crate::persistence::{AsteroidIdMap, PersistentAsteroidId};
 use crate::simulation::physics::ConstantVelocity;
@@ -9,6 +8,7 @@ use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::utils::{AsteroidEntity, AsteroidEntityWithTimestamp, SectorEntity};
 use bevy::math::Vec2;
 use bevy::prelude::{Alpha, Commands, Name, Rot2, Sprite};
+use common::constants;
 use leafwing_manifest::manifest::Manifest;
 
 #[allow(clippy::too_many_arguments)]

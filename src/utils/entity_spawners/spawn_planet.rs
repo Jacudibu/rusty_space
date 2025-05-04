@@ -4,10 +4,11 @@ use crate::simulation::prelude::simulation_transform::SimulationScale;
 use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::utils::polar_coordinates::PolarCoordinates;
 use crate::utils::{PlanetEntity, SectorEntity, SolarMass};
-use crate::{SpriteHandles, components, constants};
+use crate::{SpriteHandles, components};
 use bevy::math::Vec2;
 use bevy::prelude::{Commands, Name, Rot2};
 use bevy::sprite::Sprite;
+use common::constants;
 
 #[allow(clippy::too_many_arguments)]
 pub fn spawn_planet(

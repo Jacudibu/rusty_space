@@ -1,5 +1,4 @@
 use crate::components::{Asteroid, InSector};
-use crate::constants;
 use crate::game_data::{AsteroidDataId, ItemId};
 use crate::persistence::{ComponentWithPersistentId, PersistentAsteroidId};
 use crate::simulation::physics::ConstantVelocity;
@@ -8,6 +7,7 @@ use crate::utils::{AsteroidEntityWithTimestamp, SectorEntity};
 use bevy::math::Vec2;
 use bevy::platform::collections::HashMap;
 use bevy::prelude::{Commands, Component};
+use common::constants;
 use std::cmp::Ordering;
 use std::collections::{BTreeSet, BinaryHeap};
 

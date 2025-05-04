@@ -1,4 +1,3 @@
-use crate::constants;
 use crate::game_data::{CRYSTAL_ORE_ITEM_ID, HYDROGEN_ITEM_ID, IRON_ORE_ITEM_ID};
 use crate::persistence::local_hex_position::LocalHexPosition;
 use crate::persistence::test_universe::coordinates::CENTER;
@@ -9,6 +8,7 @@ use crate::session_data::ship_configs::{
 };
 use crate::simulation::prelude::{Milliseconds, SimulationTimestamp};
 use crate::simulation::ship_ai::AutoMineState;
+use common::constants;
 use hexx::Vec2;
 
 pub fn create_test_data() -> SaveDataCollection<ShipSaveData> {

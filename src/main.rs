@@ -5,9 +5,9 @@ use bevy::prelude::{
     App, Assets, Commands, Handle, Image, ImagePlugin, PluginGroup, Res, ResMut, Resource, Startup,
     Window, WindowPlugin,
 };
+use common::constants;
 
 mod components;
-mod constants;
 mod construction_site_placement;
 mod diagnostics;
 mod entity_selection;

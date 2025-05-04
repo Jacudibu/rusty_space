@@ -1,5 +1,4 @@
 use crate::components::{Asteroid, AsteroidMiner, Inventory};
-use crate::constants;
 use crate::game_data::ItemManifest;
 use crate::simulation::asteroids::AsteroidWasFullyMinedEvent;
 use crate::simulation::ship_ai::TaskComponent;
@@ -8,6 +7,7 @@ use crate::simulation::ship_ai::tasks::send_completion_events;
 use crate::simulation::transform::simulation_transform::SimulationScale;
 use crate::utils::AsteroidEntity;
 use bevy::prelude::{Component, Entity, EventWriter, Query, Res};
+use common::constants;
 use common::simulation_time::{CurrentSimulationTimestamp, SimulationTime, SimulationTimestamp};
 use std::sync::{Arc, Mutex};
 

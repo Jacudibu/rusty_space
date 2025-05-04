@@ -3,7 +3,6 @@ use crate::components::{
     Asteroid, BuyOrders, ConstructionSite, ConstructionSiteStatus, Gate, InSector,
     InteractionQueue, Inventory, SelectableEntity, SellOrders, Ship, Station, TradeOrder,
 };
-use crate::constants::BevyResult;
 use crate::entity_selection::{IsEntitySelected, MouseCursor};
 use crate::game_data::{
     AsteroidDataId, AsteroidManifest, Constructable, ConstructableModuleId, GameData,
@@ -29,6 +28,7 @@ use bevy::prelude::{
 use bevy_egui::egui::load::SizedTexture;
 use bevy_egui::egui::{Align2, Shadow, Ui};
 use bevy_egui::{EguiContextPass, EguiContexts, EguiStartupSet, egui};
+use common::constants::BevyResult;
 use common::states::MouseCursorOverUiState;
 
 pub struct GUIPlugin;

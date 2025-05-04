@@ -1,8 +1,8 @@
 use crate::components::Sector;
-use crate::constants;
 use crate::utils::GateEntity;
 use bevy::math::Vec3;
 use bevy::prelude::{Component, CubicBezier, CubicCurve, CubicGenerator, Vec2};
+use common::constants;
 
 /// A component to mark the entity representing the line between two gates.
 #[derive(Component)]

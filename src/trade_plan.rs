@@ -1,11 +1,11 @@
-use bevy::prelude::{Entity, Query};
-
 use crate::components::{BuyOrders, InSector, Inventory, Sector, SellOrders, TradeOrder};
 use crate::game_data::{ItemId, ItemManifest};
+use crate::pathfinding;
 use crate::simulation::ship_ai::{TaskInsideQueue, TaskQueue};
 use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::utils::{ExchangeWareData, SectorEntity, TypedEntity};
-use crate::{constants, pathfinding};
+use bevy::prelude::{Entity, Query};
+use common::constants;
 
 pub struct TradePlan {
     pub item_id: ItemId,

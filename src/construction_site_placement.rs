@@ -1,3 +1,4 @@
+use crate::SpriteHandles;
 use crate::components::{
     BuyOrderData, BuyOrders, ConstantOrbit, Gate, Planet, Sector, SectorWithPlanets,
     SectorWithStar, Star, Station,
@@ -12,7 +13,6 @@ use crate::persistence::{ConstructionSiteIdMap, StationIdMap};
 use crate::utils::entity_spawners::{ConstructionSiteSpawnData, StationSpawnData, spawn_station};
 use crate::utils::polar_coordinates::PolarCoordinates;
 use crate::utils::{PriceSetting, SectorPosition, intersections};
-use crate::{SpriteHandles, constants};
 use bevy::app::{App, Plugin};
 use bevy::ecs::query::QueryFilter;
 use bevy::input::ButtonInput;
@@ -25,6 +25,7 @@ use bevy::prelude::{
     Resource, State, States, Transform, Update, Vec2, Visibility, With, Without, in_state,
 };
 use bevy::sprite::Sprite;
+use common::constants;
 
 /// Plugin for placing new Construction Sites.
 pub struct ConstructionSitePlacementPlugin;

@@ -1,6 +1,6 @@
 use crate::components::GatePairInSector;
-use crate::constants;
 use crate::utils::SectorEntity;
+use common::constants;
 use std::cmp::Ordering;
 
 pub struct SearchNode {

@@ -1,4 +1,3 @@
-use crate::constants;
 use crate::game_data::{AsteroidManifest, CRYSTAL_ASTEROID_ID, HYDROGEN_ITEM_ID, IRON_ASTEROID_ID};
 use crate::map_layout::MapLayout;
 use crate::persistence::test_universe::coordinates;
@@ -9,6 +8,7 @@ use crate::persistence::{
 use crate::utils::UniverseSeed;
 use crate::utils::polar_coordinates::PolarCoordinates;
 use bevy::math::Vec2;
+use common::constants;
 
 const UNIVERSE_SEED: UniverseSeed = UniverseSeed::from_seed(42);
 

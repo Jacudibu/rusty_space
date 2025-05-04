@@ -5,8 +5,9 @@ use crate::simulation::prelude::simulation_transform::SimulationScale;
 use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::utils::entity_spawners::spawn_planet::spawn_planet;
 use crate::utils::{SectorEntity, StarEntity, entity_spawners};
-use crate::{SpriteHandles, components, constants};
+use crate::{SpriteHandles, components};
 use bevy::prelude::{Commands, Name, Sprite, Vec2};
+use common::constants;
 use hexx::{Hex, HexLayout};
 
 pub fn spawn_sector(

@@ -1,4 +1,3 @@
-use crate::constants;
 use crate::simulation::precomputed_orbit_directions::PrecomputedOrbitDirections;
 use crate::simulation::*;
 use bevy::prelude::{
@@ -6,6 +5,7 @@ use bevy::prelude::{
     Update, Virtual, in_state,
 };
 use bevy::time::Fixed;
+use common::constants;
 use common::states::{ApplicationState, SimulationState};
 
 pub struct SimulationPlugin;

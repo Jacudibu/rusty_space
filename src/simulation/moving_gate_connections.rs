@@ -1,6 +1,6 @@
 use crate::components::{Gate, GateConnection, MovingGateConnection};
-use crate::constants::BevyResult;
 use bevy::prelude::{Query, Transform, With};
+use common::constants::BevyResult;
 
 pub fn update_gate_connections(
     mut connections: Query<&mut GateConnection, With<MovingGateConnection>>,

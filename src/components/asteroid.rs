@@ -1,8 +1,8 @@
-use crate::constants;
 use crate::game_data::{AsteroidDataId, ItemId};
 use crate::persistence::{ComponentWithPersistentId, PersistentAsteroidId};
 use crate::simulation::prelude::SimulationTimestamp;
 use bevy::prelude::{Component, FloatExt};
+use common::constants;
 
 #[derive(Component)]
 pub struct Asteroid {

@@ -1,5 +1,4 @@
-use bevy::prelude::{Commands, CubicCurve, Name, Query, Sprite, Vec2};
-
+use crate::SpriteHandles;
 use crate::components::{
     ConstantOrbit, Gate, GateConnection, MovingGateConnection, Sector, SectorWithStar,
     SelectableEntity, Star,
@@ -10,7 +9,8 @@ use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::utils::GateEntity;
 use crate::utils::SectorPosition;
 use crate::utils::polar_coordinates::PolarCoordinates;
-use crate::{SpriteHandles, constants};
+use bevy::prelude::{Commands, CubicCurve, Name, Query, Sprite, Vec2};
+use common::constants;
 
 #[allow(clippy::too_many_arguments)]
 pub fn spawn_gate_pair(

@@ -1,3 +1,4 @@
+use crate::SpriteHandles;
 use crate::components::{BuyOrders, Sector, SectorWithStar, Star};
 use crate::game_data::{
     ConstructableModuleId, ItemId, ItemManifest, ProductionModuleId, RecipeId, RecipeManifest,
@@ -12,10 +13,10 @@ use crate::simulation::production::{
 };
 use crate::utils::entity_spawners::{ConstructionSiteSpawnData, StationSpawnData};
 use crate::utils::{PriceRange, PriceSetting, SectorPosition, entity_spawners};
-use crate::{SpriteHandles, constants};
 use bevy::ecs::system::SystemParam;
 use bevy::platform::collections::HashMap;
 use bevy::prelude::{Commands, Query, Res};
+use common::constants;
 
 #[derive(SystemParam)]
 pub struct Args<'w, 's> {

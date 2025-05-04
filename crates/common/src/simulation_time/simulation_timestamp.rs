@@ -1,4 +1,5 @@
-use crate::simulation_time::{MILLIS_PER_SECOND, Milliseconds};
+use crate::constants;
+use crate::simulation_time::Milliseconds;
 use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
 use std::ops::Add;
@@ -33,7 +34,7 @@ impl CurrentSimulationTimestamp {
     /// Returns a new [SimulationTimestamp] with the specified amount of seconds added to it.
     #[inline]
     pub fn add_seconds(&self, seconds: u64) -> SimulationTimestamp {
-        SimulationTimestamp(self.0 + seconds * MILLIS_PER_SECOND)
+        SimulationTimestamp(self.0 + seconds * constants::ONE_SECOND_IN_MILLISECONDS)
     }
 
     /// Returns a new [SimulationTimestamp] with the specified amount of milliseconds added to it.
