@@ -1214,6 +1214,8 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy_egui",
+ "camera",
+ "common",
  "hexx",
  "image",
  "leafwing_manifest",
@@ -1663,6 +1665,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "camera"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "common",
+]
+
+[[package]]
 name = "cc"
 version = "1.2.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1754,6 +1764,13 @@ checksum = "ba5a308b75df32fe02788e748662718f03fde005016435c444eea572398219fd"
 dependencies = [
  "bytes",
  "memchr",
+]
+
+[[package]]
+name = "common"
+version = "0.1.0"
+dependencies = [
+ "bevy",
 ]
 
 [[package]]

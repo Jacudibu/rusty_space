@@ -24,11 +24,12 @@ use bevy::ecs::query::QueryData;
 use bevy::platform::collections::{HashMap, HashSet};
 use bevy::prelude::{
     AppExtStates, AssetServer, Commands, Entity, EventReader, IntoScheduleConfigs, Name, NextState,
-    Plugin, PreUpdate, Query, Res, ResMut, Resource, Startup, State, States, With, on_event,
+    Plugin, PreUpdate, Query, Res, ResMut, Resource, Startup, State, With, on_event,
 };
 use bevy_egui::egui::load::SizedTexture;
 use bevy_egui::egui::{Align2, Shadow, Ui};
 use bevy_egui::{EguiContextPass, EguiContexts, EguiStartupSet, egui};
+use common::states::MouseCursorOverUiState;
 
 pub struct GUIPlugin;
 impl Plugin for GUIPlugin {
@@ -721,13 +722,6 @@ fn draw_ship_config_stats(ui: &mut Ui, config: &ShipConfiguration) {
     if let Some(gas_harvester) = config.computed_stats.gas_harvesting_amount {
         ui.label(format!("Gas Harvesting Strength: {}", gas_harvester));
     }
-}
-
-#[derive(Debug, Clone, Copy, Default, Eq, PartialEq, Hash, States)]
-pub enum MouseCursorOverUiState {
-    #[default]
-    NotOverUI,
-    OverUI,
 }
 
 pub fn detect_mouse_cursor_over_ui(

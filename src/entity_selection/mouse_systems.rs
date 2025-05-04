@@ -2,7 +2,6 @@ use crate::components::{RADIUS_CURSOR, SelectableEntity};
 use crate::constants::BevyResult;
 use crate::entity_selection::mouse_interaction::{LastMouseInteraction, MouseInteraction};
 use crate::entity_selection::{DOUBLE_CLICK_TIME, IsEntitySelected, MouseCursor};
-use crate::gui::MouseCursorOverUiState;
 use crate::simulation::physics;
 use bevy::input::ButtonState;
 use bevy::input::mouse::MouseButtonInput;
@@ -10,6 +9,7 @@ use bevy::prelude::{
     Camera, Commands, Entity, EventReader, GlobalTransform, InheritedVisibility, MouseButton,
     Query, Real, Res, ResMut, State, Time, Vec2, With, Without,
 };
+use common::states::MouseCursorOverUiState;
 
 #[allow(clippy::too_many_arguments)]
 pub fn process_mouse_clicks(

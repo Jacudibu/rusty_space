@@ -2,10 +2,9 @@ use crate::game_data::GameData;
 use bevy::DefaultPlugins;
 use bevy::asset::AssetServer;
 use bevy::prelude::{
-    App, Assets, Camera2d, Commands, Handle, Image, ImagePlugin, Name, PluginGroup, Res, ResMut,
-    Resource, Startup, Window, WindowPlugin,
+    App, Assets, Commands, Handle, Image, ImagePlugin, PluginGroup, Res, ResMut, Resource, Startup,
+    Window, WindowPlugin,
 };
-mod camera;
 mod components;
 mod constants;
 mod construction_site_placement;
@@ -44,7 +43,7 @@ fn main() {
         bevy_egui::EguiPlugin {
             enable_multipass_for_primary_context: true,
         },
-        camera::CameraControllerPlugin,
+        camera::CameraPlugin,
         // diagnostics::DiagnosticsPlugin,
         entity_selection::EntitySelectionPlugin,
         gizmos::GizmoPlugin,
@@ -123,10 +122,4 @@ pub fn initialize_data(
         icon_ship: asset_server.load("sprites/ships/ship_fighter.png"),
     };
     commands.insert_resource(sprites);
-
-    commands.spawn((
-        Name::new("Main Camera"),
-        Camera2d,
-        camera::MainCameraBundle::default(),
-    ));
 }

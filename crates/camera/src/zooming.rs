@@ -1,5 +1,5 @@
-use crate::camera::main_camera::MainCameraComponent;
-use crate::camera::{ZOOM_SPEED_KEYBOARD, ZOOM_SPEED_MOUSE};
+use crate::camera_settings::CameraSettings;
+use crate::main_camera::MainCameraComponent;
 use bevy::input::ButtonInput;
 use bevy::input::mouse::MouseWheel;
 use bevy::math::VectorSpace;
@@ -13,6 +13,7 @@ const MAX_ZOOM: f32 = 6.0;
 const ZOOM_SLOWDOWN: f32 = 10.0;
 
 pub fn zoom_camera_with_buttons(
+    settings: Res<CameraSettings>,
     keys: Res<ButtonInput<KeyCode>>,
     time: Res<Time<Real>>,
     mut query: Query<&mut SmoothZooming, With<MainCameraComponent>>,
@@ -31,17 +32,18 @@ pub fn zoom_camera_with_buttons(
 
     let mut zoom_factor = query.single_mut().unwrap();
 
-    zoom_factor.target += dir * time.delta_secs() * ZOOM_SPEED_KEYBOARD;
+    zoom_factor.target += dir * time.delta_secs() * settings.zoom_speed_keyboard;
     zoom_factor.target = zoom_factor.target.clamp(MIN_ZOOM, MAX_ZOOM);
 }
 
 pub fn zoom_camera_with_scroll_wheel(
+    settings: Res<CameraSettings>,
     mut scroll_event: EventReader<MouseWheel>,
     mut query: Query<&mut SmoothZooming, With<MainCameraComponent>>,
 ) {
     for event in scroll_event.read() {
         let mut zoom_factor = query.single_mut().unwrap();
-        zoom_factor.target += -event.y * ZOOM_SPEED_MOUSE;
+        zoom_factor.target += -event.y * settings.zoom_speed_mouse;
         zoom_factor.target = zoom_factor.target.clamp(MIN_ZOOM, MAX_ZOOM);
     }
 }
