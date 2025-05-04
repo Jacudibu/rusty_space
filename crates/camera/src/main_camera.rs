@@ -6,4 +6,4 @@ use bevy::prelude::Component;
 #[derive(Component, Default)]
 #[component(immutable)]
 #[require(SmoothZooming, SmoothPanning)]
-pub struct MainCameraComponent;
+pub struct MainCamera;

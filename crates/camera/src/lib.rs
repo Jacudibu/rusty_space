@@ -1,4 +1,7 @@
-use bevy::prelude::{App, Camera2d, IntoScheduleConfigs, Name, Plugin, Update, in_state};
+use bevy::prelude::{
+    App, Camera2d, Commands, Entity, IntoScheduleConfigs, Name, OnEnter, OnExit, Plugin, Query,
+    Update, With, in_state,
+};
 
 mod camera_settings;
 mod main_camera;
@@ -7,8 +10,8 @@ mod zooming;
 
 pub use camera_settings::CameraSettings;
 
-use crate::main_camera::MainCameraComponent;
-use common::states::MouseCursorOverUiState;
+use crate::main_camera::MainCamera;
+use common::states::{AppState, MouseCursorOverUiState};
 
 /// Inserts the main camera and offers ways to control it.
 /// May be configured by editing [CameraSettings].
@@ -16,6 +19,8 @@ pub struct CameraPlugin;
 impl Plugin for CameraPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<CameraSettings>();
+        app.add_systems(OnEnter(AppState::MainGame), spawn_camera);
+        app.add_systems(OnExit(AppState::MainGame), despawn_camera);
         app.add_systems(
             Update,
             (
@@ -29,9 +34,15 @@ impl Plugin for CameraPlugin {
                     .after(zooming::zoom_camera_with_buttons),
             ),
         );
+    }
+}
 
-        // TODO: This should happen during State transitions
-        app.world_mut()
-            .spawn((Name::new("Main Camera"), Camera2d, MainCameraComponent));
+fn spawn_camera(mut commands: Commands) {
+    commands.spawn((Name::new("Main Camera"), Camera2d, MainCamera));
+}
+
+fn despawn_camera(mut commands: Commands, camera: Query<Entity, With<MainCamera>>) {
+    for x in camera {
+        commands.entity(x).despawn();
     }
 }

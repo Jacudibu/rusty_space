@@ -2,9 +2,11 @@ use crate::game_data::GameData;
 use bevy::DefaultPlugins;
 use bevy::asset::AssetServer;
 use bevy::prelude::{
-    App, Assets, Commands, Handle, Image, ImagePlugin, PluginGroup, Res, ResMut, Resource, Startup,
-    Window, WindowPlugin,
+    App, AppExtStates, Assets, Commands, Handle, Image, ImagePlugin, PluginGroup, Res, ResMut,
+    Resource, Startup, Window, WindowPlugin,
 };
+use common::states::AppState;
+
 mod components;
 mod constants;
 mod construction_site_placement;
@@ -56,6 +58,7 @@ fn main() {
         construction_site_placement::ConstructionSitePlacementPlugin,
     ))
     .add_systems(Startup, initialize_data);
+    app.init_state::<AppState>();
 
     app.run();
 }

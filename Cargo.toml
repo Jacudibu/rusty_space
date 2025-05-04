@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [workspace]
-members = ["crates/camera", "crates/common", "crates/test_utils"] # todo: replace with * later on
+members = ["crates/*"]
 
 [workspace.dependencies]
 bevy = { version = "0.16.0", features = ["trace"] }

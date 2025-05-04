@@ -1,5 +1,5 @@
 use crate::camera_settings::CameraSettings;
-use crate::main_camera::MainCameraComponent;
+use crate::main_camera::MainCamera;
 use bevy::input::ButtonInput;
 use bevy::math::Vec3;
 use bevy::prelude::{Component, KeyCode, Projection, Query, Real, Res, Time, Transform, With};
@@ -10,7 +10,7 @@ pub fn pan_camera(
     settings: Res<CameraSettings>,
     keys: Res<ButtonInput<KeyCode>>,
     time: Res<Time<Real>>,
-    mut query: Query<(&mut SmoothPanning, &Projection), With<MainCameraComponent>>,
+    mut query: Query<(&mut SmoothPanning, &Projection), With<MainCamera>>,
 ) {
     let mut dir = Vec3::ZERO;
 
@@ -41,7 +41,7 @@ pub fn pan_camera(
 
 pub fn animate_smooth_camera_panning(
     time: Res<Time<Real>>,
-    mut query: Query<(&mut Transform, &SmoothPanning), With<MainCameraComponent>>,
+    mut query: Query<(&mut Transform, &SmoothPanning), With<MainCamera>>,
 ) {
     let (mut transform, smooth_move) = query.single_mut().unwrap();
     if transform.translation == smooth_move.target {
