@@ -1,8 +1,9 @@
-use crate::simulation::prelude::SimulationTime;
+use crate::simulation_time::SimulationTime;
+use crate::states::SimulationState;
 use bevy::prelude::{App, FixedFirst, IntoScheduleConfigs, Plugin, Res, ResMut, Time, in_state};
 use bevy::time::Fixed;
-use common::states::SimulationState;
 
+/// Sets up tracking for [SimulationTime]
 pub struct SimulationTimePlugin;
 impl Plugin for SimulationTimePlugin {
     fn build(&self, app: &mut App) {

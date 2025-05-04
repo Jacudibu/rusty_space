@@ -1,14 +1,13 @@
 use crate::components::{GasHarvester, InteractionQueue, Inventory};
 use crate::constants;
 use crate::game_data::{ItemId, ItemManifest};
-use crate::simulation::prelude::{
-    AwaitingSignal, CurrentSimulationTimestamp, SimulationTime, SimulationTimestamp, TaskComponent,
-};
+use crate::simulation::prelude::{AwaitingSignal, TaskComponent};
 use crate::simulation::ship_ai::task_events::TaskCompletedEvent;
 use crate::simulation::ship_ai::tasks::{finish_interaction, send_completion_events};
 use crate::utils::PlanetEntity;
 use bevy::log::error;
 use bevy::prelude::{Component, Entity, EventReader, EventWriter, Query, Res};
+use common::simulation_time::{CurrentSimulationTimestamp, SimulationTime, SimulationTimestamp};
 use std::sync::{Arc, Mutex};
 
 enum TaskResult {

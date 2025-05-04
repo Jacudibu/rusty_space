@@ -19,7 +19,6 @@ impl Plugin for SimulationPlugin {
             physics::PhysicsPlugin,
             production::ProductionPlugin,
             ship_ai::ShipAiPlugin,
-            time::SimulationTimePlugin,
             transform::SimulationTransformPlugin,
         ));
         app.add_systems(

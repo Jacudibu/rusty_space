@@ -1,8 +1,16 @@
-use std::time::Duration;
+mod plugin;
+mod simulation_timestamp;
 
 use bevy::prelude::Resource;
+use std::time::Duration;
 
-use crate::simulation::prelude::{CurrentSimulationTimestamp, Milliseconds};
+pub use plugin::SimulationTimePlugin;
+pub use simulation_timestamp::CurrentSimulationTimestamp;
+pub use simulation_timestamp::SimulationTimestamp;
+
+pub type Milliseconds = u64;
+
+const MILLIS_PER_SECOND: u64 = 1000;
 
 /// Keeps track of the simulation in seconds. Used to process anything that's supposed to happen at a specific time.
 /// Use [SimulationTimestamp] to schedule when things are supposed to happen at (or shortly past) a specific point in time.
@@ -26,7 +34,7 @@ impl Default for SimulationTime {
 
 impl SimulationTime {
     #[inline]
-    pub(crate) fn advance(&mut self, delta: Duration) {
+    pub fn advance(&mut self, delta: Duration) {
         self.total += delta;
         self.tick += 1;
     }

@@ -13,9 +13,10 @@ mod request_access;
 mod undock;
 mod use_gate;
 
-use crate::simulation::prelude::{CurrentSimulationTimestamp, TaskCompletedEvent, TaskQueue};
+use common::simulation_time::CurrentSimulationTimestamp;
 
 use crate::components::InteractionQueue;
+use crate::simulation::prelude::{TaskCompletedEvent, TaskQueue};
 use crate::simulation::ship_ai::TaskComponent;
 use crate::simulation::ship_ai::task_events::AllTaskStartedEventWriters;
 pub use {

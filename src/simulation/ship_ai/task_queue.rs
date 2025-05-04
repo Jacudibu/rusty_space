@@ -1,6 +1,7 @@
-use crate::simulation::prelude::{CurrentSimulationTimestamp, TaskInsideQueue};
+use crate::simulation::prelude::TaskInsideQueue;
 use crate::simulation::ship_ai::task_events::AllTaskStartedEventWriters;
 use bevy::prelude::{Commands, Component, Entity};
+use common::simulation_time::CurrentSimulationTimestamp;
 use std::collections::VecDeque;
 use std::ops::{Deref, DerefMut};
 

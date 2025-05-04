@@ -1,8 +1,6 @@
 use crate::components::Inventory;
 use crate::game_data::ItemManifest;
-use crate::simulation::prelude::{
-    CurrentSimulationTimestamp, SimulationTime, SimulationTimestamp, TaskComponent,
-};
+use crate::simulation::prelude::TaskComponent;
 use crate::simulation::production::InventoryUpdateForProductionEvent;
 use crate::simulation::ship_ai::task_events::TaskCompletedEvent;
 use crate::simulation::ship_ai::task_events::TaskStartedEvent;
@@ -11,6 +9,7 @@ use crate::simulation::ship_ai::tasks::send_completion_events;
 use crate::utils::ExchangeWareData;
 use crate::utils::{TradeIntent, TypedEntity};
 use bevy::prelude::{Component, Entity, EventReader, EventWriter, Query, Res, error};
+use common::simulation_time::{CurrentSimulationTimestamp, SimulationTime, SimulationTimestamp};
 use std::sync::{Arc, Mutex};
 
 /// Ships with this [TaskComponent] are currently trading wares with the specified target entity.

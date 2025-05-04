@@ -5,11 +5,11 @@ use crate::persistence::{
     AsteroidIdMap, AsteroidSaveData, PersistentAsteroidId, PlanetIdMap, SectorFeatureSaveData,
     SectorIdMap, SectorPlanetSaveData, SectorStarSaveData,
 };
-use crate::simulation::time::SimulationTimestamp;
 use crate::utils::{SectorEntity, UniverseSeed, entity_spawners};
 use crate::{SpriteHandles, constants};
 use bevy::ecs::system::SystemParam;
 use bevy::prelude::{Circle, Commands, Res, ShapeSample, Vec2};
+use common::simulation_time::SimulationTimestamp;
 use hexx::Hex;
 use leafwing_manifest::manifest::Manifest;
 use rand::Rng;

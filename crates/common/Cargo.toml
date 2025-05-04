@@ -5,3 +5,4 @@ edition = "2024"
 
 [dependencies]
 bevy = { workspace = true }
+serde = { workspace = true }

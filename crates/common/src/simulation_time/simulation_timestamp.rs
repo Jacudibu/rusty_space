@@ -1,5 +1,4 @@
-use crate::simulation::prelude::Milliseconds;
-use crate::simulation::time::MILLIS_PER_SECOND;
+use crate::simulation_time::{MILLIS_PER_SECOND, Milliseconds};
 use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
 use std::ops::Add;
@@ -10,7 +9,7 @@ use std::time::Duration;
 pub struct CurrentSimulationTimestamp(Milliseconds);
 impl CurrentSimulationTimestamp {
     #[inline]
-    pub(crate) fn from(milliseconds: Milliseconds) -> Self {
+    pub fn from(milliseconds: Milliseconds) -> Self {
         Self(milliseconds)
     }
 
@@ -61,8 +60,7 @@ impl From<Milliseconds> for CurrentSimulationTimestamp {
 }
 
 /// Represents a specific Timestamp in Milliseconds since session start.
-#[derive(Copy, Clone, Eq, PartialEq, Serialize, Deserialize)]
-#[cfg_attr(test, derive(Debug))]
+#[derive(Copy, Clone, Eq, PartialEq, Serialize, Deserialize, Debug)]
 pub struct SimulationTimestamp(Milliseconds);
 
 impl SimulationTimestamp {

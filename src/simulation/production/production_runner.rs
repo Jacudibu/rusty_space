@@ -6,7 +6,6 @@ use crate::game_data::{ItemManifest, ProductionModuleId, RecipeManifest, Shipyar
 use crate::persistence::{PersistentShipId, ShipIdMap};
 use crate::session_data::ShipConfigurationManifest;
 use crate::simulation::physics::ShipVelocity;
-use crate::simulation::prelude::{CurrentSimulationTimestamp, SimulationTime, SimulationTimestamp};
 use crate::simulation::production::production_kind::ProductionKind;
 use crate::simulation::production::shipyard::Shipyard;
 use crate::simulation::production::state::{GlobalProductionState, SingleProductionState};
@@ -14,6 +13,7 @@ use crate::simulation::production::{InventoryUpdateForProductionEvent, Productio
 use crate::simulation::ship_ai::BehaviorBuilder;
 use crate::utils;
 use crate::utils::entity_spawners;
+use common::simulation_time::{CurrentSimulationTimestamp, SimulationTime, SimulationTimestamp};
 
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
 pub fn check_if_production_is_finished_and_start_new_one(

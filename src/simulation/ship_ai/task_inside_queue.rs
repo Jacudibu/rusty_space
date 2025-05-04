@@ -1,5 +1,4 @@
 use crate::game_data::ItemId;
-use crate::simulation::prelude::{CurrentSimulationTimestamp, SimulationTimestamp};
 use crate::simulation::ship_ai::task_events::{AllTaskStartedEventWriters, TaskStartedEvent};
 use crate::simulation::ship_ai::tasks;
 use crate::simulation::ship_ai::tasks::MoveToEntity;
@@ -8,6 +7,7 @@ use crate::utils::{
 };
 use crate::utils::{GateEntity, SectorEntity};
 use bevy::ecs::system::EntityCommands;
+use common::simulation_time::{CurrentSimulationTimestamp, SimulationTimestamp};
 
 /// Defines a Task inside the [TaskQueue]. New task components can be created from these.
 pub enum TaskInsideQueue {
