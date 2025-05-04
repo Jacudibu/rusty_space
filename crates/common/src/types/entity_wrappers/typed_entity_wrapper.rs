@@ -6,6 +6,7 @@ use std::hash::{Hash, Hasher};
 use std::marker::PhantomData;
 
 /// Wrapper around [Entity] to guarantee type safety when storing Entities for specific component combinations.
+/// You'll usually want to use the typed aliases of this instead of using this directly.
 pub struct TypedEntityWrapper<T: Component>(Entity, PhantomData<T>);
 
 impl<T: Component> Display for TypedEntityWrapper<T> {
@@ -27,13 +28,6 @@ impl<T: Component> From<Entity> for TypedEntityWrapper<T> {
 impl<T: Component> From<&Entity> for TypedEntityWrapper<T> {
     fn from(value: &Entity) -> Self {
         Self(*value, PhantomData)
-    }
-}
-
-#[cfg(test)]
-impl<T: Component> From<u32> for TypedEntityWrapper<T> {
-    fn from(value: u32) -> Self {
-        Self::from(Entity::from_raw(value))
     }
 }
 

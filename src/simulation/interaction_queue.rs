@@ -64,12 +64,12 @@ impl InteractionQueue {
 #[cfg(test)]
 mod test {
     use crate::simulation::interaction_queue::InteractionQueue;
-    use common::types::entity_wrappers::ShipEntity;
+    use test_utils::mock_entity_id;
 
     #[test]
     fn interacting_below_capacity() {
         let mut queue = InteractionQueue::new(2);
-        assert_eq!(Ok(()), queue.try_start_interaction(1.into()));
+        assert_eq!(Ok(()), queue.try_start_interaction(mock_entity_id(1)));
 
         assert_eq!(1, queue.currently_interacting)
     }
@@ -77,27 +77,27 @@ mod test {
     #[test]
     fn interacting_at_and_above_capacity() {
         let mut queue = InteractionQueue::new(2);
-        queue.try_start_interaction(1.into()).unwrap();
-        queue.try_start_interaction(2.into()).unwrap();
+        queue.try_start_interaction(mock_entity_id(1)).unwrap();
+        queue.try_start_interaction(mock_entity_id(2)).unwrap();
 
-        assert_eq!(Err(()), queue.try_start_interaction(3.into()));
-        assert_eq!(Err(()), queue.try_start_interaction(4.into()));
+        assert_eq!(Err(()), queue.try_start_interaction(mock_entity_id(3)));
+        assert_eq!(Err(()), queue.try_start_interaction(mock_entity_id(4)));
 
         assert_eq!(2, queue.currently_interacting);
         assert_eq!(2, queue.waiting_queue.len());
-        assert_eq!(ShipEntity::from(3), queue.waiting_queue[0]);
-        assert_eq!(ShipEntity::from(4), queue.waiting_queue[1]);
+        assert_eq!(mock_entity_id(3), queue.waiting_queue[0]);
+        assert_eq!(mock_entity_id(4), queue.waiting_queue[1]);
     }
 
     #[test]
     fn interacting_above_capacity_same_frame() {
         let mut queue = InteractionQueue::new(2);
-        queue.try_start_interaction(1.into()).unwrap();
-        queue.try_start_interaction(2.into()).unwrap();
+        queue.try_start_interaction(mock_entity_id(1)).unwrap();
+        queue.try_start_interaction(mock_entity_id(2)).unwrap();
 
-        let first = ShipEntity::from(1);
-        let second = ShipEntity::from(2);
-        let third = ShipEntity::from(3);
+        let first = mock_entity_id(1);
+        let second = mock_entity_id(2);
+        let third = mock_entity_id(3);
 
         assert_eq!(Err(()), queue.try_start_interaction(first));
         assert_eq!(Err(()), queue.try_start_interaction(second));

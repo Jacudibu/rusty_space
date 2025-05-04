@@ -4,7 +4,7 @@ use crate::types::entity_wrappers::typed_entity_wrapper::TypedEntityWrapper;
 
 mod asteroid_with_lifetime;
 mod typed_entity;
-mod typed_entity_wrapper;
+pub mod typed_entity_wrapper;
 
 pub use typed_entity::TypedEntity;
 
