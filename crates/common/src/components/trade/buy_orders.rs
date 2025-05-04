@@ -1,7 +1,7 @@
 use crate::components::inventory::InventoryElement;
 use crate::components::{OrderData, TradeOrder};
-use crate::enums::price_setting::PriceSetting;
 use crate::game_data::ItemId;
+use crate::types::price_setting::PriceSetting;
 use bevy::platform::collections::HashMap;
 use bevy::prelude::Component;
 

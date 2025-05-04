@@ -1,8 +1,7 @@
 use crate::SpriteHandles;
 use crate::persistence::{CelestialIdMap, CelestialKindSaveData, SectorCelestialSaveData};
 use crate::simulation::interaction_queue::InteractionQueue;
-use crate::simulation::prelude::simulation_transform::SimulationScale;
-use crate::simulation::transform::simulation_transform::SimulationTransform;
+use crate::simulation::prelude::SimulationScale;
 use crate::utils::{CelestialEntity, CelestialMass, SectorEntity};
 use bevy::math::Vec2;
 use bevy::prelude::{Commands, Handle, Image, Name, Rot2};
@@ -10,6 +9,7 @@ use bevy::sprite::Sprite;
 use common::components::celestials::{Celestial, GasGiant, Planet, Star};
 use common::components::{ConstantOrbit, SectorWithCelestials, SelectableEntity};
 use common::constants;
+use common::simulation_transform::SimulationTransform;
 use common::types::polar_coordinates::PolarCoordinates;
 
 fn get_sprite(kind: &CelestialKindSaveData, sprites: &SpriteHandles) -> Handle<Image> {

@@ -1,7 +1,6 @@
 use crate::simulation::interaction_queue::InteractionQueue;
 use crate::simulation::physics::ShipVelocity;
 use crate::simulation::prelude::TaskComponent;
-use crate::simulation::prelude::simulation_transform::SimulationScale;
 use crate::simulation::ship_ai::AwaitingSignal;
 use crate::simulation::ship_ai::task_events::TaskCompletedEvent;
 use crate::simulation::ship_ai::task_events::TaskStartedEvent;
@@ -9,13 +8,13 @@ use crate::simulation::ship_ai::task_result::TaskResult;
 use crate::simulation::ship_ai::tasks::{
     dock_at_entity, finish_interaction, send_completion_events,
 };
-use crate::simulation::transform::simulation_transform::SimulationTransform;
 use bevy::log::error;
 use bevy::prelude::{
     Commands, Component, Entity, EventReader, EventWriter, Query, Res, Time, Vec2, Visibility,
 };
 use common::components::{Engine, IsDocked};
 use common::constants;
+use common::simulation_transform::{SimulationScale, SimulationTransform};
 use std::sync::{Arc, Mutex};
 
 /// Ships with this [TaskComponent] are currently undocking from another entity.

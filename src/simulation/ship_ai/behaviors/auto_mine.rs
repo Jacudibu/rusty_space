@@ -1,14 +1,15 @@
 use crate::pathfinding;
 use crate::simulation::prelude::{SimulationTime, SimulationTimestamp};
+use crate::simulation::ship_ai::create_tasks_following_path::create_tasks_to_follow_path;
 use crate::simulation::ship_ai::ship_is_idle_filter::ShipIsIdleFilter;
 use crate::simulation::ship_ai::task_events::AllTaskStartedEventWriters;
 use crate::simulation::ship_ai::{TaskInsideQueue, TaskQueue};
-use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::trade_plan::TradePlan;
 use crate::utils::{SectorEntity, TradeIntent};
 use bevy::prelude::{Commands, Component, Entity, Query, Res, Vec2};
 use common::components::{Asteroid, BuyOrders, InSector, Inventory, Sector, SectorWithAsteroids};
 use common::game_data::{ItemId, ItemManifest};
+use common::simulation_transform::SimulationTransform;
 use serde::{Deserialize, Serialize};
 
 #[derive(Eq, PartialEq, Serialize, Deserialize, Copy, Clone)]
@@ -148,7 +149,7 @@ pub fn handle_idle_ships(
                         None,
                     )
                     .unwrap();
-                    pathfinding::create_tasks_to_follow_path(&mut queue, path);
+                    create_tasks_to_follow_path(&mut queue, path);
                     queue.apply(
                         &mut commands,
                         now,

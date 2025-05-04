@@ -1,5 +1,5 @@
-use crate::persistent_entity_id::{ComponentWithPersistentId, PersistentShipId};
 use crate::session_data::ship_configs::ShipConfigId;
+use crate::types::persistent_entity_id::{ComponentWithPersistentId, PersistentShipId};
 use bevy::prelude::Component;
 
 /// Marker Component for Ships

@@ -4,7 +4,7 @@ mod simulation_timestamp;
 use bevy::prelude::Resource;
 use std::time::Duration;
 
-pub use plugin::SimulationTimePlugin;
+pub(crate) use plugin::SimulationTimePlugin;
 pub use simulation_timestamp::CurrentSimulationTimestamp;
 pub use simulation_timestamp::SimulationTimestamp;
 

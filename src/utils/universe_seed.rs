@@ -1,8 +1,9 @@
 use bevy::prelude::{PartialReflect, Resource};
 use hexx::Hex;
-use rand::prelude::StdRng;
 use rand::SeedableRng;
+use rand::prelude::StdRng;
 
+/// The seed used for all random generation.
 #[derive(Resource)]
 pub struct UniverseSeed {
     seed: u64,

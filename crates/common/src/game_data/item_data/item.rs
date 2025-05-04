@@ -1,5 +1,5 @@
 use crate::game_data::ItemId;
-use crate::price_range::PriceRange;
+use crate::types::price_range::PriceRange;
 use bevy::asset::Handle;
 use bevy::prelude::Image;
 

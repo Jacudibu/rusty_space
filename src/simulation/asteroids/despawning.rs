@@ -3,10 +3,10 @@ use crate::simulation::asteroids::fading::FadingAsteroidsOut;
 use crate::simulation::asteroids::respawning;
 use crate::simulation::physics::ConstantVelocity;
 use crate::simulation::prelude::{SimulationTime, SimulationTimestamp};
-use crate::simulation::transform::SimulationTransform;
 use crate::utils::{AsteroidEntity, AsteroidEntityWithTimestamp};
 use bevy::prelude::{Event, EventReader, Query, Res, ResMut, Vec2};
 use common::components::{Asteroid, InSector, RespawningAsteroidData, Sector, SectorWithAsteroids};
+use common::simulation_transform::SimulationTransform;
 
 #[derive(Event)]
 pub struct AsteroidWasFullyMinedEvent {

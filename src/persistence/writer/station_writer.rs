@@ -4,13 +4,13 @@ use crate::persistence::local_hex_position::LocalHexPosition;
 use crate::simulation::production::{
     OngoingShipConstructionOrder, ProductionFacility, ProductionModule, Shipyard, ShipyardModule,
 };
-use crate::simulation::transform::simulation_transform::SimulationTransform;
 use bevy::prelude::{Name, Query};
 use common::components::{
     BuyOrderData, BuyOrders, InSector, Inventory, Sector, SellOrderData, SellOrders, Station,
     TradeOrder,
 };
 use common::game_data::{ItemId, ProductionModuleId, ShipyardModuleId};
+use common::simulation_transform::SimulationTransform;
 
 impl ProductionSaveData {
     pub fn from(production: &ProductionFacility) -> Self {

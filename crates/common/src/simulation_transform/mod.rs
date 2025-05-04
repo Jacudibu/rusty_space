@@ -1,6 +1,7 @@
-use bevy::math::VectorSpace;
-use bevy::prelude::{Component, Dir2, Rot2, Transform, Vec2};
-use hexx::{Quat, Vec3};
+pub mod plugin;
+
+use bevy::math::{Dir2, Quat, Rot2, Vec2, Vec3};
+use bevy::prelude::{Component, FloatExt, Transform};
 
 /// Describes the 2D position of an object within the simulation.
 /// (bevy's default [Transform] is only used for rendering in this project.)
@@ -13,7 +14,7 @@ pub struct SimulationTransform {
 }
 
 /// Scale isn't really used within our Simulation and only serves as visual eye candy.
-/// Thus it's handled separately, allowing us to parallelize systems which require both
+/// Thus, it's handled separately, allowing us to parallelize systems which require both
 /// `all_transforms: Query<&SimulationTransform>`
 /// and
 /// `entities: Query<(Entity, &mut SimulationScale, [...])`.
@@ -61,7 +62,7 @@ impl SimulationTransform {
     }
 
     #[inline]
-    pub(in crate::simulation::transform) fn copy_old_values(&mut self) {
+    pub fn copy_old_values(&mut self) {
         self.last_translation = self.translation;
         self.last_rotation = self.rotation;
     }
@@ -99,11 +100,7 @@ impl SimulationTransform {
 
     /// Updates the transform if there were any changes detected during [Self::copy_old_values].
     #[inline]
-    pub(in crate::simulation::transform) fn update_transform(
-        &self,
-        transform: &mut Transform,
-        overstep_fraction: f32,
-    ) {
+    pub fn update_transform(&self, transform: &mut Transform, overstep_fraction: f32) {
         let interpolated_position = self
             .last_translation
             .lerp(self.translation, overstep_fraction);
@@ -129,7 +126,7 @@ impl SimulationScale {
     }
 
     #[inline]
-    pub(in crate::simulation::transform) fn copy_old_values(&mut self) {
+    pub fn copy_old_values(&mut self) {
         self.last_scale = self.scale;
     }
 }

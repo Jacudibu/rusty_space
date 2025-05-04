@@ -8,6 +8,6 @@ pub mod test_universe;
 mod writer;
 
 pub use builder::UniverseSaveDataLoadingOnStartupPlugin;
-pub use common::persistent_entity_id::*;
+pub use common::types::persistent_entity_id::*;
 pub use data::v1::*;
 pub use entity_id_map::*;

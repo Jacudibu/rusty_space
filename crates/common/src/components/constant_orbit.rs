@@ -1,5 +1,5 @@
 use crate::constants;
-use crate::enums::celestial_mass::CelestialMass;
+use crate::types::celestial_mass::CelestialMass;
 use crate::types::polar_coordinates::PolarCoordinates;
 use bevy::prelude::Component;
 

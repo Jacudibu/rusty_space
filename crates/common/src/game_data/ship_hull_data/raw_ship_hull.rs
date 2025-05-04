@@ -1,6 +1,6 @@
-use crate::enums::ship_size::ShipSize;
 use crate::game_data::RecipeElement;
 use crate::simulation_time::Milliseconds;
+use crate::types::ship_size::ShipSize;
 use bevy::asset::Asset;
 use bevy::prelude::TypePath;
 use serde::Deserialize;

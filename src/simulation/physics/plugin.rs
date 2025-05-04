@@ -1,11 +1,11 @@
 use crate::simulation::physics::ShipVelocity;
 use crate::simulation::physics::orbit_system::orbit_system;
-use crate::simulation::transform::simulation_transform::SimulationTransform;
 use bevy::prelude::{
     App, FixedPostUpdate, IntoScheduleConfigs, Plugin, Query, Res, Time, With, Without, in_state,
 };
 use common::components::constant_velocity::ConstantVelocity;
 use common::components::{InSector, IsDocked};
+use common::simulation_transform::SimulationTransform;
 use common::states::SimulationState;
 
 /// Beautifully simplified fake physics.

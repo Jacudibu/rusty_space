@@ -1,4 +1,5 @@
 mod behaviors;
+pub mod create_tasks_following_path;
 mod plugin;
 mod ship_is_idle_filter;
 mod stop_idle_ships;

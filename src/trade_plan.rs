@@ -1,11 +1,12 @@
 use crate::pathfinding;
+use crate::simulation::ship_ai::create_tasks_following_path::create_tasks_to_follow_path;
 use crate::simulation::ship_ai::{TaskInsideQueue, TaskQueue};
-use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::utils::{ExchangeWareData, SectorEntity, TypedEntity};
 use bevy::prelude::{Entity, Query};
 use common::components::{BuyOrders, InSector, Inventory, Sector, SellOrders, TradeOrder};
 use common::constants;
 use common::game_data::{ItemId, ItemManifest};
+use common::simulation_transform::SimulationTransform;
 
 pub struct TradePlan {
     pub item_id: ItemId,
@@ -141,7 +142,7 @@ impl TradePlan {
             )
             .unwrap();
 
-            pathfinding::create_tasks_to_follow_path(queue, path);
+            create_tasks_to_follow_path(queue, path);
         }
 
         queue.push_back(TaskInsideQueue::MoveToEntity {
@@ -180,7 +181,7 @@ impl TradePlan {
             )
             .unwrap();
 
-            pathfinding::create_tasks_to_follow_path(queue, path);
+            create_tasks_to_follow_path(queue, path);
         }
 
         queue.push_back(TaskInsideQueue::MoveToEntity {

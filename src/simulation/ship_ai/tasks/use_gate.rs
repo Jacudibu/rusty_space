@@ -10,11 +10,11 @@ use crate::simulation::ship_ai::task_events::TaskCompletedEvent;
 use crate::simulation::ship_ai::task_events::TaskStartedEvent;
 use crate::simulation::ship_ai::task_result::TaskResult;
 use crate::simulation::ship_ai::tasks::send_completion_events;
-use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::utils::{GateEntity, SectorEntity};
 use crate::utils::{ShipEntity, interpolation};
 use common::components::{Gate, InSector, Sector};
 use common::constants;
+use common::simulation_transform::SimulationTransform;
 
 /// Ships with this [TaskComponent] are currently using a [Gate].
 /// This task cannot be canceled.

@@ -1,5 +1,5 @@
 use crate::components::InSector;
-use crate::enums::celestial_mass::CelestialMass;
+use crate::types::celestial_mass::CelestialMass;
 use crate::types::entity_wrappers::{CelestialEntity, SectorEntity};
 use bevy::prelude::{Commands, Component};
 use std::collections::HashSet;

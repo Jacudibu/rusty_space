@@ -1,7 +1,6 @@
 use crate::SpriteHandles;
 use crate::persistence::{GateIdMap, PersistentGateId};
-use crate::simulation::prelude::simulation_transform::SimulationScale;
-use crate::simulation::transform::simulation_transform::SimulationTransform;
+use crate::simulation::prelude::SimulationScale;
 use crate::utils::SectorPosition;
 use crate::utils::{CelestialMass, GateEntity};
 use bevy::prelude::{Commands, CubicCurve, Name, Query, Sprite, Vec2};
@@ -10,6 +9,7 @@ use common::components::{
     SelectableEntity,
 };
 use common::constants;
+use common::simulation_transform::SimulationTransform;
 use common::types::polar_coordinates::PolarCoordinates;
 
 #[allow(clippy::too_many_arguments)]

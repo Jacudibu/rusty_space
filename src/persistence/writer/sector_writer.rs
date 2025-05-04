@@ -1,10 +1,10 @@
 use crate::persistence::data::v1::*;
 use crate::simulation::physics::ConstantVelocity;
-use crate::simulation::transform::simulation_transform::SimulationTransform;
 use bevy::ecs::query::QueryData;
 use bevy::prelude::Query;
 use common::components::celestials::Star;
 use common::components::{Asteroid, Sector, SectorWithAsteroids, SectorWithCelestials};
+use common::simulation_transform::SimulationTransform;
 // impl AsteroidSaveData {
 //     pub fn from(
 //         (asteroid, transform, velocity): (&Asteroid, &SimulationTransform, &ConstantVelocity),

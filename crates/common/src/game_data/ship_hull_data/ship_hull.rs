@@ -1,8 +1,8 @@
-use crate::enums::ship_size::ShipSize;
 use crate::game_data::RecipeElement;
 use crate::game_data::ship_hull_data::ShipHullId;
 use crate::game_data::ship_hull_data::raw_ship_hull::ShipManeuverability;
 use crate::simulation_time::Milliseconds;
+use crate::types::ship_size::ShipSize;
 use bevy::prelude::{Handle, Image};
 
 /// Defines the base of a ship.

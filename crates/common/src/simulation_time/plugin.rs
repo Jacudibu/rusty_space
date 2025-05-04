@@ -4,7 +4,7 @@ use bevy::prelude::{App, FixedFirst, IntoScheduleConfigs, Plugin, Res, ResMut, T
 use bevy::time::Fixed;
 
 /// Sets up tracking for [SimulationTime]
-pub struct SimulationTimePlugin;
+pub(crate) struct SimulationTimePlugin;
 impl Plugin for SimulationTimePlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(SimulationTime::default());

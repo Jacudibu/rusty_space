@@ -3,7 +3,7 @@ use crate::game_data::generic_manifest::GenericManifest;
 use crate::game_data::item_data::raw_item::RawItemData;
 use crate::game_data::item_data::raw_item_manifest::RawItemManifest;
 use crate::game_data::{ItemData, ItemId};
-use crate::price_range::PriceRange;
+use crate::types::price_range::PriceRange;
 use bevy::asset::AssetServer;
 use bevy::platform::collections::HashMap;
 use bevy::prelude::World;

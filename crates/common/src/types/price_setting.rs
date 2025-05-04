@@ -1,4 +1,4 @@
-use crate::price_range::PriceRange;
+use crate::types::price_range::PriceRange;
 use serde::{Deserialize, Serialize};
 
 /// Defines how the price for goods is being calculated.

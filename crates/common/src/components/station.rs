@@ -1,7 +1,7 @@
-use crate::persistent_entity_id::{
+use crate::types::entity_wrappers::ConstructionSiteEntity;
+use crate::types::persistent_entity_id::{
     ComponentWithPersistentId, PersistentStationId, TypedPersistentEntityId,
 };
-use crate::types::entity_wrappers::ConstructionSiteEntity;
 use bevy::prelude::Component;
 
 /// Marker Component for immovable, player-constructed objects in space.

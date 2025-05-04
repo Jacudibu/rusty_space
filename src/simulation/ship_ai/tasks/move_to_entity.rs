@@ -3,10 +3,10 @@ use crate::simulation::prelude::TaskComponent;
 use crate::simulation::ship_ai::task_events::TaskCompletedEvent;
 use crate::simulation::ship_ai::task_result::TaskResult;
 use crate::simulation::ship_ai::tasks::send_completion_events;
-use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::utils::TypedEntity;
 use bevy::prelude::{Component, Entity, EventWriter, Query, Res, Time, warn};
 use common::components::Engine;
+use common::simulation_transform::SimulationTransform;
 use std::sync::{Arc, Mutex};
 
 /// Ships with this [TaskComponent] are currently moving towards another entity.

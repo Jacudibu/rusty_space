@@ -3,8 +3,8 @@ use crate::components::{
     BuyOrderData, BuyOrders, Inventory, OrderData, SellOrderData, SellOrders, TradeOrder,
 };
 use crate::constants;
-use crate::enums::price_setting::PriceSetting;
 use crate::game_data::{ItemData, ItemManifest};
+use crate::types::price_setting::PriceSetting;
 
 impl BuyOrders {
     pub fn mock(buys: &Vec<&ItemData>, sells: &[&ItemData]) -> Self {

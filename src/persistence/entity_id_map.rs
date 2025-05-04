@@ -6,7 +6,7 @@ use crate::utils::{
 use bevy::ecs::system::SystemParam;
 use bevy::platform::collections::HashMap;
 use bevy::prelude::{Res, Resource};
-use common::persistent_entity_id::{
+use common::types::persistent_entity_id::{
     PersistentAsteroidId, PersistentGateId, PersistentShipId, PersistentStationId,
 };
 use hexx::Hex;

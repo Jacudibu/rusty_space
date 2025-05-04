@@ -1,6 +1,6 @@
-use crate::enums::celestial_mass::CelestialMass;
 use crate::game_data::ItemId;
-use crate::persistent_entity_id::PersistentCelestialId;
+use crate::types::celestial_mass::CelestialMass;
+use crate::types::persistent_entity_id::PersistentCelestialId;
 use bevy::prelude::Component;
 
 /// A celestial is a naturally occurring, permanent Entity within a sector. Planets and Stars.

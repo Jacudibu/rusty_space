@@ -1,9 +1,9 @@
 use crate::persistence::SectorIdMap;
-use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::utils::SectorPosition;
 use bevy::math::Vec2;
 use bevy::prelude::Query;
 use common::components::{InSector, Sector};
+use common::simulation_transform::SimulationTransform;
 use common::types::polar_coordinates::PolarCoordinates;
 use hexx::Hex;
 use serde::{Deserialize, Serialize};

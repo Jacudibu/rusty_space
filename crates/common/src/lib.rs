@@ -1,16 +1,15 @@
 use crate::simulation_time::SimulationTimePlugin;
+use crate::simulation_transform::plugin::SimulationTransformPlugin;
 use bevy::app::{App, Plugin};
 use bevy::prelude::AppExtStates;
 
 pub mod components;
 pub mod constants;
-pub mod enums;
 pub mod events;
 pub mod game_data;
-pub mod persistent_entity_id;
-pub mod price_range;
 pub mod session_data;
 pub mod simulation_time;
+pub mod simulation_transform;
 pub mod states;
 pub mod types;
 
@@ -23,5 +22,6 @@ impl Plugin for CommonPlugin {
         app.add_sub_state::<states::MenuState>();
 
         app.add_plugins(SimulationTimePlugin);
+        app.add_plugins(SimulationTransformPlugin);
     }
 }

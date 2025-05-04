@@ -1,6 +1,6 @@
 use crate::components::inventory::InventoryElement;
-use crate::enums::trade_intent::TradeIntent;
 use crate::game_data::{ItemId, ItemManifest, RecipeData};
+use crate::types::trade_intent::TradeIntent;
 use bevy::log::error;
 use bevy::platform::collections::HashMap;
 use bevy::prelude::{Component, warn};

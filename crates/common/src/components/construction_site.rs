@@ -1,6 +1,6 @@
 use crate::game_data::{ConstructableModuleId, ItemId};
-use crate::persistent_entity_id::PersistentConstructionSiteId;
 use crate::types::entity_wrappers::{ShipEntity, StationEntity};
+use crate::types::persistent_entity_id::PersistentConstructionSiteId;
 use bevy::platform::collections::HashSet;
 use bevy::prelude::Component;
 

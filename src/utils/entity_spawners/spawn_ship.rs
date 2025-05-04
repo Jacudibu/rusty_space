@@ -1,8 +1,7 @@
 use crate::persistence::{PersistentShipId, ShipIdMap};
 use crate::simulation::physics::ShipVelocity;
-use crate::simulation::prelude::simulation_transform::SimulationScale;
+use crate::simulation::prelude::SimulationScale;
 use crate::simulation::ship_ai::{BehaviorBuilder, TaskQueue};
-use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::utils::{SectorEntity, ShipEntity};
 use bevy::math::Vec2;
 use bevy::prelude::{Commands, Name, Query, Rot2, Sprite};
@@ -11,6 +10,7 @@ use common::components::{
 };
 use common::constants;
 use common::session_data::ShipConfiguration;
+use common::simulation_transform::SimulationTransform;
 
 pub fn spawn_ship(
     commands: &mut Commands,

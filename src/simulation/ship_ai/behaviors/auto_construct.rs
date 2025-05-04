@@ -2,6 +2,7 @@ use crate::pathfinding;
 use crate::simulation::prelude::{
     SimulationTime, SimulationTimestamp, SimulationTransform, TaskInsideQueue, TaskQueue,
 };
+use crate::simulation::ship_ai::create_tasks_following_path::create_tasks_to_follow_path;
 use crate::simulation::ship_ai::ship_is_idle_filter::ShipIsIdleFilter;
 use crate::simulation::ship_ai::task_events::AllTaskStartedEventWriters;
 use crate::utils::{ConstructionSiteEntity, SectorEntity, TypedEntity};
@@ -59,7 +60,7 @@ pub fn handle_idle_ships(
                 )
                 .unwrap();
 
-                pathfinding::create_tasks_to_follow_path(&mut queue, path);
+                create_tasks_to_follow_path(&mut queue, path);
             }
 
             queue.push_back(TaskInsideQueue::MoveToEntity {

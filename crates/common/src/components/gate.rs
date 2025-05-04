@@ -1,4 +1,4 @@
-use crate::persistent_entity_id::{
+use crate::types::persistent_entity_id::{
     ComponentWithPersistentId, PersistentGateId, TypedPersistentEntityId,
 };
 use bevy::prelude::{Component, CubicCurve, Vec2};
