@@ -4,9 +4,9 @@ mod path_element;
 mod search_node;
 pub mod surrounding_sector_search;
 
-use crate::components::Sector;
 use crate::utils::SectorEntity;
 use bevy::prelude::{Query, Vec2};
+use common::components::Sector;
 
 use crate::simulation::transform::simulation_transform::SimulationTransform;
 pub use {create_tasks_following_path::create_tasks_to_follow_path, path_element::PathElement};

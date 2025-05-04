@@ -1,7 +1,7 @@
-use crate::components;
 use crate::simulation::ship_ai::tasks;
 use bevy::ecs::query::QueryFilter;
 use bevy::prelude::{With, Without};
+use common::components;
 
 #[derive(QueryFilter)]
 #[allow(clippy::type_complexity)]

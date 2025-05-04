@@ -1,7 +1,5 @@
 use bevy::prelude::{Commands, Component, Entity, Query, Res};
 
-use crate::components::{BuyOrders, InSector, Inventory, Sector, SellOrders, TradeOrder};
-use crate::game_data::ItemManifest;
 use crate::simulation::prelude::{SimulationTime, SimulationTimestamp};
 use crate::simulation::ship_ai::TaskQueue;
 use crate::simulation::ship_ai::ship_is_idle_filter::ShipIsIdleFilter;
@@ -9,7 +7,9 @@ use crate::simulation::ship_ai::task_events::AllTaskStartedEventWriters;
 use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::trade_plan::TradePlan;
 use crate::utils::{TradeIntent, TypedEntity};
+use common::components::{BuyOrders, InSector, Inventory, Sector, SellOrders, TradeOrder};
 use common::constants;
+use common::game_data::ItemManifest;
 
 /// Ships with this behavior will attempt to buy low and sell high.
 #[derive(Component)]

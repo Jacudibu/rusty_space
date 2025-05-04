@@ -15,7 +15,7 @@ mod use_gate;
 
 use common::simulation_time::CurrentSimulationTimestamp;
 
-use crate::components::InteractionQueue;
+use crate::simulation::interaction_queue::InteractionQueue;
 use crate::simulation::prelude::{TaskCompletedEvent, TaskQueue};
 use crate::simulation::ship_ai::TaskComponent;
 use crate::simulation::ship_ai::task_events::AllTaskStartedEventWriters;

@@ -1,11 +1,11 @@
 use crate::SpriteHandles;
-use crate::components::{Sector, SectorWithAsteroids, SectorWithCelestials};
-use crate::game_data::AsteroidManifest;
 use crate::persistence::{AsteroidIdMap, CelestialIdMap, SectorFeatureSaveData};
 use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::utils::entity_spawners::spawn_planet::spawn_celestial;
 use crate::utils::{SectorEntity, entity_spawners};
 use bevy::prelude::{Commands, Name, Vec2};
+use common::components::{Sector, SectorWithAsteroids, SectorWithCelestials};
+use common::game_data::AsteroidManifest;
 use hexx::{Hex, HexLayout};
 
 pub fn spawn_sector(

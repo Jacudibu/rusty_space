@@ -1,5 +1,5 @@
-use crate::components::GatePairInSector;
 use crate::utils::SectorEntity;
+use common::components::GatePairInSector;
 
 #[derive(Hash, Eq, PartialEq, Copy, Clone)]
 pub struct PathElement {

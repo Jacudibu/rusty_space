@@ -1,7 +1,7 @@
-use crate::components::{ConstantOrbit, InSector, Sector};
 use crate::simulation::precomputed_orbit_directions::PrecomputedOrbitDirections;
 use crate::simulation::prelude::SimulationTransform;
 use bevy::prelude::{Fixed, Query, Res, Time};
+use common::components::{ConstantOrbit, InSector, Sector};
 
 pub fn orbit_system(
     time: Res<Time<Fixed>>,

@@ -1,8 +1,8 @@
-use crate::game_data::ShipyardModuleId;
-use crate::session_data::ShipConfigId;
 use crate::simulation::prelude::SimulationTimestamp;
 use bevy::platform::collections::HashMap;
 use bevy::prelude::Component;
+use common::game_data::ShipyardModuleId;
+use common::session_data::ShipConfigId;
 
 /// A component on [StationEntity]s which keeps track of ship building modules and requests.
 #[derive(Component)]

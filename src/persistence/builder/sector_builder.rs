@@ -1,5 +1,4 @@
 use crate::SpriteHandles;
-use crate::game_data::{AsteroidDataId, AsteroidManifest};
 use crate::map_layout::MapLayout;
 use crate::persistence::data::v1::{SaveDataCollection, SectorAsteroidSaveData, SectorSaveData};
 use crate::persistence::{
@@ -10,6 +9,7 @@ use crate::utils::{SectorEntity, UniverseSeed, entity_spawners};
 use bevy::ecs::system::SystemParam;
 use bevy::prelude::{Circle, Commands, Res, ShapeSample, Vec2};
 use common::constants;
+use common::game_data::{AsteroidDataId, AsteroidManifest};
 use common::simulation_time::SimulationTimestamp;
 use hexx::Hex;
 use leafwing_manifest::manifest::Manifest;

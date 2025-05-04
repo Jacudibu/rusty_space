@@ -1,5 +1,6 @@
 pub mod asteroids;
 mod construction_site_updater;
+pub mod interaction_queue;
 mod moving_gate_connections;
 pub mod physics;
 pub mod plugin;

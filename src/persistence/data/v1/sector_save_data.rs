@@ -1,8 +1,8 @@
-use crate::game_data::{AsteroidDataId, ItemId};
 use crate::persistence::{PersistentAsteroidId, PersistentCelestialId};
 use crate::simulation::prelude::SimulationTimestamp;
 use crate::utils::CelestialMass;
 use bevy::math::Vec2;
+use common::game_data::{AsteroidDataId, ItemId};
 use hexx::Hex;
 use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};

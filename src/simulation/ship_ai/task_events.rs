@@ -1,8 +1,8 @@
 use crate::simulation::prelude::{Construct, TaskComponent};
 use crate::simulation::ship_ai::tasks::{ExchangeWares, Undock, UseGate};
-use crate::utils::ShipEntity;
 use bevy::ecs::system::SystemParam;
 use bevy::prelude::{Event, EventWriter};
+use common::types::entity_wrappers::ShipEntity;
 use std::marker::PhantomData;
 
 pub mod event_kind {

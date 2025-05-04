@@ -1,10 +1,10 @@
-use crate::components::Sector;
 use crate::pathfinding::PathElement;
 use crate::pathfinding::search_node::{GATE_COST, SearchNode};
 use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::utils::SectorEntity;
 use bevy::platform::collections::HashMap;
 use bevy::prelude::{Query, Vec2};
+use common::components::Sector;
 use std::collections::BinaryHeap;
 
 pub fn a_star(
@@ -178,7 +178,6 @@ fn reconstruct_path(
 
 #[cfg(test)]
 mod test {
-    use crate::components::Sector;
     use crate::pathfinding::PathElement;
     use crate::pathfinding::a_star::a_star;
     use crate::pathfinding::search_node::GATE_COST;
@@ -187,6 +186,7 @@ mod test {
     use crate::simulation::transform::simulation_transform::SimulationTransform;
     use bevy::ecs::system::RunSystemOnce;
     use bevy::prelude::{Query, Res, Vec2, World};
+    use common::components::Sector;
     use hexx::Hex;
 
     const LEFT2: Hex = Hex::new(-2, 0);

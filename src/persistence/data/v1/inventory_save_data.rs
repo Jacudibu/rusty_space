@@ -1,4 +1,4 @@
-use crate::game_data::ItemId;
+use common::game_data::ItemId;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]

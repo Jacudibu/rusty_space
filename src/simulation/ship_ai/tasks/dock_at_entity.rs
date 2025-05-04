@@ -1,5 +1,3 @@
-use crate::components;
-use crate::components::Engine;
 use crate::simulation::physics::ShipVelocity;
 use crate::simulation::prelude::TaskComponent;
 use crate::simulation::ship_ai::task_events::TaskCompletedEvent;
@@ -11,6 +9,8 @@ use bevy::log::error;
 use bevy::prelude::{
     Commands, Component, Entity, EventReader, EventWriter, FloatExt, Query, Res, Time, Visibility,
 };
+use common::components;
+use common::components::Engine;
 use common::constants;
 use std::sync::{Arc, Mutex};
 

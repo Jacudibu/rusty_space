@@ -1,7 +1,7 @@
-use crate::components::{RADIUS_CURSOR, SelectableEntity};
 use crate::entity_selection::mouse_interaction::MouseInteraction;
 use bevy::math::Rot2;
 use bevy::prelude::{GizmoConfigGroup, Gizmos, GlobalTransform, Isometry2d, Query, Reflect, Res};
+use common::components::{RADIUS_CURSOR, SelectableEntity};
 
 #[derive(Default, Reflect, GizmoConfigGroup)]
 pub struct MouseInteractionGizmos;

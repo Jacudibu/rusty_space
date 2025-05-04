@@ -5,4 +5,11 @@ edition = "2024"
 
 [dependencies]
 bevy = { workspace = true }
+hexx = { workspace = true }
+image = { workspace = true }
+leafwing_manifest = { workspace = true }
+paste = { workspace = true }
 serde = { workspace = true }
+
+[dev-dependencies]
+rstest = { workspace = true }

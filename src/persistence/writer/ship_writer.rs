@@ -1,4 +1,3 @@
-use crate::components::{InSector, Inventory, Sector, Ship};
 use crate::persistence::data::v1::*;
 use crate::persistence::local_hex_position::LocalHexPosition;
 use crate::persistence::{AllEntityIdMaps, ComponentWithPersistentId};
@@ -6,6 +5,7 @@ use crate::simulation::physics::ShipVelocity;
 use crate::simulation::ship_ai::{AutoMineBehavior, AutoTradeBehavior, TaskQueue};
 use crate::simulation::transform::simulation_transform::SimulationTransform;
 use bevy::prelude::{Name, Query};
+use common::components::{InSector, Inventory, Sector, Ship};
 
 impl ShipSaveData {
     pub fn from(

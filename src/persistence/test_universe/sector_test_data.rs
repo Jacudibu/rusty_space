@@ -1,14 +1,16 @@
-use crate::game_data::{AsteroidManifest, CRYSTAL_ASTEROID_ID, HYDROGEN_ITEM_ID, IRON_ASTEROID_ID};
 use crate::map_layout::MapLayout;
 use crate::persistence::test_universe::coordinates;
 use crate::persistence::{
     CelestialKindSaveData, SaveDataCollection, SectorAsteroidSaveData, SectorCelestialSaveData,
     SectorSaveData,
 };
-use crate::utils::polar_coordinates::PolarCoordinates;
 use crate::utils::{CelestialMass, SolarMass, UniverseSeed};
 use bevy::math::Vec2;
 use common::constants;
+use common::game_data::{
+    AsteroidManifest, CRYSTAL_ASTEROID_ID, HYDROGEN_ITEM_ID, IRON_ASTEROID_ID,
+};
+use common::types::polar_coordinates::PolarCoordinates;
 
 const UNIVERSE_SEED: UniverseSeed = UniverseSeed::from_seed(42);
 

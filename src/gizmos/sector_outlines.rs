@@ -1,8 +1,8 @@
 use bevy::prelude::{GizmoConfigGroup, Gizmos, Query, Reflect, Res, With};
 
-use crate::components::Sector;
 use crate::map_layout::MapLayout;
 use crate::simulation::transform::simulation_transform::SimulationTransform;
+use common::components::Sector;
 
 #[derive(Default, Reflect, GizmoConfigGroup)]
 pub struct SectorOutlineGizmos;

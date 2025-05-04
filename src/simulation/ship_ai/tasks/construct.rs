@@ -1,9 +1,9 @@
-use crate::components::{ConstructionSite, Ship};
-use crate::session_data::ShipConfigurationManifest;
 use crate::simulation::prelude::TaskComponent;
 use crate::simulation::ship_ai::task_events::TaskStartedEvent;
 use crate::utils::{ConstructionSiteEntity, ShipEntity};
 use bevy::prelude::{Component, EventReader, Query, Res, error};
+use common::components::{ConstructionSite, Ship};
+use common::session_data::ShipConfigurationManifest;
 
 /// Ships with this [TaskComponent] are actively working on a construction site.
 #[derive(Component)]

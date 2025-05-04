@@ -1,12 +1,12 @@
-use crate::game_data::{
-    ConstructableModuleId, ItemId, ProductionModuleId, RecipeId, ShipyardModuleId,
-};
 use crate::persistence::PersistentStationId;
 use crate::persistence::data::v1::inventory_save_data::InventorySaveData;
 use crate::persistence::local_hex_position::LocalHexPosition;
-use crate::session_data::ShipConfigId;
 use crate::simulation::prelude::SimulationTimestamp;
 use crate::utils::PriceSetting;
+use common::game_data::{
+    ConstructableModuleId, ItemId, ProductionModuleId, RecipeId, ShipyardModuleId,
+};
+use common::session_data::ShipConfigId;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone)]

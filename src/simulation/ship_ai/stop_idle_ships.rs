@@ -1,7 +1,7 @@
-use crate::components::{Engine, IsDocked};
 use crate::simulation::prelude::ShipVelocity;
 use crate::simulation::ship_ai::ship_is_idle_filter::ShipIsIdleFilter;
 use bevy::prelude::{Query, Res, Time, Without};
+use common::components::{Engine, IsDocked};
 
 pub fn stop_idle_ships(
     mut idle_ships: Query<(&Engine, &mut ShipVelocity), (Without<IsDocked>, ShipIsIdleFilter)>,

@@ -1,7 +1,7 @@
-use crate::game_data::{ProductionModuleId, RecipeId};
 use crate::simulation::prelude::SimulationTimestamp;
 use bevy::platform::collections::HashMap;
 use bevy::prelude::Component;
+use common::game_data::{ProductionModuleId, RecipeId};
 use std::cmp::Ordering;
 use std::collections::BinaryHeap;
 

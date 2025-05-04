@@ -1,4 +1,4 @@
-use crate::game_data::{ProductionModuleId, ShipyardModuleId};
+use common::game_data::{ProductionModuleId, ShipyardModuleId};
 
 #[derive(Eq, PartialEq, Copy, Clone)]
 pub enum ProductionKind {

@@ -1,8 +1,8 @@
-use crate::components::Inventory;
-use crate::components::SellOrders;
-use crate::components::{BuyOrders, TradeOrder};
-use crate::game_data::ItemManifest;
 use bevy::prelude::Mut;
+use common::components::Inventory;
+use common::components::SellOrders;
+use common::components::{BuyOrders, TradeOrder};
+use common::game_data::ItemManifest;
 
 pub fn update_orders(
     inventory: &Inventory,

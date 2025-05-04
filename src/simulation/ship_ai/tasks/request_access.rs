@@ -1,4 +1,4 @@
-use crate::components::InteractionQueue;
+use crate::simulation::interaction_queue::InteractionQueue;
 use crate::simulation::prelude::{SimulationTime, TaskComponent, TaskInsideQueue, TaskQueue};
 use crate::simulation::ship_ai::task_events::AllTaskStartedEventWriters;
 use crate::simulation::ship_ai::tasks;

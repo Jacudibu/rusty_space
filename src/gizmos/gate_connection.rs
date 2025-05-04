@@ -1,6 +1,6 @@
 use bevy::prelude::{GizmoConfigGroup, Gizmos, Query, Reflect};
 
-use crate::components::GateConnection;
+use common::components::GateConnection;
 
 #[derive(Default, Reflect, GizmoConfigGroup)]
 pub struct GateConnectionGizmos;

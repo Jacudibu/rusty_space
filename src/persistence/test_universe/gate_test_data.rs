@@ -3,8 +3,8 @@ use crate::persistence::test_universe::coordinates::{
     BOTTOM_LEFT, CENTER, RIGHT, TOP_RIGHT, TOP_RIGHT_TOP_RIGHT,
 };
 use crate::persistence::{GatePairSaveData, SaveDataCollection};
-use crate::utils::polar_coordinates::PolarCoordinates;
 use bevy::prelude::Vec2;
+use common::types::polar_coordinates::PolarCoordinates;
 
 pub fn create_test_data() -> SaveDataCollection<GatePairSaveData> {
     let mut result = SaveDataCollection::<GatePairSaveData>::default();

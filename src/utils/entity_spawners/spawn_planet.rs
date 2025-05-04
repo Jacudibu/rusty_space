@@ -1,15 +1,16 @@
-use crate::components::celestials::{Celestial, GasGiant, Planet, Star};
-use crate::components::{ConstantOrbit, SectorWithCelestials, SelectableEntity};
+use crate::SpriteHandles;
 use crate::persistence::{CelestialIdMap, CelestialKindSaveData, SectorCelestialSaveData};
+use crate::simulation::interaction_queue::InteractionQueue;
 use crate::simulation::prelude::simulation_transform::SimulationScale;
 use crate::simulation::transform::simulation_transform::SimulationTransform;
-use crate::utils::polar_coordinates::PolarCoordinates;
 use crate::utils::{CelestialEntity, CelestialMass, SectorEntity};
-use crate::{SpriteHandles, components};
 use bevy::math::Vec2;
 use bevy::prelude::{Commands, Handle, Image, Name, Rot2};
 use bevy::sprite::Sprite;
+use common::components::celestials::{Celestial, GasGiant, Planet, Star};
+use common::components::{ConstantOrbit, SectorWithCelestials, SelectableEntity};
 use common::constants;
+use common::types::polar_coordinates::PolarCoordinates;
 
 fn get_sprite(kind: &CelestialKindSaveData, sprites: &SpriteHandles) -> Handle<Image> {
     match kind {
@@ -77,7 +78,7 @@ pub fn spawn_celestial(
                     resources: resources.clone(),
                 },
                 SelectableEntity::Celestial,
-                components::InteractionQueue::new(constants::SIMULTANEOUS_PLANET_INTERACTIONS),
+                InteractionQueue::new(constants::SIMULTANEOUS_PLANET_INTERACTIONS),
             ));
             sector_with_celestials.add_gas_giant(commands, sector_entity, entity.into());
         }

@@ -1,5 +1,5 @@
-use crate::components::Inventory;
 use crate::persistence::data::v1::*;
+use common::components::Inventory;
 
 impl From<&Inventory> for InventorySaveData {
     fn from(value: &Inventory) -> Self {

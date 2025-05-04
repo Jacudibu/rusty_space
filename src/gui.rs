@@ -1,17 +1,6 @@
 use crate::SpriteHandles;
-use crate::components::{
-    Asteroid, BuyOrders, ConstructionSite, ConstructionSiteStatus, Gate, InSector,
-    InteractionQueue, Inventory, SelectableEntity, SellOrders, Ship, Station, TradeOrder,
-};
 use crate::entity_selection::{IsEntitySelected, MouseCursor};
-use crate::game_data::{
-    AsteroidDataId, AsteroidManifest, Constructable, ConstructableModuleId, GameData,
-    IRON_ASTEROID_ID,
-};
-use crate::session_data::ship_configs::ShipConfigurationAddedEvent;
-use crate::session_data::{
-    SessionData, ShipConfigId, ShipConfiguration, ShipConfigurationManifest,
-};
+use crate::simulation::interaction_queue::InteractionQueue;
 use crate::simulation::physics::ShipVelocity;
 use crate::simulation::prelude::SimulationTime;
 use crate::simulation::production::{ProductionFacility, Shipyard};
@@ -28,7 +17,19 @@ use bevy::prelude::{
 use bevy_egui::egui::load::SizedTexture;
 use bevy_egui::egui::{Align2, Shadow, Ui};
 use bevy_egui::{EguiContextPass, EguiContexts, EguiStartupSet, egui};
+use common::components::{
+    Asteroid, BuyOrders, ConstructionSite, ConstructionSiteStatus, Gate, InSector, Inventory,
+    SelectableEntity, SellOrders, Ship, Station, TradeOrder,
+};
 use common::constants::BevyResult;
+use common::game_data::{
+    AsteroidDataId, AsteroidManifest, Constructable, ConstructableModuleId, GameData,
+    IRON_ASTEROID_ID,
+};
+use common::session_data::ship_configs::ShipConfigurationAddedEvent;
+use common::session_data::{
+    SessionData, ShipConfigId, ShipConfiguration, ShipConfigurationManifest,
+};
 use common::states::MouseCursorOverUiState;
 
 pub struct GUIPlugin;

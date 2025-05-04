@@ -1,8 +1,3 @@
-use crate::components::{
-    BuyOrderData, BuyOrders, InSector, Inventory, Sector, SellOrderData, SellOrders, Station,
-    TradeOrder,
-};
-use crate::game_data::{ItemId, ProductionModuleId, ShipyardModuleId};
 use crate::persistence::ComponentWithPersistentId;
 use crate::persistence::data::v1::*;
 use crate::persistence::local_hex_position::LocalHexPosition;
@@ -11,6 +6,11 @@ use crate::simulation::production::{
 };
 use crate::simulation::transform::simulation_transform::SimulationTransform;
 use bevy::prelude::{Name, Query};
+use common::components::{
+    BuyOrderData, BuyOrders, InSector, Inventory, Sector, SellOrderData, SellOrders, Station,
+    TradeOrder,
+};
+use common::game_data::{ItemId, ProductionModuleId, ShipyardModuleId};
 
 impl ProductionSaveData {
     pub fn from(production: &ProductionFacility) -> Self {

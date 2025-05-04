@@ -1,5 +1,3 @@
-use crate::components::{Sector, SectorWithAsteroids};
-use crate::game_data::AsteroidManifest;
 use crate::map_layout::MapLayout;
 use crate::persistence::AsteroidIdMap;
 use crate::simulation::asteroids::fading::FadingAsteroidsIn;
@@ -8,6 +6,8 @@ use crate::simulation::prelude::SimulationTime;
 use crate::utils::{entity_spawners, intersections};
 use bevy::math::Vec2;
 use bevy::prelude::{Commands, Entity, Query, Res, ResMut};
+use common::components::{Sector, SectorWithAsteroids};
+use common::game_data::AsteroidManifest;
 
 pub fn respawn_asteroids(
     mut commands: Commands,

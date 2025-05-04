@@ -1,6 +1,6 @@
-use crate::utils::polar_coordinates::PolarCoordinates;
 use bevy::math::VectorSpace;
 use bevy::prelude::{Dir2, Resource, Vec2};
+use common::types::polar_coordinates::PolarCoordinates;
 
 /// Contains 360 precomputed values pointing at the outline of a uniform sphere, allowing us to skip computing these values multiple times per frame.
 #[derive(Resource)]

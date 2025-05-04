@@ -1,5 +1,5 @@
-use crate::components::GatePairInSector;
 use crate::utils::SectorEntity;
+use common::components::GatePairInSector;
 use common::constants;
 use std::cmp::Ordering;
 

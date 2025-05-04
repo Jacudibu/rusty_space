@@ -1,5 +1,3 @@
-use crate::components::Inventory;
-use crate::game_data::ItemManifest;
 use crate::simulation::prelude::TaskComponent;
 use crate::simulation::production::InventoryUpdateForProductionEvent;
 use crate::simulation::ship_ai::task_events::TaskCompletedEvent;
@@ -9,6 +7,8 @@ use crate::simulation::ship_ai::tasks::send_completion_events;
 use crate::utils::ExchangeWareData;
 use crate::utils::{TradeIntent, TypedEntity};
 use bevy::prelude::{Component, Entity, EventReader, EventWriter, Query, Res, error};
+use common::components::Inventory;
+use common::game_data::ItemManifest;
 use common::simulation_time::{CurrentSimulationTimestamp, SimulationTime, SimulationTimestamp};
 use std::sync::{Arc, Mutex};
 

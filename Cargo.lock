@@ -1209,25 +1209,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "bevy_space"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "bevy_egui",
- "camera",
- "common",
- "hexx",
- "image",
- "leafwing_manifest",
- "paste",
- "rand",
- "rstest",
- "serde",
- "serde_json",
- "test_utils",
-]
-
-[[package]]
 name = "bevy_sprite"
 version = "0.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1771,6 +1752,11 @@ name = "common"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "hexx",
+ "image",
+ "leafwing_manifest",
+ "paste",
+ "rstest",
  "serde",
 ]
 
@@ -4533,6 +4519,21 @@ name = "rustversion"
 version = "1.0.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "eded382c5f5f786b989652c49544c4877d9f015cc22e145a5ea8ea66c2921cd2"
+
+[[package]]
+name = "rusty_space"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bevy_egui",
+ "camera",
+ "common",
+ "hexx",
+ "leafwing_manifest",
+ "rand",
+ "serde",
+ "test_utils",
+]
 
 [[package]]
 name = "rustybuzz"

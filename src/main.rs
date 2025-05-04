@@ -1,24 +1,20 @@
-use crate::game_data::GameData;
 use bevy::DefaultPlugins;
 use bevy::asset::AssetServer;
 use bevy::prelude::{
     App, Assets, Commands, Handle, Image, ImagePlugin, PluginGroup, Res, ResMut, Resource, Startup,
     Window, WindowPlugin,
 };
-use common::constants;
+use common::game_data::{GameData, image_generator};
+use common::{constants, session_data};
 
-mod components;
 mod construction_site_placement;
 mod diagnostics;
 mod entity_selection;
-mod game_data;
 mod gizmos;
 mod gui;
-mod image_generator;
 mod map_layout;
 mod pathfinding;
 mod persistence;
-mod session_data;
 mod simulation;
 mod trade_plan;
 mod utils;

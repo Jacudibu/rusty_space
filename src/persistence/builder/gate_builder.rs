@@ -1,12 +1,12 @@
 use crate::SpriteHandles;
-use crate::components::celestials::Celestial;
-use crate::components::{Sector, SectorWithCelestials};
 use crate::persistence::data::v1::*;
 use crate::persistence::local_hex_position::LocalHexPosition;
 use crate::persistence::{GateIdMap, PersistentGateId, SectorIdMap};
 use crate::utils::entity_spawners::spawn_gate_pair;
 use bevy::ecs::system::SystemParam;
 use bevy::prelude::{Commands, Query, Res};
+use common::components::celestials::Celestial;
+use common::components::{Sector, SectorWithCelestials};
 
 #[derive(SystemParam)]
 pub struct Args<'w, 's> {

@@ -2,7 +2,7 @@ mod behaviors;
 mod plugin;
 mod ship_is_idle_filter;
 mod stop_idle_ships;
-mod task_events;
+pub mod task_events;
 mod task_inside_queue;
 mod task_queue;
 mod task_result;

@@ -1,9 +1,9 @@
-use crate::game_data::ItemId;
 use crate::simulation::prelude::SimulationTimestamp;
 use crate::simulation::ship_ai::behaviors::auto_construct::AutoConstructBehavior;
 use crate::simulation::ship_ai::behaviors::auto_harvest::AutoHarvestBehavior;
 use crate::simulation::ship_ai::{AutoMineBehavior, AutoMineState, AutoTradeBehavior};
 use bevy::ecs::system::EntityCommands;
+use common::game_data::ItemId;
 
 pub(crate) mod auto_construct;
 pub mod auto_harvest;

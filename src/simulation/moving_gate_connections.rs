@@ -1,5 +1,5 @@
-use crate::components::{Gate, GateConnection, MovingGateConnection};
 use bevy::prelude::{Query, Transform, With};
+use common::components::{Gate, GateConnection, MovingGateConnection};
 use common::constants::BevyResult;
 
 pub fn update_gate_connections(

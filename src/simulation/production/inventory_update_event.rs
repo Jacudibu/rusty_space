@@ -1,6 +1,3 @@
-use crate::components::{BuyOrders, Inventory, SellOrders};
-use crate::game_data::{ItemManifest, RecipeElement, RecipeManifest, ShipyardModuleId};
-use crate::session_data::{ShipConfigId, ShipConfigurationManifest};
 use crate::simulation::prelude::{RunningProductionQueueElement, SimulationTime};
 use crate::simulation::production::ProductionFacility;
 use crate::simulation::production::production_kind::ProductionKind;
@@ -9,6 +6,9 @@ use crate::simulation::production::shipyard::{OngoingShipConstructionOrder, Ship
 use crate::utils;
 use bevy::log::error;
 use bevy::prelude::{Entity, Event, EventReader, EventWriter, Or, Query, Res, With};
+use common::components::{BuyOrders, Inventory, SellOrders};
+use common::game_data::{ItemManifest, RecipeElement, RecipeManifest, ShipyardModuleId};
+use common::session_data::{ShipConfigId, ShipConfigurationManifest};
 
 /// This event should be sent whenever an entity's inventory is being updated outside the production manager
 ///

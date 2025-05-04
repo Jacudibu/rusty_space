@@ -1,9 +1,9 @@
-use crate::components::Sector;
 use crate::utils::SectorEntity;
 use bevy::ecs::query::{QueryData, ReadOnlyQueryData};
 use bevy::platform::collections::HashSet;
 use bevy::platform::hash::FixedHasher;
 use bevy::prelude::Query;
+use common::components::Sector;
 use std::cmp::Ordering;
 use std::ops::Not;
 
@@ -83,12 +83,12 @@ where
 
 #[cfg(test)]
 mod test {
-    use crate::components::{Sector, SectorWithAsteroids};
     use crate::pathfinding::surrounding_sector_search::surrounding_sector_search;
     use crate::persistence::local_hex_position::LocalHexPosition;
     use crate::persistence::{SectorAsteroidSaveData, SectorIdMap, UniverseSaveData};
     use bevy::ecs::system::RunSystemOnce;
     use bevy::prelude::{Query, Res, Vec2, World};
+    use common::components::{Sector, SectorWithAsteroids};
     use hexx::Hex;
 
     const LEFT: Hex = Hex::new(-1, 0);

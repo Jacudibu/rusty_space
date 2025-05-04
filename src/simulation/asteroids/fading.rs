@@ -1,9 +1,9 @@
-use crate::components::Asteroid;
 use crate::persistence::AsteroidIdMap;
 use crate::utils::AsteroidEntity;
 use bevy::color::Alpha;
 use bevy::platform::collections::HashSet;
 use bevy::prelude::{Commands, Query, Res, ResMut, Resource, Sprite, Time, With};
+use common::components::Asteroid;
 
 #[derive(Resource, Default)]
 pub struct FadingAsteroidsIn {

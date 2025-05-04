@@ -1,5 +1,5 @@
-use crate::components::Engine;
 use bevy::prelude::Component;
+use common::components::Engine;
 
 /// Fake Physics for ship movement. Has some helper methods to stir the ship depending on its engine.
 #[derive(Component, Default)]

@@ -13,12 +13,12 @@ pub use crate::persistence::loading_plugin::UniverseSaveDataLoadingOnStartupPlug
 mod test_helpers {
     use super::*;
     use crate::SpriteHandles;
-    use crate::game_data::GameData;
     use crate::map_layout::MapLayout;
     use crate::persistence::data::v1::UniverseSaveData;
-    use crate::session_data::SessionData;
     use crate::simulation::precomputed_orbit_directions::PrecomputedOrbitDirections;
     use bevy::prelude::*;
+    use common::game_data::GameData;
+    use common::session_data::SessionData;
 
     impl UniverseSaveData {
         pub fn build_test_app(self) -> App {

@@ -1,7 +1,7 @@
 use bevy::prelude::{GizmoConfigGroup, GizmoConfigStore, Gizmos, Query, Reflect, ResMut, With};
 
-use crate::components::{ConstantOrbit, InSector, Sector};
 use crate::entity_selection::IsEntitySelected;
+use common::components::{ConstantOrbit, InSector, Sector};
 use common::constants;
 
 #[derive(Default, Reflect, GizmoConfigGroup)]

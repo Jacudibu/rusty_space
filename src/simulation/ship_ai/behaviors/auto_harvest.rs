@@ -1,6 +1,3 @@
-use crate::components::celestials::GasGiant;
-use crate::components::{BuyOrders, InSector, Inventory, Sector, SectorWithCelestials};
-use crate::game_data::{ItemId, ItemManifest};
 use crate::pathfinding;
 use crate::simulation::prelude::{SimulationTime, SimulationTimestamp};
 use crate::simulation::ship_ai::behaviors::auto_mine;
@@ -11,6 +8,9 @@ use crate::simulation::transform::simulation_transform::SimulationTransform;
 use crate::trade_plan::TradePlan;
 use crate::utils::{SectorEntity, TradeIntent, TypedEntity};
 use bevy::prelude::{Commands, Component, Entity, Query, Res};
+use common::components::celestials::GasGiant;
+use common::components::{BuyOrders, InSector, Inventory, Sector, SectorWithCelestials};
+use common::game_data::{ItemId, ItemManifest};
 
 /// Ships with this behavior will alternate between harvesting gas from gas giants and selling their inventory to stations.
 #[derive(Component)]

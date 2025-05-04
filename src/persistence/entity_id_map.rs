@@ -1,6 +1,3 @@
-use crate::persistence::persistent_entity_id::{
-    PersistentAsteroidId, PersistentGateId, PersistentShipId, PersistentStationId,
-};
 use crate::persistence::{PersistentCelestialId, PersistentConstructionSiteId, PersistentEntityId};
 use crate::utils::{
     AsteroidEntity, CelestialEntity, ConstructionSiteEntity, GateEntity, SectorEntity, ShipEntity,
@@ -9,6 +6,9 @@ use crate::utils::{
 use bevy::ecs::system::SystemParam;
 use bevy::platform::collections::HashMap;
 use bevy::prelude::{Res, Resource};
+use common::persistent_entity_id::{
+    PersistentAsteroidId, PersistentGateId, PersistentShipId, PersistentStationId,
+};
 use hexx::Hex;
 use std::hash::Hash;
 
