@@ -3,8 +3,14 @@ name = "bevy_space"
 version = "0.1.0"
 edition = "2024"
 
-[dependencies]
+[workspace]
+members = ["crates/test_utils"] # todo: replace with * later on
+
+[workspace.dependencies]
 bevy = { version = "0.16.0", features = ["trace"] }
+
+[dependencies]
+bevy = { workspace = true }
 bevy_egui = "0.34.1"
 hexx = { version = "0.20.0", features = ["serde"] }
 #iyes_perf_ui = "0.4.0"
@@ -16,8 +22,10 @@ leafwing_manifest = { version = "0.3.0", features = [] }
 paste = "1.0.15"
 
 [dev-dependencies]
+test_utils = { path = "crates/test_utils" }
 rstest = "0.25.0"
 
 [patch.crates-io]
 # iyes_perf_ui = { git = "https://github.com/Affinator/iyes_perf_ui.git", rev = "cec8ff80a33dae570eb9af59b60b5c298e192f80" }
 leafwing_manifest = { path = "../leafwing_manifest" }
+

@@ -3,7 +3,7 @@ use bevy::prelude::Component;
 use hexx::Hex;
 
 /// Component for Celestials.
-/// A sector containing a star should always be marked to with a [SectorStarComponent],
+/// A sector containing a star should always be marked to with a [SectorWithStar],
 /// which allows us to query for the related entity with this component here.
 #[derive(Component)]
 #[component(immutable)]
