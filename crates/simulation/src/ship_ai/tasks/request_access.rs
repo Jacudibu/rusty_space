@@ -1,0 +1,73 @@
+use crate::ship_ai::ship_task::ShipTask;
+use crate::ship_ai::{TaskComponent, tasks};
+use bevy::prelude::{Commands, Entity, Query, Res, warn};
+use common::components::interaction_queue::InteractionQueue;
+use common::components::task_queue::TaskInsideQueue;
+use common::components::task_queue::TaskQueue;
+use common::events::task_events::AllTaskStartedEventWriters;
+use common::simulation_time::SimulationTime;
+use common::types::ship_tasks::RequestAccess;
+
+impl TaskComponent for ShipTask<RequestAccess> {
+    fn can_be_aborted() -> bool {
+        true
+    }
+}
+
+impl ShipTask<RequestAccess> {
+    pub fn run_tasks(
+        mut commands: Commands,
+        mut all_ships_with_task: Query<(Entity, &Self, &mut TaskQueue)>,
+        mut all_interaction_queues: Query<&mut InteractionQueue>,
+        simulation_time: Res<SimulationTime>,
+        mut task_started_event_writers: AllTaskStartedEventWriters,
+    ) {
+        let now = simulation_time.now();
+
+        for (entity, task, mut task_queue) in all_ships_with_task.iter_mut() {
+            let Ok(mut interaction_queue) = all_interaction_queues.get_mut(task.target.into())
+            else {
+                // TODO: Cancel dependant tasks
+                warn!(
+                    "Unable to find target entity for {:?}'s request_access task!",
+                    entity
+                );
+                // TODO: Right now we know that the next three tasks are dock, sell, undock,
+                //       but that's not always going to be a given and needs to be handled properly
+                let request_access_task = task_queue.queue.pop_front().unwrap();
+                task_queue.queue.pop_front();
+                task_queue.queue.pop_front();
+                task_queue.queue.pop_front();
+                task_queue.push_front(request_access_task);
+                tasks::remove_task_and_add_next_in_queue::<RequestAccess>(
+                    &mut commands,
+                    entity,
+                    &mut task_queue,
+                    now,
+                    &mut task_started_event_writers,
+                );
+                continue;
+            };
+
+            if interaction_queue
+                .try_start_interaction(entity.into())
+                .is_err()
+            {
+                task_queue.insert(
+                    1,
+                    TaskInsideQueue::AwaitingSignal {
+                        target: task.target,
+                    },
+                );
+            }
+
+            tasks::remove_task_and_add_next_in_queue::<RequestAccess>(
+                &mut commands,
+                entity,
+                &mut task_queue,
+                now,
+                &mut task_started_event_writers,
+            );
+        }
+    }
+}

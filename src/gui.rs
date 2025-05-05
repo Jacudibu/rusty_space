@@ -1,12 +1,4 @@
-use crate::SpriteHandles;
 use crate::entity_selection::{IsEntitySelected, MouseCursor};
-use crate::simulation::interaction_queue::InteractionQueue;
-use crate::simulation::physics::ShipVelocity;
-use crate::simulation::prelude::SimulationTime;
-use crate::simulation::production::{ProductionFacility, Shipyard};
-use crate::simulation::ship_ai::TaskInsideQueue;
-use crate::simulation::ship_ai::TaskQueue;
-use crate::utils::ExchangeWareData;
 use bevy::app::App;
 use bevy::ecs::query::QueryData;
 use bevy::platform::collections::{HashMap, HashSet};
@@ -17,6 +9,11 @@ use bevy::prelude::{
 use bevy_egui::egui::load::SizedTexture;
 use bevy_egui::egui::{Align2, Shadow, Ui};
 use bevy_egui::{EguiContextPass, EguiContexts, EguiStartupSet, egui};
+use common::components::interaction_queue::InteractionQueue;
+use common::components::production_facility::ProductionFacility;
+use common::components::ship_velocity::ShipVelocity;
+use common::components::shipyard::Shipyard;
+use common::components::task_queue::{TaskInsideQueue, TaskQueue};
 use common::components::{
     Asteroid, BuyOrders, ConstructionSite, ConstructionSiteStatus, Gate, InSector, Inventory,
     SelectableEntity, SellOrders, Ship, Station, TradeOrder,
@@ -30,7 +27,10 @@ use common::session_data::ship_configs::ShipConfigurationAddedEvent;
 use common::session_data::{
     SessionData, ShipConfigId, ShipConfiguration, ShipConfigurationManifest,
 };
+use common::simulation_time::SimulationTime;
 use common::states::MouseCursorOverUiState;
+use common::types::exchange_ware_data::ExchangeWareData;
+use common::types::sprite_handles::SpriteHandles;
 
 pub struct GUIPlugin;
 impl Plugin for GUIPlugin {
@@ -137,7 +137,10 @@ impl UiIcons {
         match task {
             TaskInsideQueue::UseGate { .. } => self.move_to,
             TaskInsideQueue::MoveToEntity { .. } => self.move_to,
-            TaskInsideQueue::ExchangeWares { data, .. } => match data {
+            TaskInsideQueue::ExchangeWares {
+                exchange_data: data,
+                ..
+            } => match data {
                 ExchangeWareData::Buy(_, _) => self.buy,
                 ExchangeWareData::Sell(_, _) => self.sell,
             },
@@ -575,7 +578,10 @@ fn list_selection_details(
                                         format!("Dock at {}", names.get(target.into()).unwrap())
                                     }
                                     TaskInsideQueue::Undock => "Undock".to_string(),
-                                    TaskInsideQueue::ExchangeWares { data, .. } => match data {
+                                    TaskInsideQueue::ExchangeWares {
+                                        exchange_data: data,
+                                        ..
+                                    } => match data {
                                         ExchangeWareData::Buy(item_id, amount) => {
                                             format!(
                                                 "Buy {amount}x{}",

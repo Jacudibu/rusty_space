@@ -6,3 +6,4 @@ edition = "2024"
 [dependencies]
 bevy = { workspace = true }
 common = { workspace = true }
+persistence = { workspace = true }

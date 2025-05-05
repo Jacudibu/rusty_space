@@ -1,0 +1,15 @@
+[package]
+name = "universe_builder"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+bevy = { workspace = true }
+hexx = { workspace = true }
+leafwing_manifest = { workspace = true }
+rand = { workspace = true }
+
+common = { workspace = true }
+entity_spawners = { workspace = true }
+persistence = { workspace = true }
+simulation = { workspace = true }

@@ -6,13 +6,19 @@ mod construction_site;
 mod engine;
 mod gate;
 mod gate_connection;
+pub mod interaction_queue;
 mod inventory;
 mod is_docked;
+pub mod production_facility;
 mod sector;
 mod selectable_entity;
 mod ship;
+pub mod ship_behavior;
 mod ship_subcomponents;
+pub mod ship_velocity;
+pub mod shipyard;
 mod station;
+pub mod task_queue;
 mod trade;
 
 pub use {

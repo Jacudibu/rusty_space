@@ -1,0 +1,12 @@
+[package]
+name = "persistence"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+bevy = { workspace = true }
+hexx = { workspace = true }
+serde = { workspace = true }
+
+# Internal creates. Ideally, we should only ever require common in here.
+common = { workspace = true }

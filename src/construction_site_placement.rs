@@ -1,9 +1,4 @@
-use crate::SpriteHandles;
 use crate::entity_selection::MouseCursor;
-use crate::map_layout::MapLayout;
-use crate::persistence::{ConstructionSiteIdMap, StationIdMap};
-use crate::utils::entity_spawners::{ConstructionSiteSpawnData, StationSpawnData, spawn_station};
-use crate::utils::{PriceSetting, SectorPosition, intersections};
 use bevy::app::{App, Plugin};
 use bevy::ecs::query::QueryFilter;
 use bevy::input::ButtonInput;
@@ -20,12 +15,18 @@ use common::components::celestials::{Planet, Star};
 use common::components::{
     BuyOrderData, BuyOrders, ConstantOrbit, Gate, Sector, SectorWithCelestials, Station,
 };
-use common::constants;
 use common::game_data::{
     Constructable, ConstructableModuleId, ItemId, ItemManifest, ProductionModuleManifest,
     RecipeManifest, SILICA_PRODUCTION_MODULE_ID, ShipyardModuleManifest,
 };
+use common::types::entity_id_map::{ConstructionSiteIdMap, StationIdMap};
+use common::types::map_layout::MapLayout;
 use common::types::polar_coordinates::PolarCoordinates;
+use common::types::price_setting::PriceSetting;
+use common::types::sector_position::SectorPosition;
+use common::types::sprite_handles::SpriteHandles;
+use common::{constants, geometry};
+use entity_spawners::spawn_station::{ConstructionSiteSpawnData, StationSpawnData, spawn_station};
 
 /// Plugin for placing new Construction Sites.
 pub struct ConstructionSitePlacementPlugin;
@@ -500,7 +501,7 @@ fn is_construction_site_position_valid(
         }
     } else {
         for edge in map_layout.hex_edge_vertices {
-            if intersections::intersect_line_with_circle(
+            if geometry::intersect_line_with_circle(
                 edge[0] + sector_world_pos,
                 edge[1] + sector_world_pos,
                 site_world_pos,

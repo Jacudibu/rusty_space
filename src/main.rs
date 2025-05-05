@@ -1,10 +1,11 @@
 use bevy::DefaultPlugins;
 use bevy::asset::AssetServer;
 use bevy::prelude::{
-    App, Assets, Commands, Handle, Image, ImagePlugin, PluginGroup, Res, ResMut, Resource, Startup,
-    Window, WindowPlugin,
+    App, Assets, Commands, Image, ImagePlugin, PluginGroup, Res, ResMut, Startup, Window,
+    WindowPlugin,
 };
 use common::game_data::{GameData, image_generator};
+use common::types::sprite_handles::SpriteHandles;
 use common::{constants, session_data};
 
 mod construction_site_placement;
@@ -12,11 +13,7 @@ mod diagnostics;
 mod entity_selection;
 mod gizmos;
 mod gui;
-mod map_layout;
-mod pathfinding;
 mod persistence;
-mod simulation;
-mod trade_plan;
 mod utils;
 
 fn main() {
@@ -45,7 +42,7 @@ fn main() {
         entity_selection::EntitySelectionPlugin,
         gizmos::GizmoPlugin,
         gui::GUIPlugin,
-        persistence::UniverseSaveDataLoadingOnStartupPlugin,
+        persistence::loading_plugin::UniverseSaveDataLoadingOnStartupPlugin,
         persistence::test_universe::TestUniverseDataPlugin,
         simulation::plugin::SimulationPlugin,
         session_data::SessionDataPlugin,
@@ -69,22 +66,6 @@ fn get_window_title() -> String {
             + constants::MINING_SHIP_COUNT
             + constants::HARVESTING_SHIP_COUNT
     )
-}
-
-#[derive(Resource)]
-#[cfg_attr(test, derive(Default))]
-pub struct SpriteHandles {
-    gate: Handle<Image>,
-    gate_selected: Handle<Image>,
-    planet: Handle<Image>,
-    planet_selected: Handle<Image>,
-    star: Handle<Image>,
-    star_selected: Handle<Image>,
-    station: Handle<Image>,
-    station_selected: Handle<Image>,
-    construction_site: Handle<Image>,
-    icon_unknown: Handle<Image>,
-    icon_ship: Handle<Image>,
 }
 
 pub fn initialize_data(

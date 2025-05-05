@@ -1,13 +1,14 @@
-use crate::persistence::local_hex_position::LocalHexPosition;
 use crate::persistence::test_universe::coordinates::{
     BOTTOM_LEFT, CENTER, RIGHT, TOP_RIGHT, TOP_RIGHT_TOP_RIGHT,
 };
-use crate::persistence::{GatePairSaveData, SaveDataCollection};
 use bevy::prelude::Vec2;
+use common::types::local_hex_position::LocalHexPosition;
 use common::types::polar_coordinates::PolarCoordinates;
+use persistence::data::{GatePairSaveData, SaveDataCollection};
+use universe_builder::gate_builder::GatePairBuilder;
 
 pub fn create_test_data() -> SaveDataCollection<GatePairSaveData> {
-    let mut result = SaveDataCollection::<GatePairSaveData>::default();
+    let mut result = GatePairBuilder::default();
     result.add(
         LocalHexPosition::new(CENTER, Vec2::new(250.0, 0.0)),
         LocalHexPosition::from_polar(RIGHT, PolarCoordinates::new(240.0, 180.0)),
@@ -25,5 +26,5 @@ pub fn create_test_data() -> SaveDataCollection<GatePairSaveData> {
         LocalHexPosition::new(BOTTOM_LEFT, Vec2::new(200.0, 130.0)),
     );
 
-    result
+    result.build()
 }

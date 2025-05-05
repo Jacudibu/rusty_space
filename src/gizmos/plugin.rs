@@ -1,7 +1,7 @@
 use crate::gizmos::{gate_connection, orbits, sector_outlines, selected_ship_tasks};
-use crate::map_layout::MapLayout;
 use bevy::app::Update;
 use bevy::prelude::{App, AppGizmoBuilder, Plugin, Startup};
+use common::types::map_layout::MapLayout;
 
 pub struct GizmoPlugin;
 impl Plugin for GizmoPlugin {

@@ -1,0 +1,12 @@
+[package]
+name = "pathfinding"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+bevy = { workspace = true }
+hexx = { workspace = true }
+common = { workspace = true }
+
+[dev-dependencies]
+test_utils = { workspace = true }

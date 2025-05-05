@@ -1,85 +1,79 @@
-use crate::persistence::local_hex_position::LocalHexPosition;
 use crate::persistence::test_universe::coordinates::CENTER;
-use crate::persistence::{SaveDataCollection, ShipBehaviorSaveData, ShipSaveData};
-use crate::simulation::prelude::{Milliseconds, SimulationTimestamp};
-use crate::simulation::ship_ai::AutoMineState;
 use common::constants;
 use common::game_data::{CRYSTAL_ORE_ITEM_ID, HYDROGEN_ITEM_ID, IRON_ORE_ITEM_ID};
 use common::session_data::ship_configs::{
     MOCK_CONSTRUCTION_SHIP_CONFIG_ID, MOCK_HARVESTING_SHIP_CONFIG_ID, MOCK_MINING_SHIP_CONFIG_ID,
     MOCK_TRANSPORT_SHIP_CONFIG_ID,
 };
+use common::types::local_hex_position::LocalHexPosition;
 use hexx::Vec2;
+use persistence::data::{
+    AutoMineStateSaveData, SaveDataCollection, ShipBehaviorSaveData, ShipSaveData,
+};
+use universe_builder::ship_builder::ShipBuilder;
 
 pub fn create_test_data() -> SaveDataCollection<ShipSaveData> {
-    let mut result = SaveDataCollection::<ShipSaveData>::default();
+    let mut builder = ShipBuilder::default();
 
     let rotation_factor = (std::f32::consts::PI * 2.0) / constants::TRADE_SHIP_COUNT as f32;
     for i in 0..constants::TRADE_SHIP_COUNT {
-        result.add(
+        builder.add(
             MOCK_TRANSPORT_SHIP_CONFIG_ID,
             LocalHexPosition::new(CENTER, Vec2::ZERO),
             rotation_factor * (i as f32),
             format!("Trade Ship {i}"),
-            ShipBehaviorSaveData::AutoTrade {
-                next_idle_update: SimulationTimestamp::from(i as Milliseconds % 1000),
-            },
+            ShipBehaviorSaveData::AutoTrade,
         );
     }
 
     let rotation_factor = (std::f32::consts::PI * 2.0) / constants::MINING_SHIP_COUNT as f32;
     for i in 0..constants::MINING_SHIP_COUNT {
-        result.add(
+        builder.add(
             MOCK_MINING_SHIP_CONFIG_ID,
             LocalHexPosition::new(CENTER, Vec2::ZERO),
             rotation_factor * (i as f32),
             format!("Iron Mining Ship {i}"),
             ShipBehaviorSaveData::AutoMine {
-                next_idle_update: SimulationTimestamp::from(i as Milliseconds % 1000),
                 mined_ore: IRON_ORE_ITEM_ID,
-                state: AutoMineState::Mining,
+                state: AutoMineStateSaveData::Mining,
             },
         );
-        result.add(
+        builder.add(
             MOCK_MINING_SHIP_CONFIG_ID,
             LocalHexPosition::new(CENTER, Vec2::ZERO),
             rotation_factor * (i as f32),
             format!("Crystal Mining Ship {i}"),
             ShipBehaviorSaveData::AutoMine {
-                next_idle_update: SimulationTimestamp::from(i as Milliseconds % 1000),
                 mined_ore: CRYSTAL_ORE_ITEM_ID,
-                state: AutoMineState::Mining,
+                state: AutoMineStateSaveData::Mining,
             },
         );
     }
 
     let rotation_factor = (std::f32::consts::PI * 2.0) / constants::HARVESTING_SHIP_COUNT as f32;
     for i in 0..constants::HARVESTING_SHIP_COUNT {
-        result.add(
+        builder.add(
             MOCK_HARVESTING_SHIP_CONFIG_ID,
             LocalHexPosition::new(CENTER, Vec2::ZERO),
             rotation_factor * (i as f32),
             format!("Harvesting Ship {i}"),
             ShipBehaviorSaveData::AutoHarvest {
-                next_idle_update: SimulationTimestamp::from(i as Milliseconds % 1000),
                 harvested_gas: HYDROGEN_ITEM_ID,
-                state: AutoMineState::Mining,
+                state: AutoMineStateSaveData::Mining,
             },
         );
     }
 
     let rotation_factor = (std::f32::consts::PI * 2.0) / constants::CONSTRUCTION_SHIP_COUNT as f32;
     for i in 0..constants::CONSTRUCTION_SHIP_COUNT {
-        result.add(
+        builder.add(
             MOCK_CONSTRUCTION_SHIP_CONFIG_ID,
             LocalHexPosition::new(CENTER, Vec2::ZERO),
             rotation_factor * (i as f32),
             format!("Construction Ship {i}"),
-            ShipBehaviorSaveData::AutoConstruct {
-                next_idle_update: SimulationTimestamp::from(i as Milliseconds % 1000),
-            },
+            ShipBehaviorSaveData::AutoConstruct,
         );
     }
 
-    result
+    builder.build()
 }

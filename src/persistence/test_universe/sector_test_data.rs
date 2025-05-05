@@ -1,16 +1,16 @@
-use crate::map_layout::MapLayout;
 use crate::persistence::test_universe::coordinates;
-use crate::persistence::{
-    CelestialKindSaveData, SaveDataCollection, SectorAsteroidSaveData, SectorCelestialSaveData,
-    SectorSaveData,
-};
-use crate::utils::{CelestialMass, SolarMass, UniverseSeed};
 use bevy::math::Vec2;
 use common::constants;
 use common::game_data::{
     AsteroidManifest, CRYSTAL_ASTEROID_ID, HYDROGEN_ITEM_ID, IRON_ASTEROID_ID,
 };
+use common::types::celestial_mass::{CelestialMass, SolarMass};
+use common::types::map_layout::MapLayout;
 use common::types::polar_coordinates::PolarCoordinates;
+use common::types::universe_seed::UniverseSeed;
+use persistence::data::{CelestialKindSaveData, SaveDataCollection, SectorSaveData};
+use universe_builder::celestial_builder::SectorCelestialBuilder;
+use universe_builder::sector_builder::{SectorAsteroidBuilder, UniverseSectorBuilder};
 
 const UNIVERSE_SEED: UniverseSeed = UniverseSeed::from_seed(42);
 
@@ -18,13 +18,13 @@ pub fn create_test_data(
     asteroid_manifest: &AsteroidManifest,
 ) -> SaveDataCollection<SectorSaveData> {
     let map_layout = MapLayout::default();
-    let mut sectors = SaveDataCollection::<SectorSaveData>::default();
+    let mut sectors = UniverseSectorBuilder::default();
     sectors.add(coordinates::CENTER);
 
     sectors
         .add(coordinates::RIGHT)
         .with_celestial(
-            SectorCelestialSaveData::new(
+            SectorCelestialBuilder::new(
                 CelestialKindSaveData::Star,
                 PolarCoordinates {
                     radial_distance: 0.0,
@@ -34,7 +34,7 @@ pub fn create_test_data(
             )
             .with_mass(CelestialMass::SolarMass(SolarMass::from_solar_mass(1, 0))),
         )
-        .with_celestial(SectorCelestialSaveData::new(
+        .with_celestial(SectorCelestialBuilder::new(
             CelestialKindSaveData::Terrestrial,
             PolarCoordinates {
                 radial_distance: 120.0,
@@ -42,7 +42,7 @@ pub fn create_test_data(
             }
             .to_cartesian(),
         ))
-        .with_celestial(SectorCelestialSaveData::new(
+        .with_celestial(SectorCelestialBuilder::new(
             CelestialKindSaveData::Terrestrial,
             PolarCoordinates {
                 radial_distance: 240.0,
@@ -50,7 +50,7 @@ pub fn create_test_data(
             }
             .to_cartesian(),
         ))
-        .with_celestial(SectorCelestialSaveData::new(
+        .with_celestial(SectorCelestialBuilder::new(
             CelestialKindSaveData::GasGiant {
                 resources: vec![HYDROGEN_ITEM_ID],
             },
@@ -62,7 +62,7 @@ pub fn create_test_data(
         ));
 
     sectors.add(coordinates::TOP_RIGHT).with_asteroids(
-        SectorAsteroidSaveData::new()
+        SectorAsteroidBuilder::new()
             .with_average_velocity(Vec2::splat(1.5))
             .add_random_live_asteroids(
                 coordinates::TOP_RIGHT,
@@ -76,7 +76,7 @@ pub fn create_test_data(
     sectors
         .add(coordinates::TOP_RIGHT_TOP_RIGHT)
         .with_asteroids(
-            SectorAsteroidSaveData::new()
+            SectorAsteroidBuilder::new()
                 .with_average_velocity(Vec2::new(-0.5, -1.3))
                 .add_random_live_asteroids(
                     coordinates::TOP_RIGHT_TOP_RIGHT,
@@ -88,6 +88,5 @@ pub fn create_test_data(
                 ),
         );
     sectors.add(coordinates::BOTTOM_LEFT);
-
-    sectors
+    sectors.build()
 }

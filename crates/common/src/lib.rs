@@ -7,10 +7,13 @@ pub mod components;
 pub mod constants;
 pub mod events;
 pub mod game_data;
+pub mod geometry;
+pub mod interpolation;
 pub mod session_data;
 pub mod simulation_time;
 pub mod simulation_transform;
 pub mod states;
+pub mod system_sets;
 pub mod types;
 
 /// Registers all the things inside the common crate.

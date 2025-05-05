@@ -1756,8 +1756,10 @@ dependencies = [
  "image",
  "leafwing_manifest",
  "paste",
+ "rand",
  "rstest",
  "serde",
+ "test_utils",
 ]
 
 [[package]]
@@ -2180,6 +2182,21 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
+]
+
+[[package]]
+name = "entity_selection"
+version = "0.1.0"
+
+[[package]]
+name = "entity_spawners"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "common",
+ "hexx",
+ "leafwing_manifest",
+ "persistence",
 ]
 
 [[package]]
@@ -3145,12 +3162,14 @@ checksum = "bbd2bcb4c963f2ddae06a2efc7e9f3591312473c50c6685e1f298068316e66fe"
 
 [[package]]
 name = "leafwing_manifest"
-version = "0.3.0"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "76ea19f116e5613ec3f11f7fea84d5de548133af7c8d7f5d3f543f6210d749c9"
 dependencies = [
  "bevy",
  "bevy_common_assets",
  "serde",
- "thiserror 2.0.12",
+ "thiserror 1.0.69",
 ]
 
 [[package]]
@@ -3978,10 +3997,30 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
 
 [[package]]
+name = "pathfinding"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "common",
+ "hexx",
+ "test_utils",
+]
+
+[[package]]
 name = "percent-encoding"
 version = "2.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e3148f5046208a5d56bcfc03053e3ca6334e51da8dfb19b6cdc8b306fae3283e"
+
+[[package]]
+name = "persistence"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "common",
+ "hexx",
+ "serde",
+]
 
 [[package]]
 name = "petgraph"
@@ -4528,11 +4567,15 @@ dependencies = [
  "bevy_egui",
  "camera",
  "common",
+ "entity_spawners",
  "hexx",
  "leafwing_manifest",
+ "persistence",
  "rand",
  "serde",
+ "simulation",
  "test_utils",
+ "universe_builder",
 ]
 
 [[package]]
@@ -4688,6 +4731,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "95890f873bec569a0362c235787f3aca6e1e887302ba4840839bcc6459c42da6"
 dependencies = [
  "quote",
+]
+
+[[package]]
+name = "simulation"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "common",
+ "entity_spawners",
+ "pathfinding",
+ "test_utils",
 ]
 
 [[package]]
@@ -4929,6 +4983,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "common",
+ "persistence",
 ]
 
 [[package]]
@@ -5262,6 +5317,20 @@ name = "unicode-xid"
 version = "0.2.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ebc1c04c71510c7f702b52b7c350734c9ff1295c464a03335b00bb84fc54f853"
+
+[[package]]
+name = "universe_builder"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "common",
+ "entity_spawners",
+ "hexx",
+ "leafwing_manifest",
+ "persistence",
+ "rand",
+ "simulation",
+]
 
 [[package]]
 name = "url"

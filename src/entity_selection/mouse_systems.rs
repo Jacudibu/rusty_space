@@ -1,6 +1,5 @@
 use crate::entity_selection::mouse_interaction::{LastMouseInteraction, MouseInteraction};
 use crate::entity_selection::{DOUBLE_CLICK_TIME, IsEntitySelected, MouseCursor};
-use crate::simulation::physics;
 use bevy::input::ButtonState;
 use bevy::input::mouse::MouseButtonInput;
 use bevy::prelude::{
@@ -9,6 +8,7 @@ use bevy::prelude::{
 };
 use common::components::{RADIUS_CURSOR, SelectableEntity};
 use common::constants::BevyResult;
+use common::geometry;
 use common::states::MouseCursorOverUiState;
 
 #[allow(clippy::too_many_arguments)]
@@ -55,7 +55,7 @@ pub fn process_mouse_clicks(
                     .iter()
                     .filter(|(_, _, _, visibility)| visibility == &&InheritedVisibility::VISIBLE)
                     .find(|(_, transform, selectable, _)| {
-                        physics::overlap_circle_with_circle(
+                        geometry::overlap_circle_with_circle(
                             cursor_world_pos,
                             RADIUS_CURSOR,
                             transform.translation(),
@@ -126,7 +126,7 @@ fn process_double_click(
                 return false;
             }
 
-            physics::overlap_rectangle_with_circle_axis_aligned(
+            geometry::overlap_rectangle_with_circle_axis_aligned(
                 left,
                 right,
                 bottom,
@@ -195,7 +195,7 @@ pub fn update_active_mouse_interaction(
                     return false;
                 }
 
-                physics::overlap_rectangle_with_circle_axis_aligned(
+                geometry::overlap_rectangle_with_circle_axis_aligned(
                     left,
                     right,
                     bottom,
@@ -211,7 +211,7 @@ pub fn update_active_mouse_interaction(
         selected_entities
             .iter()
             .filter(|(_, transform, selectable)| {
-                !physics::overlap_rectangle_with_circle_axis_aligned(
+                !geometry::overlap_rectangle_with_circle_axis_aligned(
                     left,
                     right,
                     bottom,

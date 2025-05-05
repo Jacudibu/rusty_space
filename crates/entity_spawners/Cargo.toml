@@ -1,0 +1,13 @@
+[package]
+name = "entity_spawners"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+bevy = { workspace = true }
+hexx = { workspace = true }
+leafwing_manifest = { workspace = true }
+
+# internal
+common = { workspace = true }
+persistence = { workspace = true }

@@ -1,6 +1,4 @@
-use crate::persistence::local_hex_position::LocalHexPosition;
 use crate::persistence::test_universe::coordinates::{BOTTOM_LEFT, CENTER};
-use crate::persistence::{SaveDataCollection, StationSaveData};
 use bevy::prelude::Vec2;
 use common::game_data::{
     CRYSTAL_ORE_ITEM_ID, ConstructableModuleId, HYDROGEN_ITEM_ID, IRON_ORE_ITEM_ID,
@@ -8,10 +6,13 @@ use common::game_data::{
     REFINED_METALS_RECIPE_ID, SILICA_ITEM_ID, SILICA_PRODUCTION_MODULE_ID, SILICA_RECIPE_ID,
     WAFER_ITEM_ID, WAFERS_PRODUCTION_MODULE_ID, WAFERS_RECIPE_ID,
 };
+use common::types::local_hex_position::LocalHexPosition;
 use common::types::polar_coordinates::PolarCoordinates;
+use persistence::data::{SaveDataCollection, StationSaveData};
+use universe_builder::station_builder::StationBuilder;
 
 pub fn create_test_data() -> SaveDataCollection<StationSaveData> {
-    let mut result = SaveDataCollection::<StationSaveData>::default();
+    let mut result = StationBuilder::default();
 
     result
         .add(
@@ -71,5 +72,5 @@ pub fn create_test_data() -> SaveDataCollection<StationSaveData> {
         .with_shipyard(2, MOCK_SHIPYARD_MODULE_ID)
         .with_buys(vec![REFINED_METALS_ITEM_ID, WAFER_ITEM_ID]);
 
-    result
+    result.build()
 }
