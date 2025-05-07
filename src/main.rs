@@ -38,7 +38,7 @@ fn main() {
         },
         camera::CameraPlugin,
         common::CommonPlugin,
-        // diagnostics::DiagnosticsPlugin,
+        diagnostics::DiagnosticsPlugin,
         entity_selection::EntitySelectionPlugin,
         gizmos::GizmoPlugin,
         gui::GUIPlugin,

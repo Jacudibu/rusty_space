@@ -32,10 +32,7 @@ universe_builder = { path = "crates/universe_builder" }
 bevy = { workspace = true }
 bevy_egui = { workspace = true }
 hexx = { workspace = true }
-leafwing_manifest = { workspace = true }
-#iyes_perf_ui = "0.4.0"
-rand = { workspace = true }
-serde = { workspace = true }
+iyes_perf_ui = "0.5.0"
 
 # Internal dependencies
 camera = { workspace = true }
@@ -49,5 +46,5 @@ universe_builder = { workspace = true }
 test_utils = { path = "crates/test_utils" }
 
 [patch.crates-io]
-# iyes_perf_ui = { git = "https://github.com/Affinator/iyes_perf_ui.git", rev = "cec8ff80a33dae570eb9af59b60b5c298e192f80" }
+iyes_perf_ui = { git = "https://github.com/olekspickle/iyes_perf_ui.git" }#, rev = "0ff2fe342e30857980746070ead95706d03036e1" }
 
