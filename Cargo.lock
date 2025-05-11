@@ -5373,6 +5373,7 @@ name = "universe_builder"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "bevy_egui",
  "common",
  "entity_spawners",
  "hexx",
