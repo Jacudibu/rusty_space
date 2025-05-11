@@ -4,6 +4,29 @@ An economy focused RTS / Space Sandbox written in Rust and Bevy, highly inspired
 
 Right now things are still very Work-in-Progressy. I'll be more open to contributions once I've figured out more about the general direction this will take, which includes filling [docs](docs) with a proper game design document. :>
 
+## Crate overview
+```mermaid
+flowchart BT
+    camera --> common
+    persistence --> common
+    pathfinding --> common
+
+    entity_spawners --> persistence
+
+    universe_builder --> entity_spawners
+    universe_loader --> entity_spawners
+    simulation --> entity_spawners
+
+    simulation --> pathfinding
+
+    main --> universe_builder
+    main --> universe_loader
+    main --> simulation
+    main --> camera
+```
+
+Have a look at the readme files in the individual crate subfolders for more information.
+
 ## License
 [
 ![License: CC BY-NC-SA 4.0](https://mirrors.creativecommons.org/presskit/buttons/88x31/svg/by-nc-sa.svg)
