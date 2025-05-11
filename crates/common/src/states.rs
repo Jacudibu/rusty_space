@@ -12,6 +12,7 @@ pub enum ApplicationState {
     #[allow(dead_code)]
     Menu,
     #[default]
+    LoadingUniverse,
     InGame,
 }
 

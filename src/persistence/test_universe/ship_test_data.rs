@@ -10,7 +10,7 @@ use hexx::Vec2;
 use persistence::data::{
     AutoMineStateSaveData, SaveDataCollection, ShipBehaviorSaveData, ShipSaveData,
 };
-use universe_builder::ship_builder::ShipBuilder;
+use universe_builder::builders::ship_builder::ShipBuilder;
 
 pub fn create_test_data() -> SaveDataCollection<ShipSaveData> {
     let mut builder = ShipBuilder::default();

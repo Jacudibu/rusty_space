@@ -32,7 +32,8 @@ impl Plugin for CameraPlugin {
                 zooming::animate_smooth_camera_zoom
                     .after(zooming::zoom_camera_with_scroll_wheel)
                     .after(zooming::zoom_camera_with_buttons),
-            ),
+            )
+                .run_if(in_state(ApplicationState::InGame)),
         );
     }
 }

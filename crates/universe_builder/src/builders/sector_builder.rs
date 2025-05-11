@@ -1,15 +1,11 @@
-use crate::celestial_builder::SectorCelestialBuilder;
-use bevy::ecs::system::SystemParam;
-use bevy::prelude::{Circle, Commands, Deref, DerefMut, Res, ShapeSample, Vec2};
+use crate::builders::celestial_builder::SectorCelestialBuilder;
+use bevy::prelude::{Circle, Deref, DerefMut, ShapeSample, Vec2};
 use common::constants;
 use common::game_data::{AsteroidDataId, AsteroidManifest};
 use common::simulation_time::SimulationTimestamp;
-use common::types::entity_id_map::{AsteroidIdMap, CelestialIdMap, SectorIdMap};
 use common::types::map_layout::MapLayout;
 use common::types::persistent_entity_id::PersistentAsteroidId;
-use common::types::sprite_handles::SpriteHandles;
 use common::types::universe_seed::UniverseSeed;
-use entity_spawners::spawn_sector::spawn_sector;
 use hexx::Hex;
 use leafwing_manifest::manifest::Manifest;
 use persistence::data::{
@@ -19,14 +15,6 @@ use persistence::data::{
 use rand::Rng;
 use rand::distributions::Distribution;
 use simulation::asteroids::calculate_milliseconds_until_asteroid_leaves::calculate_milliseconds_until_asteroid_leaves_hexagon;
-
-#[derive(SystemParam)]
-pub struct Args<'w, 's> {
-    commands: Commands<'w, 's>,
-    sprites: Res<'w, SpriteHandles>,
-    map_layout: Res<'w, MapLayout>,
-    asteroid_manifest: Res<'w, AsteroidManifest>,
-}
 
 #[derive(Deref, DerefMut, Default)]
 pub struct UniverseSectorBuilder {
@@ -58,32 +46,6 @@ impl UniverseSectorBuilder {
             data: self.data.into_iter().map(|x| x.data).collect(),
         }
     }
-}
-
-pub fn spawn_all(data: Res<SaveDataCollection<SectorSaveData>>, mut args: Args) {
-    let mut sector_id_map = SectorIdMap::default();
-    let mut asteroid_id_map = AsteroidIdMap::default();
-    let mut planet_id_map = CelestialIdMap::default();
-    for builder in &data.data {
-        let coordinate = builder.coordinate;
-        let entity = spawn_sector(
-            &mut args.commands,
-            &args.map_layout.hex_layout,
-            builder.coordinate,
-            &builder.features,
-            &args.sprites,
-            &mut asteroid_id_map,
-            &mut planet_id_map,
-            &args.asteroid_manifest,
-        );
-        sector_id_map.insert(coordinate, entity);
-    }
-
-    args.commands
-        .remove_resource::<SaveDataCollection<SectorSaveData>>();
-    args.commands.insert_resource(sector_id_map);
-    args.commands.insert_resource(asteroid_id_map);
-    args.commands.insert_resource(planet_id_map);
 }
 
 impl IndividualSectorBuilder {

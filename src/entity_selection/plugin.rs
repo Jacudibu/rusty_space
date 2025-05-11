@@ -5,7 +5,10 @@ use crate::entity_selection::gizmos::{
 use crate::entity_selection::mouse_cursor::update_mouse_cursor_position;
 use crate::entity_selection::mouse_systems::*;
 use crate::entity_selection::selection_change_listener::on_selection_changed;
-use bevy::prelude::{App, AppGizmoBuilder, IntoScheduleConfigs, Plugin, PreUpdate, Update};
+use bevy::prelude::{
+    App, AppGizmoBuilder, IntoScheduleConfigs, Plugin, PreUpdate, Update, in_state,
+};
+use common::states::ApplicationState;
 
 const DRAW_DEBUG_GIZMOS: bool = false;
 
@@ -14,7 +17,10 @@ impl Plugin for EntitySelectionPlugin {
     fn build(&self, app: &mut App) {
         app.init_gizmo_group::<MouseInteractionGizmos>()
             .insert_resource(MouseCursor::default())
-            .add_systems(PreUpdate, update_mouse_cursor_position)
+            .add_systems(
+                PreUpdate,
+                update_mouse_cursor_position.run_if(in_state(ApplicationState::InGame)),
+            )
             .add_systems(
                 Update,
                 (
@@ -24,7 +30,8 @@ impl Plugin for EntitySelectionPlugin {
                     on_selection_changed
                         .after(process_mouse_clicks)
                         .after(update_active_mouse_interaction),
-                ),
+                )
+                    .run_if(in_state(ApplicationState::InGame)),
             );
 
         if DRAW_DEBUG_GIZMOS {

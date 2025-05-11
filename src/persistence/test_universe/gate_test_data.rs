@@ -5,7 +5,7 @@ use bevy::prelude::Vec2;
 use common::types::local_hex_position::LocalHexPosition;
 use common::types::polar_coordinates::PolarCoordinates;
 use persistence::data::{GatePairSaveData, SaveDataCollection};
-use universe_builder::gate_builder::GatePairBuilder;
+use universe_builder::builders::gate_builder::GatePairBuilder;
 
 pub fn create_test_data() -> SaveDataCollection<GatePairSaveData> {
     let mut result = GatePairBuilder::default();
