@@ -5,4 +5,6 @@ edition = "2024"
 
 [dependencies]
 bevy = { workspace = true }
+
+# internal dependencies
 common = { workspace = true }

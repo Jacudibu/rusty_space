@@ -4626,6 +4626,7 @@ dependencies = [
  "simulation",
  "test_utils",
  "universe_builder",
+ "universe_loader",
 ]
 
 [[package]]
@@ -5380,7 +5381,17 @@ dependencies = [
  "leafwing_manifest",
  "persistence",
  "rand",
- "simulation",
+]
+
+[[package]]
+name = "universe_loader"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bevy_egui",
+ "common",
+ "entity_spawners",
+ "persistence",
 ]
 
 [[package]]

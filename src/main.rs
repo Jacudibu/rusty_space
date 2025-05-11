@@ -42,7 +42,7 @@ fn main() {
         entity_selection::EntitySelectionPlugin,
         gizmos::GizmoPlugin,
         gui::GUIPlugin,
-        universe_builder::loading::UniverseLoadingPlugin,
+        universe_loader::UniverseLoadingPlugin,
         persistence::test_universe::TestUniverseDataPlugin,
         simulation::plugin::SimulationPlugin,
         session_data::SessionDataPlugin,

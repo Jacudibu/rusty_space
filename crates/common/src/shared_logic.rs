@@ -1,9 +1,9 @@
+use crate::geometry;
+use crate::simulation_time::Milliseconds;
 use bevy::math::Vec2;
-use common::geometry;
-use common::simulation_time::Milliseconds;
 
-/// A big number to ensure the velocity vector is long enough to actually intersect with hexagon boundaries
-pub(crate) const VELOCITY_MULTIPLIER: f32 = 100000000.0;
+/// Just a big number to ensure the velocity vector is long enough to actually intersect with hexagon boundaries
+pub const LARGE_VELOCITY_MULTIPLIER: f32 = 100000000.0;
 
 /// Calculates the time until an asteroid will cross the boundaries of its sector.
 ///
@@ -20,7 +20,7 @@ pub fn calculate_milliseconds_until_asteroid_leaves_hexagon(
     for edge in local_hexagon_edges.iter() {
         if let Some(intersection) = geometry::intersect_lines(
             local_spawn_position,
-            local_spawn_position + velocity * VELOCITY_MULTIPLIER,
+            local_spawn_position + velocity * LARGE_VELOCITY_MULTIPLIER,
             edge[0],
             edge[1],
         ) {

@@ -1,22 +1,20 @@
-mod loading_gui;
-
-use crate::builders::ship_builder::convert_behavior_save_data_to_builder_data;
-use crate::builders::station_builder;
-use crate::builders::station_builder::parse_shipyard_save_data;
-use bevy::app::{App, Plugin, Update};
+use crate::LoadingState;
 use bevy::ecs::system::SystemParam;
-use bevy::prelude::{
-    AppExtStates, Commands, Condition, IntoScheduleConfigs, NextState, Query, Res, ResMut,
-    Resource, State, StateSet,
-};
-use bevy::prelude::{SubStates, in_state};
-use bevy_egui::EguiContextPass;
+use bevy::platform::collections::HashMap;
+use bevy::prelude::{Commands, NextState, Query, Res, ResMut, State};
 use common::components::celestials::Celestial;
+use common::components::production_facility::{
+    ProductionFacility, ProductionModule, ProductionQueueElement, RunningProductionQueueElement,
+};
 use common::components::ship_velocity::ShipVelocity;
+use common::components::shipyard::{OngoingShipConstructionOrder, Shipyard, ShipyardModule};
 use common::components::{BuyOrders, Sector, SectorWithCelestials};
-use common::game_data::{AsteroidManifest, ItemManifest, RecipeManifest};
+use common::game_data::{
+    AsteroidManifest, ItemManifest, ProductionModuleId, RecipeManifest, ShipyardModuleId,
+};
 use common::session_data::ShipConfigurationManifest;
-use common::states::ApplicationState;
+use common::types::auto_mine_state::AutoMineState;
+use common::types::behavior_builder::BehaviorBuilder;
 use common::types::entity_id_map::{
     AsteroidIdMap, CelestialIdMap, ConstructionSiteIdMap, GateIdMap, SectorIdMap, ShipIdMap,
     StationIdMap,
@@ -29,111 +27,10 @@ use entity_spawners::spawn_sector::spawn_sector;
 use entity_spawners::spawn_ship::spawn_ship;
 use entity_spawners::spawn_station::{ConstructionSiteSpawnData, StationSpawnData, spawn_station};
 use persistence::data::{
-    GatePairSaveData, SaveDataCollection, SectorSaveData, ShipSaveData, StationSaveData,
+    ActiveShipyardOrderSaveData, AutoMineStateSaveData, GatePairSaveData, ProductionModuleSaveData,
+    ProductionSaveData, SaveDataCollection, SectorSaveData, ShipBehaviorSaveData, ShipSaveData,
+    ShipyardModuleSaveData, ShipyardSaveData, StationSaveData,
 };
-
-#[derive(Debug, Clone, Copy, Default, Eq, PartialEq, Hash, SubStates)]
-#[source(ApplicationState = ApplicationState::LoadingUniverse)]
-pub(crate) enum LoadingState {
-    #[default]
-    Initialize,
-    Sectors,
-    Gates,
-    Stations,
-    Ships,
-    Done,
-}
-
-impl LoadingState {
-    /// Returns the state that should be executed after this state.
-    fn next(&self) -> LoadingState {
-        match self {
-            LoadingState::Initialize => LoadingState::Sectors,
-            LoadingState::Sectors => LoadingState::Gates,
-            LoadingState::Gates => LoadingState::Stations,
-            LoadingState::Stations => LoadingState::Ships,
-            LoadingState::Ships => LoadingState::Done,
-            LoadingState::Done => panic!("We are already done, there is no next state!"),
-        }
-    }
-}
-
-/// Parses save data into entities.
-pub struct UniverseLoadingPlugin;
-impl Plugin for UniverseLoadingPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_sub_state::<LoadingState>();
-        app.add_systems(
-            Update,
-            (
-                init.run_if(in_state(LoadingState::Initialize)),
-                spawn_all_sectors.run_if(in_state(LoadingState::Sectors)),
-                spawn_all_gates.run_if(in_state(LoadingState::Gates)),
-                spawn_all_stations.run_if(in_state(LoadingState::Stations)),
-                spawn_all_ships.run_if(in_state(LoadingState::Ships)),
-                done.run_if(in_state(LoadingState::Done)),
-            ),
-        );
-
-        app.add_systems(
-            EguiContextPass,
-            loading_gui::display_loading_information.run_if(
-                in_state(LoadingState::Sectors).or(in_state(LoadingState::Gates)
-                    .or(in_state(LoadingState::Stations).or(in_state(LoadingState::Ships)))),
-            ),
-        );
-    }
-}
-
-// Counts how many objects needs to be loaded in total in order to calculate progress.
-#[derive(Resource)]
-struct LoadingCounts {
-    sector_count: usize,
-    gate_count: usize,
-    station_count: usize,
-    ship_count: usize,
-}
-
-/// The first step during loading. This is where we initialize our resources.
-fn init(
-    mut commands: Commands,
-    state: Res<State<LoadingState>>,
-    mut next_state: ResMut<NextState<LoadingState>>,
-    sectors: Res<SaveDataCollection<SectorSaveData>>,
-    gates: Res<SaveDataCollection<GatePairSaveData>>,
-    stations: Res<SaveDataCollection<StationSaveData>>,
-    ships: Res<SaveDataCollection<ShipSaveData>>,
-) {
-    commands.insert_resource(SectorIdMap::default());
-    commands.insert_resource(AsteroidIdMap::default());
-    commands.insert_resource(CelestialIdMap::default());
-    commands.insert_resource(GateIdMap::default());
-    commands.insert_resource(StationIdMap::default());
-    commands.insert_resource(ConstructionSiteIdMap::default());
-    commands.insert_resource(ShipIdMap::default());
-
-    commands.insert_resource(LoadingCounts {
-        sector_count: sectors.data.len(),
-        gate_count: gates.data.len(),
-        station_count: stations.data.len(),
-        ship_count: ships.data.len(),
-    });
-
-    next_state.set(state.next());
-}
-
-/// The final step during loading.
-/// We are cleaning up any temporary data that's been constructed during the loading process here.
-fn done(mut commands: Commands, mut next_state: ResMut<NextState<ApplicationState>>) {
-    commands.remove_resource::<LoadingCounts>();
-
-    commands.remove_resource::<SaveDataCollection<SectorSaveData>>();
-    commands.remove_resource::<SaveDataCollection<GatePairSaveData>>();
-    commands.remove_resource::<SaveDataCollection<StationSaveData>>();
-    commands.remove_resource::<SaveDataCollection<ShipSaveData>>();
-
-    next_state.set(ApplicationState::InGame);
-}
 
 #[derive(SystemParam)]
 pub(crate) struct SpawnAllSectorArgs<'w, 's> {
@@ -252,7 +149,7 @@ pub(crate) fn spawn_all_stations(
     let production = next
         .production_modules
         .clone() // TODO: Can we get rid of those clones?
-        .map(station_builder::parse_production_save_data);
+        .map(parse_production_save_data);
     let shipyard = next.shipyard_modules.clone().map(parse_shipyard_save_data);
 
     let next = StationSpawnData {
@@ -333,5 +230,95 @@ pub(crate) fn spawn_all_ships(
             &mut args.ship_id_map,
             args.ship_configurations.get_by_id(&next.config_id).unwrap(),
         );
+    }
+}
+
+pub fn convert_behavior_save_data_to_builder_data(value: ShipBehaviorSaveData) -> BehaviorBuilder {
+    match value {
+        ShipBehaviorSaveData::AutoTrade => BehaviorBuilder::AutoTrade,
+        ShipBehaviorSaveData::AutoConstruct => BehaviorBuilder::AutoConstruct,
+        ShipBehaviorSaveData::AutoMine { mined_ore, state } => BehaviorBuilder::AutoMine {
+            mined_ore,
+            state: convert_auto_mine_state(state),
+        },
+        ShipBehaviorSaveData::AutoHarvest {
+            harvested_gas,
+            state,
+        } => BehaviorBuilder::AutoHarvest {
+            harvested_gas,
+            state: convert_auto_mine_state(state),
+        },
+    }
+}
+
+fn convert_auto_mine_state(state: AutoMineStateSaveData) -> AutoMineState {
+    match state {
+        AutoMineStateSaveData::Mining => AutoMineState::Mining,
+        AutoMineStateSaveData::Trading => AutoMineState::Trading,
+    }
+}
+
+pub(crate) fn parse_production_save_data(data: ProductionSaveData) -> ProductionFacility {
+    ProductionFacility {
+        modules: HashMap::from_iter(data.modules.iter().map(parse_production_module_save_data)),
+    }
+}
+
+pub fn parse_shipyard_save_data(data: ShipyardSaveData) -> Shipyard {
+    Shipyard {
+        modules: HashMap::from_iter(data.modules.iter().map(parse_shipyard_module_save_data)),
+        queue: data.queue.clone(),
+    }
+}
+
+fn parse_production_module_save_data(
+    data: &ProductionModuleSaveData,
+) -> (ProductionModuleId, ProductionModule) {
+    (
+        data.module_id,
+        ProductionModule {
+            amount: data.amount,
+            queued_recipes: data
+                .queued_recipes
+                .iter()
+                .map(|x| ProductionQueueElement {
+                    recipe: x.recipe,
+                    is_repeating: x.is_repeating,
+                })
+                .collect(),
+            running_recipes: data
+                .running_recipes
+                .iter()
+                .map(|x| RunningProductionQueueElement {
+                    recipe: x.recipe,
+                    finished_at: x.finished_at,
+                })
+                .collect(),
+        },
+    )
+}
+
+pub fn parse_shipyard_module_save_data(
+    data: &ShipyardModuleSaveData,
+) -> (ShipyardModuleId, ShipyardModule) {
+    (
+        data.module_id,
+        ShipyardModule {
+            amount: data.amount,
+            active: data
+                .active
+                .iter()
+                .map(parse_active_shipyard_order)
+                .collect(),
+        },
+    )
+}
+
+pub fn parse_active_shipyard_order(
+    data: &ActiveShipyardOrderSaveData,
+) -> OngoingShipConstructionOrder {
+    OngoingShipConstructionOrder {
+        ship_config: data.ship_config,
+        finished_at: data.finished_at,
     }
 }

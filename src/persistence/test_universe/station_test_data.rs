@@ -9,7 +9,7 @@ use common::game_data::{
 use common::types::local_hex_position::LocalHexPosition;
 use common::types::polar_coordinates::PolarCoordinates;
 use persistence::data::{SaveDataCollection, StationSaveData};
-use universe_builder::builders::station_builder::StationBuilder;
+use universe_builder::station_builder::StationBuilder;
 
 pub fn create_test_data() -> SaveDataCollection<StationSaveData> {
     let mut result = StationBuilder::default();

@@ -10,6 +10,7 @@ pub mod game_data;
 pub mod geometry;
 pub mod interpolation;
 pub mod session_data;
+pub mod shared_logic;
 pub mod simulation_time;
 pub mod simulation_transform;
 pub mod states;

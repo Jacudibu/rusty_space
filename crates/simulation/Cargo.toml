@@ -6,7 +6,7 @@ edition = "2024"
 [dependencies]
 bevy = "0.16.0"
 
-# internal
+# internal dependencies
 common = { workspace = true }
 entity_spawners = { workspace = true }
 pathfinding = { workspace = true }

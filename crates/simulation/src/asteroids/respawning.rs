@@ -1,12 +1,12 @@
-use crate::asteroids::calculate_milliseconds_until_asteroid_leaves::{
-    VELOCITY_MULTIPLIER, calculate_milliseconds_until_asteroid_leaves_hexagon,
-};
 use crate::asteroids::fading::FadingAsteroidsIn;
 use bevy::math::Vec2;
 use bevy::prelude::{Commands, Entity, Query, Res, ResMut};
 use common::components::{Sector, SectorWithAsteroids};
 use common::game_data::AsteroidManifest;
 use common::geometry;
+use common::shared_logic::{
+    LARGE_VELOCITY_MULTIPLIER, calculate_milliseconds_until_asteroid_leaves_hexagon,
+};
 use common::simulation_time::SimulationTime;
 use common::types::entity_id_map::AsteroidIdMap;
 use common::types::map_layout::MapLayout;
@@ -78,7 +78,7 @@ pub fn calculate_local_asteroid_respawn_position_asteroid_was_mined(
     for edge in local_hexagon_edges.iter() {
         if let Some(intersection) = geometry::intersect_lines(
             local_current_position,
-            local_current_position + velocity * VELOCITY_MULTIPLIER,
+            local_current_position + velocity * LARGE_VELOCITY_MULTIPLIER,
             edge[0],
             edge[1],
         ) {

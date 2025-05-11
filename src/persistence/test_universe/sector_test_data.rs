@@ -9,8 +9,8 @@ use common::types::map_layout::MapLayout;
 use common::types::polar_coordinates::PolarCoordinates;
 use common::types::universe_seed::UniverseSeed;
 use persistence::data::{CelestialKindSaveData, SaveDataCollection, SectorSaveData};
-use universe_builder::builders::celestial_builder::SectorCelestialBuilder;
-use universe_builder::builders::sector_builder::{SectorAsteroidBuilder, UniverseSectorBuilder};
+use universe_builder::celestial_builder::SectorCelestialBuilder;
+use universe_builder::sector_builder::{SectorAsteroidBuilder, UniverseSectorBuilder};
 
 const UNIVERSE_SEED: UniverseSeed = UniverseSeed::from_seed(42);
 

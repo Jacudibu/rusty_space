@@ -42,28 +42,3 @@ impl ShipBuilder {
         SaveDataCollection { data: self.data }
     }
 }
-
-pub fn convert_behavior_save_data_to_builder_data(value: ShipBehaviorSaveData) -> BehaviorBuilder {
-    match value {
-        ShipBehaviorSaveData::AutoTrade => BehaviorBuilder::AutoTrade,
-        ShipBehaviorSaveData::AutoConstruct => BehaviorBuilder::AutoConstruct,
-        ShipBehaviorSaveData::AutoMine { mined_ore, state } => BehaviorBuilder::AutoMine {
-            mined_ore,
-            state: convert_auto_mine_state(state),
-        },
-        ShipBehaviorSaveData::AutoHarvest {
-            harvested_gas,
-            state,
-        } => BehaviorBuilder::AutoHarvest {
-            harvested_gas,
-            state: convert_auto_mine_state(state),
-        },
-    }
-}
-
-fn convert_auto_mine_state(state: AutoMineStateSaveData) -> AutoMineState {
-    match state {
-        AutoMineStateSaveData::Mining => AutoMineState::Mining,
-        AutoMineStateSaveData::Trading => AutoMineState::Trading,
-    }
-}

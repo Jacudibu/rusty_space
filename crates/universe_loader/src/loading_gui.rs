@@ -1,4 +1,4 @@
-use crate::loading::{LoadingCounts, LoadingState};
+use crate::{LoadingCounts, LoadingState};
 use bevy::prelude::{Res, State};
 use bevy_egui::egui::Align2;
 use bevy_egui::{EguiContexts, egui};

@@ -1,14 +1,13 @@
 [package]
-name = "pathfinding"
+name = "universe_loader"
 version = "0.1.0"
 edition = "2024"
 
 [dependencies]
 bevy = { workspace = true }
-hexx = { workspace = true }
+bevy_egui = { workspace = true }
 
 # internal dependencies
 common = { workspace = true }
-
-[dev-dependencies]
-test_utils = { workspace = true }
+entity_spawners = { workspace = true }
+persistence = { workspace = true }

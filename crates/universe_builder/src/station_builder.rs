@@ -1,9 +1,4 @@
-use bevy::platform::collections::HashMap;
 use bevy::prelude::{Deref, DerefMut};
-use common::components::production_facility::{
-    ProductionFacility, ProductionModule, ProductionQueueElement, RunningProductionQueueElement,
-};
-use common::components::shipyard::{OngoingShipConstructionOrder, Shipyard, ShipyardModule};
 use common::constants;
 use common::game_data::{
     ConstructableModuleId, ItemId, ProductionModuleId, RecipeId, ShipyardModuleId,
@@ -13,10 +8,10 @@ use common::types::persistent_entity_id::PersistentStationId;
 use common::types::price_range::PriceRange;
 use common::types::price_setting::PriceSetting;
 use persistence::data::{
-    ActiveShipyardOrderSaveData, ConstructionSiteSaveData, InventorySaveData,
-    ProductionModuleQueueElementSaveData, ProductionModuleSaveData, ProductionSaveData,
-    SaveDataCollection, SerializedBuyOrder, SerializedBuyOrderData, SerializedSellOrder,
-    SerializedSellOrderData, ShipyardModuleSaveData, ShipyardSaveData, StationSaveData,
+    ConstructionSiteSaveData, InventorySaveData, ProductionModuleQueueElementSaveData,
+    ProductionModuleSaveData, ProductionSaveData, SaveDataCollection, SerializedBuyOrder,
+    SerializedBuyOrderData, SerializedSellOrder, SerializedSellOrderData, ShipyardModuleSaveData,
+    ShipyardSaveData, StationSaveData,
 };
 
 #[derive(Default)]
@@ -167,70 +162,5 @@ impl IndividualStationBuilder {
 
     pub fn build(self) -> StationSaveData {
         self.data
-    }
-}
-
-pub(crate) fn parse_production_save_data(data: ProductionSaveData) -> ProductionFacility {
-    ProductionFacility {
-        modules: HashMap::from_iter(data.modules.iter().map(parse_production_module_save_data)),
-    }
-}
-
-fn parse_production_module_save_data(
-    data: &ProductionModuleSaveData,
-) -> (ProductionModuleId, ProductionModule) {
-    (
-        data.module_id,
-        ProductionModule {
-            amount: data.amount,
-            queued_recipes: data
-                .queued_recipes
-                .iter()
-                .map(|x| ProductionQueueElement {
-                    recipe: x.recipe,
-                    is_repeating: x.is_repeating,
-                })
-                .collect(),
-            running_recipes: data
-                .running_recipes
-                .iter()
-                .map(|x| RunningProductionQueueElement {
-                    recipe: x.recipe,
-                    finished_at: x.finished_at,
-                })
-                .collect(),
-        },
-    )
-}
-
-pub fn parse_shipyard_save_data(data: ShipyardSaveData) -> Shipyard {
-    Shipyard {
-        modules: HashMap::from_iter(data.modules.iter().map(parse_shipyard_module_save_data)),
-        queue: data.queue.clone(),
-    }
-}
-
-pub fn parse_shipyard_module_save_data(
-    data: &ShipyardModuleSaveData,
-) -> (ShipyardModuleId, ShipyardModule) {
-    (
-        data.module_id,
-        ShipyardModule {
-            amount: data.amount,
-            active: data
-                .active
-                .iter()
-                .map(parse_active_shipyard_order)
-                .collect(),
-        },
-    )
-}
-
-pub fn parse_active_shipyard_order(
-    data: &ActiveShipyardOrderSaveData,
-) -> OngoingShipConstructionOrder {
-    OngoingShipConstructionOrder {
-        ship_config: data.ship_config,
-        finished_at: data.finished_at,
     }
 }
