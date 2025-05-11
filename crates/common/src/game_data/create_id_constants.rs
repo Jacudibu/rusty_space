@@ -2,10 +2,13 @@
 ///
 /// # Example
 /// ```
+/// use common::create_id_constants;
+/// use common::game_data::ItemId;
+///
 /// create_id_constants!(ItemId, ITEM_A);
 ///
 /// assert_eq!(ITEM_A_NAME, "item_a");
-/// assert_eq!(ITEM_A_ID, ItemId::from_name(ITEM_A_NAME);
+/// assert_eq!(ITEM_A_ID, ItemId::from_name(ITEM_A_NAME));
 /// ```
 #[macro_export]
 macro_rules! create_id_constants {

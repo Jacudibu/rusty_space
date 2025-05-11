@@ -1,4 +1,4 @@
-use crate::persistence::test_universe::coordinates::CENTER;
+use crate::test_universe::coordinates::CENTER;
 use common::constants;
 use common::game_data::{CRYSTAL_ORE_ITEM_ID, HYDROGEN_ITEM_ID, IRON_ORE_ITEM_ID};
 use common::session_data::ship_configs::{

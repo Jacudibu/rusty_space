@@ -1,5 +1,7 @@
 use bevy::asset::{Assets, Handle, RenderAssetUsages};
 use bevy::image::Image;
+use bevy::prelude::{AssetPlugin, warn};
+use image::ImageResult;
 use std::path::Path;
 
 #[must_use]
@@ -67,7 +69,13 @@ where
     const DISTANCE_TO_EDGE: u32 = 3;
     const LEN: u32 = 5;
 
-    let original = image::open(path).unwrap().into_rgba8();
+    let original = match image::open(path) {
+        Ok(original) => original.into_rgba8(),
+        Err(e) => {
+            warn!("Unable to parse image asset: {e:?}");
+            return Handle::default();
+        }
+    };
 
     let width = original.width() + DISTANCE_TO_EDGE * 2;
     let height = original.height() + DISTANCE_TO_EDGE * 2;

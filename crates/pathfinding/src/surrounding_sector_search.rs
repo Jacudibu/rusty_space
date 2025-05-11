@@ -90,6 +90,8 @@ mod test {
     use common::types::entity_id_map::SectorIdMap;
     use common::types::local_hex_position::LocalHexPosition;
     use hexx::Hex;
+    use test_utils::test_app::TestApp;
+    use universe_builder::sector_builder::SectorAsteroidBuilder;
 
     const LEFT: Hex = Hex::new(-1, 0);
     const CENTER: Hex = Hex::new(0, 0);
@@ -135,23 +137,23 @@ mod test {
 
     #[test]
     fn single_result_direct_neighbor() {
-        let mut universe = UniverseSaveData::default();
-        universe.sectors.add(LEFT);
-        universe.sectors.add(CENTER);
-        universe
+        let mut test_app = TestApp::default();
+        test_app.sectors.add(LEFT);
+        test_app.sectors.add(CENTER);
+        test_app
             .sectors
             .add(RIGHT)
-            .with_asteroids(SectorAsteroidSaveData::new());
-        universe.gate_pairs.add(
+            .with_asteroids(SectorAsteroidBuilder::new());
+        test_app.gate_pairs.add(
             LocalHexPosition::new(LEFT, Vec2::X),
             LocalHexPosition::new(CENTER, Vec2::NEG_X),
         );
-        universe.gate_pairs.add(
+        test_app.gate_pairs.add(
             LocalHexPosition::new(CENTER, Vec2::X),
             LocalHexPosition::new(RIGHT, Vec2::NEG_X),
         );
 
-        let mut app = universe.build_test_app();
+        let mut app = test_app.build();
         let world = app.world_mut();
 
         test_breadth_search(world, CENTER, 0, 5, vec![(1, RIGHT)]);
@@ -159,26 +161,26 @@ mod test {
 
     #[test]
     fn multiple_results() {
-        let mut universe = UniverseSaveData::default();
-        universe.sectors.add(LEFT);
-        universe
+        let mut test_app = TestApp::default();
+        test_app.sectors.add(LEFT);
+        test_app
             .sectors
             .add(CENTER)
-            .with_asteroids(SectorAsteroidSaveData::new());
-        universe
+            .with_asteroids(SectorAsteroidBuilder::new());
+        test_app
             .sectors
             .add(RIGHT)
-            .with_asteroids(SectorAsteroidSaveData::new());
-        universe.gate_pairs.add(
+            .with_asteroids(SectorAsteroidBuilder::new());
+        test_app.gate_pairs.add(
             LocalHexPosition::new(LEFT, Vec2::X),
             LocalHexPosition::new(CENTER, Vec2::NEG_X),
         );
-        universe.gate_pairs.add(
+        test_app.gate_pairs.add(
             LocalHexPosition::new(CENTER, Vec2::X),
             LocalHexPosition::new(RIGHT, Vec2::NEG_X),
         );
 
-        let mut app = universe.build_test_app();
+        let mut app = test_app.build();
         let world = app.world_mut();
 
         test_breadth_search(world, LEFT, 0, 2, vec![(1, CENTER), (2, RIGHT)]);
@@ -186,29 +188,29 @@ mod test {
 
     #[test]
     fn min_range() {
-        let mut universe = UniverseSaveData::default();
-        universe
+        let mut test_app = TestApp::default();
+        test_app
             .sectors
             .add(LEFT)
-            .with_asteroids(SectorAsteroidSaveData::new());
-        universe
+            .with_asteroids(SectorAsteroidBuilder::new());
+        test_app
             .sectors
             .add(CENTER)
-            .with_asteroids(SectorAsteroidSaveData::new());
-        universe
+            .with_asteroids(SectorAsteroidBuilder::new());
+        test_app
             .sectors
             .add(RIGHT)
-            .with_asteroids(SectorAsteroidSaveData::new());
-        universe.gate_pairs.add(
+            .with_asteroids(SectorAsteroidBuilder::new());
+        test_app.gate_pairs.add(
             LocalHexPosition::new(LEFT, Vec2::X),
             LocalHexPosition::new(CENTER, Vec2::NEG_X),
         );
-        universe.gate_pairs.add(
+        test_app.gate_pairs.add(
             LocalHexPosition::new(CENTER, Vec2::X),
             LocalHexPosition::new(RIGHT, Vec2::NEG_X),
         );
 
-        let mut app = universe.build_test_app();
+        let mut app = test_app.build();
         let world = app.world_mut();
 
         test_breadth_search(world, LEFT, 2, 2, vec![(2, RIGHT)]);
@@ -216,23 +218,23 @@ mod test {
 
     #[test]
     fn max_range() {
-        let mut universe = UniverseSaveData::default();
-        universe.sectors.add(LEFT);
-        universe.sectors.add(CENTER);
-        universe
+        let mut test_app = TestApp::default();
+        test_app.sectors.add(LEFT);
+        test_app.sectors.add(CENTER);
+        test_app
             .sectors
             .add(RIGHT)
-            .with_asteroids(SectorAsteroidSaveData::new());
-        universe.gate_pairs.add(
+            .with_asteroids(SectorAsteroidBuilder::new());
+        test_app.gate_pairs.add(
             LocalHexPosition::new(LEFT, Vec2::X),
             LocalHexPosition::new(CENTER, Vec2::NEG_X),
         );
-        universe.gate_pairs.add(
+        test_app.gate_pairs.add(
             LocalHexPosition::new(CENTER, Vec2::X),
             LocalHexPosition::new(RIGHT, Vec2::NEG_X),
         );
 
-        let mut app = universe.build_test_app();
+        let mut app = test_app.build();
         let world = app.world_mut();
 
         test_breadth_search(world, LEFT, 0, 1, vec![]);

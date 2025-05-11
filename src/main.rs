@@ -13,8 +13,7 @@ mod diagnostics;
 mod entity_selection;
 mod gizmos;
 mod gui;
-mod persistence;
-mod utils;
+mod test_universe;
 
 fn main() {
     let mut app = App::new();
@@ -43,7 +42,7 @@ fn main() {
         gizmos::GizmoPlugin,
         gui::GUIPlugin,
         universe_loader::UniverseLoadingPlugin,
-        persistence::test_universe::TestUniverseDataPlugin,
+        test_universe::TestUniverseDataPlugin,
         simulation::plugin::SimulationPlugin,
         session_data::SessionDataPlugin,
         construction_site_placement::ConstructionSitePlacementPlugin,

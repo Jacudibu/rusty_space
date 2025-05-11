@@ -6,4 +6,5 @@ edition = "2024"
 [dependencies]
 bevy = { workspace = true }
 common = { workspace = true }
-persistence = { workspace = true }
+universe_builder = { workspace = true }
+universe_loader = { workspace = true }

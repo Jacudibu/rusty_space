@@ -11,4 +11,5 @@ hexx = { workspace = true }
 common = { workspace = true }
 
 [dev-dependencies]
+universe_builder = { workspace = true }
 test_utils = { workspace = true }

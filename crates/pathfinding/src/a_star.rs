@@ -180,6 +180,7 @@ fn reconstruct_path(
 mod test {
     use crate::PathElement;
     use crate::a_star::a_star;
+    use crate::search_node::GATE_COST;
     use bevy::ecs::system::RunSystemOnce;
     use bevy::prelude::{Query, Res, Vec2, World};
     use common::components::Sector;
@@ -187,6 +188,7 @@ mod test {
     use common::types::entity_id_map::SectorIdMap;
     use common::types::local_hex_position::LocalHexPosition;
     use hexx::Hex;
+    use test_utils::test_app::TestApp;
 
     const LEFT2: Hex = Hex::new(-2, 0);
     const LEFT: Hex = Hex::new(-1, 0);
@@ -235,15 +237,15 @@ mod test {
 
     #[test]
     fn find_path_to_neighbor() {
-        let mut universe = UniverseSaveData::default();
-        universe.sectors.add(CENTER);
-        universe.sectors.add(RIGHT);
-        universe.gate_pairs.add(
+        let mut test_app = TestApp::default();
+        test_app.sectors.add(CENTER);
+        test_app.sectors.add(RIGHT);
+        test_app.gate_pairs.add(
             LocalHexPosition::new(CENTER, Vec2::ZERO),
             LocalHexPosition::new(RIGHT, Vec2::ZERO),
         );
 
-        let mut app = universe.build_test_app();
+        let mut app = test_app.build();
         let world = app.world_mut();
 
         test_a_star(
@@ -261,20 +263,20 @@ mod test {
 
     #[test]
     fn find_path_through_single_sector() {
-        let mut universe = UniverseSaveData::default();
-        universe.sectors.add(LEFT);
-        universe.sectors.add(CENTER);
-        universe.sectors.add(RIGHT);
-        universe.gate_pairs.add(
+        let mut test_app = TestApp::default();
+        test_app.sectors.add(LEFT);
+        test_app.sectors.add(CENTER);
+        test_app.sectors.add(RIGHT);
+        test_app.gate_pairs.add(
             LocalHexPosition::new(LEFT, Vec2::NEG_X),
             LocalHexPosition::new(CENTER, Vec2::NEG_X),
         );
-        universe.gate_pairs.add(
+        test_app.gate_pairs.add(
             LocalHexPosition::new(CENTER, Vec2::X),
             LocalHexPosition::new(RIGHT, Vec2::X),
         );
 
-        let mut app = universe.build_test_app();
+        let mut app = test_app.build();
         let world = app.world_mut();
 
         test_a_star(
@@ -293,30 +295,30 @@ mod test {
 
     #[test]
     fn find_path_through_multiple_sectors() {
-        let mut universe = UniverseSaveData::default();
-        universe.sectors.add(LEFT);
-        universe.sectors.add(LEFT2);
-        universe.sectors.add(CENTER);
-        universe.sectors.add(RIGHT);
-        universe.sectors.add(RIGHT2);
-        universe.gate_pairs.add(
+        let mut test_app = TestApp::default();
+        test_app.sectors.add(LEFT);
+        test_app.sectors.add(LEFT2);
+        test_app.sectors.add(CENTER);
+        test_app.sectors.add(RIGHT);
+        test_app.sectors.add(RIGHT2);
+        test_app.gate_pairs.add(
             LocalHexPosition::new(LEFT2, Vec2::X),
             LocalHexPosition::new(LEFT, Vec2::NEG_X),
         );
-        universe.gate_pairs.add(
+        test_app.gate_pairs.add(
             LocalHexPosition::new(LEFT, Vec2::X),
             LocalHexPosition::new(CENTER, Vec2::NEG_X),
         );
-        universe.gate_pairs.add(
+        test_app.gate_pairs.add(
             LocalHexPosition::new(CENTER, Vec2::X),
             LocalHexPosition::new(RIGHT, Vec2::NEG_X),
         );
-        universe.gate_pairs.add(
+        test_app.gate_pairs.add(
             LocalHexPosition::new(RIGHT, Vec2::X),
             LocalHexPosition::new(RIGHT2, Vec2::NEG_X),
         );
 
-        let mut app = universe.build_test_app();
+        let mut app = test_app.build();
         let world = app.world_mut();
 
         test_a_star(
@@ -337,45 +339,45 @@ mod test {
 
     #[test]
     fn find_path_through_multiple_sectors_with_multiple_routes_returns_shortest_path() {
-        let mut universe = UniverseSaveData::default();
-        universe.sectors.add(LEFT);
-        universe.sectors.add(LEFT2);
-        universe.sectors.add(CENTER_LEFT_TOP);
-        universe.sectors.add(CENTER);
-        universe.sectors.add(CENTER_RIGHT_TOP);
-        universe.sectors.add(RIGHT);
-        universe.sectors.add(RIGHT2);
-        universe.gate_pairs.add(
+        let mut test_app = TestApp::default();
+        test_app.sectors.add(LEFT);
+        test_app.sectors.add(LEFT2);
+        test_app.sectors.add(CENTER_LEFT_TOP);
+        test_app.sectors.add(CENTER);
+        test_app.sectors.add(CENTER_RIGHT_TOP);
+        test_app.sectors.add(RIGHT);
+        test_app.sectors.add(RIGHT2);
+        test_app.gate_pairs.add(
             LocalHexPosition::new(LEFT2, Vec2::X),
             LocalHexPosition::new(LEFT, Vec2::NEG_X),
         );
-        universe.gate_pairs.add(
+        test_app.gate_pairs.add(
             LocalHexPosition::new(LEFT, Vec2::X),
             LocalHexPosition::new(CENTER, Vec2::NEG_X),
         );
-        universe.gate_pairs.add(
+        test_app.gate_pairs.add(
             LocalHexPosition::new(CENTER, Vec2::X),
             LocalHexPosition::new(RIGHT, Vec2::NEG_X),
         );
-        universe.gate_pairs.add(
+        test_app.gate_pairs.add(
             LocalHexPosition::new(RIGHT, Vec2::X),
             LocalHexPosition::new(RIGHT2, Vec2::NEG_X),
         );
 
-        universe.gate_pairs.add(
+        test_app.gate_pairs.add(
             LocalHexPosition::new(LEFT, Vec2::X),
             LocalHexPosition::new(CENTER_LEFT_TOP, Vec2::NEG_X),
         );
-        universe.gate_pairs.add(
+        test_app.gate_pairs.add(
             LocalHexPosition::new(CENTER_LEFT_TOP, Vec2::X),
             LocalHexPosition::new(CENTER_RIGHT_TOP, Vec2::NEG_X),
         );
-        universe.gate_pairs.add(
+        test_app.gate_pairs.add(
             LocalHexPosition::new(CENTER_RIGHT_TOP, Vec2::X),
             LocalHexPosition::new(RIGHT, Vec2::NEG_X),
         );
 
-        let mut app = universe.build_test_app();
+        let mut app = test_app.build();
         let world = app.world_mut();
 
         test_a_star(
@@ -396,24 +398,24 @@ mod test {
 
     #[test]
     fn find_path_to_position_in_direct_neighbor_but_a_more_efficient_path_through_other_sector() {
-        let mut universe = UniverseSaveData::default();
-        universe.sectors.add(LEFT);
-        universe.sectors.add(CENTER);
-        universe.sectors.add(RIGHT);
-        universe.gate_pairs.add(
+        let mut test_app = TestApp::default();
+        test_app.sectors.add(LEFT);
+        test_app.sectors.add(CENTER);
+        test_app.sectors.add(RIGHT);
+        test_app.gate_pairs.add(
             LocalHexPosition::new(LEFT, Vec2::X),
             LocalHexPosition::new(CENTER, Vec2::NEG_X),
         );
-        universe.gate_pairs.add(
+        test_app.gate_pairs.add(
             LocalHexPosition::new(CENTER, Vec2::X),
             LocalHexPosition::new(RIGHT, Vec2::NEG_X),
         );
-        universe.gate_pairs.add(
+        test_app.gate_pairs.add(
             LocalHexPosition::new(LEFT, Vec2::ZERO), // Right next to our starting position
             LocalHexPosition::new(RIGHT, Vec2::X * -20000.0), // But SO far away afterwards~
         );
 
-        let mut app = universe.build_test_app();
+        let mut app = test_app.build();
         let world = app.world_mut();
 
         test_a_star(
@@ -432,29 +434,29 @@ mod test {
 
     #[test]
     fn find_path_to_position_with_multiple_gates_to_target_sector() {
-        let mut universe = UniverseSaveData::default();
-        universe.sectors.add(LEFT2);
-        universe.sectors.add(LEFT);
-        universe.sectors.add(CENTER);
-        universe.sectors.add(RIGHT);
-        universe.gate_pairs.add(
+        let mut test_app = TestApp::default();
+        test_app.sectors.add(LEFT2);
+        test_app.sectors.add(LEFT);
+        test_app.sectors.add(CENTER);
+        test_app.sectors.add(RIGHT);
+        test_app.gate_pairs.add(
             LocalHexPosition::new(LEFT2, Vec2::X),
             LocalHexPosition::new(LEFT, Vec2::NEG_X),
         );
-        universe.gate_pairs.add(
+        test_app.gate_pairs.add(
             LocalHexPosition::new(LEFT, Vec2::X),
             LocalHexPosition::new(CENTER, Vec2::NEG_X),
         );
-        universe.gate_pairs.add(
+        test_app.gate_pairs.add(
             LocalHexPosition::new(CENTER, Vec2::X),
             LocalHexPosition::new(RIGHT, Vec2::NEG_X),
         );
-        universe.gate_pairs.add(
+        test_app.gate_pairs.add(
             LocalHexPosition::new(LEFT, Vec2::ZERO), // Easier to reach
             LocalHexPosition::new(RIGHT, Vec2::X * GATE_COST as f32 * 2.0), // But SO far away~
         );
 
-        let mut app = universe.build_test_app();
+        let mut app = test_app.build();
         let world = app.world_mut();
 
         test_a_star(
@@ -475,21 +477,21 @@ mod test {
     #[ignore = "Pathfinding where from_pos == to_pos just shouldn't happen right now"]
     #[test]
     fn find_path_to_position_in_self_but_path_through_other_sector_is_shorter() {
-        let mut universe = UniverseSaveData::default();
-        universe.sectors.add(CENTER);
-        universe.sectors.add(RIGHT);
+        let mut test_app = TestApp::default();
+        test_app.sectors.add(CENTER);
+        test_app.sectors.add(RIGHT);
 
         let from_pos = Vec2::X * 1000.0;
-        universe.gate_pairs.add(
+        test_app.gate_pairs.add(
             LocalHexPosition::new(CENTER, from_pos),
             LocalHexPosition::new(RIGHT, Vec2::NEG_X),
         );
-        universe.gate_pairs.add(
+        test_app.gate_pairs.add(
             LocalHexPosition::new(RIGHT, Vec2::X),
             LocalHexPosition::new(CENTER, -from_pos), // Cheesy shortcut!
         );
 
-        let mut app = universe.build_test_app();
+        let mut app = test_app.build();
         let world = app.world_mut();
 
         test_a_star(
@@ -509,20 +511,20 @@ mod test {
     #[ignore = "Pathfinding where from_pos == to_pos just shouldn't happen right now"]
     #[test]
     fn find_path_to_position_in_self_best_route_is_to_just_ignore_gates() {
-        let mut universe = UniverseSaveData::default();
-        universe.sectors.add(CENTER);
-        universe.sectors.add(RIGHT);
+        let mut test_app = TestApp::default();
+        test_app.sectors.add(CENTER);
+        test_app.sectors.add(RIGHT);
 
-        universe.gate_pairs.add(
+        test_app.gate_pairs.add(
             LocalHexPosition::new(CENTER, Vec2::X * 1000.0),
             LocalHexPosition::new(RIGHT, Vec2::NEG_X),
         );
-        universe.gate_pairs.add(
+        test_app.gate_pairs.add(
             LocalHexPosition::new(RIGHT, Vec2::X),
             LocalHexPosition::new(CENTER, Vec2::NEG_X * 1000.0),
         );
 
-        let mut app = universe.build_test_app();
+        let mut app = test_app.build();
         let world = app.world_mut();
 
         test_a_star(

@@ -17,7 +17,7 @@ use rand::Rng;
 use rand::distributions::Distribution;
 
 #[derive(Deref, DerefMut, Default)]
-pub struct UniverseSectorBuilder {
+pub struct SectorBuilder {
     data: Vec<IndividualSectorBuilder>,
 }
 
@@ -30,7 +30,7 @@ pub struct SectorAsteroidBuilder {
     data: SectorAsteroidSaveData,
 }
 
-impl UniverseSectorBuilder {
+impl SectorBuilder {
     pub fn add(&mut self, hex: Hex) -> &mut IndividualSectorBuilder {
         self.data.push(IndividualSectorBuilder {
             data: SectorSaveData {

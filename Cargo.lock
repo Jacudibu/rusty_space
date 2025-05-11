@@ -4056,6 +4056,7 @@ dependencies = [
  "common",
  "hexx",
  "test_utils",
+ "universe_builder",
 ]
 
 [[package]]
@@ -5034,7 +5035,8 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "common",
- "persistence",
+ "universe_builder",
+ "universe_loader",
 ]
 
 [[package]]
@@ -5374,9 +5376,7 @@ name = "universe_builder"
 version = "0.1.0"
 dependencies = [
  "bevy",
- "bevy_egui",
  "common",
- "entity_spawners",
  "hexx",
  "leafwing_manifest",
  "persistence",

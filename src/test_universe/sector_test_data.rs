@@ -1,4 +1,4 @@
-use crate::persistence::test_universe::coordinates;
+use crate::test_universe::coordinates;
 use bevy::math::Vec2;
 use common::constants;
 use common::game_data::{
@@ -10,7 +10,7 @@ use common::types::polar_coordinates::PolarCoordinates;
 use common::types::universe_seed::UniverseSeed;
 use persistence::data::{CelestialKindSaveData, SaveDataCollection, SectorSaveData};
 use universe_builder::celestial_builder::SectorCelestialBuilder;
-use universe_builder::sector_builder::{SectorAsteroidBuilder, UniverseSectorBuilder};
+use universe_builder::sector_builder::{SectorAsteroidBuilder, SectorBuilder};
 
 const UNIVERSE_SEED: UniverseSeed = UniverseSeed::from_seed(42);
 
@@ -18,7 +18,7 @@ pub fn create_test_data(
     asteroid_manifest: &AsteroidManifest,
 ) -> SaveDataCollection<SectorSaveData> {
     let map_layout = MapLayout::default();
-    let mut sectors = UniverseSectorBuilder::default();
+    let mut sectors = SectorBuilder::default();
     sectors.add(coordinates::CENTER);
 
     sectors

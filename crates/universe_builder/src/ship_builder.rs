@@ -1,12 +1,9 @@
 use bevy::prelude::{Deref, DerefMut};
 use common::session_data::ShipConfigId;
-use common::types::auto_mine_state::AutoMineState;
-use common::types::behavior_builder::BehaviorBuilder;
 use common::types::local_hex_position::LocalHexPosition;
 use common::types::persistent_entity_id::PersistentShipId;
 use persistence::data::{
-    AutoMineStateSaveData, InventorySaveData, SaveDataCollection, ShipBehaviorSaveData,
-    ShipSaveData,
+    InventorySaveData, SaveDataCollection, ShipBehaviorSaveData, ShipSaveData,
 };
 
 #[derive(Deref, DerefMut, Default)]

@@ -1,4 +1,4 @@
-use crate::persistence::test_universe::coordinates::{BOTTOM_LEFT, CENTER};
+use crate::test_universe::coordinates::{BOTTOM_LEFT, CENTER};
 use bevy::prelude::Vec2;
 use common::game_data::{
     CRYSTAL_ORE_ITEM_ID, ConstructableModuleId, HYDROGEN_ITEM_ID, IRON_ORE_ITEM_ID,

@@ -1,4 +1,4 @@
-use crate::persistence::test_universe::coordinates::{
+use crate::test_universe::coordinates::{
     BOTTOM_LEFT, CENTER, RIGHT, TOP_RIGHT, TOP_RIGHT_TOP_RIGHT,
 };
 use bevy::prelude::Vec2;

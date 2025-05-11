@@ -5,12 +5,10 @@ edition = "2024"
 
 [dependencies]
 bevy = { workspace = true }
-bevy_egui = { workspace = true }
 hexx = { workspace = true }
 leafwing_manifest = { workspace = true }
 rand = { workspace = true }
 
 # internal dependencies
 common = { workspace = true }
-entity_spawners = { workspace = true }
 persistence = { workspace = true }
