@@ -16,11 +16,9 @@ mod use_gate;
 use crate::ship_ai::ship_task::ShipTask;
 use common::components::interaction_queue::InteractionQueue;
 use common::components::task_queue::{TaskInsideQueue, TaskQueue};
-use common::constants;
 use common::events::task_events::{
     AllTaskStartedEventWriters, TaskCompletedEvent, TaskStartedEvent,
 };
-use common::simulation_time::{CurrentSimulationTimestamp, SimulationTimestamp};
 use common::types::entity_wrappers::ShipEntity;
 use common::types::ship_tasks::{
     AwaitingSignal, Construct, DockAtEntity, ExchangeWares, HarvestGas, MineAsteroid, MoveToEntity,
@@ -48,7 +46,6 @@ pub fn remove_task_and_add_next_in_queue<T: ShipTaskData + 'static>(
     commands: &mut Commands,
     entity: Entity,
     queue: &mut Mut<TaskQueue>,
-    now: CurrentSimulationTimestamp,
     task_started_event_writers: &mut AllTaskStartedEventWriters,
 ) {
     let mut entity_commands = commands.entity(entity);
@@ -56,7 +53,6 @@ pub fn remove_task_and_add_next_in_queue<T: ShipTaskData + 'static>(
         entity,
         &mut entity_commands,
         queue,
-        now,
         task_started_event_writers,
     );
 }
@@ -65,17 +61,14 @@ pub fn remove_task_and_add_next_in_queue_to_entity_commands<T: ShipTaskData + 's
     entity: Entity,
     entity_commands: &mut EntityCommands,
     queue: &mut Mut<TaskQueue>,
-    now: CurrentSimulationTimestamp,
     task_started_event_writers: &mut AllTaskStartedEventWriters,
 ) {
     entity_commands.remove::<ShipTask<T>>();
-    queue.queue.pop_front();
-    if let Some(next_task) = queue.front() {
+    if let Some(next_task) = queue.pop_front() {
         create_and_insert_component_from_task_inside_queue(
             next_task,
             entity.into(),
             entity_commands,
-            now,
             task_started_event_writers,
         );
     }
@@ -84,110 +77,74 @@ pub fn remove_task_and_add_next_in_queue_to_entity_commands<T: ShipTaskData + 's
 /// Creates the Task Component for the first item in the queue to the provided entity.
 /// Should be called by behaviors when transitioning away from idle states.
 pub fn apply_new_task_queue(
-    task_queue: &TaskQueue,
+    task_queue: &mut TaskQueue,
     commands: &mut Commands,
-    now: CurrentSimulationTimestamp,
     entity: Entity,
     task_started_event_writers: &mut AllTaskStartedEventWriters,
 ) {
     let mut commands = commands.entity(entity);
     create_and_insert_component_from_task_inside_queue(
-        &task_queue.queue[0],
+        task_queue.queue.pop_front().unwrap(),
         entity.into(),
         &mut commands,
-        now,
         task_started_event_writers,
     );
 }
 
 pub fn create_and_insert_component_from_task_inside_queue(
-    task_inside_queue: &TaskInsideQueue,
+    next_task: TaskInsideQueue,
     entity: ShipEntity,
     entity_commands: &mut EntityCommands,
-    now: CurrentSimulationTimestamp,
     task_started_event_writers: &mut AllTaskStartedEventWriters,
 ) {
-    match task_inside_queue {
-        TaskInsideQueue::ExchangeWares {
-            target,
-            exchange_data,
-        } => {
+    match next_task {
+        TaskInsideQueue::ExchangeWares { data } => {
             task_started_event_writers
                 .exchange_wares
                 .write(TaskStartedEvent::new(entity));
-            entity_commands.insert(ShipTask::<ExchangeWares>::new(ExchangeWares {
-                finishes_at: SimulationTimestamp::MAX,
-                target: *target,
-                exchange_data: *exchange_data,
-            }));
+            entity_commands.insert(ShipTask::<ExchangeWares>::new(data));
         }
-        TaskInsideQueue::MoveToEntity {
-            target,
-            stop_at_target,
-            distance_to_target: distance,
-        } => {
-            entity_commands.insert(ShipTask::<MoveToEntity>::new(MoveToEntity {
-                target: *target,
-                stop_at_target: *stop_at_target,
-                desired_distance_to_target: *distance,
-            }));
+        TaskInsideQueue::MoveToEntity { data } => {
+            entity_commands.insert(ShipTask::<MoveToEntity>::new(data));
         }
-        TaskInsideQueue::UseGate {
-            enter_gate,
-            exit_sector,
-        } => {
+        TaskInsideQueue::UseGate { data } => {
             task_started_event_writers
                 .use_gate
                 .write(TaskStartedEvent::new(entity));
-            entity_commands.insert(ShipTask::<UseGate>::new(UseGate {
-                progress: 0.0,
-                traversal_state: Default::default(),
-                exit_sector: *exit_sector,
-                enter_gate: *enter_gate,
-            }));
+            entity_commands.insert(ShipTask::<UseGate>::new(data));
         }
-        TaskInsideQueue::MineAsteroid { target, reserved } => {
-            entity_commands.insert(ShipTask::<MineAsteroid>::new(MineAsteroid {
-                target: *target,
-                next_update: now.add_milliseconds(constants::ONE_SECOND_IN_MILLISECONDS),
-                reserved_ore_amount: *reserved,
-            }));
+        TaskInsideQueue::MineAsteroid { data } => {
+            task_started_event_writers
+                .mine_asteroid
+                .write(TaskStartedEvent::new(entity));
+            entity_commands.insert(ShipTask::<MineAsteroid>::new(data));
         }
-        TaskInsideQueue::HarvestGas { target, gas } => {
-            entity_commands.insert(ShipTask::<HarvestGas>::new(HarvestGas {
-                target: *target,
-                gas: *gas,
-                next_update: now.add_milliseconds(constants::ONE_SECOND_IN_MILLISECONDS),
-            }));
+        TaskInsideQueue::HarvestGas { data } => {
+            task_started_event_writers
+                .harvest_gas
+                .write(TaskStartedEvent::new(entity));
+            entity_commands.insert(ShipTask::<HarvestGas>::new(data));
         }
-        TaskInsideQueue::AwaitingSignal { target: from } => {
-            entity_commands.insert(ShipTask::<AwaitingSignal>::new(AwaitingSignal {
-                from: *from,
-            }));
+        TaskInsideQueue::AwaitingSignal { data } => {
+            entity_commands.insert(ShipTask::<AwaitingSignal>::new(data));
         }
-        TaskInsideQueue::Construct { target } => {
+        TaskInsideQueue::Construct { data } => {
             task_started_event_writers
                 .construct
                 .write(TaskStartedEvent::new(entity));
-            entity_commands.insert(ShipTask::<Construct>::new(Construct { target: *target }));
+            entity_commands.insert(ShipTask::<Construct>::new(data));
         }
-        TaskInsideQueue::RequestAccess { target } => {
-            entity_commands.insert(ShipTask::<RequestAccess>::new(RequestAccess {
-                target: *target,
-            }));
+        TaskInsideQueue::RequestAccess { data } => {
+            entity_commands.insert(ShipTask::<RequestAccess>::new(data));
         }
-        TaskInsideQueue::DockAtEntity { target } => {
-            entity_commands.insert(ShipTask::<DockAtEntity>::new(DockAtEntity {
-                target: *target,
-            }));
+        TaskInsideQueue::DockAtEntity { data } => {
+            entity_commands.insert(ShipTask::<DockAtEntity>::new(data));
         }
-        TaskInsideQueue::Undock => {
+        TaskInsideQueue::Undock { data } => {
             task_started_event_writers
                 .undock
                 .write(TaskStartedEvent::new(entity));
-            entity_commands.insert(ShipTask::<Undock>::new(Undock {
-                start_position: None,
-            }));
+            entity_commands.insert(ShipTask::<Undock>::new(data));
         }
     }
 }

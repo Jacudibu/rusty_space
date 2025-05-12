@@ -137,10 +137,7 @@ impl UiIcons {
         match task {
             TaskInsideQueue::UseGate { .. } => self.move_to,
             TaskInsideQueue::MoveToEntity { .. } => self.move_to,
-            TaskInsideQueue::ExchangeWares {
-                exchange_data: data,
-                ..
-            } => match data {
+            TaskInsideQueue::ExchangeWares { data } => match data.exchange_data {
                 ExchangeWareData::Buy(_, _) => self.buy,
                 ExchangeWareData::Sell(_, _) => self.sell,
             },
@@ -565,61 +562,66 @@ fn list_selection_details(
                             ui.horizontal(|ui| {
                                 ui.image(images.get_task(task));
                                 ui.label(match task {
-                                    TaskInsideQueue::UseGate { exit_sector, .. } => {
+                                    TaskInsideQueue::UseGate { data } => {
                                         format!(
                                             "Using gate to {}",
-                                            names.get(exit_sector.into()).unwrap()
+                                            names.get(data.exit_sector.into()).unwrap()
                                         )
                                     }
-                                    TaskInsideQueue::MoveToEntity { target, .. } => {
-                                        format!("Move to {}", names.get(target.into()).unwrap())
+                                    TaskInsideQueue::MoveToEntity { data } => {
+                                        format!(
+                                            "Move to {}",
+                                            names.get(data.target.into()).unwrap()
+                                        )
                                     }
-                                    TaskInsideQueue::DockAtEntity { target, .. } => {
-                                        format!("Dock at {}", names.get(target.into()).unwrap())
+                                    TaskInsideQueue::DockAtEntity { data } => {
+                                        format!(
+                                            "Dock at {}",
+                                            names.get(data.target.into()).unwrap()
+                                        )
                                     }
-                                    TaskInsideQueue::Undock => "Undock".to_string(),
-                                    TaskInsideQueue::ExchangeWares {
-                                        exchange_data: data,
-                                        ..
-                                    } => match data {
+                                    TaskInsideQueue::Undock { .. } => "Undock".to_string(),
+                                    TaskInsideQueue::ExchangeWares { data } => match data
+                                        .exchange_data
+                                    {
                                         ExchangeWareData::Buy(item_id, amount) => {
                                             format!(
                                                 "Buy {amount}x{}",
-                                                game_data.items.get_by_ref(item_id).unwrap().name
+                                                game_data.items.get_by_ref(&item_id).unwrap().name
                                             )
                                         }
                                         ExchangeWareData::Sell(item_id, amount) => {
                                             format!(
                                                 "Sell {amount}x{}",
-                                                game_data.items.get_by_ref(item_id).unwrap().name
+                                                game_data.items.get_by_ref(&item_id).unwrap().name
                                             )
                                         }
                                     },
-                                    TaskInsideQueue::MineAsteroid { target, .. } => {
-                                        format!("Mining {}", names.get(target.into()).unwrap())
+                                    TaskInsideQueue::MineAsteroid { data } => {
+                                        format!("Mining {}", names.get(data.target.into()).unwrap())
                                     }
-                                    TaskInsideQueue::HarvestGas { target, gas } => {
+                                    TaskInsideQueue::HarvestGas { data } => {
                                         format!(
                                             "Harvesting {} from {}",
-                                            game_data.items.get_by_ref(gas).unwrap().name,
-                                            names.get(target.into()).unwrap()
+                                            game_data.items.get_by_ref(&data.gas).unwrap().name,
+                                            names.get(data.target.into()).unwrap()
                                         )
                                     }
-                                    TaskInsideQueue::AwaitingSignal { target } => {
+                                    TaskInsideQueue::AwaitingSignal { data } => {
                                         format!(
                                             "Awaiting Signal from {}",
-                                            names.get(target.into()).unwrap()
+                                            names.get(data.from.into()).unwrap()
                                         )
                                     }
-                                    TaskInsideQueue::RequestAccess { target } => {
+                                    TaskInsideQueue::RequestAccess { data } => {
                                         format!(
                                             "Requesting Access to {}",
-                                            names.get(target.into()).unwrap()
+                                            names.get(data.target.into()).unwrap()
                                         )
                                     }
-                                    TaskInsideQueue::Construct { target } => {
+                                    TaskInsideQueue::Construct { data } => {
                                         // Might be none during the frame where a construction site is finished
-                                        if let Ok(name) = names.get(target.into()) {
+                                        if let Ok(name) = names.get(data.target.into()) {
                                             format!("Constructing {}", name)
                                         } else {
                                             "Finished Construction".into()
@@ -677,7 +679,7 @@ fn list_buy_orders(game_data: &GameData, ui: &mut Ui, buy_orders: &BuyOrders) {
 fn draw_summary_row(images: &UiIcons, ui: &mut Ui, item: &SelectableComponentsItem) {
     ui.horizontal(|ui| {
         ui.image(images.get_selectable(item.selectable));
-        ui.label(format!("{}", item.name));
+        ui.label(format!("{} ({})", item.name, item.entity));
 
         if let Some(task_queue) = item.task_queue {
             if let Some(task) = task_queue.queue.front() {

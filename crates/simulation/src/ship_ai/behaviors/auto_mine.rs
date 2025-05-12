@@ -14,6 +14,7 @@ use common::simulation_transform::SimulationTransform;
 use common::types::auto_mine_state::AutoMineState;
 use common::types::entity_wrappers::SectorEntity;
 use common::types::ship_behaviors::AutoMineBehavior;
+use common::types::ship_tasks;
 use common::types::trade_intent::TradeIntent;
 
 #[allow(clippy::too_many_arguments)]
@@ -90,19 +91,22 @@ pub fn handle_idle_ships(
                             let reserved_amount = asteroid.try_to_reserve(remaining_space);
 
                             queue.push_back(TaskInsideQueue::MoveToEntity {
-                                target: closest_asteroid.entity.into(),
-                                stop_at_target: true,
-                                distance_to_target: 0.0,
+                                data: ship_tasks::MoveToEntity {
+                                    target: closest_asteroid.entity.into(),
+                                    stop_at_target: true,
+                                    desired_distance_to_target: 0.0,
+                                },
                             });
                             queue.push_back(TaskInsideQueue::MineAsteroid {
-                                target: closest_asteroid.entity,
-                                reserved: reserved_amount,
+                                data: ship_tasks::MineAsteroid::new(
+                                    closest_asteroid.entity,
+                                    reserved_amount,
+                                ),
                             });
 
                             apply_new_task_queue(
-                                &queue,
+                                &mut queue,
                                 &mut commands,
-                                now,
                                 ship_entity,
                                 &mut all_task_started_event_writers,
                             );
@@ -135,9 +139,8 @@ pub fn handle_idle_ships(
                     .unwrap();
                     create_tasks_to_follow_path(&mut queue, path);
                     apply_new_task_queue(
-                        &queue,
+                        &mut queue,
                         &mut commands,
-                        now,
                         ship_entity,
                         &mut all_task_started_event_writers,
                     );
@@ -172,9 +175,8 @@ pub fn handle_idle_ships(
 
                     plan.create_tasks_for_sale(&all_sectors, &all_transforms, &mut queue);
                     apply_new_task_queue(
-                        &queue,
+                        &mut queue,
                         &mut commands,
-                        now,
                         ship_entity,
                         &mut all_task_started_event_writers,
                     );

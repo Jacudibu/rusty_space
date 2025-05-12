@@ -1,5 +1,7 @@
 use crate::types::entity_wrappers::ShipEntity;
-use crate::types::ship_tasks::{Construct, ExchangeWares, ShipTaskData, Undock, UseGate};
+use crate::types::ship_tasks::{
+    Construct, ExchangeWares, HarvestGas, MineAsteroid, ShipTaskData, Undock, UseGate,
+};
 use bevy::ecs::system::SystemParam;
 use bevy::prelude::{Event, EventWriter};
 use std::marker::PhantomData;
@@ -50,4 +52,6 @@ pub struct AllTaskStartedEventWriters<'w> {
     pub use_gate: EventWriter<'w, TaskStartedEvent<UseGate>>,
     pub undock: EventWriter<'w, TaskStartedEvent<Undock>>,
     pub construct: EventWriter<'w, TaskStartedEvent<Construct>>,
+    pub mine_asteroid: EventWriter<'w, TaskStartedEvent<MineAsteroid>>,
+    pub harvest_gas: EventWriter<'w, TaskStartedEvent<HarvestGas>>,
 }

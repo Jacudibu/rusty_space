@@ -1,17 +1,20 @@
 use crate::ship_ai::TaskComponent;
 use crate::ship_ai::ship_task::ShipTask;
 use crate::ship_ai::tasks::send_completion_events;
-use bevy::prelude::{Entity, EventWriter, Query, Res};
+use bevy::prelude::{Entity, EventReader, EventWriter, Query, Res};
 use common::components::{Asteroid, AsteroidMiner, Inventory};
 use common::constants;
+use common::constants::BevyResult;
 use common::events::asteroid_was_fully_mined_event::AsteroidWasFullyMinedEvent;
-use common::events::task_events::TaskCompletedEvent;
+use common::events::task_events::{TaskCompletedEvent, TaskStartedEvent};
 use common::game_data::ItemManifest;
-use common::simulation_time::{CurrentSimulationTimestamp, SimulationTime};
+use common::simulation_time::{CurrentSimulationTimestamp, Milliseconds, SimulationTime};
 use common::simulation_transform::SimulationScale;
 use common::types::entity_wrappers::AsteroidEntity;
-use common::types::ship_tasks::MineAsteroid;
+use common::types::ship_tasks::{HarvestGas, MineAsteroid};
 use std::sync::{Arc, Mutex};
+
+const MILLISECONDS_BETWEEN_UPDATES: Milliseconds = constants::ONE_SECOND_IN_MILLISECONDS;
 
 enum TaskResult {
     Skip,
@@ -34,7 +37,7 @@ impl ShipTask<MineAsteroid> {
         mining_component: &AsteroidMiner,
         item_manifest: &ItemManifest,
     ) -> TaskResult {
-        if now.has_not_passed(self.next_update) {
+        if now.has_not_passed(self.next_update.unwrap()) {
             return TaskResult::Skip;
         }
 
@@ -56,7 +59,8 @@ impl ShipTask<MineAsteroid> {
             TaskResult::Finished { mined_amount }
         } else {
             self.next_update
-                .add_milliseconds(constants::ONE_SECOND_IN_MILLISECONDS);
+                .unwrap()
+                .add_milliseconds(MILLISECONDS_BETWEEN_UPDATES);
             TaskResult::Ongoing { mined_amount }
         }
     }
@@ -132,5 +136,22 @@ impl ShipTask<MineAsteroid> {
         }
 
         send_completion_events(event_writer, task_completions);
+    }
+
+    pub(crate) fn on_task_started(
+        mut all_ships_with_task: Query<&mut Self>,
+        mut started_tasks: EventReader<TaskStartedEvent<MineAsteroid>>,
+        simulation_time: Res<SimulationTime>,
+    ) -> BevyResult {
+        for event in started_tasks.read() {
+            let mut task = all_ships_with_task.get_mut(event.entity.into())?;
+            task.next_update = Some(
+                simulation_time
+                    .now()
+                    .add_milliseconds(MILLISECONDS_BETWEEN_UPDATES),
+            );
+        }
+
+        Ok(())
     }
 }

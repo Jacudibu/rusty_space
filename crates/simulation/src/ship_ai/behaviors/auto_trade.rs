@@ -123,9 +123,8 @@ pub fn handle_idle_ships(
 
             plan.create_tasks_for_sale(&all_sectors, &all_transforms, &mut queue);
             apply_new_task_queue(
-                &queue,
+                &mut queue,
                 &mut commands,
-                now,
                 ship_entity,
                 &mut all_task_started_event_writers,
             );

@@ -10,7 +10,6 @@ use common::components::task_queue::TaskQueue;
 use common::events::task_events::{
     AllTaskStartedEventWriters, TaskCompletedEvent, TaskStartedEvent,
 };
-use common::simulation_time::SimulationTime;
 use common::states::SimulationState;
 use common::system_sets::CustomSystemSets;
 use common::types::ship_tasks::{
@@ -135,6 +134,11 @@ impl Plugin for ShipAiPlugin {
         );
 
         app.add_event::<TaskCompletedEvent<MineAsteroid>>();
+        app.add_event::<TaskStartedEvent<MineAsteroid>>();
+        app.add_systems(
+            FixedPostUpdate,
+            ShipTask::<MineAsteroid>::on_task_started.run_if(in_state(SimulationState::Running)),
+        );
         app.add_systems(
             FixedUpdate,
             (
@@ -146,6 +150,11 @@ impl Plugin for ShipAiPlugin {
         );
 
         app.add_event::<TaskCompletedEvent<HarvestGas>>();
+        app.add_event::<TaskStartedEvent<HarvestGas>>();
+        app.add_systems(
+            FixedPostUpdate,
+            ShipTask::<HarvestGas>::on_task_started.run_if(in_state(SimulationState::Running)),
+        );
         app.add_systems(
             FixedUpdate,
             (
@@ -161,12 +170,22 @@ impl Plugin for ShipAiPlugin {
                 .run_if(in_state(SimulationState::Running)),
         );
 
-        app.add_event::<TaskCompletedEvent<AwaitingSignal>>();
+        app.add_event::<TaskCompletedEvent<RequestAccess>>();
         app.add_systems(
             FixedUpdate,
             (
                 stop_idle_ships::stop_idle_ships,
                 ShipTask::<RequestAccess>::run_tasks,
+                complete_tasks::<RequestAccess>
+                    .run_if(on_event::<TaskCompletedEvent<RequestAccess>>),
+            )
+                .run_if(in_state(SimulationState::Running)),
+        );
+
+        app.add_event::<TaskCompletedEvent<AwaitingSignal>>();
+        app.add_systems(
+            FixedUpdate,
+            (
                 complete_tasks::<AwaitingSignal>
                     .run_if(on_event::<TaskCompletedEvent<AwaitingSignal>>)
                     .after(complete_tasks::<Undock>)
@@ -174,6 +193,8 @@ impl Plugin for ShipAiPlugin {
             )
                 .run_if(in_state(SimulationState::Running)),
         );
+
+        app.add_systems(FixedUpdate, (stop_idle_ships::stop_idle_ships));
     }
 }
 
@@ -181,23 +202,19 @@ fn complete_tasks<T: ShipTaskData + 'static>(
     mut commands: Commands,
     mut event_reader: EventReader<TaskCompletedEvent<T>>,
     mut all_ships_with_task: Query<&mut TaskQueue, With<ShipTask<T>>>,
-    simulation_time: Res<SimulationTime>,
     mut task_started_event_writers: AllTaskStartedEventWriters,
 ) {
-    let now = simulation_time.now();
-
     for event in event_reader.read() {
         if let Ok(mut queue) = all_ships_with_task.get_mut(event.entity.into()) {
             tasks::remove_task_and_add_next_in_queue::<T>(
                 &mut commands,
                 event.entity.into(),
                 &mut queue,
-                now,
                 &mut task_started_event_writers,
             );
         } else {
             error!(
-                "Unable to find entity for task completion: {}",
+                "Unable to find entity for generic task completion: {}",
                 event.entity
             );
         }

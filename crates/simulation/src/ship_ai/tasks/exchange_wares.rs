@@ -100,7 +100,7 @@ impl ShipTask<ExchangeWares> {
                 );
             } else {
                 error!(
-                    "Unable to find entity for task completion: {}",
+                    "Unable to find entity for ExchangeWares task completion: {}",
                     event.entity
                 );
             }

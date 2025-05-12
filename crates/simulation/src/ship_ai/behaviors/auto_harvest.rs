@@ -12,9 +12,9 @@ use common::events::task_events::AllTaskStartedEventWriters;
 use common::game_data::{ItemId, ItemManifest};
 use common::simulation_time::{SimulationTime, SimulationTimestamp};
 use common::simulation_transform::SimulationTransform;
-use common::types::auto_mine_state;
 use common::types::entity_wrappers::{SectorEntity, TypedEntity};
 use common::types::trade_intent::TradeIntent;
+use common::types::{auto_mine_state, ship_tasks};
 
 /// Ships with this behavior will alternate between harvesting gas from gas giants and selling their inventory to stations.
 #[derive(Component)]
@@ -77,22 +77,27 @@ pub fn handle_idle_ships(
                             })
                         {
                             queue.push_back(TaskInsideQueue::MoveToEntity {
-                                target: TypedEntity::Celestial(*closest_planet),
-                                stop_at_target: true,
-                                distance_to_target: 0.0,
+                                data: ship_tasks::MoveToEntity {
+                                    target: TypedEntity::Celestial(*closest_planet),
+                                    stop_at_target: true,
+                                    desired_distance_to_target: 0.0,
+                                },
                             });
                             queue.push_back(TaskInsideQueue::RequestAccess {
-                                target: TypedEntity::Celestial(*closest_planet),
+                                data: ship_tasks::RequestAccess {
+                                    target: TypedEntity::Celestial(*closest_planet),
+                                },
                             });
                             queue.push_back(TaskInsideQueue::HarvestGas {
-                                target: *closest_planet,
-                                gas: behavior.harvested_gas,
+                                data: ship_tasks::HarvestGas::new(
+                                    *closest_planet,
+                                    behavior.harvested_gas,
+                                ),
                             });
 
                             apply_new_task_queue(
-                                &queue,
+                                &mut queue,
                                 &mut commands,
-                                now,
                                 ship_entity,
                                 &mut all_task_started_event_writers,
                             );
@@ -126,9 +131,8 @@ pub fn handle_idle_ships(
                     .unwrap();
                     create_tasks_to_follow_path(&mut queue, path);
                     apply_new_task_queue(
-                        &queue,
+                        &mut queue,
                         &mut commands,
-                        now,
                         ship_entity,
                         &mut all_task_started_event_writers,
                     );
@@ -164,9 +168,8 @@ pub fn handle_idle_ships(
 
                     plan.create_tasks_for_sale(&all_sectors, &all_transforms, &mut queue);
                     apply_new_task_queue(
-                        &queue,
+                        &mut queue,
                         &mut commands,
-                        now,
                         ship_entity,
                         &mut all_task_started_event_writers,
                     );

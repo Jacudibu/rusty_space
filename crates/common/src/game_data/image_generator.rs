@@ -1,7 +1,6 @@
 use bevy::asset::{Assets, Handle, RenderAssetUsages};
 use bevy::image::Image;
-use bevy::prelude::{AssetPlugin, warn};
-use image::ImageResult;
+use bevy::prelude::warn;
 use std::path::Path;
 
 #[must_use]

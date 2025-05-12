@@ -43,6 +43,15 @@ pub struct ExchangeWares {
     pub exchange_data: ExchangeWareData,
 }
 impl ShipTaskData for ExchangeWares {}
+impl ExchangeWares {
+    pub fn new(target: TypedEntity, exchange_data: ExchangeWareData) -> Self {
+        Self {
+            finishes_at: SimulationTimestamp::MAX,
+            target,
+            exchange_data,
+        }
+    }
+}
 
 /// Ships with this task are currently harvesting gas from a gas giant.
 pub struct HarvestGas {
@@ -53,24 +62,43 @@ pub struct HarvestGas {
     pub gas: ItemId,
 
     /// A [SimulationTimestamp] to denote when the next inventory update occurs.
-    pub next_update: SimulationTimestamp,
+    /// Will be initialized in the OnTaskStarted event.
+    pub next_update: Option<SimulationTimestamp>,
 }
 impl ShipTaskData for HarvestGas {}
+impl HarvestGas {
+    pub fn new(target: CelestialEntity, gas: ItemId) -> Self {
+        Self {
+            target,
+            gas,
+            next_update: None,
+        }
+    }
+}
 
 /// Ships with this task are currently mining ore from an asteroid.
 pub struct MineAsteroid {
     /// The Asteroid which we are mining
     pub target: AsteroidEntity,
 
-    /// A [SimulationTimestamp] denoting when our next item transfer with the asteroid is scheduled to happen.
-    pub next_update: SimulationTimestamp,
-
     /// How much ore we have reserved from the target asteroid.
     /// This value is synced with the asteroid, so do not just change this manually.
     pub reserved_ore_amount: u32,
+
+    /// A [SimulationTimestamp] denoting when our next item transfer with the asteroid is scheduled to happen.
+    /// Will be initialized in the OnTaskStarted event.
+    pub next_update: Option<SimulationTimestamp>,
 }
 impl ShipTaskData for MineAsteroid {}
-
+impl MineAsteroid {
+    pub fn new(target: AsteroidEntity, reserved_ore_amount: u32) -> Self {
+        Self {
+            target,
+            reserved_ore_amount,
+            next_update: None,
+        }
+    }
+}
 /// Ships with this task are currently moving towards another entity.
 pub struct MoveToEntity {
     /// The entity to which we are moving.
@@ -87,7 +115,7 @@ impl ShipTaskData for MoveToEntity {}
 
 /// Intermediate task to reserve a spot inside an [`InteractionQueue`] attached to the [`target`].
 ///
-/// Will always be immediately removed on execution, with two possible results depending on the queue's state:
+/// Will always be immediately completed on execution, with two possible results depending on the queue's state:
 ///  - free: proceeding with the next task in this entity's local [`TaskQueue`]
 ///  - busy: spawning an [`AwaitingSignal`] Task
 pub struct RequestAccess {
@@ -99,6 +127,7 @@ impl ShipTaskData for RequestAccess {}
 /// Ships with this are currently undocking from another entity.
 /// They'll move in a straight line away from said entity whilst scaling into existence, after which this task completes.
 /// This task cannot be canceled.
+#[derive(Default)]
 pub struct Undock {
     /// The position from which we are undocking. Will be set once the task has been started.
     pub start_position: Option<Vec2>,
@@ -121,3 +150,14 @@ pub struct UseGate {
     pub exit_sector: SectorEntity,
 }
 impl ShipTaskData for UseGate {}
+
+impl UseGate {
+    pub fn new(enter_gate: GateEntity, exit_sector: SectorEntity) -> Self {
+        Self {
+            enter_gate,
+            exit_sector,
+            progress: 0.0,
+            traversal_state: GateTraversalState::default(),
+        }
+    }
+}

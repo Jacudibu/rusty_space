@@ -12,6 +12,7 @@ use common::simulation_time::SimulationTime;
 use common::simulation_transform::SimulationTransform;
 use common::types::entity_wrappers::{ConstructionSiteEntity, SectorEntity, TypedEntity};
 use common::types::ship_behaviors::AutoConstructBehavior;
+use common::types::ship_tasks;
 use std::ops::Not;
 
 #[allow(clippy::too_many_arguments)]
@@ -60,17 +61,20 @@ pub fn handle_idle_ships(
             }
 
             queue.push_back(TaskInsideQueue::MoveToEntity {
-                target: TypedEntity::ConstructionSite(build_site),
-                stop_at_target: true,
-                distance_to_target: constants::DOCKING_DISTANCE_TO_STATION,
+                data: ship_tasks::MoveToEntity {
+                    target: TypedEntity::ConstructionSite(build_site),
+                    stop_at_target: true,
+                    desired_distance_to_target: constants::DOCKING_DISTANCE_TO_STATION,
+                },
             });
 
-            queue.push_back(TaskInsideQueue::Construct { target: build_site });
+            queue.push_back(TaskInsideQueue::Construct {
+                data: ship_tasks::Construct { target: build_site },
+            });
 
             apply_new_task_queue(
-                &queue,
+                &mut queue,
                 &mut commands,
-                now,
                 ship_entity,
                 &mut all_task_started_event_writers,
             );

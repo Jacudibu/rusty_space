@@ -105,7 +105,7 @@ impl ShipTask<DockAtEntity> {
                 entity_commands.insert(components::IsDocked::new(task.target));
             } else {
                 error!(
-                    "Unable to find entity for task completion: {}",
+                    "Unable to find entity for DockAtEntity task completion: {}",
                     event.entity
                 );
             }

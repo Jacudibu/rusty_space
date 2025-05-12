@@ -134,7 +134,7 @@ impl ShipTask<UseGate> {
                 velocity.forward *= 0.5;
             } else {
                 error!(
-                    "Unable to find entity for task completion: {}",
+                    "Unable to find entity for UseGate task completion: {}",
                     event.entity
                 );
             }
