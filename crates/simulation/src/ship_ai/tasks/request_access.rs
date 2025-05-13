@@ -2,7 +2,7 @@ use crate::ship_ai::TaskComponent;
 use crate::ship_ai::ship_task::ShipTask;
 use bevy::prelude::{Entity, EventWriter, Query, info, warn};
 use common::components::interaction_queue::InteractionQueue;
-use common::components::task_queue::TaskInsideQueue;
+use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
 use common::events::task_events::TaskCompletedEvent;
 use common::types::ship_tasks::{AwaitingSignal, RequestAccess};
@@ -42,7 +42,7 @@ impl ShipTask<RequestAccess> {
                 .try_start_interaction(entity.into())
                 .is_err()
             {
-                task_queue.push_front(TaskInsideQueue::AwaitingSignal {
+                task_queue.push_front(TaskKind::AwaitingSignal {
                     data: AwaitingSignal { from: task.target },
                 });
             }

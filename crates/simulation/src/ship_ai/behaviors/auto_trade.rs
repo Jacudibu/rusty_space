@@ -1,6 +1,6 @@
 use bevy::prelude::{Commands, Entity, Query, Res};
 
-use crate::ship_ai::ship_is_idle_filter::ShipIsIdleFilter;
+use crate::ship_ai::task_filters::ShipIsIdleFilter;
 use crate::ship_ai::tasks::apply_new_task_queue;
 use crate::ship_ai::trade_plan::TradePlan;
 use common::components::ship_behavior::ShipBehavior;

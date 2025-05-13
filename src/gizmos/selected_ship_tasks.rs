@@ -3,7 +3,7 @@ use bevy::prelude::{
     GizmoConfigGroup, GizmoConfigStore, Gizmos, Query, Reflect, ResMut, Srgba, Transform, With,
 };
 use common::components::Gate;
-use common::components::task_queue::{TaskInsideQueue, TaskQueue};
+use common::components::task_queue::TaskQueue;
 
 #[derive(Default, Reflect, GizmoConfigGroup)]
 pub struct SelectedShipTaskGizmos;

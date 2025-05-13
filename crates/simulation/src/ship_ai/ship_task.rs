@@ -3,7 +3,7 @@ use common::types::ship_tasks::ShipTaskData;
 use std::ops::{Deref, DerefMut};
 
 /// A ShipTask can be attached to ship entities in order to have them do stuff.
-#[derive(Component)]
+#[derive(Component, Debug)]
 pub struct ShipTask<T: ShipTaskData> {
     data: T,
 }

@@ -11,12 +11,14 @@ use bevy::math::Vec2;
 pub trait ShipTaskData: Send + Sync {}
 
 /// A ship with this task will be idle until it receives a signal through an event.
+#[derive(Clone, Debug)]
 pub struct AwaitingSignal {
     pub from: TypedEntity,
 }
 impl ShipTaskData for AwaitingSignal {}
 
 /// Ships with this task are actively working on a construction site.
+#[derive(Clone, Debug)]
 pub struct Construct {
     pub target: ConstructionSiteEntity,
 }
@@ -24,6 +26,7 @@ impl ShipTaskData for Construct {}
 
 /// Ships with this task are currently docking at the specified target entity.
 /// They'll move into the target and scale out of existence, after which this task will be completed.
+#[derive(Clone, Debug)]
 pub struct DockAtEntity {
     /// The Entity this ship is currently docking at.
     pub target: TypedEntity,
@@ -32,6 +35,7 @@ impl ShipTaskData for DockAtEntity {}
 
 /// Ships with this task are currently trading wares with the specified target entity.
 /// (They basically just wait until a timer runs out and then transfer the items)
+#[derive(Clone, Debug)]
 pub struct ExchangeWares {
     /// The [SimulationTimestamp] at which this transaction is supposed to finish.
     pub finishes_at: SimulationTimestamp,
@@ -54,6 +58,7 @@ impl ExchangeWares {
 }
 
 /// Ships with this task are currently harvesting gas from a gas giant.
+#[derive(Clone, Debug)]
 pub struct HarvestGas {
     /// The entity of the gas giant from which we are harvesting.
     pub target: CelestialEntity,
@@ -77,6 +82,7 @@ impl HarvestGas {
 }
 
 /// Ships with this task are currently mining ore from an asteroid.
+#[derive(Clone, Debug)]
 pub struct MineAsteroid {
     /// The Asteroid which we are mining
     pub target: AsteroidEntity,
@@ -99,7 +105,9 @@ impl MineAsteroid {
         }
     }
 }
+
 /// Ships with this task are currently moving towards another entity.
+#[derive(Clone, Debug)]
 pub struct MoveToEntity {
     /// The entity to which we are moving.
     pub target: TypedEntity,
@@ -118,6 +126,7 @@ impl ShipTaskData for MoveToEntity {}
 /// Will always be immediately completed on execution, with two possible results depending on the queue's state:
 ///  - free: proceeding with the next task in this entity's local [`TaskQueue`]
 ///  - busy: spawning an [`AwaitingSignal`] Task
+#[derive(Clone, Debug)]
 pub struct RequestAccess {
     /// The entity we want to access. Should have an [InteractionQueue].
     pub target: TypedEntity,
@@ -127,7 +136,7 @@ impl ShipTaskData for RequestAccess {}
 /// Ships with this are currently undocking from another entity.
 /// They'll move in a straight line away from said entity whilst scaling into existence, after which this task completes.
 /// This task cannot be canceled.
-#[derive(Default)]
+#[derive(Clone, Debug, Default)]
 pub struct Undock {
     /// The position from which we are undocking. Will be set once the task has been started.
     pub start_position: Option<Vec2>,
@@ -136,6 +145,7 @@ impl ShipTaskData for Undock {}
 
 /// Ships with this task are currently using a [Gate].
 /// This task cannot be canceled.
+#[derive(Clone, Debug)]
 pub struct UseGate {
     /// How far along the line connecting the two gates we are.
     pub progress: f32,

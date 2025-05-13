@@ -1,10 +1,10 @@
 use crate::ship_ai::create_tasks_following_path::create_tasks_to_follow_path;
-use crate::ship_ai::ship_is_idle_filter::ShipIsIdleFilter;
+use crate::ship_ai::task_filters::ShipIsIdleFilter;
 use crate::ship_ai::tasks::apply_new_task_queue;
 use crate::ship_ai::trade_plan::TradePlan;
 use bevy::prelude::{Commands, Entity, Query, Res, Vec2};
 use common::components::ship_behavior::ShipBehavior;
-use common::components::task_queue::TaskInsideQueue;
+use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
 use common::components::{Asteroid, BuyOrders, InSector, Inventory, Sector, SectorWithAsteroids};
 use common::events::task_events::AllTaskStartedEventWriters;
@@ -90,14 +90,14 @@ pub fn handle_idle_ships(
 
                             let reserved_amount = asteroid.try_to_reserve(remaining_space);
 
-                            queue.push_back(TaskInsideQueue::MoveToEntity {
+                            queue.push_back(TaskKind::MoveToEntity {
                                 data: ship_tasks::MoveToEntity {
                                     target: closest_asteroid.entity.into(),
                                     stop_at_target: true,
                                     desired_distance_to_target: 0.0,
                                 },
                             });
-                            queue.push_back(TaskInsideQueue::MineAsteroid {
+                            queue.push_back(TaskKind::MineAsteroid {
                                 data: ship_tasks::MineAsteroid::new(
                                     closest_asteroid.entity,
                                     reserved_amount,

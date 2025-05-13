@@ -1,20 +1,23 @@
-use crate::types::ship_tasks::{
-    AwaitingSignal, Construct, DockAtEntity, ExchangeWares, HarvestGas, MineAsteroid, MoveToEntity,
-    RequestAccess, Undock, UseGate,
-};
+use crate::components::task_kind::TaskKind;
 use bevy::prelude::Component;
 use std::collections::VecDeque;
 use std::ops::{Deref, DerefMut};
 
-/// A queue of [ShipTask]s.
+/// Keeps track of the tasks a ship was... tasked to execute.
 #[derive(Component, Default)]
 pub struct TaskQueue {
-    /// A queue of tasks which will be executed in order.
-    pub queue: VecDeque<TaskInsideQueue>,
+    /// The currently active task. None means the ship is idle.
+    /// These are also available as [ShipTask]<[TaskKindData]> Component on entities for better querying for ships with specific tasks.
+    /// If you want to filter for idle ships, use [ShipIsIdleFilter].
+    pub active_task: Option<TaskKind>,
+
+    /// A queue of tasks which will be executed in order - usually first in, first out, though some situations might shift priorities.
+    /// (once we implement that, it's probably best to add a function which will put the active task back into the queue)
+    pub queue: VecDeque<TaskKind>,
 }
 
 impl Deref for TaskQueue {
-    type Target = VecDeque<TaskInsideQueue>;
+    type Target = VecDeque<TaskKind>;
 
     fn deref(&self) -> &Self::Target {
         &self.queue
@@ -25,41 +28,4 @@ impl DerefMut for TaskQueue {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.queue
     }
-}
-
-/// Defines a Task inside the [TaskQueue]. New task components can be created from these.
-pub enum TaskInsideQueue {
-    /// Indicates that our ship is waiting for an external entity (e.g. a station or the player) to signal the ship to continue with it next task.
-    AwaitingSignal {
-        data: AwaitingSignal,
-    },
-    Construct {
-        data: Construct,
-    },
-    /// The ship will tell the provided entity that it wants to access it.
-    /// Depending on how busy the target is, it will either tell us to go straight ahead and proceed with the next task or enter the ship into a queue, causing this task to be replaced by [TaskInsideQueue::AwaitingSignal].
-    RequestAccess {
-        data: RequestAccess,
-    },
-    DockAtEntity {
-        data: DockAtEntity,
-    },
-    Undock {
-        data: Undock,
-    },
-    ExchangeWares {
-        data: ExchangeWares,
-    },
-    MoveToEntity {
-        data: MoveToEntity,
-    },
-    UseGate {
-        data: UseGate,
-    },
-    MineAsteroid {
-        data: MineAsteroid,
-    },
-    HarvestGas {
-        data: HarvestGas,
-    },
 }

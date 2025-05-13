@@ -1,6 +1,6 @@
 use crate::ship_ai::create_tasks_following_path::create_tasks_to_follow_path;
 use bevy::prelude::{Entity, Query};
-use common::components::task_queue::TaskInsideQueue;
+use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
 use common::components::{BuyOrders, InSector, Inventory, Sector, SellOrders, TradeOrder};
 use common::constants;
@@ -147,30 +147,30 @@ impl TradePlan {
             create_tasks_to_follow_path(queue, path);
         }
 
-        queue.push_back(TaskInsideQueue::MoveToEntity {
+        queue.push_back(TaskKind::MoveToEntity {
             data: ship_tasks::MoveToEntity {
                 target: self.seller,
                 stop_at_target: true,
                 desired_distance_to_target: constants::DOCKING_DISTANCE_TO_STATION,
             },
         });
-        queue.push_back(TaskInsideQueue::RequestAccess {
+        queue.push_back(TaskKind::RequestAccess {
             data: ship_tasks::RequestAccess {
                 target: self.seller,
             },
         });
-        queue.push_back(TaskInsideQueue::DockAtEntity {
+        queue.push_back(TaskKind::DockAtEntity {
             data: ship_tasks::DockAtEntity {
                 target: self.seller,
             },
         });
-        queue.push_back(TaskInsideQueue::ExchangeWares {
+        queue.push_back(TaskKind::ExchangeWares {
             data: ship_tasks::ExchangeWares::new(
                 self.seller,
                 ExchangeWareData::Buy(self.item_id, self.amount),
             ),
         });
-        queue.push_back(TaskInsideQueue::Undock {
+        queue.push_back(TaskKind::Undock {
             data: ship_tasks::Undock::default(),
         }) // TODO: Ideally that should be added dynamically at the start of MoveToEntity if we are docked
     }
@@ -196,26 +196,26 @@ impl TradePlan {
             create_tasks_to_follow_path(queue, path);
         }
 
-        queue.push_back(TaskInsideQueue::MoveToEntity {
+        queue.push_back(TaskKind::MoveToEntity {
             data: ship_tasks::MoveToEntity {
                 target: self.buyer,
                 stop_at_target: true,
                 desired_distance_to_target: constants::DOCKING_DISTANCE_TO_STATION,
             },
         });
-        queue.push_back(TaskInsideQueue::RequestAccess {
+        queue.push_back(TaskKind::RequestAccess {
             data: ship_tasks::RequestAccess { target: self.buyer },
         });
-        queue.push_back(TaskInsideQueue::DockAtEntity {
+        queue.push_back(TaskKind::DockAtEntity {
             data: ship_tasks::DockAtEntity { target: self.buyer },
         });
-        queue.push_back(TaskInsideQueue::ExchangeWares {
+        queue.push_back(TaskKind::ExchangeWares {
             data: ship_tasks::ExchangeWares::new(
                 self.buyer,
                 ExchangeWareData::Sell(self.item_id, self.amount),
             ),
         });
-        queue.push_back(TaskInsideQueue::Undock {
+        queue.push_back(TaskKind::Undock {
             data: ship_tasks::Undock::default(),
         }) // TODO: Ideally that should be added dynamically at the start of MoveToEntity if we are docked
     }

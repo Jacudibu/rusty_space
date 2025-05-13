@@ -206,7 +206,7 @@ fn complete_tasks<T: ShipTaskData + 'static>(
 ) {
     for event in event_reader.read() {
         if let Ok(mut queue) = all_ships_with_task.get_mut(event.entity.into()) {
-            tasks::remove_task_and_add_next_in_queue::<T>(
+            tasks::remove_task_and_apply_next::<T>(
                 &mut commands,
                 event.entity.into(),
                 &mut queue,

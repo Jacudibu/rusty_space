@@ -1,9 +1,9 @@
 mod behaviors;
 mod create_tasks_following_path;
 pub mod plugin;
-mod ship_is_idle_filter;
 mod ship_task;
 mod stop_idle_ships;
+mod task_filters;
 mod task_result;
 mod tasks;
 mod trade_plan;

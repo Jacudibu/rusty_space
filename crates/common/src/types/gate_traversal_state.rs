@@ -2,7 +2,7 @@ use bevy::math::Vec2;
 
 /// Gate Traversal is split up into different states
 /// Ranging from "Getting sucked into it" to "traversing along the connection at full speed"
-#[derive(Default)]
+#[derive(Clone, Debug, Default)]
 pub enum GateTraversalState {
     /// The task has just been created, used to set up starting values
     #[default]

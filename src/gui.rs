@@ -13,7 +13,8 @@ use common::components::interaction_queue::InteractionQueue;
 use common::components::production_facility::ProductionFacility;
 use common::components::ship_velocity::ShipVelocity;
 use common::components::shipyard::Shipyard;
-use common::components::task_queue::{TaskInsideQueue, TaskQueue};
+use common::components::task_kind::TaskKind;
+use common::components::task_queue::TaskQueue;
 use common::components::{
     Asteroid, BuyOrders, ConstructionSite, ConstructionSiteStatus, Gate, InSector, Inventory,
     SelectableEntity, SellOrders, Ship, Station, TradeOrder,
@@ -133,21 +134,21 @@ impl UiIcons {
         }
     }
 
-    pub fn get_task(&self, task: &TaskInsideQueue) -> SizedTexture {
+    pub fn get_task(&self, task: &TaskKind) -> SizedTexture {
         match task {
-            TaskInsideQueue::UseGate { .. } => self.move_to,
-            TaskInsideQueue::MoveToEntity { .. } => self.move_to,
-            TaskInsideQueue::ExchangeWares { data } => match data.exchange_data {
+            TaskKind::UseGate { .. } => self.move_to,
+            TaskKind::MoveToEntity { .. } => self.move_to,
+            TaskKind::ExchangeWares { data } => match data.exchange_data {
                 ExchangeWareData::Buy(_, _) => self.buy,
                 ExchangeWareData::Sell(_, _) => self.sell,
             },
-            TaskInsideQueue::MineAsteroid { .. } => *self.asteroids.get(&IRON_ASTEROID_ID).unwrap(),
-            TaskInsideQueue::HarvestGas { .. } => self.planet,
-            TaskInsideQueue::AwaitingSignal { .. } => self.awaiting_signal,
-            TaskInsideQueue::RequestAccess { .. } => self.awaiting_signal,
-            TaskInsideQueue::DockAtEntity { .. } => self.dock_at,
-            TaskInsideQueue::Undock { .. } => self.undock,
-            TaskInsideQueue::Construct { .. } => self.construct,
+            TaskKind::MineAsteroid { .. } => *self.asteroids.get(&IRON_ASTEROID_ID).unwrap(),
+            TaskKind::HarvestGas { .. } => self.planet,
+            TaskKind::AwaitingSignal { .. } => self.awaiting_signal,
+            TaskKind::RequestAccess { .. } => self.awaiting_signal,
+            TaskKind::DockAtEntity { .. } => self.dock_at,
+            TaskKind::Undock { .. } => self.undock,
+            TaskKind::Construct { .. } => self.construct,
         }
     }
 }
@@ -562,28 +563,26 @@ fn list_selection_details(
                             ui.horizontal(|ui| {
                                 ui.image(images.get_task(task));
                                 ui.label(match task {
-                                    TaskInsideQueue::UseGate { data } => {
+                                    TaskKind::UseGate { data } => {
                                         format!(
                                             "Using gate to {}",
                                             names.get(data.exit_sector.into()).unwrap()
                                         )
                                     }
-                                    TaskInsideQueue::MoveToEntity { data } => {
+                                    TaskKind::MoveToEntity { data } => {
                                         format!(
                                             "Move to {}",
                                             names.get(data.target.into()).unwrap()
                                         )
                                     }
-                                    TaskInsideQueue::DockAtEntity { data } => {
+                                    TaskKind::DockAtEntity { data } => {
                                         format!(
                                             "Dock at {}",
                                             names.get(data.target.into()).unwrap()
                                         )
                                     }
-                                    TaskInsideQueue::Undock { .. } => "Undock".to_string(),
-                                    TaskInsideQueue::ExchangeWares { data } => match data
-                                        .exchange_data
-                                    {
+                                    TaskKind::Undock { .. } => "Undock".to_string(),
+                                    TaskKind::ExchangeWares { data } => match data.exchange_data {
                                         ExchangeWareData::Buy(item_id, amount) => {
                                             format!(
                                                 "Buy {amount}x{}",
@@ -597,29 +596,29 @@ fn list_selection_details(
                                             )
                                         }
                                     },
-                                    TaskInsideQueue::MineAsteroid { data } => {
+                                    TaskKind::MineAsteroid { data } => {
                                         format!("Mining {}", names.get(data.target.into()).unwrap())
                                     }
-                                    TaskInsideQueue::HarvestGas { data } => {
+                                    TaskKind::HarvestGas { data } => {
                                         format!(
                                             "Harvesting {} from {}",
                                             game_data.items.get_by_ref(&data.gas).unwrap().name,
                                             names.get(data.target.into()).unwrap()
                                         )
                                     }
-                                    TaskInsideQueue::AwaitingSignal { data } => {
+                                    TaskKind::AwaitingSignal { data } => {
                                         format!(
                                             "Awaiting Signal from {}",
                                             names.get(data.from.into()).unwrap()
                                         )
                                     }
-                                    TaskInsideQueue::RequestAccess { data } => {
+                                    TaskKind::RequestAccess { data } => {
                                         format!(
                                             "Requesting Access to {}",
                                             names.get(data.target.into()).unwrap()
                                         )
                                     }
-                                    TaskInsideQueue::Construct { data } => {
+                                    TaskKind::Construct { data } => {
                                         // Might be none during the frame where a construction site is finished
                                         if let Ok(name) = names.get(data.target.into()) {
                                             format!("Constructing {}", name)
@@ -684,7 +683,7 @@ fn draw_summary_row(images: &UiIcons, ui: &mut Ui, item: &SelectableComponentsIt
         if let Some(task_queue) = item.task_queue {
             if let Some(task) = task_queue.queue.front() {
                 match task {
-                    TaskInsideQueue::MoveToEntity { .. } => {
+                    TaskKind::MoveToEntity { .. } => {
                         ui.image(images.get_task(task));
                         if let Some(next_task) = task_queue.queue.get(1) {
                             ui.image(images.get_task(next_task));

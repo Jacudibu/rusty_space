@@ -1,11 +1,11 @@
 use crate::ship_ai::behaviors::auto_mine;
 use crate::ship_ai::create_tasks_following_path::create_tasks_to_follow_path;
-use crate::ship_ai::ship_is_idle_filter::ShipIsIdleFilter;
+use crate::ship_ai::task_filters::ShipIsIdleFilter;
 use crate::ship_ai::tasks::apply_new_task_queue;
 use crate::ship_ai::trade_plan::TradePlan;
 use bevy::prelude::{Commands, Component, Entity, Query, Res};
 use common::components::celestials::GasGiant;
-use common::components::task_queue::TaskInsideQueue;
+use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
 use common::components::{BuyOrders, InSector, Inventory, Sector, SectorWithCelestials};
 use common::events::task_events::AllTaskStartedEventWriters;
@@ -76,19 +76,19 @@ pub fn handle_idle_ships(
                                 )
                             })
                         {
-                            queue.push_back(TaskInsideQueue::MoveToEntity {
+                            queue.push_back(TaskKind::MoveToEntity {
                                 data: ship_tasks::MoveToEntity {
                                     target: TypedEntity::Celestial(*closest_planet),
                                     stop_at_target: true,
                                     desired_distance_to_target: 0.0,
                                 },
                             });
-                            queue.push_back(TaskInsideQueue::RequestAccess {
+                            queue.push_back(TaskKind::RequestAccess {
                                 data: ship_tasks::RequestAccess {
                                     target: TypedEntity::Celestial(*closest_planet),
                                 },
                             });
-                            queue.push_back(TaskInsideQueue::HarvestGas {
+                            queue.push_back(TaskKind::HarvestGas {
                                 data: ship_tasks::HarvestGas::new(
                                     *closest_planet,
                                     behavior.harvested_gas,

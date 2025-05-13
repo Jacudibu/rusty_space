@@ -1,9 +1,9 @@
 use crate::ship_ai::create_tasks_following_path::create_tasks_to_follow_path;
-use crate::ship_ai::ship_is_idle_filter::ShipIsIdleFilter;
+use crate::ship_ai::task_filters::ShipIsIdleFilter;
 use crate::ship_ai::tasks::apply_new_task_queue;
 use bevy::prelude::{Commands, Entity, Query, Res};
 use common::components::ship_behavior::ShipBehavior;
-use common::components::task_queue::TaskInsideQueue;
+use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
 use common::components::{InSector, Sector};
 use common::constants;
@@ -60,7 +60,7 @@ pub fn handle_idle_ships(
                 create_tasks_to_follow_path(&mut queue, path);
             }
 
-            queue.push_back(TaskInsideQueue::MoveToEntity {
+            queue.push_back(TaskKind::MoveToEntity {
                 data: ship_tasks::MoveToEntity {
                     target: TypedEntity::ConstructionSite(build_site),
                     stop_at_target: true,
@@ -68,7 +68,7 @@ pub fn handle_idle_ships(
                 },
             });
 
-            queue.push_back(TaskInsideQueue::Construct {
+            queue.push_back(TaskKind::Construct {
                 data: ship_tasks::Construct { target: build_site },
             });
 

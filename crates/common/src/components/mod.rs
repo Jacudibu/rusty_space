@@ -18,6 +18,7 @@ mod ship_subcomponents;
 pub mod ship_velocity;
 pub mod shipyard;
 mod station;
+pub mod task_kind;
 pub mod task_queue;
 mod trade;
 
