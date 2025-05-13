@@ -134,7 +134,7 @@ impl UiIcons {
         }
     }
 
-    pub fn get_task(&self, task: &TaskKind) -> SizedTexture {
+    pub fn get_task_icon(&self, task: &TaskKind) -> SizedTexture {
         match task {
             TaskKind::UseGate { .. } => self.move_to,
             TaskKind::MoveToEntity { .. } => self.move_to,
@@ -555,79 +555,16 @@ fn list_selection_details(
                 if let Some(task_queue) = item.task_queue {
                     ui.heading("Tasks");
 
-                    if task_queue.is_empty() {
-                        ui.image(images.idle);
-                        ui.label("Idle");
-                    } else {
-                        for task in &task_queue.queue {
-                            ui.horizontal(|ui| {
-                                ui.image(images.get_task(task));
-                                ui.label(match task {
-                                    TaskKind::UseGate { data } => {
-                                        format!(
-                                            "Using gate to {}",
-                                            names.get(data.exit_sector.into()).unwrap()
-                                        )
-                                    }
-                                    TaskKind::MoveToEntity { data } => {
-                                        format!(
-                                            "Move to {}",
-                                            names.get(data.target.into()).unwrap()
-                                        )
-                                    }
-                                    TaskKind::DockAtEntity { data } => {
-                                        format!(
-                                            "Dock at {}",
-                                            names.get(data.target.into()).unwrap()
-                                        )
-                                    }
-                                    TaskKind::Undock { .. } => "Undock".to_string(),
-                                    TaskKind::ExchangeWares { data } => match data.exchange_data {
-                                        ExchangeWareData::Buy(item_id, amount) => {
-                                            format!(
-                                                "Buy {amount}x{}",
-                                                game_data.items.get_by_ref(&item_id).unwrap().name
-                                            )
-                                        }
-                                        ExchangeWareData::Sell(item_id, amount) => {
-                                            format!(
-                                                "Sell {amount}x{}",
-                                                game_data.items.get_by_ref(&item_id).unwrap().name
-                                            )
-                                        }
-                                    },
-                                    TaskKind::MineAsteroid { data } => {
-                                        format!("Mining {}", names.get(data.target.into()).unwrap())
-                                    }
-                                    TaskKind::HarvestGas { data } => {
-                                        format!(
-                                            "Harvesting {} from {}",
-                                            game_data.items.get_by_ref(&data.gas).unwrap().name,
-                                            names.get(data.target.into()).unwrap()
-                                        )
-                                    }
-                                    TaskKind::AwaitingSignal { data } => {
-                                        format!(
-                                            "Awaiting Signal from {}",
-                                            names.get(data.from.into()).unwrap()
-                                        )
-                                    }
-                                    TaskKind::RequestAccess { data } => {
-                                        format!(
-                                            "Requesting Access to {}",
-                                            names.get(data.target.into()).unwrap()
-                                        )
-                                    }
-                                    TaskKind::Construct { data } => {
-                                        // Might be none during the frame where a construction site is finished
-                                        if let Ok(name) = names.get(data.target.into()) {
-                                            format!("Constructing {}", name)
-                                        } else {
-                                            "Finished Construction".into()
-                                        }
-                                    }
-                                });
-                            });
+                    match &task_queue.active_task {
+                        None => {
+                            ui.image(images.idle);
+                            ui.label("Idle");
+                        }
+                        Some(task) => {
+                            print_task_list_element(&game_data, &images, names, ui, task);
+                            for task in &task_queue.queue {
+                                print_task_list_element(&game_data, &images, names, ui, task);
+                            }
                         }
                     }
                 }
@@ -649,6 +586,77 @@ fn list_selection_details(
         });
 
     Ok(())
+}
+
+fn print_task_list_element(
+    game_data: &GameData,
+    images: &Res<UiIcons>,
+    names: Query<&Name>,
+    ui: &mut Ui,
+    task: &TaskKind,
+) {
+    ui.horizontal(|ui| {
+        ui.image(images.get_task_icon(task));
+        ui.label(match task {
+            TaskKind::UseGate { data } => {
+                format!(
+                    "Using gate to {}",
+                    names.get(data.exit_sector.into()).unwrap()
+                )
+            }
+            TaskKind::MoveToEntity { data } => {
+                format!("Move to {}", names.get(data.target.into()).unwrap())
+            }
+            TaskKind::DockAtEntity { data } => {
+                format!("Dock at {}", names.get(data.target.into()).unwrap())
+            }
+            TaskKind::Undock { .. } => "Undock".to_string(),
+            TaskKind::ExchangeWares { data } => match data.exchange_data {
+                ExchangeWareData::Buy(item_id, amount) => {
+                    format!(
+                        "Buy {amount}x{}",
+                        game_data.items.get_by_ref(&item_id).unwrap().name
+                    )
+                }
+                ExchangeWareData::Sell(item_id, amount) => {
+                    format!(
+                        "Sell {amount}x{}",
+                        game_data.items.get_by_ref(&item_id).unwrap().name
+                    )
+                }
+            },
+            TaskKind::MineAsteroid { data } => {
+                format!("Mining {}", names.get(data.target.into()).unwrap())
+            }
+            TaskKind::HarvestGas { data } => {
+                format!(
+                    "Harvesting {} from {}",
+                    game_data.items.get_by_ref(&data.gas).unwrap().name,
+                    names.get(data.target.into()).unwrap()
+                )
+            }
+            TaskKind::AwaitingSignal { data } => {
+                format!(
+                    "Awaiting Signal from {}",
+                    names.get(data.from.into()).unwrap()
+                )
+            }
+            TaskKind::RequestAccess { data } => {
+                format!(
+                    "Requesting Access to {}",
+                    names.get(data.target.into()).unwrap()
+                )
+            }
+            TaskKind::Construct { data } => {
+                // Might be none during the frame where a construction site is finished
+                if let Ok(name) = names.get(data.target.into()) {
+                    format!("Constructing {}", name)
+                } else {
+                    "Finished Construction".into()
+                }
+            }
+        });
+    });
 }
 
 fn list_sell_orders(game_data: &GameData, ui: &mut Ui, sell_orders: &SellOrders) {
@@ -681,16 +689,16 @@ fn draw_summary_row(images: &UiIcons, ui: &mut Ui, item: &SelectableComponentsIt
         ui.label(format!("{} ({})", item.name, item.entity));
 
         if let Some(task_queue) = item.task_queue {
-            if let Some(task) = task_queue.queue.front() {
+            if let Some(task) = &task_queue.active_task {
                 match task {
                     TaskKind::MoveToEntity { .. } => {
-                        ui.image(images.get_task(task));
-                        if let Some(next_task) = task_queue.queue.get(1) {
-                            ui.image(images.get_task(next_task));
+                        ui.image(images.get_task_icon(task));
+                        if let Some(next_task) = task_queue.queue.front() {
+                            ui.image(images.get_task_icon(next_task));
                         }
                     }
                     _ => {
-                        ui.image(images.get_task(task));
+                        ui.image(images.get_task_icon(task));
                     }
                 }
             }
