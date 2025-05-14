@@ -26,6 +26,8 @@ use common::types::ship_tasks::{
     RequestAccess, ShipTaskData, Undock, UseGate,
 };
 
+/// Unwraps the provided event arc and writes them all at once into the respective [TaskCompletedEvent] event writer.
+/// The main idea is that task runners can use par_iter_mut and then just pass any potential event completions in here.
 pub fn send_completion_events<T: ShipTaskData + 'static>(
     mut event_writer: EventWriter<TaskCompletedEvent<T>>,
     task_completions: Arc<Mutex<Vec<TaskCompletedEvent<T>>>>,
@@ -41,36 +43,6 @@ pub fn send_completion_events<T: ShipTaskData + 'static>(
             todo!()
         }
     }
-}
-
-pub fn remove_task_and_apply_next<T: ShipTaskData + 'static>(
-    commands: &mut Commands,
-    entity: Entity,
-    queue: &mut Mut<TaskQueue>,
-    task_started_event_writers: &mut AllTaskStartedEventWriters,
-) {
-    let mut entity_commands = commands.entity(entity);
-    remove_task_and_apply_next_entity_commands::<T>(
-        entity,
-        &mut entity_commands,
-        queue,
-        task_started_event_writers,
-    );
-}
-
-pub fn remove_task_and_apply_next_entity_commands<T: ShipTaskData + 'static>(
-    entity: Entity,
-    entity_commands: &mut EntityCommands,
-    task_queue: &mut Mut<TaskQueue>,
-    task_started_event_writers: &mut AllTaskStartedEventWriters,
-) {
-    entity_commands.remove::<ShipTask<T>>();
-    apply_next_task(
-        task_queue,
-        entity.into(),
-        entity_commands,
-        task_started_event_writers,
-    );
 }
 
 /// Creates the Task Component for the first item in the queue to the provided entity.
@@ -90,6 +62,7 @@ pub fn apply_new_task_queue(
     );
 }
 
+/// Applies the next task in the queue to be the new active task, or sets it to None if the queue is empty.
 pub fn apply_next_task(
     task_queue: &mut TaskQueue,
     entity: ShipEntity,
@@ -153,6 +126,7 @@ pub fn apply_next_task(
     }
 }
 
+/// Notify an [InteractionQueue] that the interaction has been finished, if it still exists.
 #[inline]
 pub fn finish_interaction(
     queue_entity: Entity,
@@ -165,4 +139,97 @@ pub fn finish_interaction(
     };
 
     queue_entity.finish_interaction(signal_writer);
+}
+
+#[cfg(test)]
+mod test {
+    use crate::ship_ai::tasks::apply_new_task_queue;
+    use bevy::app::App;
+    use bevy::ecs::system::RunSystemOnce;
+    use bevy::prelude::{BevyError, Commands, Entity, Query};
+    use common::components::task_kind::TaskKind;
+    use common::components::task_queue::TaskQueue;
+    use common::events::task_events::AllTaskStartedEventWriters;
+    use common::types::entity_wrappers::TypedEntity;
+    use common::types::ship_tasks::{MoveToEntity, Undock};
+    use std::collections::VecDeque;
+
+    fn apply_task_queue(task_queue: TaskQueue) -> Result<TaskQueue, BevyError> {
+        let mut app = App::new();
+        test_utils::add_all_event_writers_for_tests(&mut app);
+
+        let entity = {
+            let world = app.world_mut();
+            let mut commands = world.commands();
+            commands.spawn(task_queue).id()
+        };
+
+        app.update();
+
+        app.world_mut().run_system_once(
+            move |mut all_task_started_event_writers: AllTaskStartedEventWriters,
+                  mut commands: Commands,
+                  mut task_queue: Query<&mut TaskQueue>| {
+                let mut task_queue = task_queue.single_mut().unwrap();
+                apply_new_task_queue(
+                    &mut task_queue,
+                    &mut commands,
+                    entity,
+                    &mut all_task_started_event_writers,
+                )
+            },
+        )?;
+
+        let result = app
+            .world_mut()
+            .query::<&mut TaskQueue>()
+            .single(app.world_mut())?;
+
+        Ok(TaskQueue {
+            active_task: result.active_task.clone(),
+            queue: result.queue.clone(),
+        })
+    }
+
+    #[test]
+    fn applying_empty_queue_should_set_active_task_to_none() -> Result<(), BevyError> {
+        let to_test = apply_task_queue(TaskQueue {
+            queue: VecDeque::default(),
+            active_task: Some(TaskKind::Undock {
+                data: Undock {
+                    start_position: None,
+                },
+            }),
+        })?;
+
+        assert!(to_test.active_task.is_none());
+        Ok(())
+    }
+
+    #[test]
+    fn applying_filled_queue_should_set_active_task_to_first() -> Result<(), BevyError> {
+        let to_test = apply_task_queue(TaskQueue {
+            queue: vec![
+                TaskKind::Undock {
+                    data: Undock::default(),
+                },
+                TaskKind::MoveToEntity {
+                    data: MoveToEntity {
+                        desired_distance_to_target: 0.0,
+                        target: TypedEntity::Ship(test_utils::mock_entity_id(1)),
+                        stop_at_target: true,
+                    },
+                },
+            ]
+            .into(),
+            active_task: None,
+        })?;
+
+        assert!(matches!(to_test.active_task, Some(TaskKind::Undock { .. })));
+        assert!(matches!(
+            to_test.queue.front(),
+            Some(TaskKind::MoveToEntity { .. })
+        ));
+        Ok(())
+    }
 }

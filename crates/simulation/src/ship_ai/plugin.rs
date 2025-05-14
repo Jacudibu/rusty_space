@@ -1,4 +1,5 @@
 use crate::ship_ai::ship_task::ShipTask;
+use crate::ship_ai::tasks::apply_next_task;
 use crate::ship_ai::{behaviors, stop_idle_ships, tasks};
 use bevy::app::App;
 use bevy::log::error;
@@ -206,10 +207,13 @@ fn complete_tasks<T: ShipTaskData + 'static>(
 ) {
     for event in event_reader.read() {
         if let Ok(mut queue) = all_ships_with_task.get_mut(event.entity.into()) {
-            tasks::remove_task_and_apply_next::<T>(
-                &mut commands,
-                event.entity.into(),
+            let entity = event.entity.into();
+            let mut entity_commands = commands.entity(entity);
+            entity_commands.remove::<ShipTask<T>>();
+            apply_next_task(
                 &mut queue,
+                entity.into(),
+                &mut entity_commands,
                 &mut task_started_event_writers,
             );
         } else {
