@@ -41,7 +41,6 @@ pub fn handle_idle_ships(
     mut all_task_started_event_writers: AllTaskStartedEventWriters,
 ) {
     let now = simulation_time.now();
-
     ships
         .iter_mut()
         .filter(|(_, _, behavior, _)| now.has_passed(behavior.next_idle_update))
@@ -63,7 +62,7 @@ pub fn handle_idle_ships(
                         let ship_pos = all_transforms.get(ship_entity).unwrap().translation;
 
                         if let Some(closest_planet) = sector_planets
-                            .planets
+                            .gas_giants
                             .iter()
                             .filter(|&x| all_gas_giants.get(x.into()).is_ok())
                             .min_by_key(|&planet| {
@@ -179,7 +178,7 @@ pub fn handle_idle_ships(
 #[must_use]
 fn find_nearby_sector_with_gas_giants(
     all_gas_giants: &Query<&GasGiant>,
-    all_sectors_with_planets: &Query<&SectorWithCelestials>,
+    all_sectors_with_celestials: &Query<&SectorWithCelestials>,
     all_sectors: &Query<&Sector>,
     in_sector: &InSector,
     gas: &ItemId,
@@ -190,9 +189,9 @@ fn find_nearby_sector_with_gas_giants(
             in_sector.sector,
             1,
             u8::MAX, // TODO: Should be limited
-            all_sectors_with_planets,
-            |x| {
-                x.planets.iter().any(|x| {
+            all_sectors_with_celestials,
+            |sector_with_celestials| {
+                sector_with_celestials.gas_giants.iter().any(|x| {
                     if let Ok(gas_giant) = all_gas_giants.get(x.into()) {
                         gas_giant.resources.contains(gas)
                     } else {

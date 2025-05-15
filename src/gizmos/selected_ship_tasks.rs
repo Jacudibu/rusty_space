@@ -1,8 +1,10 @@
 use crate::entity_selection::IsEntitySelected;
+use bevy::math::Vec3;
 use bevy::prelude::{
     GizmoConfigGroup, GizmoConfigStore, Gizmos, Query, Reflect, ResMut, Srgba, Transform, With,
 };
 use common::components::Gate;
+use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
 
 #[derive(Default, Reflect, GizmoConfigGroup)]
@@ -21,44 +23,70 @@ pub fn draw_selected_ship_task(
     all_transforms: Query<&Transform>,
     all_gates: Query<&Gate>,
 ) {
-    // for (tasks, transform) in selected_ships.iter() {
-    //     let mut current_position = transform.translation;
-    //     for x in &tasks.queue {
-    //         match x {
-    //             TaskInsideQueue::ExchangeWares { .. } => {}
-    //             TaskInsideQueue::MoveToEntity { target, .. } => {
-    //                 let target_position = all_transforms.get(target.into()).unwrap().translation;
-    //                 gizmos.line(current_position, target_position, GIZMO_COLOR);
-    //                 current_position = target_position;
-    //             }
-    //             TaskInsideQueue::UseGate { enter_gate, .. } => {
-    //                 let gate = all_gates.get(enter_gate.into()).unwrap();
-    //                 gizmos.linestrip_2d(gate.transit_curve.iter_positions(10), GIZMO_COLOR);
-    //                 current_position = gate.transit_curve.position(1.0).extend(0.0);
-    //             }
-    //             TaskInsideQueue::MineAsteroid { target, .. } => {
-    //                 let asteroid_pos = all_transforms.get(target.into()).unwrap().translation;
-    //                 gizmos.line(current_position, asteroid_pos, GIZMO_COLOR);
-    //             }
-    //             TaskInsideQueue::HarvestGas { target, .. } => {
-    //                 let planet_pos = all_transforms.get(target.into()).unwrap().translation;
-    //                 gizmos.line(current_position, planet_pos, GIZMO_COLOR);
-    //             }
-    //             TaskInsideQueue::AwaitingSignal { .. } => {}
-    //             TaskInsideQueue::RequestAccess { .. } => {}
-    //             TaskInsideQueue::DockAtEntity { target } => {
-    //                 let target_position = all_transforms.get(target.into()).unwrap().translation;
-    //                 gizmos.line(current_position, target_position, GIZMO_COLOR);
-    //                 current_position = target_position;
-    //             }
-    //             TaskInsideQueue::Undock => {}
-    //             TaskInsideQueue::Construct { target } => {
-    //                 // Task target might become invalid during the frame where construction is finished
-    //                 if let Ok(target_transform) = all_transforms.get(target.into()) {
-    //                     gizmos.line(current_position, target_transform.translation, GIZMO_COLOR);
-    //                 }
-    //             }
-    //         }
-    //     }
-    // }
+    for (task_queue, transform) in selected_ships.iter() {
+        let Some(active_task) = &task_queue.active_task else {
+            continue;
+        };
+
+        let mut current_position = draw_gizmos_for_task(
+            &mut gizmos,
+            all_transforms,
+            all_gates,
+            transform.translation,
+            active_task,
+        );
+
+        for x in &task_queue.queue {
+            current_position =
+                draw_gizmos_for_task(&mut gizmos, all_transforms, all_gates, current_position, x);
+        }
+    }
+}
+
+/// Draws gizmos for the given task and returns the position the ship will have once the task is finished.
+fn draw_gizmos_for_task(
+    gizmos: &mut Gizmos<SelectedShipTaskGizmos>,
+    all_transforms: Query<&Transform>,
+    all_gates: Query<&Gate>,
+    current_position: Vec3,
+    task: &TaskKind,
+) -> Vec3 {
+    match task {
+        TaskKind::ExchangeWares { .. } => current_position,
+        TaskKind::MoveToEntity { data } => {
+            let target_position = all_transforms.get(data.target.into()).unwrap().translation;
+            gizmos.line(current_position, target_position, GIZMO_COLOR);
+            target_position
+        }
+        TaskKind::UseGate { data } => {
+            let gate = all_gates.get(data.enter_gate.into()).unwrap();
+            gizmos.linestrip_2d(gate.transit_curve.iter_positions(10), GIZMO_COLOR);
+            gate.transit_curve.position(1.0).extend(0.0)
+        }
+        TaskKind::MineAsteroid { data } => {
+            let asteroid_pos = all_transforms.get(data.target.into()).unwrap().translation;
+            gizmos.line(current_position, asteroid_pos, GIZMO_COLOR);
+            current_position
+        }
+        TaskKind::HarvestGas { data } => {
+            let planet_pos = all_transforms.get(data.target.into()).unwrap().translation;
+            gizmos.line(current_position, planet_pos, GIZMO_COLOR);
+            current_position
+        }
+        TaskKind::AwaitingSignal { .. } => current_position,
+        TaskKind::RequestAccess { .. } => current_position,
+        TaskKind::DockAtEntity { data } => {
+            let target_position = all_transforms.get(data.target.into()).unwrap().translation;
+            gizmos.line(current_position, target_position, GIZMO_COLOR);
+            target_position
+        }
+        TaskKind::Undock { .. } => current_position,
+        TaskKind::Construct { data } => {
+            // Task target might become invalid during the frame where construction is finished
+            if let Ok(target_transform) = all_transforms.get(data.target.into()) {
+                gizmos.line(current_position, target_transform.translation, GIZMO_COLOR);
+            }
+            current_position
+        }
+    }
 }
