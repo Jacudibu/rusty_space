@@ -3,34 +3,32 @@ use crate::ship_ai::create_tasks_following_path::create_tasks_to_follow_path;
 use crate::ship_ai::task_filters::ShipIsIdleFilter;
 use crate::ship_ai::tasks::apply_new_task_queue;
 use crate::ship_ai::trade_plan::TradePlan;
-use bevy::prelude::{Commands, Component, Entity, Query, Res};
+use bevy::prelude::{Commands, Entity, Query, Res};
 use common::components::celestials::GasGiant;
+use common::components::ship_behavior::ShipBehavior;
 use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
 use common::components::{BuyOrders, InSector, Inventory, Sector, SectorWithCelestials};
 use common::events::task_events::AllTaskStartedEventWriters;
 use common::game_data::{ItemId, ItemManifest};
-use common::simulation_time::{SimulationTime, SimulationTimestamp};
+use common::simulation_time::SimulationTime;
 use common::simulation_transform::SimulationTransform;
 use common::types::entity_wrappers::{SectorEntity, TypedEntity};
+use common::types::ship_behaviors::AutoHarvestBehavior;
 use common::types::trade_intent::TradeIntent;
 use common::types::{auto_mine_state, ship_tasks};
-
-/// Ships with this behavior will alternate between harvesting gas from gas giants and selling their inventory to stations.
-#[derive(Component)]
-pub struct AutoHarvestBehavior {
-    // TODO: Maybe(?) could just be AutoMineBehavior<T> with T: MineAsteroid | HarvestGas
-    pub next_idle_update: SimulationTimestamp,
-    pub state: auto_mine_state::AutoMineState,
-    pub harvested_gas: ItemId,
-}
 
 #[allow(clippy::too_many_arguments)]
 pub fn handle_idle_ships(
     mut commands: Commands,
     simulation_time: Res<SimulationTime>,
     mut ships: Query<
-        (Entity, &mut TaskQueue, &mut AutoHarvestBehavior, &InSector),
+        (
+            Entity,
+            &mut TaskQueue,
+            &mut ShipBehavior<AutoHarvestBehavior>,
+            &InSector,
+        ),
         ShipIsIdleFilter,
     >,
     buy_orders: Query<(Entity, &mut BuyOrders, &InSector)>,

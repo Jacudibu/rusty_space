@@ -146,7 +146,7 @@ mod test {
     use crate::ship_ai::tasks::apply_new_task_queue;
     use bevy::app::App;
     use bevy::ecs::system::RunSystemOnce;
-    use bevy::prelude::{BevyError, Commands, Entity, Query};
+    use bevy::prelude::{BevyError, Commands, Query};
     use common::components::task_kind::TaskKind;
     use common::components::task_queue::TaskQueue;
     use common::events::task_events::AllTaskStartedEventWriters;

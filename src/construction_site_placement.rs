@@ -11,7 +11,7 @@ use bevy::prelude::{
     Resource, State, States, Transform, Update, Vec2, Visibility, With, Without, in_state,
 };
 use bevy::sprite::Sprite;
-use common::components::celestials::{Planet, Star};
+use common::components::celestials::{Celestial, Planet, Star};
 use common::components::{
     BuyOrderData, BuyOrders, ConstantOrbit, Gate, Sector, SectorWithCelestials, Station,
 };
@@ -359,7 +359,7 @@ enum PositionValidationError {
 #[derive(QueryFilter)]
 #[allow(clippy::type_complexity)]
 struct ConstructionBlockingItemFilter {
-    tuple: (Or<(With<Station>, With<Planet>, With<Star>, With<Gate>)>,),
+    tuple: (Or<(With<Station>, With<Celestial>, With<Gate>)>,),
 }
 
 /// Updates the [PreviewTargetPosition] resource before any of the systems depending on it are run.
