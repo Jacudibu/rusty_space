@@ -1,24 +1,38 @@
-use bevy::prelude::{GizmoConfigGroup, Gizmos, Query, Reflect, Res, With};
-
+use bevy::gizmos::GizmoAsset;
+use bevy::prelude::{Assets, ChildOf, Commands, Entity, Gizmo, Name, Query, Res, ResMut};
 use common::components::Sector;
-use common::simulation_transform::SimulationTransform;
+use common::constants::BevyResult;
 use common::types::map_layout::MapLayout;
 
-#[derive(Default, Reflect, GizmoConfigGroup)]
-pub struct SectorOutlineGizmos;
-
-pub fn draw_sector_outlines(
-    mut gizmos: Gizmos<SectorOutlineGizmos>,
+pub fn spawn_retained_sector_outlines(
+    sectors: Query<(Entity, &Sector)>,
     layout: Res<MapLayout>,
-    sectors: Query<&SimulationTransform, With<Sector>>,
-) {
-    for transform in sectors.iter() {
-        for edge in layout.hex_edge_vertices {
-            gizmos.line_2d(
-                edge[0] + transform.translation,
-                edge[1] + transform.translation,
-                bevy::color::palettes::css::YELLOW,
-            );
-        }
+    mut commands: Commands,
+    mut gizmo_assets: ResMut<Assets<GizmoAsset>>,
+) -> BevyResult {
+    // TODO: Looks like we can store one GizmoAsset per possible sector color in a separate resource
+    //       and then just insert a different handle later in case sector ownership changes. Neat!
+    let mut gizmo = GizmoAsset::default();
+    for edge in layout.hex_edge_vertices {
+        gizmo.line_2d(edge[0], edge[1], bevy::color::palettes::css::YELLOW);
     }
+
+    let handle = gizmo_assets.add(gizmo);
+
+    for (entity, sector) in sectors.iter() {
+        commands
+            .spawn((
+                Name::new(format!(
+                    "Sector [{}/{}] Outline",
+                    sector.coordinate.x, sector.coordinate.y
+                )),
+                Gizmo {
+                    handle: handle.clone(),
+                    ..Default::default()
+                },
+            ))
+            .insert(ChildOf(entity));
+    }
+
+    Ok(())
 }
