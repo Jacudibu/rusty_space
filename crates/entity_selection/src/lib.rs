@@ -1,14 +1,17 @@
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
-}
+pub mod components;
+mod gizmos;
+pub mod mouse_cursor;
+mod mouse_interaction;
+mod mouse_systems;
+pub mod plugin;
+mod selection_change_listener;
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+/// The maximum delay allowed for a click to count as double-click in milliseconds.
+///
+/// Windows defaults to 500ms, but that feels awfully long in a game context.
+pub(crate) const DOUBLE_CLICK_TIME: u128 = 300;
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
-}
+/// The maximum duration for a mouse press to be pressed to count as a click.
+///
+/// The average mouse click lasts about 85 milliseconds
+pub(crate) const CLICK_TIME: u128 = 100;

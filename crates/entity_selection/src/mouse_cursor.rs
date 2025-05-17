@@ -29,7 +29,7 @@ pub struct MouseSectorPosition {
 }
 
 /// Updates the [MouseCursor] Resource with new Values for this frame.
-pub fn update_mouse_cursor_position(
+pub(crate) fn update_mouse_cursor_position(
     windows: Query<&Window>,
     camera: Query<(&Camera, &GlobalTransform)>,
     map: Res<MapLayout>,
@@ -64,12 +64,12 @@ fn calculate_sector_pos(
     sectors: &SectorIdMap,
 ) -> Option<MouseSectorPosition> {
     let sector_hex = map.hex_layout.world_pos_to_hex(world_pos);
-    let sector = sectors.get_entity(&sector_hex)?.clone();
+    let sector = sectors.get_entity(&sector_hex)?;
     let sector_center_pos = map.hex_layout.hex_to_world_pos(sector_hex);
 
     MouseSectorPosition {
         sector_position: SectorPosition {
-            sector,
+            sector: *sector,
             local_position: world_pos - sector_center_pos,
         },
         coordinates: sector_hex,

@@ -1,6 +1,6 @@
 use crate::ship_ai::ship_task::ShipTask;
 use crate::ship_ai::tasks::apply_next_task;
-use crate::ship_ai::{behaviors, stop_idle_ships, tasks};
+use crate::ship_ai::{behaviors, stop_idle_ships};
 use bevy::app::App;
 use bevy::log::error;
 use bevy::prelude::{

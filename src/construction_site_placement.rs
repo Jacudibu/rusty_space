@@ -1,4 +1,3 @@
-use crate::entity_selection::MouseCursor;
 use bevy::app::{App, Plugin};
 use bevy::ecs::query::QueryFilter;
 use bevy::input::ButtonInput;
@@ -26,6 +25,7 @@ use common::types::price_setting::PriceSetting;
 use common::types::sector_position::SectorPosition;
 use common::types::sprite_handles::SpriteHandles;
 use common::{constants, geometry};
+use entity_selection::mouse_cursor::MouseCursor;
 use entity_spawners::spawn_station::{ConstructionSiteSpawnData, StationSpawnData, spawn_station};
 
 /// Plugin for placing new Construction Sites.

@@ -1,5 +1,7 @@
-use crate::entity_selection::mouse_interaction::{LastMouseInteraction, MouseInteraction};
-use crate::entity_selection::{DOUBLE_CLICK_TIME, IsEntitySelected, MouseCursor};
+use crate::DOUBLE_CLICK_TIME;
+use crate::components::IsEntitySelected;
+use crate::mouse_cursor::MouseCursor;
+use crate::mouse_interaction::{LastMouseInteraction, MouseInteraction};
 use bevy::input::ButtonState;
 use bevy::input::mouse::MouseButtonInput;
 use bevy::prelude::{
@@ -12,7 +14,7 @@ use common::geometry;
 use common::states::MouseCursorOverUiState;
 
 #[allow(clippy::too_many_arguments)]
-pub fn process_mouse_clicks(
+pub(crate) fn process_mouse_clicks(
     mut commands: Commands,
     time: Res<Time<Real>>,
     mouse_cursor: Res<MouseCursor>,
@@ -155,7 +157,7 @@ fn is_double_click(
 }
 
 #[allow(clippy::type_complexity)]
-pub fn update_active_mouse_interaction(
+pub(crate) fn update_active_mouse_interaction(
     mut commands: Commands,
     mouse_interaction: Option<ResMut<MouseInteraction>>,
     mouse_cursor: Option<Res<MouseCursor>>,

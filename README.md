@@ -10,6 +10,7 @@ flowchart BT
     camera --> common
     persistence --> common
     pathfinding --> common
+    entity_selection --> common
 
     entity_spawners --> persistence
 
@@ -19,13 +20,17 @@ flowchart BT
 
     simulation --> pathfinding
 
+    main --> entity_selection
     main --> universe_builder
     main --> universe_loader
     main --> simulation
     main --> camera
 ```
 
-Have a look at the readme files in the individual crate subfolders for more information.
+`main` mostly contains stuff that's still WIP and has not reached a size to warrant a separate crate yet.
+Ideally, one day it will just construct the bevy App through plugins.
+
+Have a look at the readme files in the individual crate subfolders for more details.
 
 ## License
 [

@@ -1,4 +1,3 @@
-use crate::entity_selection::{IsEntitySelected, MouseCursor};
 use bevy::app::App;
 use bevy::ecs::query::QueryData;
 use bevy::platform::collections::{HashMap, HashSet};
@@ -32,6 +31,8 @@ use common::simulation_time::SimulationTime;
 use common::states::MouseCursorOverUiState;
 use common::types::exchange_ware_data::ExchangeWareData;
 use common::types::sprite_handles::SpriteHandles;
+use entity_selection::components::IsEntitySelected;
+use entity_selection::mouse_cursor::MouseCursor;
 
 pub struct GUIPlugin;
 impl Plugin for GUIPlugin {

@@ -1,18 +1,30 @@
-use bevy::prelude::{GizmoConfigGroup, GizmoConfigStore, Gizmos, Query, Reflect, ResMut, With};
+use bevy::app::{App, Plugin, Startup, Update};
+use bevy::prelude::{
+    AppGizmoBuilder, GizmoConfigGroup, GizmoConfigStore, Gizmos, Query, Reflect, ResMut, With,
+};
 
-use crate::entity_selection::IsEntitySelected;
 use common::components::{ConstantOrbit, InSector, Sector};
 use common::constants;
+use entity_selection::components::IsEntitySelected;
+
+pub(crate) struct OrbitGizmoPlugin;
+impl Plugin for OrbitGizmoPlugin {
+    fn build(&self, app: &mut App) {
+        app.init_gizmo_group::<OrbitLineGizmos>()
+            .add_systems(Startup, configure)
+            .add_systems(Update, draw_orbit_circles);
+    }
+}
 
 #[derive(Default, Reflect, GizmoConfigGroup)]
-pub struct OrbitLineGizmos;
+struct OrbitLineGizmos;
 
-pub fn configure(mut config_store: ResMut<GizmoConfigStore>) {
+fn configure(mut config_store: ResMut<GizmoConfigStore>) {
     let (config, _) = config_store.config_mut::<OrbitLineGizmos>();
     config.line.width = 1.0;
 }
 
-pub fn draw_orbit_circles(
+fn draw_orbit_circles(
     mut gizmos: Gizmos<OrbitLineGizmos>,
     orbits: Query<(&ConstantOrbit, &InSector), With<IsEntitySelected>>,
     sectors: Query<&Sector>,

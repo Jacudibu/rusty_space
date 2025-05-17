@@ -1,12 +1,12 @@
-use crate::entity_selection::mouse_interaction::MouseInteraction;
+use crate::mouse_interaction::MouseInteraction;
 use bevy::math::Rot2;
 use bevy::prelude::{GizmoConfigGroup, Gizmos, GlobalTransform, Isometry2d, Query, Reflect, Res};
 use common::components::{RADIUS_CURSOR, SelectableEntity};
 
 #[derive(Default, Reflect, GizmoConfigGroup)]
-pub struct MouseInteractionGizmos;
+pub(crate) struct MouseInteractionGizmos;
 
-pub fn draw_mouse_interactions(
+pub(crate) fn draw_mouse_interactions(
     mut gizmos: Gizmos<MouseInteractionGizmos>,
     mouse_interaction: Option<Res<MouseInteraction>>,
 ) {
@@ -28,7 +28,7 @@ pub fn draw_mouse_interactions(
     );
 }
 
-pub fn draw_colliders(
+pub(crate) fn draw_colliders(
     mut gizmos: Gizmos<MouseInteractionGizmos>,
     query: Query<(&GlobalTransform, &SelectableEntity)>,
 ) {
@@ -41,7 +41,7 @@ pub fn draw_colliders(
     }
 }
 
-pub fn draw_cursor_circle(
+pub(crate) fn draw_cursor_circle(
     mut gizmos: Gizmos<MouseInteractionGizmos>,
     cursor: Option<Res<MouseInteraction>>,
 ) {

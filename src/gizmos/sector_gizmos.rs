@@ -1,10 +1,22 @@
+use bevy::app::{App, Plugin};
 use bevy::gizmos::GizmoAsset;
-use bevy::prelude::{Assets, ChildOf, Commands, Entity, Gizmo, Name, Query, Res, ResMut};
+use bevy::prelude::{Assets, ChildOf, Commands, Entity, Gizmo, Name, OnEnter, Query, Res, ResMut};
 use common::components::Sector;
 use common::constants::BevyResult;
+use common::states::ApplicationState;
 use common::types::map_layout::MapLayout;
 
-pub fn spawn_retained_sector_outlines(
+pub struct SectorGizmoPlugin;
+impl Plugin for SectorGizmoPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(
+            OnEnter(ApplicationState::InGame),
+            spawn_retained_sector_outlines,
+        );
+    }
+}
+
+fn spawn_retained_sector_outlines(
     sectors: Query<(Entity, &Sector)>,
     layout: Res<MapLayout>,
     mut commands: Commands,

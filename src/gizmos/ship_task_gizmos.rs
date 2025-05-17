@@ -1,23 +1,34 @@
-use crate::entity_selection::IsEntitySelected;
+use bevy::app::{App, Startup, Update};
 use bevy::math::Vec3;
 use bevy::prelude::{
-    GizmoConfigGroup, GizmoConfigStore, Gizmos, Query, Reflect, ResMut, Srgba, Transform, With,
+    AppGizmoBuilder, GizmoConfigGroup, GizmoConfigStore, Gizmos, Plugin, Query, Reflect, ResMut,
+    Srgba, Transform, With,
 };
 use common::components::Gate;
 use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
+use entity_selection::components::IsEntitySelected;
+
+pub struct ShipTaskGizmoPlugin;
+impl Plugin for ShipTaskGizmoPlugin {
+    fn build(&self, app: &mut App) {
+        app.init_gizmo_group::<SelectedShipTaskGizmos>();
+        app.add_systems(Startup, configure);
+        app.add_systems(Update, draw_selected_ship_task);
+    }
+}
 
 #[derive(Default, Reflect, GizmoConfigGroup)]
-pub struct SelectedShipTaskGizmos;
+struct SelectedShipTaskGizmos;
 
 const GIZMO_COLOR: Srgba = bevy::color::palettes::css::CORNFLOWER_BLUE;
 
-pub fn configure(mut config_store: ResMut<GizmoConfigStore>) {
+fn configure(mut config_store: ResMut<GizmoConfigStore>) {
     let (config, _) = config_store.config_mut::<SelectedShipTaskGizmos>();
     config.line.width = 4.0;
 }
 
-pub fn draw_selected_ship_task(
+fn draw_selected_ship_task(
     mut gizmos: Gizmos<SelectedShipTaskGizmos>,
     selected_ships: Query<(&TaskQueue, &Transform), With<IsEntitySelected>>,
     all_transforms: Query<&Transform>,

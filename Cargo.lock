@@ -2205,6 +2205,11 @@ dependencies = [
 [[package]]
 name = "entity_selection"
 version = "0.1.0"
+dependencies = [
+ "bevy",
+ "common",
+ "hexx",
+]
 
 [[package]]
 name = "entity_spawners"
@@ -4620,6 +4625,7 @@ dependencies = [
  "bevy_egui",
  "camera",
  "common",
+ "entity_selection",
  "entity_spawners",
  "hexx",
  "iyes_perf_ui",

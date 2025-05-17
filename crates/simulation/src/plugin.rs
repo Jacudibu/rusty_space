@@ -1,6 +1,4 @@
-use crate::{
-    asteroids, construction_site_updater, moving_gate_connections, physics, production, ship_ai,
-};
+use crate::{asteroids, construction_sites, physics, production, ship_ai};
 use bevy::prelude::{
     App, ButtonInput, IntoScheduleConfigs, KeyCode, NextState, Plugin, Res, ResMut, State, Time,
     Update, Virtual, in_state,
@@ -17,7 +15,7 @@ impl Plugin for SimulationPlugin {
         app.insert_resource(Time::<Fixed>::from_hz(constants::TICKS_PER_SECOND));
         app.add_plugins((
             asteroids::plugin::AsteroidPlugin,
-            construction_site_updater::ConstructionSiteUpdaterPlugin,
+            construction_sites::ConstructionSiteUpdaterPlugin,
             physics::plugin::PhysicsPlugin,
             production::plugin::ProductionPlugin,
             ship_ai::plugin::ShipAiPlugin,
@@ -25,11 +23,6 @@ impl Plugin for SimulationPlugin {
         app.add_systems(
             Update,
             toggle_pause.run_if(in_state(ApplicationState::InGame)),
-        );
-        app.add_systems(
-            Update, // TODO: Depending on our orbit velocity, this should be running in FixedUpdate or even less often and use SimulationTransform
-            moving_gate_connections::update_gate_connections
-                .run_if(in_state(SimulationState::Running)),
         );
     }
 }

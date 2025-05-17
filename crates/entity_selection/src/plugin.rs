@@ -1,10 +1,9 @@
-use crate::entity_selection::MouseCursor;
-use crate::entity_selection::gizmos::{
+use crate::gizmos::{
     MouseInteractionGizmos, draw_colliders, draw_cursor_circle, draw_mouse_interactions,
 };
-use crate::entity_selection::mouse_cursor::update_mouse_cursor_position;
-use crate::entity_selection::mouse_systems::*;
-use crate::entity_selection::selection_change_listener::on_selection_changed;
+use crate::mouse_cursor::{MouseCursor, update_mouse_cursor_position};
+use crate::mouse_systems::{process_mouse_clicks, update_active_mouse_interaction};
+use crate::selection_change_listener::on_selection_changed;
 use bevy::prelude::{
     App, AppGizmoBuilder, IntoScheduleConfigs, Plugin, PreUpdate, Update, in_state,
 };
