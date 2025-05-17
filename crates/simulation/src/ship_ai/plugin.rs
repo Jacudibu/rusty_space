@@ -1,15 +1,16 @@
 use crate::ship_ai::ship_task::ShipTask;
+use crate::ship_ai::task_cancellation::TaskCancellationRequest;
 use crate::ship_ai::tasks::apply_next_task;
-use crate::ship_ai::{behaviors, stop_idle_ships};
+use crate::ship_ai::{behaviors, stop_idle_ships, task_cancellation};
 use bevy::app::App;
 use bevy::log::error;
 use bevy::prelude::{
-    Commands, EventReader, FixedPostUpdate, FixedUpdate, IntoScheduleConfigs, Plugin, Query, Res,
-    With, in_state, on_event,
+    Commands, EventReader, FixedPostUpdate, FixedPreUpdate, FixedUpdate, IntoScheduleConfigs,
+    Plugin, Query, Res, Update, With, in_state, on_event,
 };
 use common::components::task_queue::TaskQueue;
 use common::events::task_events::{
-    AllTaskStartedEventWriters, TaskCompletedEvent, TaskStartedEvent,
+    AllTaskStartedEventWriters, TaskCanceledEvent, TaskCompletedEvent, TaskStartedEvent,
 };
 use common::states::SimulationState;
 use common::system_sets::CustomSystemSets;
@@ -18,9 +19,38 @@ use common::types::ship_tasks::{
     RequestAccess, ShipTaskData, Undock, UseGate,
 };
 
+// TODO: clean up once we reunify task registration
+fn build_cancellation(app: &mut App) {
+    app.add_systems(Update, task_cancellation::handle_task_cancellation_requests);
+
+    app.add_event::<TaskCancellationRequest>();
+    app.add_event::<TaskCanceledEvent<AwaitingSignal>>();
+    app.add_event::<TaskCanceledEvent<Construct>>();
+    app.add_event::<TaskCanceledEvent<ExchangeWares>>();
+    app.add_event::<TaskCanceledEvent<DockAtEntity>>();
+    app.add_event::<TaskCanceledEvent<HarvestGas>>();
+    app.add_event::<TaskCanceledEvent<MineAsteroid>>();
+    app.add_event::<TaskCanceledEvent<MoveToEntity>>();
+    app.add_event::<TaskCanceledEvent<Undock>>();
+    app.add_event::<TaskCanceledEvent<UseGate>>();
+    app.add_event::<TaskCanceledEvent<RequestAccess>>();
+
+    app.add_systems(
+        FixedPreUpdate,
+        (
+            ShipTask::<ExchangeWares>::cancel_task_inside_queue
+                .run_if(on_event::<TaskCanceledEvent<ExchangeWares>>),
+            ShipTask::<MineAsteroid>::cancel_task_inside_queue
+                .run_if(on_event::<TaskCanceledEvent<MineAsteroid>>),
+        ),
+    );
+}
+
 pub struct ShipAiPlugin;
 impl Plugin for ShipAiPlugin {
     fn build(&self, app: &mut App) {
+        build_cancellation(app);
+
         app.add_systems(
             FixedUpdate,
             (

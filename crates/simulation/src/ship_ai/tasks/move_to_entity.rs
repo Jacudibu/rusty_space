@@ -122,4 +122,8 @@ impl ShipTask<MoveToEntity> {
 
         send_completion_events(event_writer, task_completions);
     }
+
+    pub(crate) fn cancel_task_inside_queue() {
+        // Nothing needs to be done
+    }
 }

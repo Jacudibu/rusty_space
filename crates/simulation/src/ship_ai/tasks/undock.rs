@@ -118,4 +118,8 @@ impl ShipTask<Undock> {
             commands.entity(entity).remove::<IsDocked>();
         }
     }
+
+    pub(crate) fn cancel_task_inside_queue() {
+        // Nothing needs to be done
+    }
 }

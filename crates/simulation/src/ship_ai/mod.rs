@@ -3,6 +3,7 @@ mod create_tasks_following_path;
 pub mod plugin;
 mod ship_task;
 mod stop_idle_ships;
+pub mod task_cancellation;
 mod task_filters;
 mod task_result;
 mod tasks;

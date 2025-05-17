@@ -111,4 +111,8 @@ impl ShipTask<DockAtEntity> {
             }
         }
     }
+
+    pub(crate) fn cancel_task_inside_queue() {
+        // Nothing needs to be done.
+    }
 }

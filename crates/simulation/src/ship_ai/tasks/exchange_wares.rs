@@ -5,7 +5,7 @@ use crate::ship_ai::tasks::send_completion_events;
 use bevy::prelude::{Entity, EventReader, EventWriter, Query, Res, error};
 use common::components::Inventory;
 use common::events::inventory_update_for_production_event::InventoryUpdateForProductionEvent;
-use common::events::task_events::{TaskCompletedEvent, TaskStartedEvent};
+use common::events::task_events::{TaskCanceledEvent, TaskCompletedEvent, TaskStartedEvent};
 use common::game_data::ItemManifest;
 use common::simulation_time::{CurrentSimulationTimestamp, SimulationTime};
 use common::types::exchange_ware_data::ExchangeWareData;
@@ -119,6 +119,28 @@ impl ShipTask<ExchangeWares> {
             };
 
             created_component.finishes_at = now.add_seconds(2);
+        }
+    }
+
+    pub(crate) fn cancel_task_inside_queue(
+        mut events: EventReader<TaskCanceledEvent<ExchangeWares>>,
+        mut inventories: Query<&mut Inventory>,
+    ) {
+        for event in events.read() {
+            let exchange_data = &event.task_data.exchange_data;
+            if let Ok(inventory) = inventories.get_mut(event.task_data.target.into()) {
+                match exchange_data {
+                    ExchangeWareData::Buy(item_id, amount) => {}
+                    ExchangeWareData::Sell(item_id, amount) => {}
+                }
+            }
+
+            if let Ok(inventory) = inventories.get_mut(event.entity.into()) {
+                match exchange_data {
+                    ExchangeWareData::Buy(item_id, amount) => {}
+                    ExchangeWareData::Sell(item_id, amount) => {}
+                }
+            }
         }
     }
 }

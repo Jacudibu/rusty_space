@@ -36,12 +36,16 @@ impl ShipTask<Construct> {
         }
     }
 
-    pub fn run_tasks() {
+    pub(crate) fn run_tasks() {
         // Individual ships don't do anything whilst constructing, that's handled inside construction_site_updater
     }
 
-    pub fn cancel_task() {
-        // remove build_power from construction site
+    pub(crate) fn cancel_task_inside_queue() {
+        // Nothing needs to be done.
+    }
+
+    pub(crate) fn abort_task() {
+        // TODO: build_power from construction site
     }
 }
 

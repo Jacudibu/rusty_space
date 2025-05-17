@@ -2,8 +2,9 @@ use bevy::app::App;
 use bevy::ecs::query::QueryData;
 use bevy::platform::collections::{HashMap, HashSet};
 use bevy::prelude::{
-    AppExtStates, AssetServer, Commands, Entity, EventReader, IntoScheduleConfigs, Name, NextState,
-    Plugin, PreUpdate, Query, Res, ResMut, Resource, Startup, State, With, on_event,
+    AppExtStates, AssetServer, Commands, Entity, EventReader, EventWriter, IntoScheduleConfigs,
+    Name, NextState, Plugin, PreUpdate, Query, Res, ResMut, Resource, Startup, State, With,
+    on_event,
 };
 use bevy_egui::egui::load::SizedTexture;
 use bevy_egui::egui::{Align2, Shadow, Ui};
@@ -19,6 +20,7 @@ use common::components::{
     SelectableEntity, SellOrders, Ship, Station, TradeOrder,
 };
 use common::constants::BevyResult;
+use common::events::task_events::AllTaskCancelledEventWriters;
 use common::game_data::{
     AsteroidDataId, AsteroidManifest, Constructable, ConstructableModuleId, GameData,
     IRON_ASTEROID_ID,
@@ -33,6 +35,7 @@ use common::types::exchange_ware_data::ExchangeWareData;
 use common::types::sprite_handles::SpriteHandles;
 use entity_selection::components::IsEntitySelected;
 use entity_selection::mouse_cursor::MouseCursor;
+use simulation::TaskCancellationRequest;
 
 pub struct GUIPlugin;
 impl Plugin for GUIPlugin {
@@ -342,6 +345,7 @@ fn list_selection_details(
     sell_orders: Query<&SellOrders>,
     construction_sites: Query<&ConstructionSite>,
     names: Query<&Name>,
+    mut task_cancellation_request_writer: EventWriter<TaskCancellationRequest>,
 ) -> BevyResult {
     let counts = selected.iter().fold(
         SelectableCount::new(&game_data.asteroids, &gui_data),
@@ -562,9 +566,29 @@ fn list_selection_details(
                             ui.label("Idle");
                         }
                         Some(task) => {
-                            print_task_list_element(&game_data, &images, names, ui, task);
+                            print_task_list_element(
+                                &game_data,
+                                &images,
+                                names,
+                                ui,
+                                task,
+                                item.entity,
+                                None,
+                                &mut task_cancellation_request_writer,
+                            );
+                            let mut position = 0;
                             for task in &task_queue.queue {
-                                print_task_list_element(&game_data, &images, names, ui, task);
+                                print_task_list_element(
+                                    &game_data,
+                                    &images,
+                                    names,
+                                    ui,
+                                    task,
+                                    item.entity,
+                                    Some(position),
+                                    &mut task_cancellation_request_writer,
+                                );
+                                position += 1;
                             }
                         }
                     }
@@ -595,6 +619,9 @@ fn print_task_list_element(
     names: Query<&Name>,
     ui: &mut Ui,
     task: &TaskKind,
+    entity: Entity,
+    index: Option<usize>,
+    cancellation_request_writer: &mut EventWriter<TaskCancellationRequest>,
 ) {
     ui.horizontal(|ui| {
         ui.image(images.get_task_icon(task));
@@ -657,6 +684,15 @@ fn print_task_list_element(
                 }
             }
         });
+
+        if let Some(index) = index {
+            if ui.button("x").clicked() {
+                cancellation_request_writer.write(TaskCancellationRequest {
+                    entity: entity.into(),
+                    task_position_in_queue: index,
+                });
+            }
+        }
     });
 }
 

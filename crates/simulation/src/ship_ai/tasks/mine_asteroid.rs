@@ -6,7 +6,7 @@ use common::components::{Asteroid, AsteroidMiner, Inventory};
 use common::constants;
 use common::constants::BevyResult;
 use common::events::asteroid_was_fully_mined_event::AsteroidWasFullyMinedEvent;
-use common::events::task_events::{TaskCompletedEvent, TaskStartedEvent};
+use common::events::task_events::{TaskCanceledEvent, TaskCompletedEvent, TaskStartedEvent};
 use common::game_data::ItemManifest;
 use common::simulation_time::{CurrentSimulationTimestamp, Milliseconds, SimulationTime};
 use common::simulation_transform::SimulationScale;
@@ -153,5 +153,19 @@ impl ShipTask<MineAsteroid> {
         }
 
         Ok(())
+    }
+
+    pub(crate) fn cancel_task_inside_queue(
+        mut events: EventReader<TaskCanceledEvent<MineAsteroid>>,
+        mut asteroids: Query<&mut Asteroid>,
+    ) {
+        for x in events.read() {
+            let Ok(mut asteroid) = asteroids.get_mut(x.task_data.target.into()) else {
+                // Asteroid must have despawned somehow, which is fine.
+                continue;
+            };
+
+            asteroid.unreserve(x.task_data.reserved_ore_amount);
+        }
     }
 }

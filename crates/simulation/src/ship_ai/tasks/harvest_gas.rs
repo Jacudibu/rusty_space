@@ -117,4 +117,8 @@ impl ShipTask<HarvestGas> {
 
         Ok(())
     }
+
+    pub(crate) fn cancel_task_inside_queue() {
+        // Nothing needs to be done.
+    }
 }

@@ -60,6 +60,15 @@ impl InteractionQueue {
             }
         }
     }
+
+    /// Removes the provided entity from the queue.
+    ///
+    /// Needs to be called whenever an [AwaitingSignal] task gets cancelled.
+    pub fn remove_from_queue(&mut self, entity: ShipEntity) {
+        if let Some(position) = self.waiting_queue.iter().position(|x| x == &entity) {
+            self.waiting_queue.remove(position);
+        }
+    }
 }
 
 #[cfg(test)]

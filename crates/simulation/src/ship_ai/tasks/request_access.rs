@@ -50,4 +50,8 @@ impl ShipTask<RequestAccess> {
             task_completions.write(TaskCompletedEvent::<RequestAccess>::new(entity.into()));
         }
     }
+
+    pub(crate) fn cancel_task_inside_queue() {
+        // Nothing needs to be done
+    }
 }

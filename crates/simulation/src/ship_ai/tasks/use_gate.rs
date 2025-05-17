@@ -156,4 +156,8 @@ impl ShipTask<UseGate> {
             sector.remove_ship(&mut commands, ShipEntity::from(x.entity));
         }
     }
+
+    pub(crate) fn cancel_task_inside_queue() {
+        // Nothing needs to be done
+    }
 }
