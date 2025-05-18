@@ -1,8 +1,8 @@
 use crate::game_data::{ConstructableModuleId, ItemId};
 use crate::types::entity_wrappers::{ShipEntity, StationEntity};
 use crate::types::persistent_entity_id::PersistentConstructionSiteId;
-use bevy::platform::collections::HashSet;
 use bevy::prelude::Component;
+use std::collections::HashMap;
 
 /// Marker component for ConstructionSites.
 /// These are always directly owned by a station, but have their own inventory and buy orders.
@@ -30,11 +30,12 @@ pub struct ConstructionSite {
     /// The Current Status of this Construction Site, indicating why things aren't progressing.
     pub status: ConstructionSiteStatus,
 
-    /// The construction ships which are currently actively working on this site.
-    pub construction_ships: HashSet<ShipEntity>,
+    /// The construction ships which are currently actively working on this site and their individual strength.
+    pub construction_ships: HashMap<ShipEntity, u32>,
 
     /// The total construction power of all construction ships currently working on this site.
-    /// A higher [construction_ship_count] means less of this will be applied due to inefficiencies.
+    /// A higher construction ship count means less of this will be applied due to inefficiencies.
+    /// Do not change this value independently of [construction_ships]
     pub total_build_power_of_ships: u32,
 }
 

@@ -54,4 +54,9 @@ impl ShipTask<RequestAccess> {
     pub(crate) fn cancel_task_inside_queue() {
         // Nothing needs to be done
     }
+
+    pub(crate) fn abort_running_task() {
+        // Nothing needs to be done
+        // TODO: Technically, we need to ensure that this didn't happen in between run_tasks and the task_completions reader
+    }
 }

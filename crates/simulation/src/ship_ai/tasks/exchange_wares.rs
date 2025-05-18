@@ -143,4 +143,8 @@ impl ShipTask<ExchangeWares> {
             }
         }
     }
+
+    pub(crate) fn abort_running_task() {
+        panic!("Task cannot be properly aborted.");
+    }
 }

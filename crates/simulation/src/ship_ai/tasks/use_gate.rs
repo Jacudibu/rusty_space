@@ -160,4 +160,8 @@ impl ShipTask<UseGate> {
     pub(crate) fn cancel_task_inside_queue() {
         // Nothing needs to be done
     }
+
+    pub(crate) fn abort_running_task() {
+        panic!("UseGate cannot be aborted!");
+    }
 }

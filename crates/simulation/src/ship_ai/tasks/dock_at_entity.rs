@@ -9,15 +9,16 @@ use bevy::prelude::{
 use common::components;
 use common::components::Engine;
 use common::components::ship_velocity::ShipVelocity;
+use common::components::task_queue::TaskQueue;
 use common::constants;
-use common::events::task_events::TaskCompletedEvent;
+use common::events::task_events::{TaskAbortedEvent, TaskCompletedEvent};
 use common::simulation_transform::{SimulationScale, SimulationTransform};
 use common::types::ship_tasks::DockAtEntity;
 use std::sync::{Arc, Mutex};
 
 impl TaskComponent for ShipTask<DockAtEntity> {
     fn can_be_aborted() -> bool {
-        true
+        false
     }
 }
 
@@ -114,5 +115,14 @@ impl ShipTask<DockAtEntity> {
 
     pub(crate) fn cancel_task_inside_queue() {
         // Nothing needs to be done.
+    }
+
+    pub(crate) fn abort_running_task(
+        mut ships: Query<&mut TaskQueue>,
+        mut events: EventReader<TaskAbortedEvent<DockAtEntity>>,
+        mut commands: Commands,
+    ) {
+        panic!("Task cannot be properly aborted.");
+        // TODO: Technically, it can. Just insert undock with inverted starting progress.
     }
 }

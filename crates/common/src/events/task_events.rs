@@ -32,7 +32,7 @@ pub type TaskCanceledEvent<T> = TaskEventWithData<T, event_kind::Canceled>;
 #[derive(Event, Copy, Clone)]
 pub struct TaskEvent<Task: ShipTaskData, Kind> {
     /// The type of [ShipTask].
-    task: PhantomData<Task>,
+    task_data: PhantomData<Task>,
     /// See [event_kind] for the various kinds of TaskEvents we got.
     kind: PhantomData<Kind>,
     /// The entity connected to this task.
@@ -43,7 +43,7 @@ impl<Task: ShipTaskData, Kind> TaskEvent<Task, Kind> {
     pub fn new(entity: ShipEntity) -> Self {
         Self {
             entity,
-            task: PhantomData,
+            task_data: PhantomData,
             kind: PhantomData,
         }
     }
@@ -97,4 +97,20 @@ pub struct AllTaskCancelledEventWriters<'w> {
     pub undock: EventWriter<'w, TaskCanceledEvent<Undock>>,
     pub use_gate: EventWriter<'w, TaskCanceledEvent<UseGate>>,
     pub request_access: EventWriter<'w, TaskCanceledEvent<RequestAccess>>,
+}
+
+/// A [SystemParam] collection of all [TaskAbortedEvent] EventWriters.
+/// These are called after a task was removed from the task queue.
+#[derive(SystemParam)]
+pub struct AllTaskAbortedEventWriters<'w> {
+    pub awaiting_signal: EventWriter<'w, TaskAbortedEvent<AwaitingSignal>>,
+    pub construct: EventWriter<'w, TaskAbortedEvent<Construct>>,
+    pub exchange_wares: EventWriter<'w, TaskAbortedEvent<ExchangeWares>>,
+    pub dock_at_entity: EventWriter<'w, TaskAbortedEvent<DockAtEntity>>,
+    pub harvest_gas: EventWriter<'w, TaskAbortedEvent<HarvestGas>>,
+    pub mine_asteroid: EventWriter<'w, TaskAbortedEvent<MineAsteroid>>,
+    pub move_to_entity: EventWriter<'w, TaskAbortedEvent<MoveToEntity>>,
+    pub undock: EventWriter<'w, TaskAbortedEvent<Undock>>,
+    pub use_gate: EventWriter<'w, TaskAbortedEvent<UseGate>>,
+    pub request_access: EventWriter<'w, TaskAbortedEvent<RequestAccess>>,
 }

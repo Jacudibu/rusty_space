@@ -168,4 +168,8 @@ impl ShipTask<MineAsteroid> {
             asteroid.unreserve(x.task_data.reserved_ore_amount);
         }
     }
+
+    pub(crate) fn abort_running_task() {
+        // Nothing needs to be done.
+    }
 }

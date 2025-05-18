@@ -122,4 +122,8 @@ impl ShipTask<Undock> {
     pub(crate) fn cancel_task_inside_queue() {
         // Nothing needs to be done
     }
+
+    pub(crate) fn abort_running_task() {
+        panic!("Undock cannot be aborted!");
+    }
 }

@@ -1,7 +1,8 @@
 use crate::ship_ai::ship_task::ShipTask;
+use crate::ship_ai::task_abortion::TaskAbortionRequest;
 use crate::ship_ai::task_cancellation::TaskCancellationRequest;
 use crate::ship_ai::tasks::apply_next_task;
-use crate::ship_ai::{behaviors, stop_idle_ships, task_cancellation};
+use crate::ship_ai::{behaviors, stop_idle_ships, task_abortion, task_cancellation};
 use bevy::app::App;
 use bevy::log::error;
 use bevy::prelude::{
@@ -10,7 +11,8 @@ use bevy::prelude::{
 };
 use common::components::task_queue::TaskQueue;
 use common::events::task_events::{
-    AllTaskStartedEventWriters, TaskCanceledEvent, TaskCompletedEvent, TaskStartedEvent,
+    AllTaskStartedEventWriters, TaskAbortedEvent, TaskCanceledEvent, TaskCompletedEvent,
+    TaskStartedEvent,
 };
 use common::states::SimulationState;
 use common::system_sets::CustomSystemSets;
@@ -20,7 +22,44 @@ use common::types::ship_tasks::{
 };
 
 // TODO: clean up once we reunify task registration
-fn build_cancellation(app: &mut App) {
+fn enable_abortion(app: &mut App) {
+    app.add_systems(Update, task_abortion::handle_task_abortion_requests);
+
+    app.add_event::<TaskAbortionRequest>();
+    app.add_event::<TaskAbortedEvent<AwaitingSignal>>();
+    app.add_event::<TaskAbortedEvent<Construct>>();
+    app.add_event::<TaskAbortedEvent<ExchangeWares>>();
+    app.add_event::<TaskAbortedEvent<DockAtEntity>>();
+    app.add_event::<TaskAbortedEvent<HarvestGas>>();
+    app.add_event::<TaskAbortedEvent<MineAsteroid>>();
+    app.add_event::<TaskAbortedEvent<MoveToEntity>>();
+    app.add_event::<TaskAbortedEvent<Undock>>();
+    app.add_event::<TaskAbortedEvent<UseGate>>();
+    app.add_event::<TaskAbortedEvent<RequestAccess>>();
+
+    app.add_systems(
+        FixedPreUpdate,
+        (
+            ShipTask::<Construct>::abort_running_task
+                .run_if(on_event::<TaskAbortedEvent<Construct>>),
+            ShipTask::<HarvestGas>::abort_running_task
+                .run_if(on_event::<TaskAbortedEvent<HarvestGas>>),
+            abort_tasks::<AwaitingSignal>.run_if(on_event::<TaskAbortedEvent<AwaitingSignal>>),
+            abort_tasks::<Construct>.run_if(on_event::<TaskAbortedEvent<Construct>>),
+            abort_tasks::<ExchangeWares>.run_if(on_event::<TaskAbortedEvent<ExchangeWares>>),
+            abort_tasks::<DockAtEntity>.run_if(on_event::<TaskAbortedEvent<DockAtEntity>>),
+            abort_tasks::<HarvestGas>.run_if(on_event::<TaskAbortedEvent<HarvestGas>>),
+            abort_tasks::<MineAsteroid>.run_if(on_event::<TaskAbortedEvent<MineAsteroid>>),
+            abort_tasks::<MoveToEntity>.run_if(on_event::<TaskAbortedEvent<MoveToEntity>>),
+            abort_tasks::<Undock>.run_if(on_event::<TaskAbortedEvent<Undock>>),
+            abort_tasks::<UseGate>.run_if(on_event::<TaskAbortedEvent<UseGate>>),
+            abort_tasks::<RequestAccess>.run_if(on_event::<TaskAbortedEvent<RequestAccess>>),
+        ),
+    );
+}
+
+// TODO: clean up once we reunify task registration
+fn enable_cancellation(app: &mut App) {
     app.add_systems(Update, task_cancellation::handle_task_cancellation_requests);
 
     app.add_event::<TaskCancellationRequest>();
@@ -49,7 +88,8 @@ fn build_cancellation(app: &mut App) {
 pub struct ShipAiPlugin;
 impl Plugin for ShipAiPlugin {
     fn build(&self, app: &mut App) {
-        build_cancellation(app);
+        enable_abortion(app);
+        enable_cancellation(app);
 
         app.add_systems(
             FixedUpdate,
@@ -252,5 +292,16 @@ fn complete_tasks<T: ShipTaskData + 'static>(
                 event.entity
             );
         }
+    }
+}
+
+fn abort_tasks<T: ShipTaskData + 'static>(
+    mut commands: Commands,
+    mut event_reader: EventReader<TaskAbortedEvent<T>>,
+) {
+    for event in event_reader.read() {
+        let entity = event.entity.into();
+        let mut entity_commands = commands.entity(entity);
+        entity_commands.remove::<ShipTask<T>>();
     }
 }

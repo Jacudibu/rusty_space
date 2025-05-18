@@ -1,3 +1,4 @@
+use crate::TaskCancellationRequest;
 use crate::ship_ai::TaskComponent;
 use crate::ship_ai::ship_task::ShipTask;
 use crate::ship_ai::tasks::{finish_interaction, send_completion_events};
@@ -7,7 +8,7 @@ use common::components::interaction_queue::InteractionQueue;
 use common::components::{GasHarvester, Inventory};
 use common::constants;
 use common::constants::BevyResult;
-use common::events::task_events::{TaskCompletedEvent, TaskStartedEvent};
+use common::events::task_events::{TaskAbortedEvent, TaskCompletedEvent, TaskStartedEvent};
 use common::game_data::ItemManifest;
 use common::simulation_time::{CurrentSimulationTimestamp, Milliseconds, SimulationTime};
 use common::types::ship_tasks::{AwaitingSignal, HarvestGas};
@@ -120,5 +121,19 @@ impl ShipTask<HarvestGas> {
 
     pub(crate) fn cancel_task_inside_queue() {
         // Nothing needs to be done.
+    }
+
+    pub(crate) fn abort_running_task(
+        mut event_reader: EventReader<TaskAbortedEvent<HarvestGas>>,
+        mut interaction_queues: Query<&mut InteractionQueue>,
+        mut signal_writer: EventWriter<TaskCompletedEvent<AwaitingSignal>>,
+    ) {
+        for event in event_reader.read() {
+            finish_interaction(
+                event.task_data.target.into(),
+                &mut interaction_queues,
+                &mut signal_writer,
+            );
+        }
     }
 }

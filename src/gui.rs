@@ -20,7 +20,6 @@ use common::components::{
     SelectableEntity, SellOrders, Ship, Station, TradeOrder,
 };
 use common::constants::BevyResult;
-use common::events::task_events::AllTaskCancelledEventWriters;
 use common::game_data::{
     AsteroidDataId, AsteroidManifest, Constructable, ConstructableModuleId, GameData,
     IRON_ASTEROID_ID,
@@ -35,7 +34,7 @@ use common::types::exchange_ware_data::ExchangeWareData;
 use common::types::sprite_handles::SpriteHandles;
 use entity_selection::components::IsEntitySelected;
 use entity_selection::mouse_cursor::MouseCursor;
-use simulation::TaskCancellationRequest;
+use simulation::{TaskAbortionRequest, TaskCancellationRequest};
 
 pub struct GUIPlugin;
 impl Plugin for GUIPlugin {
@@ -345,6 +344,7 @@ fn list_selection_details(
     sell_orders: Query<&SellOrders>,
     construction_sites: Query<&ConstructionSite>,
     names: Query<&Name>,
+    mut task_abortion_request_writer: EventWriter<TaskAbortionRequest>,
     mut task_cancellation_request_writer: EventWriter<TaskCancellationRequest>,
 ) -> BevyResult {
     let counts = selected.iter().fold(
@@ -573,11 +573,11 @@ fn list_selection_details(
                                 ui,
                                 task,
                                 item.entity,
-                                None,
+                                TaskListElementKind::ActiveTask,
+                                &mut task_abortion_request_writer,
                                 &mut task_cancellation_request_writer,
                             );
-                            let mut position = 0;
-                            for task in &task_queue.queue {
+                            for (index, task) in task_queue.queue.iter().enumerate() {
                                 print_task_list_element(
                                     &game_data,
                                     &images,
@@ -585,10 +585,10 @@ fn list_selection_details(
                                     ui,
                                     task,
                                     item.entity,
-                                    Some(position),
+                                    TaskListElementKind::QueueElement { index },
+                                    &mut task_abortion_request_writer,
                                     &mut task_cancellation_request_writer,
                                 );
-                                position += 1;
                             }
                         }
                     }
@@ -613,6 +613,11 @@ fn list_selection_details(
     Ok(())
 }
 
+enum TaskListElementKind {
+    ActiveTask,
+    QueueElement { index: usize },
+}
+
 fn print_task_list_element(
     game_data: &GameData,
     images: &Res<UiIcons>,
@@ -620,7 +625,8 @@ fn print_task_list_element(
     ui: &mut Ui,
     task: &TaskKind,
     entity: Entity,
-    index: Option<usize>,
+    task_list_element_kind: TaskListElementKind,
+    abortion_request_writer: &mut EventWriter<TaskAbortionRequest>,
     cancellation_request_writer: &mut EventWriter<TaskCancellationRequest>,
 ) {
     ui.horizontal(|ui| {
@@ -685,12 +691,21 @@ fn print_task_list_element(
             }
         });
 
-        if let Some(index) = index {
-            if ui.button("x").clicked() {
-                cancellation_request_writer.write(TaskCancellationRequest {
-                    entity: entity.into(),
-                    task_position_in_queue: index,
-                });
+        match task_list_element_kind {
+            TaskListElementKind::ActiveTask => {
+                if ui.button("x").clicked() {
+                    abortion_request_writer.write(TaskAbortionRequest {
+                        entity: entity.into(),
+                    });
+                }
+            }
+            TaskListElementKind::QueueElement { index } => {
+                if ui.button("x").clicked() {
+                    cancellation_request_writer.write(TaskCancellationRequest {
+                        entity: entity.into(),
+                        task_position_in_queue: index,
+                    });
+                }
             }
         }
     });

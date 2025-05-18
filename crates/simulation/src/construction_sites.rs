@@ -209,7 +209,7 @@ fn construction_site_finisher(
                 construction_site
                     .construction_ships
                     .iter()
-                    .map(|x| TaskCompletedEvent::new(*x)),
+                    .map(|x| TaskCompletedEvent::new(*x.0)),
             );
             all_sectors
                 .get_mut(in_sector.into())
