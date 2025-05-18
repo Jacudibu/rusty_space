@@ -60,7 +60,11 @@ fn enable_abortion(app: &mut App) {
 
 // TODO: clean up once we reunify task registration
 fn enable_cancellation(app: &mut App) {
-    app.add_systems(Update, task_cancellation::handle_task_cancellation_requests);
+    app.add_systems(
+        Update,
+        task_cancellation::handle_task_cancellation_requests
+            .before(task_abortion::handle_task_abortion_requests),
+    );
 
     app.add_event::<TaskCancellationRequest>();
     app.add_event::<TaskCanceledEvent<AwaitingSignal>>();

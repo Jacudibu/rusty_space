@@ -1,3 +1,4 @@
+use crate::TaskAbortionRequest;
 use bevy::prelude::{Event, EventReader, EventWriter, Query};
 use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
@@ -20,9 +21,20 @@ pub(crate) fn handle_task_cancellation_requests(
     mut events: EventReader<TaskCancellationRequest>,
     mut all_task_queues: Query<&mut TaskQueue>,
     mut event_writers: AllTaskCancelledEventWriters,
+    mut task_abortion_request_writer: EventWriter<TaskAbortionRequest>,
 ) -> BevyResult {
     for event in events.read() {
         let mut queue = all_task_queues.get_mut(event.entity.into())?;
+
+        if event.task_position_in_queue == 0
+            && matches!(queue.active_task, Some(TaskKind::RequestAccess { .. }))
+        {
+            // RequestAccess makes things a little iffy here, but that'll resolve itself once we use entity relationships for this
+            task_abortion_request_writer.write(TaskAbortionRequest {
+                entity: event.entity,
+            });
+            continue;
+        }
 
         let split_position = if event.task_position_in_queue > 0 {
             if matches!(
