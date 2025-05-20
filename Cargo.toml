@@ -50,5 +50,5 @@ universe_loader = { workspace = true }
 test_utils = { path = "crates/test_utils" }
 
 [patch.crates-io]
-iyes_perf_ui = { git = "https://github.com/olekspickle/iyes_perf_ui.git" }#, rev = "0ff2fe342e30857980746070ead95706d03036e1" }
+#iyes_perf_ui = { git = "https://github.com/olekspickle/iyes_perf_ui.git" }#, rev = "0ff2fe342e30857980746070ead95706d03036e1" }
 

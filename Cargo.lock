@@ -3130,7 +3130,8 @@ checksum = "4a5f13b858c8d314ee3e8f639011f7ccefe71f97f96e50151fb991f267928e2c"
 [[package]]
 name = "iyes_perf_ui"
 version = "0.5.0"
-source = "git+https://github.com/olekspickle/iyes_perf_ui.git#0ff2fe342e30857980746070ead95706d03036e1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3e4468c51a47d2422a3a3e01b45cb47ed0fbce520495dd7de495bcfe8ce0f856"
 dependencies = [
  "bevy",
  "chrono",

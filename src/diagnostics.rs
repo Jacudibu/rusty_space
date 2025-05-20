@@ -7,7 +7,7 @@ use iyes_perf_ui::entry::PerfUiEntry;
 use iyes_perf_ui::prelude::{
     ColorGradient, PerfUiEntryCpuUsage, PerfUiEntryEntityCount, PerfUiEntryFPS,
     PerfUiEntryFPSWorst, PerfUiEntryFrameTime, PerfUiEntryFrameTimeWorst, PerfUiEntryMemUsage,
-    PerfUiRoot,
+    PerfUiEntryRenderCpuTime, PerfUiRoot,
 };
 use iyes_perf_ui::{PerfUiAppExt, PerfUiPlugin};
 
@@ -45,11 +45,15 @@ fn init(mut commands: Commands) {
             ..Default::default()
         },
         PerfUiEntryCpuUsage {
-            label: "System CPU Usage".into(),
+            label: "CPU".into(),
             ..Default::default()
         },
+        // PerfUiEntryRenderCpuTime {
+        //     label: "Render CPU".into(),
+        //     ..Default::default()
+        // },
         PerfUiEntryMemUsage {
-            label: "System RAM Usage".into(),
+            label: "RAM".into(),
             ..Default::default()
         },
     ));
