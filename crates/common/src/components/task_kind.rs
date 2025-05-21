@@ -6,7 +6,7 @@ use crate::types::ship_tasks::{
 /// Enum to differentiate between the different ship tasks.
 #[derive(Clone)]
 pub enum TaskKind {
-    /// Indicates that our ship is waiting for an external entity (e.g. a station or the player) to signal the ship to continue with it next task.
+    /// Indicates that our ship is waiting for an external entity (e.g. a station or the player) to signal the ship to continue with its next task.
     AwaitingSignal {
         data: AwaitingSignal,
     },

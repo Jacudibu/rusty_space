@@ -6,6 +6,7 @@ mod stop_idle_ships;
 pub mod task_abortion;
 pub mod task_cancellation;
 mod task_filters;
+mod task_metadata;
 mod task_result;
 mod tasks;
 mod trade_plan;

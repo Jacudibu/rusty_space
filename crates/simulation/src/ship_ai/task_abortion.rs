@@ -1,5 +1,6 @@
-use crate::ship_ai::task_cancellation;
-use bevy::prelude::{Event, EventReader, EventWriter, Query};
+use crate::ship_ai::ship_task::ShipTask;
+use crate::ship_ai::{TaskComponent, task_cancellation};
+use bevy::prelude::{Event, EventReader, EventWriter, Query, info, warn};
 use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
 use common::constants::BevyResult;
@@ -7,7 +8,10 @@ use common::events::task_events::{
     AllTaskAbortedEventWriters, AllTaskCancelledEventWriters, TaskAbortedEvent,
 };
 use common::types::entity_wrappers::ShipEntity;
-use common::types::ship_tasks::ShipTaskData;
+use common::types::ship_tasks::{
+    AwaitingSignal, Construct, DockAtEntity, ExchangeWares, HarvestGas, MineAsteroid, MoveToEntity,
+    RequestAccess, ShipTaskData, Undock, UseGate,
+};
 
 /// Send this event in order to request a ship to stop doing whatever it is doing right now, and also clear its entire task queue.
 /// Tasks which are aborted are also getting cancelled, so there's no reason to implement cancellation logic within the abortion handler.
@@ -15,6 +19,21 @@ use common::types::ship_tasks::ShipTaskData;
 pub struct TaskAbortionRequest {
     /// The affected entity.
     pub entity: ShipEntity,
+}
+
+pub fn can_task_be_aborted(task: &TaskKind) -> bool {
+    match task {
+        TaskKind::AwaitingSignal { .. } => ShipTask::<AwaitingSignal>::can_be_aborted(),
+        TaskKind::Construct { .. } => ShipTask::<Construct>::can_be_aborted(),
+        TaskKind::RequestAccess { .. } => ShipTask::<RequestAccess>::can_be_aborted(),
+        TaskKind::DockAtEntity { .. } => ShipTask::<DockAtEntity>::can_be_aborted(),
+        TaskKind::Undock { .. } => ShipTask::<Undock>::can_be_aborted(),
+        TaskKind::ExchangeWares { .. } => ShipTask::<ExchangeWares>::can_be_aborted(),
+        TaskKind::MoveToEntity { .. } => ShipTask::<MoveToEntity>::can_be_aborted(),
+        TaskKind::UseGate { .. } => ShipTask::<UseGate>::can_be_aborted(),
+        TaskKind::MineAsteroid { .. } => ShipTask::<MineAsteroid>::can_be_aborted(),
+        TaskKind::HarvestGas { .. } => ShipTask::<HarvestGas>::can_be_aborted(),
+    }
 }
 
 /// Completely clears task queues.
@@ -27,9 +46,23 @@ pub(crate) fn handle_task_abortion_requests(
     for event in events.read() {
         let mut queue = all_task_queues.get_mut(event.entity.into())?;
 
-        // TODO: Figure out whether active task may be aborted.
+        let Some(active_task) = queue.active_task.clone() else {
+            info!(
+                "Abort task was called on an entity without active task: {}",
+                event.entity
+            );
+            continue;
+        };
 
-        match queue.active_task.clone().unwrap() {
+        if !can_task_be_aborted(&active_task) {
+            warn!(
+                "Abort task was called on an entity with a task which cannot be aborted: {}",
+                event.entity
+            );
+            continue;
+        }
+
+        match active_task {
             TaskKind::AwaitingSignal { data } => {
                 write_event(&mut event_writers.awaiting_signal, event.entity, data)
             }

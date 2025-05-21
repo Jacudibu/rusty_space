@@ -693,7 +693,7 @@ fn print_task_list_element(
 
         match task_list_element_kind {
             TaskListElementKind::ActiveTask => {
-                if ui.button("x").clicked() {
+                if simulation::can_task_be_aborted(task) && ui.button("x").clicked() {
                     abortion_request_writer.write(TaskAbortionRequest {
                         entity: entity.into(),
                     });
