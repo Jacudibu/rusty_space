@@ -7,8 +7,8 @@ Too lazy to manage a whole kanban board and issues for these things yet. Roughly
 > (These goals might change as soon as combat gets implemented, but until then, this here is the plan.)
 
 # Task Cancellation
-Now that unexpected things can happen, every Task needs to be cancellable, both by UI and systems (and cancellation through systems should probably count as a bug, but is still good to avoid crashes).
-Additionally, add a cancel button to GUI.
+~~Now that unexpected things can happen, every Task needs to be cancellable, both by UI and systems (and cancellation through systems should probably count as a bug, but is still good to avoid crashes).~~
+~~Additionally, add a cancel button to GUI.~~
 Maybe entities should keep track of entities having tasks assigned to them to notify all dependent entities for task cancellations in case things get despawned?
 
 # Testing
@@ -18,7 +18,7 @@ We need to figure out a proper testing strategy to support the simulation as it 
 ~~- Individual inventory capacities for each item~~
 ~~- Figure out if we want to separate weight and volume, or if this is just an unnecessary complication... (hint to future-me: it probably is)~~
 - Unit tests for `InventoryComponent`
-- Remove reservation for items in production lines
+- Remove reservation for items in production lines, just delay completion in case there's not enough room.
 
 # Automated Trade Order System
 - Automatically generate relevant buy and sell orders for stations, depending on existing station modules. Replaces more hardcoded stuff.
@@ -26,7 +26,7 @@ We need to figure out a proper testing strategy to support the simulation as it 
 # Better Camera Controls 
 - Zoom to MouseCursor
 - Optional Edge Panning
-- View Jumping Hotkeys (save & jump to camera position X by pressing some key combination)
+- CameraPosition Hotkeys (save & jump to camera position X by pressing some key combination)
 
 # Station Building
 

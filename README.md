@@ -7,6 +7,18 @@ Right now things are still very Work-in-Progressy. I'll be more open to contribu
 ## Crate overview
 ```mermaid
 flowchart BT
+    main[<a href='src/'>main</a>]
+
+    common[<a href='crates/common'>common</a>]
+    camera[<a href='crates/camera'>camera</a>]
+    entity_selection[<a href='crates/entity_selection'>entity_selection</a>]
+    entity_spawners[<a href='crates/entity_spawners'>entity_spawners</a>]
+    pathfinding[<a href='crates/pathfinding'>pathfinding</a>]
+    persistence[<a href='crates/persistence'>persistence</a>]
+    simulation[<a href='crates/simulation'>simulation</a>]
+    universe_builder[<a href='crates/universe_builder'>universe_builder</a>]
+    universe_loader[<a href='crates/universe_loader'>universe_loader</a>]
+
     camera --> common
     persistence --> common
     pathfinding --> common
@@ -27,7 +39,7 @@ flowchart BT
     main --> camera
 ```
 
-`main` mostly contains stuff that's still WIP and has not reached a size to warrant a separate crate yet.
+`main` mostly contains stuff that's still WIP and has not reached a size to warrant a separate crate yet. GUI for example is a big, unfinished, work in progress nightmare right now. :)
 Ideally, one day it will just construct the bevy App through plugins.
 
 Have a look at the readme files in the individual crate subfolders for more details.
