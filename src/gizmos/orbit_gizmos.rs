@@ -5,7 +5,7 @@ use bevy::prelude::{
 
 use common::components::{ConstantOrbit, InSector, Sector};
 use common::constants;
-use entity_selection::components::IsEntitySelected;
+use entity_selection::components::EntityIsSelected;
 
 pub(crate) struct OrbitGizmoPlugin;
 impl Plugin for OrbitGizmoPlugin {
@@ -26,7 +26,7 @@ fn configure(mut config_store: ResMut<GizmoConfigStore>) {
 
 fn draw_orbit_circles(
     mut gizmos: Gizmos<OrbitLineGizmos>,
-    orbits: Query<(&ConstantOrbit, &InSector), With<IsEntitySelected>>,
+    orbits: Query<(&ConstantOrbit, &InSector), With<EntityIsSelected>>,
     sectors: Query<&Sector>,
 ) {
     for (orbit, in_sector) in orbits.iter() {

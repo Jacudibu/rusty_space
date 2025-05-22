@@ -7,7 +7,7 @@ use bevy::prelude::{
 use common::components::Gate;
 use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
-use entity_selection::components::IsEntitySelected;
+use entity_selection::components::EntityIsSelected;
 
 pub struct ShipTaskGizmoPlugin;
 impl Plugin for ShipTaskGizmoPlugin {
@@ -30,7 +30,7 @@ fn configure(mut config_store: ResMut<GizmoConfigStore>) {
 
 fn draw_selected_ship_task(
     mut gizmos: Gizmos<SelectedShipTaskGizmos>,
-    selected_ships: Query<(&TaskQueue, &Transform), With<IsEntitySelected>>,
+    selected_ships: Query<(&TaskQueue, &Transform), With<EntityIsSelected>>,
     all_transforms: Query<&Transform>,
     all_gates: Query<&Gate>,
 ) {

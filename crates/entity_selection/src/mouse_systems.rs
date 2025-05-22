@@ -1,5 +1,5 @@
 use crate::DOUBLE_CLICK_TIME;
-use crate::components::IsEntitySelected;
+use crate::components::EntityIsSelected;
 use crate::mouse_cursor::MouseCursor;
 use crate::mouse_interaction::{LastMouseInteraction, MouseInteraction};
 use bevy::input::ButtonState;
@@ -28,7 +28,7 @@ pub(crate) fn process_mouse_clicks(
         &InheritedVisibility,
     )>,
     camera: Query<(&Camera, &GlobalTransform)>,
-    selected_entities: Query<Entity, With<IsEntitySelected>>,
+    selected_entities: Query<Entity, With<EntityIsSelected>>,
     mouse_cursor_over_ui_state: Res<State<MouseCursorOverUiState>>,
 ) -> BevyResult {
     for event in mouse_button_events.read() {
@@ -168,9 +168,9 @@ pub(crate) fn update_active_mouse_interaction(
             &SelectableEntity,
             &InheritedVisibility,
         ),
-        Without<IsEntitySelected>,
+        Without<EntityIsSelected>,
     >,
-    selected_entities: Query<(Entity, &GlobalTransform, &SelectableEntity), With<IsEntitySelected>>,
+    selected_entities: Query<(Entity, &GlobalTransform, &SelectableEntity), With<EntityIsSelected>>,
 ) {
     let Some(mut mouse_interaction) = mouse_interaction else {
         return;
@@ -229,9 +229,9 @@ pub(crate) fn update_active_mouse_interaction(
 }
 
 fn select_entity(commands: &mut Commands, entity: Entity) {
-    commands.entity(entity).insert(IsEntitySelected {});
+    commands.entity(entity).insert(EntityIsSelected {});
 }
 
 fn deselect_entity(commands: &mut Commands, entity: Entity) {
-    commands.entity(entity).remove::<IsEntitySelected>();
+    commands.entity(entity).remove::<EntityIsSelected>();
 }

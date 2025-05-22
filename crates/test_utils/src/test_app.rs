@@ -1,4 +1,4 @@
-use bevy::app::TaskPoolPlugin;
+use bevy::app::{Plugins, TaskPoolPlugin};
 use bevy::asset::{AssetApp, AssetPlugin};
 use bevy::image::Image;
 use bevy::prelude::{App, AppExtStates, State};
@@ -18,6 +18,7 @@ use universe_loader::UniverseLoadingPlugin;
 /// Helps us to quickly build a barebones bevy [App] within tests.
 #[derive(Default)]
 pub struct TestApp {
+    app: App,
     pub sectors: SectorBuilder,
     pub gate_pairs: GatePairBuilder,
     pub stations: StationBuilder,
@@ -30,41 +31,44 @@ impl TestApp {
     pub fn with_ships() {}
     pub fn with_gate_pairs() {}
 
-    /// Transforms the TestApp into a Bevy app, including the minimal set of resources and plugins necessary to run logic.
-    pub fn build(self) -> App {
-        let mut app = App::new();
+    pub fn add_plugins<M>(&mut self, plugins: impl Plugins<M>) -> &mut Self {
+        self.app.add_plugins(plugins);
+        self
+    }
 
-        app.init_resource::<MapLayout>();
-        app.insert_resource(create_empty_sprite_handles());
-        app.init_resource::<PrecomputedOrbitDirections>();
+    /// Transforms the TestApp into a Bevy app, including the minimal set of resources and plugins necessary to run logic.
+    pub fn build(mut self) -> App {
+        self.app.init_resource::<MapLayout>();
+        self.app.insert_resource(create_empty_sprite_handles());
+        self.app.init_resource::<PrecomputedOrbitDirections>();
 
         // all of these are required to get GameData::from_world working
-        app.add_plugins(TaskPoolPlugin::default());
-        app.add_plugins(StatesPlugin);
-        app.add_plugins(AssetPlugin {
+        self.app.add_plugins(TaskPoolPlugin::default());
+        self.app.add_plugins(StatesPlugin);
+        self.app.add_plugins(AssetPlugin {
             // file_path: "../assets/".into(),
             ..Default::default()
         });
-        app.init_asset::<Image>();
+        self.app.init_asset::<Image>();
 
-        GameData::initialize_mock_data(app.world_mut());
-        SessionData::initialize_mock_data(app.world_mut());
+        GameData::initialize_mock_data(self.app.world_mut());
+        SessionData::initialize_mock_data(self.app.world_mut());
 
-        app.insert_resource(self.sectors.build());
-        app.insert_resource(self.gate_pairs.build());
-        app.insert_resource(self.stations.build());
-        app.insert_resource(self.ships.build());
+        self.app.insert_resource(self.sectors.build());
+        self.app.insert_resource(self.gate_pairs.build());
+        self.app.insert_resource(self.stations.build());
+        self.app.insert_resource(self.ships.build());
 
-        app.add_plugins(UniverseLoadingPlugin);
-        app.insert_state(ApplicationState::LoadingUniverse);
+        self.app.add_plugins(UniverseLoadingPlugin);
+        self.app.insert_state(ApplicationState::LoadingUniverse);
 
-        app.finish();
+        self.app.finish();
 
         // Loading is separated into multiple steps, this way we make sure all steps are executed before we proceed.
-        while still_loading(&app) {
-            app.update();
+        while still_loading(&self.app) {
+            self.app.update();
         }
-        app
+        self.app
     }
 }
 

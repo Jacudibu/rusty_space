@@ -32,7 +32,7 @@ use common::simulation_time::SimulationTime;
 use common::states::MouseCursorOverUiState;
 use common::types::exchange_ware_data::ExchangeWareData;
 use common::types::sprite_handles::SpriteHandles;
-use entity_selection::components::IsEntitySelected;
+use entity_selection::components::EntityIsSelected;
 use entity_selection::mouse_cursor::MouseCursor;
 use simulation::{TaskAbortionRequest, TaskCancellationRequest};
 
@@ -255,7 +255,7 @@ pub fn on_ship_configuration_added(
 pub fn list_selection_icons_and_counts(
     mut context: EguiContexts,
     images: Res<UiIcons>,
-    selected: Query<&SelectableEntity, With<IsEntitySelected>>,
+    selected: Query<&SelectableEntity, With<EntityIsSelected>>,
     asteroid_manifest: Res<AsteroidManifest>,
     gui_data: Res<GuiDataCache>,
 ) {
@@ -339,7 +339,7 @@ fn list_selection_details(
     simulation_time: Res<SimulationTime>,
     images: Res<UiIcons>,
     gui_data: Res<GuiDataCache>,
-    selected: Query<SelectableComponents, With<IsEntitySelected>>,
+    selected: Query<SelectableComponents, With<EntityIsSelected>>,
     buy_orders: Query<&BuyOrders>,
     sell_orders: Query<&SellOrders>,
     construction_sites: Query<&ConstructionSite>,
