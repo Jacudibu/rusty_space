@@ -24,7 +24,6 @@ impl<Data> GenericManifest<Data> {
 }
 
 impl<Data> From<HashMap<Id<Data>, Data>> for GenericManifest<Data> {
-    #[must_use]
     fn from(value: HashMap<Id<Data>, Data>) -> Self {
         Self { items: value }
     }

@@ -12,7 +12,6 @@ use bevy::prelude::World;
 pub type RecipeManifest = GenericManifestWithoutRawData<RecipeData>;
 
 impl FromMockData for RecipeManifest {
-    #[must_use]
     fn from_mock_data(_world: &mut World) -> Self {
         let mut mock_recipes = HashMap::new();
         mock_recipes.insert(

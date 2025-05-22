@@ -57,7 +57,7 @@ impl Asteroid {
 
     /// Remove a reservation.
     pub fn unreserve(&mut self, amount: u32) {
-        self.remaining_after_reservations + amount;
+        self.remaining_after_reservations += amount;
     }
 
     pub fn scale_depending_on_current_ore_volume(&self) -> f32 {

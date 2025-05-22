@@ -17,7 +17,6 @@ use leafwing_manifest::manifest::{Manifest, ManifestFormat};
 pub type AsteroidManifest = GenericManifest<AsteroidData>;
 
 impl FromMockData for AsteroidManifest {
-    #[must_use]
     fn from_mock_data(world: &mut World) -> Self {
         Self::from_raw_manifest(RawAsteroidManifest::mock_data(), world).unwrap()
     }
@@ -65,7 +64,6 @@ impl Manifest for AsteroidManifest {
         Ok(Self::from(items))
     }
 
-    #[must_use]
     #[inline]
     fn get(&self, id: Id<Self::Item>) -> Option<&Self::Item> {
         self.get_by_ref(&id)

@@ -28,7 +28,6 @@ impl<Data: DataCanBeUsedAsRawData> GenericManifestWithoutRawData<Data> {
 impl<Data: DataCanBeUsedAsRawData> From<HashMap<Id<Data>, Data>>
     for GenericManifestWithoutRawData<Data>
 {
-    #[must_use]
     fn from(value: HashMap<Id<Data>, Data>) -> Self {
         Self { items: value }
     }

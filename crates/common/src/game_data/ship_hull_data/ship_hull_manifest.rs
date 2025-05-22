@@ -51,7 +51,6 @@ impl Manifest for ShipHullManifest {
         Ok(Self::from(items))
     }
 
-    #[must_use]
     #[inline]
     fn get(&self, id: Id<Self::Item>) -> Option<&Self::Item> {
         self.get_by_ref(&id)

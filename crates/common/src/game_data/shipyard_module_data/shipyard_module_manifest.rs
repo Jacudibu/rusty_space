@@ -10,7 +10,6 @@ use bevy::prelude::World;
 pub type ShipyardModuleManifest = GenericManifestWithoutRawData<ShipyardModuleData>;
 
 impl FromMockData for ShipyardModuleManifest {
-    #[must_use]
     fn from_mock_data(_world: &mut World) -> Self {
         let mock_modules = HashMap::from([(
             MOCK_SHIPYARD_MODULE_ID,

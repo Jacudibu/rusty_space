@@ -16,7 +16,6 @@ use bevy::prelude::World;
 pub type ProductionModuleManifest = GenericManifestWithoutRawData<ProductionModuleData>;
 
 impl FromMockData for ProductionModuleManifest {
-    #[must_use]
     fn from_mock_data(_world: &mut World) -> Self {
         let mock_modules = HashMap::from([
             (

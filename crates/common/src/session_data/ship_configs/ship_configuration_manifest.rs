@@ -166,7 +166,6 @@ impl Manifest for ShipConfigurationManifest {
         Ok(result)
     }
 
-    #[must_use]
     fn get(&self, id: Id<Self::Item>) -> Option<&Self::Item> {
         self.items.get(&id)
     }
