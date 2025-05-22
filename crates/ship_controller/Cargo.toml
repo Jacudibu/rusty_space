@@ -1,0 +1,16 @@
+[package]
+name = "ship_controller"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+bevy = { workspace = true }
+hexx = { workspace = true }
+
+# internal dependencies
+common = { workspace = true }
+entity_selection = { workspace = true }
+
+
+[dev-dependencies]
+test_utils = { workspace = true }

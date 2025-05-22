@@ -4772,6 +4772,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "ship_controller"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "common",
+ "entity_selection",
+ "hexx",
+ "test_utils",
+]
+
+[[package]]
 name = "shlex"
 version = "1.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"

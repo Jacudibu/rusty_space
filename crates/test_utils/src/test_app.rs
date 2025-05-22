@@ -1,7 +1,7 @@
 use bevy::app::{Plugins, TaskPoolPlugin};
 use bevy::asset::{AssetApp, AssetPlugin};
 use bevy::image::Image;
-use bevy::prelude::{App, AppExtStates, State};
+use bevy::prelude::{App, AppExtStates, Resource, State};
 use bevy::state::app::StatesPlugin;
 use common::game_data::GameData;
 use common::session_data::SessionData;
@@ -33,6 +33,11 @@ impl TestApp {
 
     pub fn add_plugins<M>(&mut self, plugins: impl Plugins<M>) -> &mut Self {
         self.app.add_plugins(plugins);
+        self
+    }
+
+    pub fn insert_resource(&mut self, resource: impl Resource) -> &mut Self {
+        self.app.insert_resource(resource);
         self
     }
 
