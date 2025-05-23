@@ -53,6 +53,7 @@ pub struct MoveShipToPositionCommand {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use bevy::ecs::event::EventIterator;
     use bevy::input::ButtonInput;
     use bevy::prelude::{Events, MouseButton, Vec2, World};
     use common::components::Ship;
@@ -62,6 +63,7 @@ mod tests {
     use entity_selection::components::EntityIsSelected;
     use entity_selection::mouse_cursor::{MouseCursor, MouseSectorPosition};
     use hexx::Hex;
+    use test_utils::test_events;
 
     fn build_test_app() -> App {
         let mut app = App::new();
@@ -98,9 +100,9 @@ mod tests {
 
         app.update();
 
-        let events = app.world().resource::<Events<MoveShipToPositionCommand>>();
-        let mut event_reader = events.get_cursor();
-        assert!(event_reader.read(events).next().is_none());
+        test_events::<MoveShipToPositionCommand, _>(&mut app, |mut events| {
+            assert!(events.next().is_none())
+        });
 
         app.world_mut()
             .resource_mut::<ButtonInput<MouseButton>>()
@@ -108,15 +110,14 @@ mod tests {
 
         app.update();
 
-        let events = app.world().resource::<Events<MoveShipToPositionCommand>>();
-        let mut event_reader = events.get_cursor();
-        let event = event_reader.read(events).next().unwrap();
-
-        assert_eq!(event.entity, entity);
-        assert_eq!(
-            event.position.local_position,
-            sector_position.local_position
-        );
-        assert_eq!(event.position.sector, sector_position.sector);
+        test_events::<MoveShipToPositionCommand, _>(&mut app, |mut events| {
+            let event = events.next().unwrap();
+            assert_eq!(event.entity, entity);
+            assert_eq!(
+                event.position.local_position,
+                sector_position.local_position
+            );
+            assert_eq!(event.position.sector, sector_position.sector);
+        });
     }
 }

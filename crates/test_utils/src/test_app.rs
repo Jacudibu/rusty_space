@@ -16,6 +16,7 @@ use universe_builder::station_builder::StationBuilder;
 use universe_loader::UniverseLoadingPlugin;
 
 /// Helps us to quickly build a barebones bevy [App] within tests.
+/// TODO: This is more for integration test-stuff. Maybe we need two test crates, one for common stuff and one for simulation+?
 #[derive(Default)]
 pub struct TestApp {
     app: App,
