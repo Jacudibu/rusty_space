@@ -35,16 +35,17 @@ fn main() {
             enable_multipass_for_primary_context: true,
         },
         camera::CameraPlugin,
+        construction_site_placement::ConstructionSitePlacementPlugin,
         common::CommonPlugin,
         diagnostics::DiagnosticsPlugin,
         entity_selection::plugin::EntitySelectionPlugin,
         gizmos::GizmoPlugin,
         gui::GUIPlugin,
-        universe_loader::UniverseLoadingPlugin,
-        test_universe::TestUniverseDataPlugin,
-        simulation::plugin::SimulationPlugin,
         session_data::SessionDataPlugin,
-        construction_site_placement::ConstructionSitePlacementPlugin,
+        ship_controller::ShipControllerPlugin,
+        simulation::plugin::SimulationPlugin,
+        test_universe::TestUniverseDataPlugin,
+        universe_loader::UniverseLoadingPlugin,
     ))
     .add_systems(Startup, initialize_data);
 

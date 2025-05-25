@@ -13,7 +13,7 @@ pub struct ShipVelocity {
 
 impl ShipVelocity {
     /// Will immediately set forward & angular momentum to 0.
-    pub fn force_stop(&mut self) {
+    pub fn halt_all_movement(&mut self) {
         self.forward = 0.0;
         self.angular = 0.0;
     }

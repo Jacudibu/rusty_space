@@ -2,7 +2,7 @@ use crate::types::entity_wrappers::SectorEntity;
 use bevy::math::Vec2;
 
 /// Defines a global position through the sector and the local position within it.
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub struct SectorPosition {
     /// The sector of this position
     pub sector: SectorEntity,

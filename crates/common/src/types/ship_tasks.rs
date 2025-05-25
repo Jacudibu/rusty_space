@@ -5,10 +5,11 @@ use crate::types::entity_wrappers::{
 };
 use crate::types::exchange_ware_data::ExchangeWareData;
 use crate::types::gate_traversal_state::GateTraversalState;
+use crate::types::sector_position::SectorPosition;
 use bevy::math::Vec2;
 
 /// Marker trait to define that a struct may be used as a ShipTask during simulation.
-pub trait ShipTaskData: Send + Sync {}
+pub trait ShipTaskData: Clone + Send + Sync {}
 
 /// A ship with this task will be idle until it receives a signal through an event.
 #[derive(Clone, Debug)]
@@ -120,6 +121,18 @@ pub struct MoveToEntity {
     pub desired_distance_to_target: f32,
 }
 impl ShipTaskData for MoveToEntity {}
+
+/// Ships with this task are currently moving towards a specific position.
+#[derive(Clone, Debug)]
+pub struct MoveToPosition {
+    /// The position to which we are moving.
+    pub sector_position: SectorPosition,
+    /// The global position represented by [sector_position].
+    /// TODO: This stinks. SectorPosition should be enough without causing overhead.
+    ///       SimulationTransform should support local space, otherwise bigger maps might cause floating point precision issues
+    pub global_position: Vec2,
+}
+impl ShipTaskData for MoveToPosition {}
 
 /// Intermediate task to reserve a spot inside an [`InteractionQueue`] attached to the [`target`].
 ///

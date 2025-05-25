@@ -9,6 +9,7 @@ mod exchange_wares;
 mod harvest_gas;
 mod mine_asteroid;
 mod move_to_entity;
+mod move_to_position;
 mod request_access;
 mod undock;
 mod use_gate;
@@ -23,7 +24,7 @@ use common::events::task_events::{
 use common::types::entity_wrappers::ShipEntity;
 use common::types::ship_tasks::{
     AwaitingSignal, Construct, DockAtEntity, ExchangeWares, HarvestGas, MineAsteroid, MoveToEntity,
-    RequestAccess, ShipTaskData, Undock, UseGate,
+    MoveToPosition, RequestAccess, ShipTaskData, Undock, UseGate,
 };
 
 /// Unwraps the provided event arc and writes them all at once into the respective [TaskCompletedEvent] event writer.
@@ -83,6 +84,9 @@ pub fn apply_next_task(
         }
         TaskKind::MoveToEntity { data } => {
             entity_commands.insert(ShipTask::<MoveToEntity>::new(data));
+        }
+        TaskKind::MoveToPosition { data } => {
+            entity_commands.insert(ShipTask::<MoveToPosition>::new(data));
         }
         TaskKind::UseGate { data } => {
             task_started_event_writers

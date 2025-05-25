@@ -1,10 +1,10 @@
 use crate::types::entity_wrappers::ShipEntity;
 use crate::types::ship_tasks::{
     AwaitingSignal, Construct, DockAtEntity, ExchangeWares, HarvestGas, MineAsteroid, MoveToEntity,
-    RequestAccess, ShipTaskData, Undock, UseGate,
+    MoveToPosition, RequestAccess, ShipTaskData, Undock, UseGate,
 };
 use bevy::ecs::system::SystemParam;
-use bevy::prelude::{Event, EventWriter};
+use bevy::prelude::{Entity, Event, EventWriter};
 use std::marker::PhantomData;
 
 pub mod event_kind {
@@ -71,6 +71,18 @@ impl<TaskData: ShipTaskData, Kind> TaskEventWithData<TaskData, Kind> {
     }
 }
 
+/// Event to add a series of new tasks into a [TaskQueue] in order to execute the provided task.
+/// Adding the target task is enough!
+///
+/// e.g. adding [ExchangeWares] automatically populates the task queue with tasks to move and dock at the target.
+#[derive(Event)]
+pub struct InsertTaskIntoQueueCommand<Task: ShipTaskData> {
+    /// The entity which should receive the task
+    pub entity: Entity,
+    /// The task data which should be inserted into the queue.
+    pub task_data: Task,
+}
+
 /// A [SystemParam] collection of all [TaskStartedEvent] EventWriters.
 /// Right now this needs to be passed into all behaviors to initiate new tasks.
 #[derive(SystemParam)]
@@ -94,6 +106,7 @@ pub struct AllTaskCancelledEventWriters<'w> {
     pub harvest_gas: EventWriter<'w, TaskCanceledEvent<HarvestGas>>,
     pub mine_asteroid: EventWriter<'w, TaskCanceledEvent<MineAsteroid>>,
     pub move_to_entity: EventWriter<'w, TaskCanceledEvent<MoveToEntity>>,
+    pub move_to_position: EventWriter<'w, TaskCanceledEvent<MoveToPosition>>,
     pub undock: EventWriter<'w, TaskCanceledEvent<Undock>>,
     pub use_gate: EventWriter<'w, TaskCanceledEvent<UseGate>>,
     pub request_access: EventWriter<'w, TaskCanceledEvent<RequestAccess>>,
@@ -110,6 +123,7 @@ pub struct AllTaskAbortedEventWriters<'w> {
     pub harvest_gas: EventWriter<'w, TaskAbortedEvent<HarvestGas>>,
     pub mine_asteroid: EventWriter<'w, TaskAbortedEvent<MineAsteroid>>,
     pub move_to_entity: EventWriter<'w, TaskAbortedEvent<MoveToEntity>>,
+    pub move_to_position: EventWriter<'w, TaskAbortedEvent<MoveToPosition>>,
     pub undock: EventWriter<'w, TaskAbortedEvent<Undock>>,
     pub use_gate: EventWriter<'w, TaskAbortedEvent<UseGate>>,
     pub request_access: EventWriter<'w, TaskAbortedEvent<RequestAccess>>,

@@ -4631,6 +4631,7 @@ dependencies = [
  "hexx",
  "iyes_perf_ui",
  "persistence",
+ "ship_controller",
  "simulation",
  "test_utils",
  "universe_builder",

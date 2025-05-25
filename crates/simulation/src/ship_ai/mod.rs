@@ -2,6 +2,7 @@ mod behaviors;
 mod create_tasks_following_path;
 pub mod plugin;
 mod ship_task;
+mod start_task_command_listener;
 mod stop_idle_ships;
 pub mod task_abortion;
 pub mod task_cancellation;

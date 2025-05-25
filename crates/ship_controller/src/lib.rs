@@ -1,27 +1,32 @@
 use bevy::app::App;
 use bevy::input::ButtonInput;
-use bevy::prelude::{Entity, Event, EventWriter, MouseButton, Plugin, Query, Res, Update, With};
+use bevy::prelude::{Entity, EventWriter, MouseButton, Plugin, Query, Res, Update, With};
 use common::components::Ship;
-use common::types::sector_position::SectorPosition;
+use common::components::task_queue::TaskQueue;
+use common::events::task_events::InsertTaskIntoQueueCommand;
+use common::types::map_layout::MapLayout;
+use common::types::ship_tasks::MoveToPosition;
 use entity_selection::components::EntityIsSelected;
 use entity_selection::mouse_cursor::MouseCursor;
+use hexx::HexLayout;
 
 /// Adds ways through which the user can send command-events to control ships manually.
 /// The same events may be used by AI.
 pub struct ShipControllerPlugin;
 impl Plugin for ShipControllerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<MoveShipToPositionCommand>();
+        app.add_event::<InsertTaskIntoQueueCommand<MoveToPosition>>();
         app.add_systems(Update, send_move_command);
     }
 }
 
-/// This [System] sends a move command when the user right clicks into empty space.
+/// This [System] sends a move command when the user right clicks into empty space whilst having entities with a task queue selected.
 pub(crate) fn send_move_command(
     input: Res<ButtonInput<MouseButton>>,
-    selected_ships: Query<Entity, (With<EntityIsSelected>, With<Ship>)>,
+    selected_ships: Query<Entity, (With<EntityIsSelected>, With<TaskQueue>)>,
     mouse_cursor: Res<MouseCursor>,
-    mut event_writer: EventWriter<MoveShipToPositionCommand>,
+    mut event_writer: EventWriter<InsertTaskIntoQueueCommand<MoveToPosition>>,
+    map_layout: Res<MapLayout>,
 ) {
     if !input.just_released(MouseButton::Right) {
         return;
@@ -31,35 +36,32 @@ pub(crate) fn send_move_command(
         return;
     };
 
+    let global_position = position.sector_position.local_position
+        + map_layout.hex_layout.hex_to_world_pos(position.coordinates);
+
     event_writer.write_batch(
         selected_ships
             .iter()
-            .map(|entity| MoveShipToPositionCommand {
+            .map(|entity| InsertTaskIntoQueueCommand::<MoveToPosition> {
                 entity,
-                position: position.sector_position,
+                task_data: MoveToPosition {
+                    sector_position: position.sector_position,
+                    global_position,
+                },
             }),
     );
-}
-
-/// Tells a ship to move to a specific position.
-/// TODO: Technically this could just be a generic StartManualTaskCommand<TaskData>... or even just a list of TaskKind enums?
-/// TODO: Move somewhere higher, if this is supposed to be used by AI as well, AI doesn't need to depend on player controls
-#[derive(Event)]
-pub struct MoveShipToPositionCommand {
-    pub entity: Entity,
-    pub position: SectorPosition,
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use bevy::ecs::event::EventIterator;
     use bevy::input::ButtonInput;
-    use bevy::prelude::{Events, MouseButton, Vec2, World};
+    use bevy::prelude::{MouseButton, Vec2};
     use common::components::Ship;
     use common::session_data::ShipConfigId;
     use common::types::entity_wrappers::SectorEntity;
     use common::types::persistent_entity_id::PersistentShipId;
+    use common::types::sector_position::SectorPosition;
     use entity_selection::components::EntityIsSelected;
     use entity_selection::mouse_cursor::{MouseCursor, MouseSectorPosition};
     use hexx::Hex;
@@ -79,10 +81,7 @@ mod tests {
 
         let entity = app
             .world_mut()
-            .spawn((
-                Ship::new(PersistentShipId::next(), ShipConfigId::from_name("asdf")),
-                EntityIsSelected {},
-            ))
+            .spawn((TaskQueue::default(), EntityIsSelected {}))
             .id();
 
         let sector_position = SectorPosition {
@@ -100,7 +99,7 @@ mod tests {
 
         app.update();
 
-        test_events::<MoveShipToPositionCommand, _>(&mut app, |mut events| {
+        test_events::<InsertTaskIntoQueueCommand<MoveToPosition>, _>(&mut app, |mut events| {
             assert!(events.next().is_none())
         });
 
@@ -110,14 +109,17 @@ mod tests {
 
         app.update();
 
-        test_events::<MoveShipToPositionCommand, _>(&mut app, |mut events| {
+        test_events::<InsertTaskIntoQueueCommand<MoveToPosition>, _>(&mut app, |mut events| {
             let event = events.next().unwrap();
             assert_eq!(event.entity, entity);
             assert_eq!(
-                event.position.local_position,
+                event.task_data.sector_position.local_position,
                 sector_position.local_position
             );
-            assert_eq!(event.position.sector, sector_position.sector);
+            assert_eq!(
+                event.task_data.sector_position.sector,
+                sector_position.sector
+            );
         });
     }
 }

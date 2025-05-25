@@ -10,7 +10,7 @@ use common::events::task_events::{
 use common::types::entity_wrappers::ShipEntity;
 use common::types::ship_tasks::{
     AwaitingSignal, Construct, DockAtEntity, ExchangeWares, HarvestGas, MineAsteroid, MoveToEntity,
-    RequestAccess, ShipTaskData, Undock, UseGate,
+    MoveToPosition, RequestAccess, ShipTaskData, Undock, UseGate,
 };
 
 /// Send this event in order to request a ship to stop doing whatever it is doing right now, and also clear its entire task queue.
@@ -30,6 +30,7 @@ pub fn can_task_be_aborted(task: &TaskKind) -> bool {
         TaskKind::Undock { .. } => ShipTask::<Undock>::can_be_aborted(),
         TaskKind::ExchangeWares { .. } => ShipTask::<ExchangeWares>::can_be_aborted(),
         TaskKind::MoveToEntity { .. } => ShipTask::<MoveToEntity>::can_be_aborted(),
+        TaskKind::MoveToPosition { .. } => ShipTask::<MoveToPosition>::can_be_aborted(),
         TaskKind::UseGate { .. } => ShipTask::<UseGate>::can_be_aborted(),
         TaskKind::MineAsteroid { .. } => ShipTask::<MineAsteroid>::can_be_aborted(),
         TaskKind::HarvestGas { .. } => ShipTask::<HarvestGas>::can_be_aborted(),
@@ -82,6 +83,9 @@ pub(crate) fn handle_task_abortion_requests(
             TaskKind::MoveToEntity { data } => {
                 write_event(&mut event_writers.move_to_entity, event.entity, data)
             }
+            TaskKind::MoveToPosition { data } => {
+                write_event(&mut event_writers.move_to_position, event.entity, data)
+            }
             TaskKind::UseGate { data } => {
                 write_event(&mut event_writers.use_gate, event.entity, data)
             }
@@ -113,7 +117,7 @@ pub(crate) fn handle_task_abortion_requests(
 }
 
 #[inline]
-fn write_event<T: ShipTaskData + Clone + 'static>(
+fn write_event<T: ShipTaskData + 'static>(
     event_writer: &mut EventWriter<TaskAbortedEvent<T>>,
     entity: ShipEntity,
     data: T,

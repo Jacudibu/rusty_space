@@ -141,6 +141,7 @@ impl UiIcons {
         match task {
             TaskKind::UseGate { .. } => self.move_to,
             TaskKind::MoveToEntity { .. } => self.move_to,
+            TaskKind::MoveToPosition { .. } => self.move_to,
             TaskKind::ExchangeWares { data } => match data.exchange_data {
                 ExchangeWareData::Buy(_, _) => self.buy,
                 ExchangeWareData::Sell(_, _) => self.sell,
@@ -640,6 +641,12 @@ fn print_task_list_element(
             }
             TaskKind::MoveToEntity { data } => {
                 format!("Move to {}", names.get(data.target.into()).unwrap())
+            }
+            TaskKind::MoveToPosition { data } => {
+                format!(
+                    "Move to [{:.0},{:.0}]",
+                    data.sector_position.local_position.x, data.sector_position.local_position.y
+                )
             }
             TaskKind::DockAtEntity { data } => {
                 format!("Dock at {}", names.get(data.target.into()).unwrap())

@@ -1,4 +1,5 @@
 use crate::ship_ai::ship_task::ShipTask;
+use crate::ship_ai::start_task_command_listener::move_to_position_command_listener;
 use crate::ship_ai::task_abortion::TaskAbortionRequest;
 use crate::ship_ai::task_cancellation::TaskCancellationRequest;
 use crate::ship_ai::tasks::apply_next_task;
@@ -18,7 +19,7 @@ use common::states::SimulationState;
 use common::system_sets::CustomSystemSets;
 use common::types::ship_tasks::{
     AwaitingSignal, Construct, DockAtEntity, ExchangeWares, HarvestGas, MineAsteroid, MoveToEntity,
-    RequestAccess, ShipTaskData, Undock, UseGate,
+    MoveToPosition, RequestAccess, ShipTaskData, Undock, UseGate,
 };
 
 // TODO: clean up once we reunify task registration
@@ -33,6 +34,7 @@ fn enable_abortion(app: &mut App) {
     app.add_event::<TaskAbortedEvent<HarvestGas>>();
     app.add_event::<TaskAbortedEvent<MineAsteroid>>();
     app.add_event::<TaskAbortedEvent<MoveToEntity>>();
+    app.add_event::<TaskAbortedEvent<MoveToPosition>>();
     app.add_event::<TaskAbortedEvent<Undock>>();
     app.add_event::<TaskAbortedEvent<UseGate>>();
     app.add_event::<TaskAbortedEvent<RequestAccess>>();
@@ -51,6 +53,7 @@ fn enable_abortion(app: &mut App) {
             abort_tasks::<HarvestGas>.run_if(on_event::<TaskAbortedEvent<HarvestGas>>),
             abort_tasks::<MineAsteroid>.run_if(on_event::<TaskAbortedEvent<MineAsteroid>>),
             abort_tasks::<MoveToEntity>.run_if(on_event::<TaskAbortedEvent<MoveToEntity>>),
+            abort_tasks::<MoveToPosition>.run_if(on_event::<TaskAbortedEvent<MoveToPosition>>),
             abort_tasks::<Undock>.run_if(on_event::<TaskAbortedEvent<Undock>>),
             abort_tasks::<UseGate>.run_if(on_event::<TaskAbortedEvent<UseGate>>),
             abort_tasks::<RequestAccess>.run_if(on_event::<TaskAbortedEvent<RequestAccess>>),
@@ -74,6 +77,7 @@ fn enable_cancellation(app: &mut App) {
     app.add_event::<TaskCanceledEvent<HarvestGas>>();
     app.add_event::<TaskCanceledEvent<MineAsteroid>>();
     app.add_event::<TaskCanceledEvent<MoveToEntity>>();
+    app.add_event::<TaskCanceledEvent<MoveToPosition>>();
     app.add_event::<TaskCanceledEvent<Undock>>();
     app.add_event::<TaskCanceledEvent<UseGate>>();
     app.add_event::<TaskCanceledEvent<RequestAccess>>();
@@ -187,6 +191,19 @@ impl Plugin for ShipAiPlugin {
             (
                 ShipTask::<MoveToEntity>::run_tasks,
                 complete_tasks::<MoveToEntity>.run_if(on_event::<TaskCompletedEvent<MoveToEntity>>),
+            )
+                .chain()
+                .run_if(in_state(SimulationState::Running)),
+        );
+
+        app.add_event::<TaskCompletedEvent<MoveToPosition>>();
+        app.add_systems(Update, move_to_position_command_listener);
+        app.add_systems(
+            FixedUpdate,
+            (
+                ShipTask::<MoveToPosition>::run_tasks,
+                complete_tasks::<MoveToPosition>
+                    .run_if(on_event::<TaskCompletedEvent<MoveToPosition>>),
             )
                 .chain()
                 .run_if(in_state(SimulationState::Running)),

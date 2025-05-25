@@ -4,7 +4,7 @@ use bevy::prelude::{With, Without};
 use common::components;
 use common::types::ship_tasks::{
     AwaitingSignal, Construct, DockAtEntity, ExchangeWares, HarvestGas, MineAsteroid, MoveToEntity,
-    RequestAccess, Undock, UseGate,
+    MoveToPosition, RequestAccess, Undock, UseGate,
 };
 
 #[derive(QueryFilter)]
@@ -19,6 +19,7 @@ pub struct ShipIsIdleFilter {
         Without<ShipTask<HarvestGas>>,
         Without<ShipTask<MineAsteroid>>,
         Without<ShipTask<MoveToEntity>>,
+        Without<ShipTask<MoveToPosition>>,
         Without<ShipTask<RequestAccess>>,
         Without<ShipTask<Undock>>,
         Without<ShipTask<UseGate>>,

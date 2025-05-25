@@ -1,10 +1,29 @@
 Too lazy to manage a whole kanban board and issues for these things yet. Roughly sorted by priority. The further down we go, the less refined these get. Recently completed stuff is ~~striked through~~ and eventually deleted during cleanups.
 
 > Current performance goal: 
-> 1 Million Ships getting processed across the universe and 100k of them actively rendered @30 FPS on my Ryzen 7 5700X
+> ~1 Million Ships getting processed across the universe and 100k of them actively rendered @30 FPS on my Ryzen 7 5700X
 > If my machine can handle that, I'd assume a potato can run 10% of that smoothly, which is the real goal here.
 > 
 > (These goals might change as soon as combat gets implemented, but until then, this here is the plan.)
+
+# SetTaskCommand
+We need a central place to initialize new Tasks.
+This should be used by manual and ai unit controls, but also by behaviors.
+
+-> Introduce a new event: `StartTaskCommand<TaskKind>` which will add all necessary tasks for preconditions (undocking, moving to target, docking, etc.) as well as the target task into the task queue.
+
+Should have an enum flag on whether the task queue should be emptied, appended or prepended. In case of appending and prepending, we need to ensure things add up, and maybe re-route accordingly, which probably needs us to group tasks by the commands which started them.
+Trade runs might need a bit of extra handling since that's essentially two Task Started thingies which need to be in order. Probably easiest to just add an extra task-wrapper which contains two exchange ware tasks.
+
+# Try out ECS Relationships for Docking & InSector
+Not sure whether it's a good choice for InSector, but docking seems like it would be a good fit for a custom entity relationship.
+
+# Use internal traits to implement stuff on external structs!
+...I found out that's possible today and feel so stupid for not realizing it any sooner.
+Especially Task stuff can benefit massively from this. 
+
+# More System-Focused testing
+Let's add more tests for systems which are finished in order to get more util functions up in order to make future TDD easier. 
 
 # Task Cancellation
 ~~Now that unexpected things can happen, every Task needs to be cancellable, both by UI and systems (and cancellation through systems should probably count as a bug, but is still good to avoid crashes).~~
