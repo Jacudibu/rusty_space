@@ -10,7 +10,7 @@ Too lazy to manage a whole kanban board and issues for these things yet. Roughly
 We need a central place to initialize new Tasks.
 This should be used by manual and ai unit controls, but also by behaviors.
 
--> Introduce a new event: `StartTaskCommand<TaskKind>` which will add all necessary tasks for preconditions (undocking, moving to target, docking, etc.) as well as the target task into the task queue.
+~~-> Introduce a new event: `StartTaskCommand<TaskKind>` which will add all necessary tasks for preconditions (undocking, moving to target, docking, etc.) as well as the target task into the task queue.~~
 
 Should have an enum flag on whether the task queue should be emptied, appended or prepended. In case of appending and prepending, we need to ensure things add up, and maybe re-route accordingly, which probably needs us to group tasks by the commands which started them.
 Trade runs might need a bit of extra handling since that's essentially two Task Started thingies which need to be in order. Probably easiest to just add an extra task-wrapper which contains two exchange ware tasks.
@@ -98,61 +98,12 @@ demands.
 - Some Production (mainly Energy Cell) may depend on available solar power in sector
 - Solid planets can be colonized by the sector owner for additional resources, but usually it should be both cheaper and more efficient to just harvest more asteroids rather than bothering with the extra costs from dealing with various atmospheres and gravitation. However, once the entire Universe is colonized and borders are well established in between factions and resources grow sparse, they might be a way to unlock additional resource production over time.
 
-# Task System Overhaul
-
-- See if `beet` might help implementing some of the more complex behaviors: https://github.com/mrchantey/beet
-- Main tasks are handed out by the ShipBehavior, and are then dynamically filled with subtasks to complete them.
+# Task Grouping
+- Main tasks are handed out through task commands, and are then dynamically filled with subtasks to facilitate completing them.
     - e.g. AutoTrade: Just add `Buy X` and `Sell x`, then do the pathfinding in a more concurrent system once it becomes relevant.
+
+# Thoughts for later
 - Ship Behavior idle ship filter could be done in a par_iter_mut system for all ships by moving the timestamp into a separate component and adding/removing an "BehaviorUpdateRequested" kinda marker component. Would need profiling to see if it's actually better that way.
-
-### Examples
-
-#### AutoTrade
-
-```
-Search for good deals (repeats every couple seconds if nothing was found)
-
-Buy 50 X
-  |- Move to System
-  |- Move to System
-  |- Move to Station
-  |- Dock
-  |- Exchange Wares
-
-Sell 50 X
-  |- Undock
-  |- Move to Station
-  |- Dock
-  |- Exchange Wares
-  
-(Repeat)
-```
-
-#### AutoBuild:
-
-```
-Search for construction sites lacking builders (repeats every couple seconds if nothing was found)
-
-Build Station
-  |- Move to System
-  |- Move to Station
-  |- Build
-
-```
-
-#### Sector Patrol
-
-Probably not 100% accurate given that combat isn't implemented yet
-
-```
-Search for hostile enemies (repeated every couple seconds if nothing was found)
-
-Attack Target 
-  |- Fly to target
-  |- Attack target
-
-(Repeat)
-```
 
 # Persistence
 

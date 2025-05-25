@@ -81,6 +81,19 @@ pub struct InsertTaskIntoQueueCommand<Task: ShipTaskData> {
     pub entity: Entity,
     /// The task data which should be inserted into the queue.
     pub task_data: Task,
+    /// How should the task be inserted?
+    pub insertion_mode: TaskInsertionMode,
+}
+
+/// Specifies how tasks in [InsertTaskIntoQueueCommand]s should be inserted into the queue.
+pub enum TaskInsertionMode {
+    /// Appends the tasks to the end of the list
+    Append,
+    /// Prepends the tasks to the start of the list
+    Prepend,
+    // Implementing Replace is a headache I don't want to go through right now
+    // /// Clears the entire task queue before adding this new task.
+    // Replace,
 }
 
 /// A [SystemParam] collection of all [TaskStartedEvent] EventWriters.

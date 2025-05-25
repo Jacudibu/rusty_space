@@ -1,14 +1,12 @@
 use bevy::app::App;
 use bevy::input::ButtonInput;
-use bevy::prelude::{Entity, EventWriter, MouseButton, Plugin, Query, Res, Update, With};
-use common::components::Ship;
+use bevy::prelude::{Entity, EventWriter, KeyCode, MouseButton, Plugin, Query, Res, Update, With};
 use common::components::task_queue::TaskQueue;
-use common::events::task_events::InsertTaskIntoQueueCommand;
+use common::events::task_events::{InsertTaskIntoQueueCommand, TaskInsertionMode};
 use common::types::map_layout::MapLayout;
 use common::types::ship_tasks::MoveToPosition;
 use entity_selection::components::EntityIsSelected;
 use entity_selection::mouse_cursor::MouseCursor;
-use hexx::HexLayout;
 
 /// Adds ways through which the user can send command-events to control ships manually.
 /// The same events may be used by AI.
@@ -22,13 +20,14 @@ impl Plugin for ShipControllerPlugin {
 
 /// This [System] sends a move command when the user right clicks into empty space whilst having entities with a task queue selected.
 pub(crate) fn send_move_command(
-    input: Res<ButtonInput<MouseButton>>,
+    mouse_input: Res<ButtonInput<MouseButton>>,
+    keyboard_input: Res<ButtonInput<KeyCode>>,
     selected_ships: Query<Entity, (With<EntityIsSelected>, With<TaskQueue>)>,
     mouse_cursor: Res<MouseCursor>,
     mut event_writer: EventWriter<InsertTaskIntoQueueCommand<MoveToPosition>>,
     map_layout: Res<MapLayout>,
 ) {
-    if !input.just_released(MouseButton::Right) {
+    if !mouse_input.just_released(MouseButton::Right) {
         return;
     }
 
@@ -48,6 +47,11 @@ pub(crate) fn send_move_command(
                     sector_position: position.sector_position,
                     global_position,
                 },
+                insertion_mode: if keyboard_input.pressed(KeyCode::ControlLeft) {
+                    TaskInsertionMode::Prepend
+                } else {
+                    TaskInsertionMode::Append
+                },
             }),
     );
 }
@@ -57,10 +61,7 @@ mod tests {
     use super::*;
     use bevy::input::ButtonInput;
     use bevy::prelude::{MouseButton, Vec2};
-    use common::components::Ship;
-    use common::session_data::ShipConfigId;
     use common::types::entity_wrappers::SectorEntity;
-    use common::types::persistent_entity_id::PersistentShipId;
     use common::types::sector_position::SectorPosition;
     use entity_selection::components::EntityIsSelected;
     use entity_selection::mouse_cursor::{MouseCursor, MouseSectorPosition};
