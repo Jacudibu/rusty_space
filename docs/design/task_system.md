@@ -18,13 +18,18 @@ Can be cancelled individually. Follow-up TaskGroup(s) need to be re-evaluated ac
 Re-Evaluation requires the current ship position or the position where the ship ahead of this TaskGroup is expected to end up.
 
 MetaData: 
-- PositionWhenCompleted -> Enum: AbsolutePosition | StaticEntityPosition | Entity
+- `position_when_completed` -> Enum: `AbsolutePosition` | `StaticEntityPosition` | `Entity`
   - StaticEntityPosition only needs to check for destruction and cancel itself accordingly 
-  - In case of Entity, we need to track & re-evaluate when the target entity moves sectors.
-- Repeat: If true, on completion this TaskGroup is added back at the end of the TaskQueue.
+  - In case of Entity, we need to track & re-evaluate when the target entity moves sectors. That's a bit more annoying, but necessary for pretty much any task which can target ships.
+- `repeat`: If true, on completion this TaskGroup is added back at the end of the TaskQueue.
+- `id`: A unique ID (only needs to be unique to the assigned TaskQueue, but we could also spawn TaskGroups as entities and use that as ID?)
+- `depends_on`: id of another TaskGroup which *has* to be executed before this one. Usually just needed for trade runs. 
 
-When a ship is selected, we might want to spawn each taskgroup as tiny, interactable gizmos; e.g. the MoveTo TaskGroup could have a drag+droppable endpoint
+When a ship is selected, we might want to visualize each TaskGroup as tiny, interactable gizmos; e.g. the MoveTo TaskGroup could have a drag+droppable endpoint. This would require an entity.
 
 ## Task
 An individual unit of work. The current task is added to ships entities as `ShipTask<TaskData>` and run in parallel with `par_iter_mut`.
 These aren't visible to the user (besides the current task as an icon), but are used to render the preview gizmo lines on selected ships.
+
+## TaskKind
+Enum containing variants (containing data) for all tasks, used anywhere where we don't want to handle generics. 
