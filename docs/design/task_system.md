@@ -10,6 +10,10 @@ Added to ship entities as `TaskQueue` Component.
 Contains an active `Option<TaskGroup>` and a `VecDequeue<TaskGroup>` to add more.
 Notifies TaskGroups inside them in case of changes to the planned schedule, so they get a chance to re-evaluate their stuff. Might just update one TaskGroup per frame, front to back.
 
+**Struct Members:**
+- `active_task` : `Option<TaskGroup>` 
+- `queue` : `VecDequeue<TaskGroup>` 
+
 ## TaskGroup (New!)
 A collection of tasks necessary to achieve a specific goal. 
 These are visible (and editable) in the GUI. (and maybe editable through gizmos at the target position when a ship is selected)
@@ -17,10 +21,13 @@ Populated with a `Vec<Task>` once they are created, which gets updated when nece
 Can be cancelled individually. Follow-up TaskGroup(s) need to be re-evaluated accordingly.
 Re-Evaluation requires the current ship position or the position where the ship ahead of this TaskGroup is expected to end up.
 
-MetaData: 
+**Struct Members:**
+- `goal` -> `TaskKind` of the goal of this TaskGroup.
+- `tasks_to_achieve_goal` -> `Vec<Task>` necessary to achieve the goal. If Empty, Goal is next!
 - `position_when_completed` -> Enum: `AbsolutePosition` | `StaticEntityPosition` | `Entity`
   - StaticEntityPosition only needs to check for destruction and cancel itself accordingly 
   - In case of Entity, we need to track & re-evaluate when the target entity moves sectors. That's a bit more annoying, but necessary for pretty much any task which can target ships.
+  - Only really necessary to be updated when ship is selected in GUI, as ShipAIs only search for new tasks on idle ships.
 - `repeat`: If true, on completion this TaskGroup is added back at the end of the TaskQueue.
 - `id`: A unique ID (only needs to be unique to the assigned TaskQueue, but we could also spawn TaskGroups as entities and use that as ID?)
 - `depends_on`: id of another TaskGroup which *has* to be executed before this one. Usually just needed for trade runs. 
@@ -30,6 +37,8 @@ When a ship is selected, we might want to visualize each TaskGroup as tiny, inte
 ## Task
 An individual unit of work. The current task is added to ships entities as `ShipTask<TaskData>` and run in parallel with `par_iter_mut`.
 These aren't visible to the user (besides the current task as an icon), but are used to render the preview gizmo lines on selected ships.
+
+Struct Members vary depending on the Task.
 
 ## TaskKind
 Enum containing variants (containing data) for all tasks, used anywhere where we don't want to handle generics. 
