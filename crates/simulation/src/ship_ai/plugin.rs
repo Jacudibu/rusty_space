@@ -1,7 +1,8 @@
 use crate::ship_ai::ship_task::ShipTask;
 use crate::ship_ai::task_cancellation_active::TaskCancellationWhileActiveRequest;
 use crate::ship_ai::task_cancellation_in_queue::TaskCancellationWhileInQueueRequest;
-use crate::ship_ai::task_creation::move_to_position::move_to_position_command_listener;
+use crate::ship_ai::task_creation::create_task_command_listener;
+use crate::ship_ai::task_creation::move_to_position::MoveToPositionArgs;
 use crate::ship_ai::tasks::apply_next_task;
 use crate::ship_ai::{
     behaviors, stop_idle_ships, task_cancellation_active, task_cancellation_in_queue,
@@ -209,7 +210,10 @@ impl Plugin for ShipAiPlugin {
         );
 
         app.add_event::<TaskCompletedEvent<MoveToPosition>>();
-        app.add_systems(Update, move_to_position_command_listener);
+        app.add_systems(
+            Update,
+            create_task_command_listener::<MoveToPosition, MoveToPositionArgs>,
+        );
         app.add_systems(
             FixedUpdate,
             (

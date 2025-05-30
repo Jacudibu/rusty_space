@@ -2,13 +2,25 @@ pub(crate) mod move_to_position;
 
 use crate::can_task_be_cancelled_while_active;
 use crate::ship_ai::tasks::apply_next_task;
-use bevy::prelude::{Commands, Entity, Mut};
+use bevy::ecs::system::{StaticSystemParam, SystemParam};
+use bevy::log::warn;
+use bevy::prelude::{BevyError, Commands, Entity, EventReader, Mut};
 use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
-use common::events::task_events::{AllTaskStartedEventWriters, TaskInsertionMode};
+use common::events::task_events::{
+    AllTaskStartedEventWriters, InsertTaskIntoQueueCommand, TaskInsertionMode,
+};
+use common::types::ship_tasks::ShipTaskData;
 use std::collections::VecDeque;
 use std::error::Error;
 use std::fmt::{Debug, Display, Formatter};
+
+pub(crate) trait TaskCreation<TaskData: ShipTaskData + 'static, Args: SystemParam> {
+    fn handle_creation_command(
+        event: &InsertTaskIntoQueueCommand<TaskData>,
+        args: &mut StaticSystemParam<Args>,
+    ) -> Result<(), BevyError>;
+}
 
 #[derive(Debug)]
 pub(crate) struct TaskCreationError {
@@ -27,6 +39,23 @@ impl Error for TaskCreationError {}
 #[derive(Debug)]
 pub(crate) enum TaskCreationErrorReason {
     ShipNotFound,
+}
+
+pub(crate) fn create_task_command_listener<TaskData, Args>(
+    mut events: EventReader<InsertTaskIntoQueueCommand<TaskData>>,
+    mut args: StaticSystemParam<Args>,
+) where
+    TaskData: ShipTaskData + TaskCreation<TaskData, Args> + 'static,
+    Args: SystemParam,
+{
+    for event in events.read() {
+        if let Err(e) = TaskData::handle_creation_command(event, &mut args) {
+            warn!(
+                "Error whilst running move_to_position_command_listener: {:?}",
+                e
+            );
+        }
+    }
 }
 
 /// Applies the provided list of Tasks to the provided TaskQueue. Should be called at the end of CreateTaskCommand Listeners.

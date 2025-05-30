@@ -1,6 +1,8 @@
 use crate::ship_ai::create_tasks_following_path::create_tasks_to_follow_path;
-use crate::ship_ai::task_creation::{TaskCreationError, TaskCreationErrorReason, apply_tasks};
-use bevy::ecs::system::SystemParam;
+use crate::ship_ai::task_creation::{
+    TaskCreation, TaskCreationError, TaskCreationErrorReason, apply_tasks,
+};
+use bevy::ecs::system::{StaticSystemParam, SystemParam};
 use bevy::log::warn;
 use bevy::prelude::{BevyError, Commands, EventReader, Query};
 use common::components::task_kind::TaskKind;
@@ -10,6 +12,7 @@ use common::events::task_events::{AllTaskStartedEventWriters, InsertTaskIntoQueu
 use common::simulation_transform::SimulationTransform;
 use common::types::ship_tasks::MoveToPosition;
 use std::collections::VecDeque;
+use std::ops::DerefMut;
 
 #[derive(SystemParam)]
 pub(crate) struct MoveToPositionArgs<'w, 's> {
@@ -20,44 +23,33 @@ pub(crate) struct MoveToPositionArgs<'w, 's> {
     pub all_task_started_event_writers: AllTaskStartedEventWriters<'w>,
 }
 
-pub(crate) fn move_to_position_command_listener(
-    mut events: EventReader<InsertTaskIntoQueueCommand<MoveToPosition>>,
-    mut args: MoveToPositionArgs,
-) {
-    for event in events.read() {
-        if let Err(e) = handle_event(event, &mut args) {
-            warn!(
-                "Error whilst running move_to_position_command_listener: {:?}",
-                e
-            );
-        }
+impl TaskCreation<MoveToPosition, MoveToPositionArgs<'_, '_>> for MoveToPosition {
+    fn handle_creation_command(
+        event: &InsertTaskIntoQueueCommand<MoveToPosition>,
+        args: &mut StaticSystemParam<MoveToPositionArgs>,
+    ) -> Result<(), BevyError> {
+        let args = args.deref_mut();
+        let Ok((mut queue, in_sector)) = args.ships.get_mut(event.entity) else {
+            return Err(TaskCreationError {
+                entity: event.entity,
+                reason: TaskCreationErrorReason::ShipNotFound,
+            }
+            .into());
+        };
+
+        let new_tasks = create_tasks(event, &args.all_sectors, &args.all_transforms, in_sector)?;
+
+        apply_tasks(
+            new_tasks,
+            event.insertion_mode,
+            event.entity,
+            &mut queue,
+            &mut args.all_task_started_event_writers,
+            &mut args.commands,
+        );
+
+        Ok(())
     }
-}
-
-fn handle_event(
-    event: &InsertTaskIntoQueueCommand<MoveToPosition>,
-    args: &mut MoveToPositionArgs,
-) -> Result<(), BevyError> {
-    let Ok((mut queue, in_sector)) = args.ships.get_mut(event.entity) else {
-        return Err(TaskCreationError {
-            entity: event.entity,
-            reason: TaskCreationErrorReason::ShipNotFound,
-        }
-        .into());
-    };
-
-    let new_tasks = create_tasks(event, &args.all_sectors, &args.all_transforms, in_sector)?;
-
-    apply_tasks(
-        new_tasks,
-        event.insertion_mode,
-        event.entity,
-        &mut queue,
-        &mut args.all_task_started_event_writers,
-        &mut args.commands,
-    );
-
-    Ok(())
 }
 
 fn create_tasks(
