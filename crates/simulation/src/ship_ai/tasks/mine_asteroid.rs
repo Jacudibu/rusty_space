@@ -6,7 +6,9 @@ use common::components::{Asteroid, AsteroidMiner, Inventory};
 use common::constants;
 use common::constants::BevyResult;
 use common::events::asteroid_was_fully_mined_event::AsteroidWasFullyMinedEvent;
-use common::events::task_events::{TaskCanceledEvent, TaskCompletedEvent, TaskStartedEvent};
+use common::events::task_events::{
+    TaskCanceledWhileInQueueEvent, TaskCompletedEvent, TaskStartedEvent,
+};
 use common::game_data::ItemManifest;
 use common::simulation_time::{CurrentSimulationTimestamp, Milliseconds, SimulationTime};
 use common::simulation_transform::SimulationScale;
@@ -23,7 +25,7 @@ enum TaskResult {
 }
 
 impl TaskComponent for ShipTask<MineAsteroid> {
-    fn can_be_aborted() -> bool {
+    fn can_be_cancelled_while_active() -> bool {
         true
     }
 }
@@ -156,7 +158,7 @@ impl ShipTask<MineAsteroid> {
     }
 
     pub(crate) fn cancel_task_inside_queue(
-        mut events: EventReader<TaskCanceledEvent<MineAsteroid>>,
+        mut events: EventReader<TaskCanceledWhileInQueueEvent<MineAsteroid>>,
         mut asteroids: Query<&mut Asteroid>,
     ) {
         for x in events.read() {

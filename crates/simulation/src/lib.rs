@@ -5,6 +5,6 @@ pub mod plugin;
 mod production;
 mod ship_ai;
 
-pub use ship_ai::task_abortion::TaskAbortionRequest;
-pub use ship_ai::task_abortion::can_task_be_aborted;
-pub use ship_ai::task_cancellation::TaskCancellationRequest;
+pub use ship_ai::task_cancellation_active::TaskCancellationWhileActiveRequest;
+pub use ship_ai::task_cancellation_active::can_task_be_cancelled_while_active;
+pub use ship_ai::task_cancellation_in_queue::TaskCancellationWhileInQueueRequest;

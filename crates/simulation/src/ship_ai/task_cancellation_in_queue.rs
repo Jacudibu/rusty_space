@@ -1,27 +1,27 @@
-use crate::TaskAbortionRequest;
+use crate::TaskCancellationWhileActiveRequest;
 use bevy::prelude::{Event, EventReader, EventWriter, Query};
 use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
 use common::constants::BevyResult;
-use common::events::task_events::{AllTaskCancelledEventWriters, TaskCanceledEvent};
+use common::events::task_events::{AllTaskCancelledEventWriters, TaskCanceledWhileInQueueEvent};
 use common::types::entity_wrappers::ShipEntity;
 use common::types::ship_tasks::ShipTaskData;
 use std::collections::VecDeque;
 
 /// Send this event in order to request removing tasks from a task queue.
 #[derive(Event)]
-pub struct TaskCancellationRequest {
+pub struct TaskCancellationWhileInQueueRequest {
     /// The affected entity.
     pub entity: ShipEntity,
     /// The index of the task which should be cancelled. This and all following tasks will be removed.
     pub task_position_in_queue: usize,
 }
 
-pub(crate) fn handle_task_cancellation_requests(
-    mut events: EventReader<TaskCancellationRequest>,
+pub(crate) fn handle_task_cancellation_while_in_queue_requests(
+    mut events: EventReader<TaskCancellationWhileInQueueRequest>,
     mut all_task_queues: Query<&mut TaskQueue>,
     mut event_writers: AllTaskCancelledEventWriters,
-    mut task_abortion_request_writer: EventWriter<TaskAbortionRequest>,
+    mut task_abortion_request_writer: EventWriter<TaskCancellationWhileActiveRequest>,
 ) -> BevyResult {
     for event in events.read() {
         let mut queue = all_task_queues.get_mut(event.entity.into())?;
@@ -30,7 +30,7 @@ pub(crate) fn handle_task_cancellation_requests(
             && matches!(queue.active_task, Some(TaskKind::RequestAccess { .. }))
         {
             // RequestAccess makes things a little iffy here, but that'll resolve itself once we use entity relationships for this
-            task_abortion_request_writer.write(TaskAbortionRequest {
+            task_abortion_request_writer.write(TaskCancellationWhileActiveRequest {
                 entity: event.entity,
             });
             continue;
@@ -96,9 +96,9 @@ pub(crate) fn send_cancellation_event(
 
 #[inline]
 fn write_event<T: ShipTaskData + 'static>(
-    event_writer: &mut EventWriter<TaskCanceledEvent<T>>,
+    event_writer: &mut EventWriter<TaskCanceledWhileInQueueEvent<T>>,
     entity: ShipEntity,
     data: T,
 ) {
-    event_writer.write(TaskCanceledEvent::new(entity, data));
+    event_writer.write(TaskCanceledWhileInQueueEvent::new(entity, data));
 }

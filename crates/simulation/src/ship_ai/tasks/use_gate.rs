@@ -18,7 +18,7 @@ use common::types::ship_tasks::UseGate;
 use common::{constants, interpolation};
 
 impl TaskComponent for ShipTask<UseGate> {
-    fn can_be_aborted() -> bool {
+    fn can_be_cancelled_while_active() -> bool {
         false
     }
 }

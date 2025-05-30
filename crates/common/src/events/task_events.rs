@@ -10,8 +10,8 @@ use std::marker::PhantomData;
 pub mod event_kind {
     pub struct Started;
     pub struct Completed;
-    pub struct Aborted;
-    pub struct Canceled;
+    pub struct CanceledWhileActive;
+    pub struct CanceledWhileInQueue;
 }
 
 /// Indicates that a new active Task was just started.
@@ -21,11 +21,11 @@ pub type TaskCompletedEvent<T> = TaskEvent<T, event_kind::Completed>;
 
 /// Indicates that an active Task was aborted during execution.
 /// This usually happens due to entity destruction or user interaction.
-pub type TaskAbortedEvent<T> = TaskEventWithData<T, event_kind::Aborted>;
+pub type TaskCanceledWhileActiveEvent<T> = TaskEventWithData<T, event_kind::CanceledWhileActive>;
 
 /// Indicates that a Task inside the TaskQueue was canceled.
 /// This usually happens due to entity destruction or user interaction.
-pub type TaskCanceledEvent<T> = TaskEventWithData<T, event_kind::Canceled>;
+pub type TaskCanceledWhileInQueueEvent<T> = TaskEventWithData<T, event_kind::CanceledWhileInQueue>;
 
 /// Generic base class for all task-related events which don't require to contain a copy of the task data.
 /// Use [TaskStartedEvent], [TaskCompletedEvent] for better readability.
@@ -50,7 +50,7 @@ impl<Task: ShipTaskData, Kind> TaskEvent<Task, Kind> {
 }
 
 /// Generic base class for all task-related events which require task data.
-/// Use [TaskAbortedEvent] and [TaskCanceledEvent] for better readability.
+/// Use [TaskCanceledWhileActiveEvent] and [TaskCanceledWhileInQueueEvent] for better readability.
 #[derive(Event, Copy, Clone)]
 pub struct TaskEventWithData<TaskData: ShipTaskData, Kind> {
     /// See [event_kind] for the various kinds of TaskEvents we got.
@@ -108,36 +108,36 @@ pub struct AllTaskStartedEventWriters<'w> {
     pub harvest_gas: EventWriter<'w, TaskStartedEvent<HarvestGas>>,
 }
 
-/// A [SystemParam] collection of all [TaskCanceledEvent] EventWriters.
+/// A [SystemParam] collection of all [TaskCanceledWhileInQueueEvent] EventWriters.
 /// These are called after a task was removed from the task queue.
 #[derive(SystemParam)]
 pub struct AllTaskCancelledEventWriters<'w> {
-    pub awaiting_signal: EventWriter<'w, TaskCanceledEvent<AwaitingSignal>>,
-    pub construct: EventWriter<'w, TaskCanceledEvent<Construct>>,
-    pub exchange_wares: EventWriter<'w, TaskCanceledEvent<ExchangeWares>>,
-    pub dock_at_entity: EventWriter<'w, TaskCanceledEvent<DockAtEntity>>,
-    pub harvest_gas: EventWriter<'w, TaskCanceledEvent<HarvestGas>>,
-    pub mine_asteroid: EventWriter<'w, TaskCanceledEvent<MineAsteroid>>,
-    pub move_to_entity: EventWriter<'w, TaskCanceledEvent<MoveToEntity>>,
-    pub move_to_position: EventWriter<'w, TaskCanceledEvent<MoveToPosition>>,
-    pub undock: EventWriter<'w, TaskCanceledEvent<Undock>>,
-    pub use_gate: EventWriter<'w, TaskCanceledEvent<UseGate>>,
-    pub request_access: EventWriter<'w, TaskCanceledEvent<RequestAccess>>,
+    pub awaiting_signal: EventWriter<'w, TaskCanceledWhileInQueueEvent<AwaitingSignal>>,
+    pub construct: EventWriter<'w, TaskCanceledWhileInQueueEvent<Construct>>,
+    pub exchange_wares: EventWriter<'w, TaskCanceledWhileInQueueEvent<ExchangeWares>>,
+    pub dock_at_entity: EventWriter<'w, TaskCanceledWhileInQueueEvent<DockAtEntity>>,
+    pub harvest_gas: EventWriter<'w, TaskCanceledWhileInQueueEvent<HarvestGas>>,
+    pub mine_asteroid: EventWriter<'w, TaskCanceledWhileInQueueEvent<MineAsteroid>>,
+    pub move_to_entity: EventWriter<'w, TaskCanceledWhileInQueueEvent<MoveToEntity>>,
+    pub move_to_position: EventWriter<'w, TaskCanceledWhileInQueueEvent<MoveToPosition>>,
+    pub undock: EventWriter<'w, TaskCanceledWhileInQueueEvent<Undock>>,
+    pub use_gate: EventWriter<'w, TaskCanceledWhileInQueueEvent<UseGate>>,
+    pub request_access: EventWriter<'w, TaskCanceledWhileInQueueEvent<RequestAccess>>,
 }
 
-/// A [SystemParam] collection of all [TaskAbortedEvent] EventWriters.
+/// A [SystemParam] collection of all [TaskCanceledWhileActiveEvent] EventWriters.
 /// These are called after a task was removed from the task queue.
 #[derive(SystemParam)]
 pub struct AllTaskAbortedEventWriters<'w> {
-    pub awaiting_signal: EventWriter<'w, TaskAbortedEvent<AwaitingSignal>>,
-    pub construct: EventWriter<'w, TaskAbortedEvent<Construct>>,
-    pub exchange_wares: EventWriter<'w, TaskAbortedEvent<ExchangeWares>>,
-    pub dock_at_entity: EventWriter<'w, TaskAbortedEvent<DockAtEntity>>,
-    pub harvest_gas: EventWriter<'w, TaskAbortedEvent<HarvestGas>>,
-    pub mine_asteroid: EventWriter<'w, TaskAbortedEvent<MineAsteroid>>,
-    pub move_to_entity: EventWriter<'w, TaskAbortedEvent<MoveToEntity>>,
-    pub move_to_position: EventWriter<'w, TaskAbortedEvent<MoveToPosition>>,
-    pub undock: EventWriter<'w, TaskAbortedEvent<Undock>>,
-    pub use_gate: EventWriter<'w, TaskAbortedEvent<UseGate>>,
-    pub request_access: EventWriter<'w, TaskAbortedEvent<RequestAccess>>,
+    pub awaiting_signal: EventWriter<'w, TaskCanceledWhileActiveEvent<AwaitingSignal>>,
+    pub construct: EventWriter<'w, TaskCanceledWhileActiveEvent<Construct>>,
+    pub exchange_wares: EventWriter<'w, TaskCanceledWhileActiveEvent<ExchangeWares>>,
+    pub dock_at_entity: EventWriter<'w, TaskCanceledWhileActiveEvent<DockAtEntity>>,
+    pub harvest_gas: EventWriter<'w, TaskCanceledWhileActiveEvent<HarvestGas>>,
+    pub mine_asteroid: EventWriter<'w, TaskCanceledWhileActiveEvent<MineAsteroid>>,
+    pub move_to_entity: EventWriter<'w, TaskCanceledWhileActiveEvent<MoveToEntity>>,
+    pub move_to_position: EventWriter<'w, TaskCanceledWhileActiveEvent<MoveToPosition>>,
+    pub undock: EventWriter<'w, TaskCanceledWhileActiveEvent<Undock>>,
+    pub use_gate: EventWriter<'w, TaskCanceledWhileActiveEvent<UseGate>>,
+    pub request_access: EventWriter<'w, TaskCanceledWhileActiveEvent<RequestAccess>>,
 }

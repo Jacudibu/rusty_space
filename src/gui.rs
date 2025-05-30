@@ -34,7 +34,7 @@ use common::types::exchange_ware_data::ExchangeWareData;
 use common::types::sprite_handles::SpriteHandles;
 use entity_selection::components::EntityIsSelected;
 use entity_selection::mouse_cursor::MouseCursor;
-use simulation::{TaskAbortionRequest, TaskCancellationRequest};
+use simulation::{TaskCancellationWhileActiveRequest, TaskCancellationWhileInQueueRequest};
 
 pub struct GUIPlugin;
 impl Plugin for GUIPlugin {
@@ -345,8 +345,8 @@ fn list_selection_details(
     sell_orders: Query<&SellOrders>,
     construction_sites: Query<&ConstructionSite>,
     names: Query<&Name>,
-    mut task_abortion_request_writer: EventWriter<TaskAbortionRequest>,
-    mut task_cancellation_request_writer: EventWriter<TaskCancellationRequest>,
+    mut task_abortion_request_writer: EventWriter<TaskCancellationWhileActiveRequest>,
+    mut task_cancellation_request_writer: EventWriter<TaskCancellationWhileInQueueRequest>,
 ) -> BevyResult {
     let counts = selected.iter().fold(
         SelectableCount::new(&game_data.asteroids, &gui_data),
@@ -627,8 +627,8 @@ fn print_task_list_element(
     task: &TaskKind,
     entity: Entity,
     task_list_element_kind: TaskListElementKind,
-    abortion_request_writer: &mut EventWriter<TaskAbortionRequest>,
-    cancellation_request_writer: &mut EventWriter<TaskCancellationRequest>,
+    abortion_request_writer: &mut EventWriter<TaskCancellationWhileActiveRequest>,
+    cancellation_request_writer: &mut EventWriter<TaskCancellationWhileInQueueRequest>,
 ) {
     ui.horizontal(|ui| {
         ui.image(images.get_task_icon(task));
@@ -700,15 +700,16 @@ fn print_task_list_element(
 
         match task_list_element_kind {
             TaskListElementKind::ActiveTask => {
-                if simulation::can_task_be_aborted(task) && ui.button("x").clicked() {
-                    abortion_request_writer.write(TaskAbortionRequest {
+                if simulation::can_task_be_cancelled_while_active(task) && ui.button("x").clicked()
+                {
+                    abortion_request_writer.write(TaskCancellationWhileActiveRequest {
                         entity: entity.into(),
                     });
                 }
             }
             TaskListElementKind::QueueElement { index } => {
                 if ui.button("x").clicked() {
-                    cancellation_request_writer.write(TaskCancellationRequest {
+                    cancellation_request_writer.write(TaskCancellationWhileInQueueRequest {
                         entity: entity.into(),
                         task_position_in_queue: index,
                     });

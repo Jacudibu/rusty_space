@@ -1,11 +1,11 @@
 use crate::ship_ai::ship_task::ShipTask;
-use crate::ship_ai::{TaskComponent, task_cancellation};
+use crate::ship_ai::{TaskComponent, task_cancellation_in_queue};
 use bevy::prelude::{Event, EventReader, EventWriter, Query, info, warn};
 use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
 use common::constants::BevyResult;
 use common::events::task_events::{
-    AllTaskAbortedEventWriters, AllTaskCancelledEventWriters, TaskAbortedEvent,
+    AllTaskAbortedEventWriters, AllTaskCancelledEventWriters, TaskCanceledWhileActiveEvent,
 };
 use common::types::entity_wrappers::ShipEntity;
 use common::types::ship_tasks::{
@@ -16,30 +16,38 @@ use common::types::ship_tasks::{
 /// Send this event in order to request a ship to stop doing whatever it is doing right now, and also clear its entire task queue.
 /// Tasks which are aborted are also getting cancelled, so there's no reason to implement cancellation logic within the abortion handler.
 #[derive(Event)]
-pub struct TaskAbortionRequest {
+pub struct TaskCancellationWhileActiveRequest {
     /// The affected entity.
     pub entity: ShipEntity,
 }
 
-pub fn can_task_be_aborted(task: &TaskKind) -> bool {
+pub fn can_task_be_cancelled_while_active(task: &TaskKind) -> bool {
     match task {
-        TaskKind::AwaitingSignal { .. } => ShipTask::<AwaitingSignal>::can_be_aborted(),
-        TaskKind::Construct { .. } => ShipTask::<Construct>::can_be_aborted(),
-        TaskKind::RequestAccess { .. } => ShipTask::<RequestAccess>::can_be_aborted(),
-        TaskKind::DockAtEntity { .. } => ShipTask::<DockAtEntity>::can_be_aborted(),
-        TaskKind::Undock { .. } => ShipTask::<Undock>::can_be_aborted(),
-        TaskKind::ExchangeWares { .. } => ShipTask::<ExchangeWares>::can_be_aborted(),
-        TaskKind::MoveToEntity { .. } => ShipTask::<MoveToEntity>::can_be_aborted(),
-        TaskKind::MoveToPosition { .. } => ShipTask::<MoveToPosition>::can_be_aborted(),
-        TaskKind::UseGate { .. } => ShipTask::<UseGate>::can_be_aborted(),
-        TaskKind::MineAsteroid { .. } => ShipTask::<MineAsteroid>::can_be_aborted(),
-        TaskKind::HarvestGas { .. } => ShipTask::<HarvestGas>::can_be_aborted(),
+        TaskKind::AwaitingSignal { .. } => {
+            ShipTask::<AwaitingSignal>::can_be_cancelled_while_active()
+        }
+        TaskKind::Construct { .. } => ShipTask::<Construct>::can_be_cancelled_while_active(),
+        TaskKind::RequestAccess { .. } => {
+            ShipTask::<RequestAccess>::can_be_cancelled_while_active()
+        }
+        TaskKind::DockAtEntity { .. } => ShipTask::<DockAtEntity>::can_be_cancelled_while_active(),
+        TaskKind::Undock { .. } => ShipTask::<Undock>::can_be_cancelled_while_active(),
+        TaskKind::ExchangeWares { .. } => {
+            ShipTask::<ExchangeWares>::can_be_cancelled_while_active()
+        }
+        TaskKind::MoveToEntity { .. } => ShipTask::<MoveToEntity>::can_be_cancelled_while_active(),
+        TaskKind::MoveToPosition { .. } => {
+            ShipTask::<MoveToPosition>::can_be_cancelled_while_active()
+        }
+        TaskKind::UseGate { .. } => ShipTask::<UseGate>::can_be_cancelled_while_active(),
+        TaskKind::MineAsteroid { .. } => ShipTask::<MineAsteroid>::can_be_cancelled_while_active(),
+        TaskKind::HarvestGas { .. } => ShipTask::<HarvestGas>::can_be_cancelled_while_active(),
     }
 }
 
 /// Completely clears task queues.
-pub(crate) fn handle_task_abortion_requests(
-    mut events: EventReader<TaskAbortionRequest>,
+pub(crate) fn handle_task_cancellation_while_active_requests(
+    mut events: EventReader<TaskCancellationWhileActiveRequest>,
     mut all_task_queues: Query<&mut TaskQueue>,
     mut event_writers: AllTaskAbortedEventWriters,
     mut cancellation_event_writers: AllTaskCancelledEventWriters,
@@ -55,7 +63,7 @@ pub(crate) fn handle_task_abortion_requests(
             continue;
         };
 
-        if !can_task_be_aborted(&active_task) {
+        if !can_task_be_cancelled_while_active(&active_task) {
             warn!(
                 "Abort task was called on an entity with a task which cannot be aborted: {}",
                 event.entity
@@ -97,13 +105,13 @@ pub(crate) fn handle_task_abortion_requests(
             }
         }
 
-        task_cancellation::send_cancellation_event(
+        task_cancellation_in_queue::send_cancellation_event(
             &mut cancellation_event_writers,
             event.entity,
             queue.active_task.clone().unwrap(),
         );
         for task in queue.queue.split_off(0) {
-            task_cancellation::send_cancellation_event(
+            task_cancellation_in_queue::send_cancellation_event(
                 &mut cancellation_event_writers,
                 event.entity,
                 task,
@@ -118,9 +126,9 @@ pub(crate) fn handle_task_abortion_requests(
 
 #[inline]
 fn write_event<T: ShipTaskData + 'static>(
-    event_writer: &mut EventWriter<TaskAbortedEvent<T>>,
+    event_writer: &mut EventWriter<TaskCanceledWhileActiveEvent<T>>,
     entity: ShipEntity,
     data: T,
 ) {
-    event_writer.write(TaskAbortedEvent::new(entity, data));
+    event_writer.write(TaskCanceledWhileActiveEvent::new(entity, data));
 }

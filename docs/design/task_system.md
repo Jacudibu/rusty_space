@@ -1,3 +1,4 @@
+# Associated Structs
 ## ShipBehavior
 They assign new TaskGroups to ship whenever they are idle. Basically a finite state machine.
 Added to ship entities as `ShipBehavior<BehaviorData>`.
@@ -41,4 +42,26 @@ These aren't visible to the user (besides the current task as an icon), but are 
 Struct Members vary depending on the Task.
 
 ## TaskKind
-Enum containing variants (containing data) for all tasks, used anywhere where we don't want to handle generics. 
+Enum containing variants (containing data) for all tasks, used anywhere where we don't want to handle generics.
+
+# Events & Task Lifecycle
+Task Creation **always** happens through `InsertTaskIntoQueueCommand<TaskData>`. 
+These make sure the TaskQueues are filled properly.
+
+- `TaskCancellationWhileActiveRequest`
+Sent when a running Task needs to be aborted.
+- `TaskCancellationWhileInQueueRequest`
+Sent when a task that's queued up needs to be cancelled.
+
+- `TaskStartedEvent<TaskData>`
+A task has been started.
+- `TaskCompletedEvent<TaskData>`
+A task has been completed.
+- `TaskCanceledWhileInQueueEvent<TaskData>`
+A task **inside the Queue** was cancelled. Rarely needs special handling.
+- `TaskCanceledWhileActiveEvent<TaskData>`
+An **active** task was cancelled. Rarely needs special handling usually the same treatment as if it was canceled whilst being active.
+- `TaskMovedBackIntoQueueEvent<TaskData>`
+Sent when another task with a higher priority was added to the queue, such as fleeing from attackers.
+
+Active Tasks are added to ship Entities through a `TaskComponent<TaskData>`. There's an individual system to update the ships for each task, usually utilizing `par_iter_mut` in some way.

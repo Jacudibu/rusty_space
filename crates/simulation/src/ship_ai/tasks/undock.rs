@@ -15,7 +15,7 @@ use common::types::ship_tasks::{AwaitingSignal, Undock};
 use std::sync::{Arc, Mutex};
 
 impl TaskComponent for ShipTask<Undock> {
-    fn can_be_aborted() -> bool {
+    fn can_be_cancelled_while_active() -> bool {
         false
     }
 }

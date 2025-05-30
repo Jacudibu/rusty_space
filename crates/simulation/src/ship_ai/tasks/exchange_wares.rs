@@ -5,7 +5,9 @@ use crate::ship_ai::tasks::send_completion_events;
 use bevy::prelude::{Entity, EventReader, EventWriter, Query, Res, error};
 use common::components::Inventory;
 use common::events::inventory_update_for_production_event::InventoryUpdateForProductionEvent;
-use common::events::task_events::{TaskCanceledEvent, TaskCompletedEvent, TaskStartedEvent};
+use common::events::task_events::{
+    TaskCanceledWhileInQueueEvent, TaskCompletedEvent, TaskStartedEvent,
+};
 use common::game_data::ItemManifest;
 use common::simulation_time::{CurrentSimulationTimestamp, SimulationTime};
 use common::types::exchange_ware_data::ExchangeWareData;
@@ -14,7 +16,7 @@ use common::types::trade_intent::TradeIntent;
 use std::sync::{Arc, Mutex};
 
 impl TaskComponent for ShipTask<ExchangeWares> {
-    fn can_be_aborted() -> bool {
+    fn can_be_cancelled_while_active() -> bool {
         false
     }
 }
@@ -123,7 +125,7 @@ impl ShipTask<ExchangeWares> {
     }
 
     pub(crate) fn cancel_task_inside_queue(
-        mut events: EventReader<TaskCanceledEvent<ExchangeWares>>,
+        mut events: EventReader<TaskCanceledWhileInQueueEvent<ExchangeWares>>,
         mut inventories: Query<&mut Inventory>,
     ) {
         for event in events.read() {

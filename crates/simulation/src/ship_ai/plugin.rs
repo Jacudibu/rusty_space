@@ -1,9 +1,11 @@
 use crate::ship_ai::ship_task::ShipTask;
 use crate::ship_ai::start_task_command_listener::move_to_position_command_listener;
-use crate::ship_ai::task_abortion::TaskAbortionRequest;
-use crate::ship_ai::task_cancellation::TaskCancellationRequest;
+use crate::ship_ai::task_cancellation_active::TaskCancellationWhileActiveRequest;
+use crate::ship_ai::task_cancellation_in_queue::TaskCancellationWhileInQueueRequest;
 use crate::ship_ai::tasks::apply_next_task;
-use crate::ship_ai::{behaviors, stop_idle_ships, task_abortion, task_cancellation};
+use crate::ship_ai::{
+    behaviors, stop_idle_ships, task_cancellation_active, task_cancellation_in_queue,
+};
 use bevy::app::App;
 use bevy::log::error;
 use bevy::prelude::{
@@ -12,8 +14,8 @@ use bevy::prelude::{
 };
 use common::components::task_queue::TaskQueue;
 use common::events::task_events::{
-    AllTaskStartedEventWriters, TaskAbortedEvent, TaskCanceledEvent, TaskCompletedEvent,
-    TaskStartedEvent,
+    AllTaskStartedEventWriters, TaskCanceledWhileActiveEvent, TaskCanceledWhileInQueueEvent,
+    TaskCompletedEvent, TaskStartedEvent,
 };
 use common::states::SimulationState;
 use common::system_sets::CustomSystemSets;
@@ -24,39 +26,49 @@ use common::types::ship_tasks::{
 
 // TODO: clean up once we reunify task registration
 fn enable_abortion(app: &mut App) {
-    app.add_systems(Update, task_abortion::handle_task_abortion_requests);
+    app.add_systems(
+        Update,
+        task_cancellation_active::handle_task_cancellation_while_active_requests,
+    );
 
-    app.add_event::<TaskAbortionRequest>();
-    app.add_event::<TaskAbortedEvent<AwaitingSignal>>();
-    app.add_event::<TaskAbortedEvent<Construct>>();
-    app.add_event::<TaskAbortedEvent<ExchangeWares>>();
-    app.add_event::<TaskAbortedEvent<DockAtEntity>>();
-    app.add_event::<TaskAbortedEvent<HarvestGas>>();
-    app.add_event::<TaskAbortedEvent<MineAsteroid>>();
-    app.add_event::<TaskAbortedEvent<MoveToEntity>>();
-    app.add_event::<TaskAbortedEvent<MoveToPosition>>();
-    app.add_event::<TaskAbortedEvent<Undock>>();
-    app.add_event::<TaskAbortedEvent<UseGate>>();
-    app.add_event::<TaskAbortedEvent<RequestAccess>>();
+    app.add_event::<TaskCancellationWhileActiveRequest>();
+    app.add_event::<TaskCanceledWhileActiveEvent<AwaitingSignal>>();
+    app.add_event::<TaskCanceledWhileActiveEvent<Construct>>();
+    app.add_event::<TaskCanceledWhileActiveEvent<ExchangeWares>>();
+    app.add_event::<TaskCanceledWhileActiveEvent<DockAtEntity>>();
+    app.add_event::<TaskCanceledWhileActiveEvent<HarvestGas>>();
+    app.add_event::<TaskCanceledWhileActiveEvent<MineAsteroid>>();
+    app.add_event::<TaskCanceledWhileActiveEvent<MoveToEntity>>();
+    app.add_event::<TaskCanceledWhileActiveEvent<MoveToPosition>>();
+    app.add_event::<TaskCanceledWhileActiveEvent<Undock>>();
+    app.add_event::<TaskCanceledWhileActiveEvent<UseGate>>();
+    app.add_event::<TaskCanceledWhileActiveEvent<RequestAccess>>();
 
     app.add_systems(
         FixedPreUpdate,
         (
             ShipTask::<Construct>::abort_running_task
-                .run_if(on_event::<TaskAbortedEvent<Construct>>),
+                .run_if(on_event::<TaskCanceledWhileActiveEvent<Construct>>),
             ShipTask::<HarvestGas>::abort_running_task
-                .run_if(on_event::<TaskAbortedEvent<HarvestGas>>),
-            abort_tasks::<AwaitingSignal>.run_if(on_event::<TaskAbortedEvent<AwaitingSignal>>),
-            abort_tasks::<Construct>.run_if(on_event::<TaskAbortedEvent<Construct>>),
-            abort_tasks::<ExchangeWares>.run_if(on_event::<TaskAbortedEvent<ExchangeWares>>),
-            abort_tasks::<DockAtEntity>.run_if(on_event::<TaskAbortedEvent<DockAtEntity>>),
-            abort_tasks::<HarvestGas>.run_if(on_event::<TaskAbortedEvent<HarvestGas>>),
-            abort_tasks::<MineAsteroid>.run_if(on_event::<TaskAbortedEvent<MineAsteroid>>),
-            abort_tasks::<MoveToEntity>.run_if(on_event::<TaskAbortedEvent<MoveToEntity>>),
-            abort_tasks::<MoveToPosition>.run_if(on_event::<TaskAbortedEvent<MoveToPosition>>),
-            abort_tasks::<Undock>.run_if(on_event::<TaskAbortedEvent<Undock>>),
-            abort_tasks::<UseGate>.run_if(on_event::<TaskAbortedEvent<UseGate>>),
-            abort_tasks::<RequestAccess>.run_if(on_event::<TaskAbortedEvent<RequestAccess>>),
+                .run_if(on_event::<TaskCanceledWhileActiveEvent<HarvestGas>>),
+            abort_tasks::<AwaitingSignal>
+                .run_if(on_event::<TaskCanceledWhileActiveEvent<AwaitingSignal>>),
+            abort_tasks::<Construct>.run_if(on_event::<TaskCanceledWhileActiveEvent<Construct>>),
+            abort_tasks::<ExchangeWares>
+                .run_if(on_event::<TaskCanceledWhileActiveEvent<ExchangeWares>>),
+            abort_tasks::<DockAtEntity>
+                .run_if(on_event::<TaskCanceledWhileActiveEvent<DockAtEntity>>),
+            abort_tasks::<HarvestGas>.run_if(on_event::<TaskCanceledWhileActiveEvent<HarvestGas>>),
+            abort_tasks::<MineAsteroid>
+                .run_if(on_event::<TaskCanceledWhileActiveEvent<MineAsteroid>>),
+            abort_tasks::<MoveToEntity>
+                .run_if(on_event::<TaskCanceledWhileActiveEvent<MoveToEntity>>),
+            abort_tasks::<MoveToPosition>
+                .run_if(on_event::<TaskCanceledWhileActiveEvent<MoveToPosition>>),
+            abort_tasks::<Undock>.run_if(on_event::<TaskCanceledWhileActiveEvent<Undock>>),
+            abort_tasks::<UseGate>.run_if(on_event::<TaskCanceledWhileActiveEvent<UseGate>>),
+            abort_tasks::<RequestAccess>
+                .run_if(on_event::<TaskCanceledWhileActiveEvent<RequestAccess>>),
         ),
     );
 }
@@ -65,30 +77,30 @@ fn enable_abortion(app: &mut App) {
 fn enable_cancellation(app: &mut App) {
     app.add_systems(
         Update,
-        task_cancellation::handle_task_cancellation_requests
-            .before(task_abortion::handle_task_abortion_requests),
+        task_cancellation_in_queue::handle_task_cancellation_while_in_queue_requests
+            .before(task_cancellation_active::handle_task_cancellation_while_active_requests),
     );
 
-    app.add_event::<TaskCancellationRequest>();
-    app.add_event::<TaskCanceledEvent<AwaitingSignal>>();
-    app.add_event::<TaskCanceledEvent<Construct>>();
-    app.add_event::<TaskCanceledEvent<ExchangeWares>>();
-    app.add_event::<TaskCanceledEvent<DockAtEntity>>();
-    app.add_event::<TaskCanceledEvent<HarvestGas>>();
-    app.add_event::<TaskCanceledEvent<MineAsteroid>>();
-    app.add_event::<TaskCanceledEvent<MoveToEntity>>();
-    app.add_event::<TaskCanceledEvent<MoveToPosition>>();
-    app.add_event::<TaskCanceledEvent<Undock>>();
-    app.add_event::<TaskCanceledEvent<UseGate>>();
-    app.add_event::<TaskCanceledEvent<RequestAccess>>();
+    app.add_event::<TaskCancellationWhileInQueueRequest>();
+    app.add_event::<TaskCanceledWhileInQueueEvent<AwaitingSignal>>();
+    app.add_event::<TaskCanceledWhileInQueueEvent<Construct>>();
+    app.add_event::<TaskCanceledWhileInQueueEvent<ExchangeWares>>();
+    app.add_event::<TaskCanceledWhileInQueueEvent<DockAtEntity>>();
+    app.add_event::<TaskCanceledWhileInQueueEvent<HarvestGas>>();
+    app.add_event::<TaskCanceledWhileInQueueEvent<MineAsteroid>>();
+    app.add_event::<TaskCanceledWhileInQueueEvent<MoveToEntity>>();
+    app.add_event::<TaskCanceledWhileInQueueEvent<MoveToPosition>>();
+    app.add_event::<TaskCanceledWhileInQueueEvent<Undock>>();
+    app.add_event::<TaskCanceledWhileInQueueEvent<UseGate>>();
+    app.add_event::<TaskCanceledWhileInQueueEvent<RequestAccess>>();
 
     app.add_systems(
         FixedPreUpdate,
         (
             ShipTask::<ExchangeWares>::cancel_task_inside_queue
-                .run_if(on_event::<TaskCanceledEvent<ExchangeWares>>),
+                .run_if(on_event::<TaskCanceledWhileInQueueEvent<ExchangeWares>>),
             ShipTask::<MineAsteroid>::cancel_task_inside_queue
-                .run_if(on_event::<TaskCanceledEvent<MineAsteroid>>),
+                .run_if(on_event::<TaskCanceledWhileInQueueEvent<MineAsteroid>>),
         ),
     );
 }
@@ -318,7 +330,7 @@ fn complete_tasks<T: ShipTaskData + 'static>(
 
 fn abort_tasks<T: ShipTaskData + 'static>(
     mut commands: Commands,
-    mut event_reader: EventReader<TaskAbortedEvent<T>>,
+    mut event_reader: EventReader<TaskCanceledWhileActiveEvent<T>>,
 ) {
     for event in event_reader.read() {
         let entity = event.entity.into();

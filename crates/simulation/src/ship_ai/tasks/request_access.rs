@@ -8,7 +8,7 @@ use common::events::task_events::TaskCompletedEvent;
 use common::types::ship_tasks::{AwaitingSignal, RequestAccess};
 
 impl TaskComponent for ShipTask<RequestAccess> {
-    fn can_be_aborted() -> bool {
+    fn can_be_cancelled_while_active() -> bool {
         true
     }
 }

@@ -14,7 +14,7 @@ use std::f32::consts::{FRAC_PI_2, PI};
 use std::sync::{Arc, Mutex};
 
 impl TaskComponent for ShipTask<MoveToEntity> {
-    fn can_be_aborted() -> bool {
+    fn can_be_cancelled_while_active() -> bool {
         true
     }
 }

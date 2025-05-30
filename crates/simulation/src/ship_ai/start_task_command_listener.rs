@@ -1,4 +1,4 @@
-use crate::can_task_be_aborted;
+use crate::can_task_be_cancelled_while_active;
 use crate::ship_ai::create_tasks_following_path::create_tasks_to_follow_path;
 use crate::ship_ai::tasks::apply_next_task;
 use bevy::prelude::{Commands, EventReader, Query, warn};
@@ -58,7 +58,7 @@ pub(crate) fn move_to_position_command_listener(
             }
             TaskInsertionMode::Prepend => {
                 if let Some(active_task) = queue.active_task.clone() {
-                    if !can_task_be_aborted(&active_task) {
+                    if !can_task_be_cancelled_while_active(&active_task) {
                         todo!(
                             "So, uh, this should probably just be skipped! Ideally before we do all the earlier calculation."
                         )

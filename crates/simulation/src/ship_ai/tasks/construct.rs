@@ -2,13 +2,13 @@ use crate::ship_ai::TaskComponent;
 use crate::ship_ai::ship_task::ShipTask;
 use bevy::prelude::{EventReader, Query, Res, error};
 use common::components::{ConstructionSite, Ship};
-use common::events::task_events::{TaskAbortedEvent, TaskStartedEvent};
+use common::events::task_events::{TaskCanceledWhileActiveEvent, TaskStartedEvent};
 use common::session_data::ShipConfigurationManifest;
 use common::types::entity_wrappers::ShipEntity;
 use common::types::ship_tasks::Construct;
 
 impl TaskComponent for ShipTask<Construct> {
-    fn can_be_aborted() -> bool {
+    fn can_be_cancelled_while_active() -> bool {
         true
     }
 }
@@ -45,7 +45,7 @@ impl ShipTask<Construct> {
     }
 
     pub(crate) fn abort_running_task(
-        mut cancelled_tasks: EventReader<TaskAbortedEvent<Construct>>,
+        mut cancelled_tasks: EventReader<TaskCanceledWhileActiveEvent<Construct>>,
         mut construction_sites: Query<&mut ConstructionSite>,
     ) {
         for event in cancelled_tasks.read() {

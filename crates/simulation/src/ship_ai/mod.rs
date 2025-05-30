@@ -4,8 +4,8 @@ pub mod plugin;
 mod ship_task;
 mod start_task_command_listener;
 mod stop_idle_ships;
-pub mod task_abortion;
-pub mod task_cancellation;
+pub mod task_cancellation_active;
+pub mod task_cancellation_in_queue;
 mod task_filters;
 mod task_metadata;
 mod task_result;
@@ -18,5 +18,5 @@ use bevy::prelude::Component;
 pub trait TaskComponent: Component + Send + Sync + 'static {
     /// Whether this task can be stopped by the user or other means while it is being executed.
     /// Some tasks cannot be aborted because there's no way to stop midway, such as using a gate.
-    fn can_be_aborted() -> bool;
+    fn can_be_cancelled_while_active() -> bool;
 }

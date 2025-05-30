@@ -3,11 +3,11 @@ use crate::ship_ai::ship_task::ShipTask;
 use bevy::prelude::{EventReader, Query};
 use common::components::interaction_queue::InteractionQueue;
 use common::constants::BevyResult;
-use common::events::task_events::TaskAbortedEvent;
+use common::events::task_events::TaskCanceledWhileActiveEvent;
 use common::types::ship_tasks::AwaitingSignal;
 
 impl TaskComponent for ShipTask<AwaitingSignal> {
-    fn can_be_aborted() -> bool {
+    fn can_be_cancelled_while_active() -> bool {
         true
     }
 }
@@ -17,7 +17,7 @@ pub(crate) fn cancel_task_inside_queue() {
 }
 
 pub(crate) fn abort_running_task(
-    mut cancelled_tasks: EventReader<TaskAbortedEvent<AwaitingSignal>>,
+    mut cancelled_tasks: EventReader<TaskCanceledWhileActiveEvent<AwaitingSignal>>,
     mut interaction_queues: Query<&mut InteractionQueue>,
 ) {
     for event in cancelled_tasks.read() {
