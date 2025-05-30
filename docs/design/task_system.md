@@ -45,8 +45,9 @@ Struct Members vary depending on the Task.
 Enum containing variants (containing data) for all tasks, used anywhere where we don't want to handle generics.
 
 # Events & Task Lifecycle
-Task Creation **always** happens through `InsertTaskIntoQueueCommand<TaskData>`. 
-These make sure the TaskQueues are filled properly.
+- `InsertTaskIntoQueueCommand<TaskData>`
+Task Creation **always** happens through. 
+These make sure the TaskQueues are filled properly, and affected entities are informed about incoming ships (when applicable).
 
 - `TaskCancellationWhileActiveRequest`
 Sent when a running Task needs to be aborted.

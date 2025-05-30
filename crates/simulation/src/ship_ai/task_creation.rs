@@ -4,9 +4,10 @@ use crate::can_task_be_cancelled_while_active;
 use crate::ship_ai::tasks::apply_next_task;
 use bevy::ecs::system::{StaticSystemParam, SystemParam};
 use bevy::log::warn;
-use bevy::prelude::{BevyError, Commands, Entity, EventReader, Mut};
+use bevy::prelude::{BevyError, Commands, Entity, EventReader, Mut, Query};
 use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
+use common::constants::BevyResult;
 use common::events::task_events::{
     AllTaskStartedEventWriters, InsertTaskIntoQueueCommand, TaskInsertionMode,
 };
@@ -16,13 +17,15 @@ use std::error::Error;
 use std::fmt::{Debug, Display, Formatter};
 
 pub(crate) trait TaskCreation<TaskData: ShipTaskData + 'static, Args: SystemParam> {
-    fn handle_creation_command(
+    /// Creates a VecDequeue with all subtasks necessary to achieve this Tasks.
+    fn create_tasks_for_command(
         event: &InsertTaskIntoQueueCommand<TaskData>,
-        args: &mut StaticSystemParam<Args>,
-    ) -> Result<(), BevyError>;
+        args: &StaticSystemParam<Args>,
+    ) -> Result<VecDeque<TaskKind>, BevyError>;
 }
 
 #[derive(Debug)]
+/// Error Type used during TaskCreation.
 pub(crate) struct TaskCreationError {
     entity: Entity,
     reason: TaskCreationErrorReason,
@@ -37,25 +40,44 @@ impl Display for TaskCreationError {
 impl Error for TaskCreationError {}
 
 #[derive(Debug)]
+/// An enum to further explain what went wrong during task creation.
 pub(crate) enum TaskCreationErrorReason {
     ShipNotFound,
 }
 
 pub(crate) fn create_task_command_listener<TaskData, Args>(
     mut events: EventReader<InsertTaskIntoQueueCommand<TaskData>>,
-    mut args: StaticSystemParam<Args>,
-) where
+    args_for_creation: StaticSystemParam<Args>,
+    mut all_task_queues: Query<&mut TaskQueue>,
+    mut commands: Commands,
+    mut all_task_started_event_writers: AllTaskStartedEventWriters,
+) -> BevyResult
+where
     TaskData: ShipTaskData + TaskCreation<TaskData, Args> + 'static,
     Args: SystemParam,
 {
     for event in events.read() {
-        if let Err(e) = TaskData::handle_creation_command(event, &mut args) {
-            warn!(
-                "Error whilst running move_to_position_command_listener: {:?}",
-                e
-            );
+        match TaskData::create_tasks_for_command(event, &args_for_creation) {
+            Err(e) => {
+                warn!(
+                    "Error whilst running move_to_position_command_listener: {:?}",
+                    e
+                );
+            }
+            Ok(tasks) => {
+                apply_tasks(
+                    tasks,
+                    event.insertion_mode,
+                    event.entity,
+                    all_task_queues.get_mut(event.entity)?, // Since creation didn't fail, this shouldn't fail either.
+                    &mut all_task_started_event_writers,
+                    commands.reborrow(),
+                );
+            }
         }
     }
+
+    Ok(())
 }
 
 /// Applies the provided list of Tasks to the provided TaskQueue. Should be called at the end of CreateTaskCommand Listeners.
@@ -63,9 +85,9 @@ fn apply_tasks(
     mut new_tasks: VecDeque<TaskKind>,
     task_insertion_mode: TaskInsertionMode,
     entity: Entity,
-    queue: &mut Mut<TaskQueue>,
+    mut queue: Mut<TaskQueue>,
     all_task_started_event_writers: &mut AllTaskStartedEventWriters,
-    commands: &mut Commands,
+    mut commands: Commands,
 ) {
     match task_insertion_mode {
         TaskInsertionMode::Append => {
@@ -97,7 +119,7 @@ fn apply_tasks(
 
     if queue.active_task.is_none() {
         apply_next_task(
-            queue,
+            &mut queue,
             entity.into(),
             &mut commands.entity(entity),
             all_task_started_event_writers,
