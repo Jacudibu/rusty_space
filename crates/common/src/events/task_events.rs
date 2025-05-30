@@ -86,6 +86,7 @@ pub struct InsertTaskIntoQueueCommand<Task: ShipTaskData> {
 }
 
 /// Specifies how tasks in [InsertTaskIntoQueueCommand]s should be inserted into the queue.
+#[derive(Copy, Clone)]
 pub enum TaskInsertionMode {
     /// Appends the tasks to the end of the list
     Append,
