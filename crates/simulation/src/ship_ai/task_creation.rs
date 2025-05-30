@@ -1,5 +1,3 @@
-pub(crate) mod move_to_position;
-
 use crate::can_task_be_cancelled_while_active;
 use crate::ship_ai::tasks::apply_next_task;
 use bevy::ecs::system::{StaticSystemParam, SystemParam};
@@ -27,8 +25,8 @@ pub(crate) trait TaskCreation<TaskData: ShipTaskData + 'static, Args: SystemPara
 #[derive(Debug)]
 /// Error Type used during TaskCreation.
 pub(crate) struct TaskCreationError {
-    entity: Entity,
-    reason: TaskCreationErrorReason,
+    pub entity: Entity,
+    pub reason: TaskCreationErrorReason,
 }
 
 impl Display for TaskCreationError {

@@ -2,7 +2,6 @@ use crate::ship_ai::ship_task::ShipTask;
 use crate::ship_ai::task_cancellation_active::TaskCancellationWhileActiveRequest;
 use crate::ship_ai::task_cancellation_in_queue::TaskCancellationWhileInQueueRequest;
 use crate::ship_ai::task_creation::create_task_command_listener;
-use crate::ship_ai::task_creation::move_to_position::MoveToPositionArgs;
 use crate::ship_ai::tasks::apply_next_task;
 use crate::ship_ai::{
     behaviors, stop_idle_ships, task_cancellation_active, task_cancellation_in_queue,
@@ -11,7 +10,7 @@ use bevy::app::App;
 use bevy::log::error;
 use bevy::prelude::{
     Commands, EventReader, FixedPostUpdate, FixedPreUpdate, FixedUpdate, IntoScheduleConfigs,
-    Plugin, Query, Res, Update, With, in_state, on_event,
+    Plugin, Query, Update, With, in_state, on_event,
 };
 use common::components::task_queue::TaskQueue;
 use common::events::task_events::{
@@ -210,10 +209,7 @@ impl Plugin for ShipAiPlugin {
         );
 
         app.add_event::<TaskCompletedEvent<MoveToPosition>>();
-        app.add_systems(
-            Update,
-            create_task_command_listener::<MoveToPosition, MoveToPositionArgs>,
-        );
+        app.add_systems(Update, create_task_command_listener::<MoveToPosition, _>);
         app.add_systems(
             FixedUpdate,
             (
