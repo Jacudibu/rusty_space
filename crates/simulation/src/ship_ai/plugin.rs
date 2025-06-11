@@ -14,8 +14,8 @@ use bevy::prelude::{
 };
 use common::components::task_queue::TaskQueue;
 use common::events::task_events::{
-    AllTaskStartedEventWriters, TaskCanceledWhileActiveEvent, TaskCanceledWhileInQueueEvent,
-    TaskCompletedEvent, TaskStartedEvent,
+    AllTaskStartedEventWriters, InsertTaskIntoQueueCommand, TaskCanceledWhileActiveEvent,
+    TaskCanceledWhileInQueueEvent, TaskCompletedEvent, TaskStartedEvent,
 };
 use common::states::SimulationState;
 use common::system_sets::CustomSystemSets;
@@ -23,6 +23,11 @@ use common::types::ship_tasks::{
     AwaitingSignal, Construct, DockAtEntity, ExchangeWares, HarvestGas, MineAsteroid, MoveToEntity,
     MoveToPosition, RequestAccess, ShipTaskData, Undock, UseGate,
 };
+
+fn enable_insert_task_into_queue_commands(app: &mut App) {
+    app.add_event::<InsertTaskIntoQueueCommand<MoveToPosition>>();
+    app.add_event::<InsertTaskIntoQueueCommand<ExchangeWares>>();
+}
 
 // TODO: clean up once we reunify task registration
 fn enable_abortion(app: &mut App) {
@@ -108,6 +113,7 @@ fn enable_cancellation(app: &mut App) {
 pub struct ShipAiPlugin;
 impl Plugin for ShipAiPlugin {
     fn build(&self, app: &mut App) {
+        enable_insert_task_into_queue_commands(app);
         enable_abortion(app);
         enable_cancellation(app);
 
@@ -141,6 +147,7 @@ impl Plugin for ShipAiPlugin {
 
         app.add_event::<TaskCompletedEvent<ExchangeWares>>();
         app.add_event::<TaskStartedEvent<ExchangeWares>>();
+        app.add_systems(Update, create_task_command_listener::<ExchangeWares, _>);
         app.add_systems(
             FixedPostUpdate,
             ShipTask::<ExchangeWares>::on_task_started.run_if(in_state(SimulationState::Running)),

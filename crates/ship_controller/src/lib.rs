@@ -13,7 +13,6 @@ use entity_selection::mouse_cursor::MouseCursor;
 pub struct ShipControllerPlugin;
 impl Plugin for ShipControllerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<InsertTaskIntoQueueCommand<MoveToPosition>>();
         app.add_systems(Update, send_move_command);
     }
 }

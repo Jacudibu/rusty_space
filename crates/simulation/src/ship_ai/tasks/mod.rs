@@ -1,5 +1,5 @@
 use bevy::ecs::system::EntityCommands;
-use bevy::prelude::{Commands, Entity, EventWriter, Mut, Query, warn};
+use bevy::prelude::{Commands, Entity, EventWriter, Query, warn};
 use std::sync::{Arc, Mutex};
 
 mod awaiting_signal;
@@ -150,11 +150,11 @@ mod test {
     use crate::ship_ai::tasks::apply_new_task_queue;
     use bevy::app::App;
     use bevy::ecs::system::RunSystemOnce;
-    use bevy::prelude::{BevyError, Commands, Query};
+    use bevy::prelude::{BevyError, Commands, Entity, Query};
     use common::components::task_kind::TaskKind;
     use common::components::task_queue::TaskQueue;
     use common::events::task_events::AllTaskStartedEventWriters;
-    use common::types::entity_wrappers::TypedEntity;
+    use common::types::entity_wrappers::{StationEntity, TypedEntity};
     use common::types::ship_tasks::{MoveToEntity, Undock};
     use std::collections::VecDeque;
 
@@ -202,6 +202,7 @@ mod test {
             active_task: Some(TaskKind::Undock {
                 data: Undock {
                     start_position: None,
+                    from: TypedEntity::Station(Entity::from_raw(1).into()),
                 },
             }),
         })?;
@@ -215,7 +216,10 @@ mod test {
         let to_test = apply_task_queue(TaskQueue {
             queue: vec![
                 TaskKind::Undock {
-                    data: Undock::default(),
+                    data: Undock {
+                        start_position: None,
+                        from: TypedEntity::Station(Entity::from_raw(1).into()),
+                    },
                 },
                 TaskKind::MoveToEntity {
                     data: MoveToEntity {

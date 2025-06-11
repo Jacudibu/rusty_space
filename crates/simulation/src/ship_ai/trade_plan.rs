@@ -10,13 +10,21 @@ use common::types::entity_wrappers::{SectorEntity, TypedEntity};
 use common::types::exchange_ware_data::ExchangeWareData;
 use common::types::ship_tasks;
 
+/// Describes a complete trade run - first we buy cheap, then we sell high!
 pub struct TradePlan {
+    /// The [ItemId] of the item that's being traded.
     pub item_id: ItemId,
+    /// The amount we are trading.
     pub amount: u32,
+    /// The expected profit from this trade plan.
     pub profit: u32,
+    /// The entity that's going to sell us their good.
     pub seller: TypedEntity,
+    /// The sector in which the seller resides.
     pub seller_sector: SectorEntity,
+    /// The entity that's going to buy our goods.
     pub buyer: TypedEntity,
+    /// The sector in which our buyer resides.
     pub buyer_sector: SectorEntity,
 }
 
@@ -24,8 +32,8 @@ impl TradePlan {
     #[must_use]
     pub fn search_for_trade_run(
         inventory: &Inventory,
-        buy_orders: &Query<(Entity, &mut BuyOrders, &InSector)>,
-        sell_orders: &Query<(Entity, &mut SellOrders, &InSector)>,
+        buy_orders: &Query<(Entity, &BuyOrders, &InSector)>,
+        sell_orders: &Query<(Entity, &SellOrders, &InSector)>,
         item_manifest: &ItemManifest,
     ) -> Option<Self> {
         let mut best_offer: Option<TradePlan> = None;
@@ -171,7 +179,10 @@ impl TradePlan {
             ),
         });
         queue.push_back(TaskKind::Undock {
-            data: ship_tasks::Undock::default(),
+            data: ship_tasks::Undock {
+                start_position: None,
+                from: self.seller,
+            },
         }) // TODO: Ideally that should be added dynamically at the start of MoveToEntity if we are docked
     }
 
@@ -216,7 +227,10 @@ impl TradePlan {
             ),
         });
         queue.push_back(TaskKind::Undock {
-            data: ship_tasks::Undock::default(),
+            data: ship_tasks::Undock {
+                start_position: None,
+                from: self.buyer,
+            },
         }) // TODO: Ideally that should be added dynamically at the start of MoveToEntity if we are docked
     }
 }

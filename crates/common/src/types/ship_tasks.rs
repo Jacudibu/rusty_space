@@ -149,8 +149,10 @@ impl ShipTaskData for RequestAccess {}
 /// Ships with this are currently undocking from another entity.
 /// They'll move in a straight line away from said entity whilst scaling into existence, after which this task completes.
 /// This task cannot be canceled.
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug)]
 pub struct Undock {
+    /// The entity we are undocking from.
+    pub from: TypedEntity,
     /// The position from which we are undocking. Will be set once the task has been started.
     pub start_position: Option<Vec2>,
 }
