@@ -92,7 +92,7 @@ pub enum TaskInsertionMode {
     Append,
     /// Prepends the tasks to the start of the list
     Prepend,
-    // Implementing Replace is a headache I don't want to go through right now
+    // TODO: Implementing Replace is a headache I don't want to go through right now
     // /// Clears the entire task queue before adding this new task.
     // Replace,
 }

@@ -1,11 +1,23 @@
 use crate::ship_ai::TaskComponent;
 use crate::ship_ai::ship_task::ShipTask;
-use bevy::prelude::{EventReader, Query, Res, error};
-use common::components::{ConstructionSite, Ship};
-use common::events::task_events::{TaskCanceledWhileActiveEvent, TaskStartedEvent};
+use crate::ship_ai::task_creation::{
+    GeneralPathfindingArgs, TaskCreation, create_preconditions_and_move_to_entity,
+};
+use bevy::ecs::system::{StaticSystemParam, SystemParam};
+use bevy::prelude::{BevyError, EventReader, Query, Res, error};
+use common::components::task_kind::TaskKind;
+use common::components::task_queue::TaskQueue;
+use common::components::{BuyOrders, ConstructionSite, Inventory, SellOrders, Ship};
+use common::events::task_events::{
+    InsertTaskIntoQueueCommand, TaskCanceledWhileActiveEvent, TaskStartedEvent,
+};
+use common::game_data::ItemManifest;
 use common::session_data::ShipConfigurationManifest;
 use common::types::entity_wrappers::ShipEntity;
-use common::types::ship_tasks::Construct;
+use common::types::ship_tasks;
+use common::types::ship_tasks::{Construct, ExchangeWares};
+use std::collections::VecDeque;
+use std::ops::DerefMut;
 
 impl TaskComponent for ShipTask<Construct> {
     fn can_be_cancelled_while_active() -> bool {
@@ -53,7 +65,7 @@ impl ShipTask<Construct> {
                 continue;
             };
 
-            deregister_ship(&mut site, event.entity.into());
+            deregister_ship(&mut site, event.entity);
         }
     }
 }
@@ -70,5 +82,32 @@ pub fn register_ship(site: &mut ConstructionSite, entity: ShipEntity, build_powe
 pub fn deregister_ship(site: &mut ConstructionSite, entity: ShipEntity) {
     if let Some(build_power) = site.construction_ships.remove(&entity) {
         site.total_build_power_of_ships -= build_power;
+    }
+}
+
+#[derive(SystemParam)]
+pub(crate) struct CreateConstructArgs {}
+
+impl TaskCreation<Construct, CreateConstructArgs> for Construct {
+    fn create_tasks_for_command(
+        event: &InsertTaskIntoQueueCommand<Construct>,
+        task_queue: &TaskQueue,
+        general_pathfinding_args: &GeneralPathfindingArgs,
+        _: &mut StaticSystemParam<CreateConstructArgs>,
+    ) -> Result<VecDeque<TaskKind>, BevyError> {
+        // let args = args.deref_mut();
+
+        let mut new_tasks = create_preconditions_and_move_to_entity(
+            event.entity,
+            event.task_data.target.into(),
+            task_queue,
+            general_pathfinding_args,
+        )?;
+
+        new_tasks.push_back(TaskKind::Construct {
+            data: event.task_data.clone(),
+        });
+
+        Ok(new_tasks)
     }
 }

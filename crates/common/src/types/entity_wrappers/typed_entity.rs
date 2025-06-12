@@ -1,3 +1,4 @@
+use crate::components::ConstructionSite;
 use crate::types::entity_wrappers::{
     AsteroidEntity, CelestialEntity, ConstructionSiteEntity, GateEntity, SectorEntity, ShipEntity,
     StationEntity,
@@ -74,5 +75,11 @@ impl From<ShipEntity> for TypedEntity {
 impl From<StationEntity> for TypedEntity {
     fn from(value: StationEntity) -> Self {
         Self::Station(value)
+    }
+}
+
+impl From<ConstructionSiteEntity> for TypedEntity {
+    fn from(value: ConstructionSiteEntity) -> Self {
+        Self::ConstructionSite(value)
     }
 }

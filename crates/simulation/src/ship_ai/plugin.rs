@@ -27,6 +27,7 @@ use common::types::ship_tasks::{
 fn enable_insert_task_into_queue_commands(app: &mut App) {
     app.add_event::<InsertTaskIntoQueueCommand<MoveToPosition>>();
     app.add_event::<InsertTaskIntoQueueCommand<ExchangeWares>>();
+    app.add_event::<InsertTaskIntoQueueCommand<Construct>>();
 }
 
 // TODO: clean up once we reunify task registration
@@ -190,6 +191,7 @@ impl Plugin for ShipAiPlugin {
 
         app.add_event::<TaskCompletedEvent<Construct>>();
         app.add_event::<TaskStartedEvent<Construct>>();
+        app.add_systems(Update, create_task_command_listener::<Construct, _>);
         app.add_systems(
             FixedPostUpdate,
             (ShipTask::<Construct>::on_task_started,).run_if(in_state(SimulationState::Running)),
