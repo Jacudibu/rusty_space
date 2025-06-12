@@ -13,7 +13,7 @@ use common::game_data::ItemManifest;
 use common::simulation_time::{CurrentSimulationTimestamp, Milliseconds, SimulationTime};
 use common::simulation_transform::SimulationScale;
 use common::types::entity_wrappers::AsteroidEntity;
-use common::types::ship_tasks::{HarvestGas, MineAsteroid};
+use common::types::ship_tasks::MineAsteroid;
 use std::sync::{Arc, Mutex};
 
 const MILLISECONDS_BETWEEN_UPDATES: Milliseconds = constants::ONE_SECOND_IN_MILLISECONDS;

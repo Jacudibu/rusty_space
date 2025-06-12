@@ -1,6 +1,6 @@
 use crate::ship_ai::TaskComponent;
 use crate::ship_ai::ship_task::ShipTask;
-use bevy::prelude::{Entity, EventWriter, Query, info, warn};
+use bevy::prelude::{Entity, EventWriter, Query, warn};
 use common::components::interaction_queue::InteractionQueue;
 use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;

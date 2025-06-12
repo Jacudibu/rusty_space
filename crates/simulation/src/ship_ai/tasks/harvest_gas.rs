@@ -1,4 +1,3 @@
-use crate::TaskCancellationWhileInQueueRequest;
 use crate::ship_ai::TaskComponent;
 use crate::ship_ai::ship_task::ShipTask;
 use crate::ship_ai::tasks::{finish_interaction, send_completion_events};
