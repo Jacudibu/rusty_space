@@ -2,20 +2,23 @@ use crate::ship_ai::create_tasks_following_path::create_tasks_to_follow_path;
 use crate::ship_ai::task_filters::ShipIsIdleFilter;
 use crate::ship_ai::tasks::apply_new_task_queue;
 use crate::ship_ai::trade_plan::TradePlan;
-use bevy::prelude::{Commands, Entity, Query, Res, Vec2};
+use bevy::prelude::{Commands, Entity, EventWriter, Mut, Query, Res, Vec2};
 use common::components::ship_behavior::ShipBehavior;
 use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
 use common::components::{Asteroid, BuyOrders, InSector, Inventory, Sector, SectorWithAsteroids};
-use common::events::task_events::AllTaskStartedEventWriters;
+use common::events::task_events::{
+    AllTaskStartedEventWriters, InsertTaskIntoQueueCommand, TaskInsertionMode,
+};
 use common::game_data::{ItemId, ItemManifest};
 use common::simulation_time::SimulationTime;
 use common::simulation_transform::SimulationTransform;
 use common::types::auto_mine_state::AutoMineState;
 use common::types::entity_wrappers::SectorEntity;
+use common::types::exchange_ware_data::ExchangeWareData;
 use common::types::ship_behaviors::AutoMineBehavior;
 use common::types::ship_tasks;
-use common::types::trade_intent::TradeIntent;
+use common::types::ship_tasks::ExchangeWares;
 
 #[allow(clippy::too_many_arguments)]
 pub fn handle_idle_ships(
@@ -38,6 +41,7 @@ pub fn handle_idle_ships(
     all_transforms: Query<&SimulationTransform>,
     item_manifest: Res<ItemManifest>,
     mut all_task_started_event_writers: AllTaskStartedEventWriters,
+    mut exchange_wares_event_writer: EventWriter<InsertTaskIntoQueueCommand<ExchangeWares>>,
 ) {
     let now = simulation_time.now();
 
@@ -146,43 +150,50 @@ pub fn handle_idle_ships(
                     );
                 }
                 AutoMineState::Trading => {
-                    let Some(plan) = TradePlan::sell_anything_from_inventory(
+                    if try_sell_everything_in_inventory(
+                        &buy_orders,
+                        &mut exchange_wares_event_writer,
                         ship_entity,
                         in_sector,
                         &ship_inventory,
-                        &buy_orders,
-                    ) else {
+                    )
+                    .is_err()
+                    {
                         behavior.next_idle_update = now.add_milliseconds(2000);
-                        return;
-                    };
-
-                    let [mut this_inventory, mut buyer_inventory] = inventories
-                        .get_many_mut([ship_entity, plan.buyer.into()])
-                        .unwrap();
-
-                    this_inventory.create_order(
-                        plan.item_id,
-                        TradeIntent::Sell,
-                        plan.amount,
-                        &item_manifest,
-                    );
-                    buyer_inventory.create_order(
-                        plan.item_id,
-                        TradeIntent::Buy,
-                        plan.amount,
-                        &item_manifest,
-                    );
-
-                    plan.create_tasks_for_sale(&all_sectors, &all_transforms, &mut queue);
-                    apply_new_task_queue(
-                        &mut queue,
-                        &mut commands,
-                        ship_entity,
-                        &mut all_task_started_event_writers,
-                    );
+                    }
                 }
             }
         });
+}
+
+/// Tries to create tasks to sell stuff from this entities' inventory.
+/// Right now this will only sell one thing at a time, so the name might be a tad misleading. :)
+///
+/// # Returns
+/// Ok if new tasks where created, Err otherwise.
+pub fn try_sell_everything_in_inventory(
+    buy_orders: &Query<(Entity, &mut BuyOrders, &InSector)>,
+    exchange_wares_event_writer: &mut EventWriter<InsertTaskIntoQueueCommand<ExchangeWares>>,
+    ship_entity: Entity,
+    in_sector: &InSector,
+    ship_inventory: &Mut<Inventory>,
+) -> Result<(), ()> {
+    let Some(plan) =
+        TradePlan::sell_anything_from_inventory(ship_entity, in_sector, ship_inventory, buy_orders)
+    else {
+        return Err(());
+    };
+
+    exchange_wares_event_writer.write(InsertTaskIntoQueueCommand {
+        entity: ship_entity,
+        insertion_mode: TaskInsertionMode::Append,
+        task_data: ExchangeWares::new(
+            plan.buyer,
+            ExchangeWareData::Sell(plan.item_id, plan.amount),
+        ),
+    });
+
+    Ok(())
 }
 
 #[must_use]

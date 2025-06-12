@@ -2,20 +2,19 @@ use crate::ship_ai::behaviors::auto_mine;
 use crate::ship_ai::create_tasks_following_path::create_tasks_to_follow_path;
 use crate::ship_ai::task_filters::ShipIsIdleFilter;
 use crate::ship_ai::tasks::apply_new_task_queue;
-use crate::ship_ai::trade_plan::TradePlan;
-use bevy::prelude::{Commands, Entity, Query, Res};
+use bevy::prelude::{Commands, Entity, EventWriter, Query, Res};
 use common::components::celestials::GasGiant;
 use common::components::ship_behavior::ShipBehavior;
 use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
 use common::components::{BuyOrders, InSector, Inventory, Sector, SectorWithCelestials};
-use common::events::task_events::AllTaskStartedEventWriters;
+use common::events::task_events::{AllTaskStartedEventWriters, InsertTaskIntoQueueCommand};
 use common::game_data::{ItemId, ItemManifest};
 use common::simulation_time::SimulationTime;
 use common::simulation_transform::SimulationTransform;
 use common::types::entity_wrappers::{SectorEntity, TypedEntity};
 use common::types::ship_behaviors::AutoHarvestBehavior;
-use common::types::trade_intent::TradeIntent;
+use common::types::ship_tasks::ExchangeWares;
 use common::types::{auto_mine_state, ship_tasks};
 
 #[allow(clippy::too_many_arguments)]
@@ -39,6 +38,7 @@ pub fn handle_idle_ships(
     all_transforms: Query<&SimulationTransform>,
     item_manifest: Res<ItemManifest>,
     mut all_task_started_event_writers: AllTaskStartedEventWriters,
+    mut exchange_wares_event_writer: EventWriter<InsertTaskIntoQueueCommand<ExchangeWares>>,
 ) {
     let now = simulation_time.now();
     ships
@@ -135,41 +135,17 @@ pub fn handle_idle_ships(
                     );
                 }
                 auto_mine_state::AutoMineState::Trading => {
-                    // TODO: This is quite literally 100% the same logic as auto_mine
-                    let Some(plan) = TradePlan::sell_anything_from_inventory(
+                    if auto_mine::try_sell_everything_in_inventory(
+                        &buy_orders,
+                        &mut exchange_wares_event_writer,
                         ship_entity,
                         in_sector,
                         &ship_inventory,
-                        &buy_orders,
-                    ) else {
+                    )
+                    .is_err()
+                    {
                         behavior.next_idle_update = now.add_milliseconds(2000);
-                        return;
-                    };
-
-                    let [mut this_inventory, mut buyer_inventory] = inventories
-                        .get_many_mut([ship_entity, plan.buyer.into()])
-                        .unwrap();
-
-                    this_inventory.create_order(
-                        plan.item_id,
-                        TradeIntent::Sell,
-                        plan.amount,
-                        &item_manifest,
-                    );
-                    buyer_inventory.create_order(
-                        plan.item_id,
-                        TradeIntent::Buy,
-                        plan.amount,
-                        &item_manifest,
-                    );
-
-                    plan.create_tasks_for_sale(&all_sectors, &all_transforms, &mut queue);
-                    apply_new_task_queue(
-                        &mut queue,
-                        &mut commands,
-                        ship_entity,
-                        &mut all_task_started_event_writers,
-                    );
+                    }
                 }
             }
         });
