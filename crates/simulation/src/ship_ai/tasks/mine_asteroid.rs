@@ -1,19 +1,28 @@
 use crate::ship_ai::TaskComponent;
 use crate::ship_ai::ship_task::ShipTask;
+use crate::ship_ai::task_creation::{
+    GeneralPathfindingArgs, TaskCreation, create_preconditions_and_move_to_entity,
+};
 use crate::ship_ai::tasks::send_completion_events;
-use bevy::prelude::{Entity, EventReader, EventWriter, Query, Res};
+use bevy::ecs::system::{StaticSystemParam, SystemParam};
+use bevy::prelude::{BevyError, Entity, EventReader, EventWriter, Query, Res};
+use common::components::task_kind::TaskKind;
+use common::components::task_queue::TaskQueue;
 use common::components::{Asteroid, AsteroidMiner, Inventory};
 use common::constants;
 use common::constants::BevyResult;
 use common::events::asteroid_was_fully_mined_event::AsteroidWasFullyMinedEvent;
 use common::events::task_events::{
-    TaskCanceledWhileInQueueEvent, TaskCompletedEvent, TaskStartedEvent,
+    InsertTaskIntoQueueCommand, TaskCanceledWhileInQueueEvent, TaskCompletedEvent, TaskStartedEvent,
 };
 use common::game_data::ItemManifest;
 use common::simulation_time::{CurrentSimulationTimestamp, Milliseconds, SimulationTime};
 use common::simulation_transform::SimulationScale;
 use common::types::entity_wrappers::AsteroidEntity;
+use common::types::ship_tasks;
 use common::types::ship_tasks::MineAsteroid;
+use std::collections::VecDeque;
+use std::ops::DerefMut;
 use std::sync::{Arc, Mutex};
 
 const MILLISECONDS_BETWEEN_UPDATES: Milliseconds = constants::ONE_SECOND_IN_MILLISECONDS;
@@ -52,12 +61,11 @@ impl ShipTask<MineAsteroid> {
         let mined_amount = mining_component
             .amount_per_second
             .min(remaining_space)
-            .min(self.reserved_ore_amount);
+            .min(asteroid.ore_remaining);
 
         inventory.add_item(asteroid.ore_item_id, mined_amount, item_manifest);
-        self.reserved_ore_amount -= mined_amount;
 
-        if self.reserved_ore_amount == 0 || remaining_space == mined_amount {
+        if asteroid.ore_remaining == 0 || remaining_space == mined_amount {
             TaskResult::Finished { mined_amount }
         } else {
             self.next_update
@@ -121,9 +129,9 @@ impl ShipTask<MineAsteroid> {
                         else {
                             continue; // Must have already despawned
                         };
-                        asteroid.ore -= mined_amount;
+                        asteroid.ore_remaining -= mined_amount;
                         scale.scale = asteroid.scale_depending_on_current_ore_volume();
-                        if asteroid.ore == 0 {
+                        if asteroid.ore_remaining == 0 {
                             asteroid_was_fully_mined_event.write(AsteroidWasFullyMinedEvent {
                                 asteroid: asteroid_entity,
                                 despawn_timer: asteroid.despawn_timestamp,
@@ -157,21 +165,36 @@ impl ShipTask<MineAsteroid> {
         Ok(())
     }
 
-    pub(crate) fn cancel_task_inside_queue(
-        mut events: EventReader<TaskCanceledWhileInQueueEvent<MineAsteroid>>,
-        mut asteroids: Query<&mut Asteroid>,
-    ) {
-        for x in events.read() {
-            let Ok(mut asteroid) = asteroids.get_mut(x.task_data.target.into()) else {
-                // Asteroid must have despawned somehow, which is fine.
-                continue;
-            };
-
-            asteroid.unreserve(x.task_data.reserved_ore_amount);
-        }
+    pub(crate) fn cancel_task_inside_queue() {
+        // Nothing needs to be done.
     }
 
     pub(crate) fn abort_running_task() {
         // Nothing needs to be done.
+    }
+}
+
+#[derive(SystemParam)]
+pub(crate) struct CreateMineAsteroidArgs {}
+
+impl TaskCreation<MineAsteroid, CreateMineAsteroidArgs> for MineAsteroid {
+    fn create_tasks_for_command(
+        event: &InsertTaskIntoQueueCommand<MineAsteroid>,
+        task_queue: &TaskQueue,
+        general_pathfinding_args: &GeneralPathfindingArgs,
+        _args: &mut StaticSystemParam<CreateMineAsteroidArgs>,
+    ) -> Result<VecDeque<TaskKind>, BevyError> {
+        let mut new_tasks = create_preconditions_and_move_to_entity(
+            event.entity,
+            event.task_data.target.into(),
+            task_queue,
+            general_pathfinding_args,
+        )?;
+
+        new_tasks.push_back(TaskKind::MineAsteroid {
+            data: event.task_data.clone(),
+        });
+
+        Ok(new_tasks)
     }
 }

@@ -1,14 +1,10 @@
 use crate::ship_ai::task_filters::ShipIsIdleFilter;
-use crate::ship_ai::tasks::apply_new_task_queue;
 use crate::ship_ai::trade_plan::TradePlan;
-use bevy::prelude::{Commands, Entity, EventWriter, Mut, Query, Res, Vec2};
+use bevy::prelude::{Entity, EventWriter, Mut, Query, Res, Vec2};
 use common::components::ship_behavior::ShipBehavior;
-use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
-use common::components::{Asteroid, BuyOrders, InSector, Inventory, Sector, SectorWithAsteroids};
-use common::events::task_events::{
-    AllTaskStartedEventWriters, InsertTaskIntoQueueCommand, TaskInsertionMode,
-};
+use common::components::{BuyOrders, InSector, Inventory, Sector, SectorWithAsteroids};
+use common::events::task_events::{InsertTaskIntoQueueCommand, TaskInsertionMode};
 use common::game_data::{ItemId, ItemManifest};
 use common::simulation_time::SimulationTime;
 use common::simulation_transform::SimulationTransform;
@@ -16,30 +12,19 @@ use common::types::auto_mine_state::AutoMineState;
 use common::types::entity_wrappers::SectorEntity;
 use common::types::exchange_ware_data::ExchangeWareData;
 use common::types::ship_behaviors::AutoMineBehavior;
-use common::types::ship_tasks;
-use common::types::ship_tasks::{ExchangeWares, MoveToSector};
+use common::types::ship_tasks::{ExchangeWares, MineAsteroid, MoveToSector};
 
 #[allow(clippy::too_many_arguments)]
 pub fn handle_idle_ships(
-    mut commands: Commands,
     simulation_time: Res<SimulationTime>,
-    mut ships: Query<
-        (
-            Entity,
-            &mut TaskQueue,
-            &mut ShipBehavior<AutoMineBehavior>,
-            &InSector,
-        ),
-        ShipIsIdleFilter,
-    >,
+    mut ships: Query<(Entity, &mut ShipBehavior<AutoMineBehavior>, &InSector), ShipIsIdleFilter>,
     buy_orders: Query<(Entity, &mut BuyOrders, &InSector)>,
     mut inventories: Query<&mut Inventory>,
     all_sectors_with_asteroids: Query<&SectorWithAsteroids>,
     all_sectors: Query<&Sector>,
-    mut all_asteroids: Query<&mut Asteroid>,
     all_transforms: Query<&SimulationTransform>,
     item_manifest: Res<ItemManifest>,
-    mut all_task_started_event_writers: AllTaskStartedEventWriters,
+    mut mine_asteroid_event_writer: EventWriter<InsertTaskIntoQueueCommand<MineAsteroid>>,
     mut exchange_wares_event_writer: EventWriter<InsertTaskIntoQueueCommand<ExchangeWares>>,
     mut move_to_sector_event_writer: EventWriter<InsertTaskIntoQueueCommand<MoveToSector>>,
 ) {
@@ -51,8 +36,8 @@ pub fn handle_idle_ships(
     // TODO: Benchmark this .filter vs a priority queue
     ships
         .iter_mut()
-        .filter(|(_, _, behavior, _)| now.has_passed(behavior.next_idle_update))
-        .for_each(|(ship_entity, mut queue, mut behavior, in_sector)| {
+        .filter(|(_, behavior, _)| now.has_passed(behavior.next_idle_update))
+        .for_each(|(ship_entity, mut behavior, in_sector)| {
             let ship_inventory = inventories.get_mut(ship_entity).unwrap();
             let used_space = ship_inventory.total_used_space();
             let remaining_space =
@@ -77,43 +62,15 @@ pub fn handle_idle_ships(
                             .iter()
                             .flat_map(|x| x.iter())
                             .filter(|x| max_asteroid_age.has_not_passed(&x.timestamp))
-                            .filter(|x| {
-                                all_asteroids
-                                    .get(x.entity.into())
-                                    .unwrap()
-                                    .remaining_after_reservations
-                                    > 0
-                            })
                             .min_by_key(|&asteroid| {
                                 entity_distance_to_ship_squared(&all_transforms, ship_pos, asteroid)
                             })
                         {
-                            let mut asteroid = all_asteroids
-                                .get_mut(closest_asteroid.entity.into())
-                                .unwrap();
-
-                            let reserved_amount = asteroid.try_to_reserve(remaining_space);
-
-                            queue.push_back(TaskKind::MoveToEntity {
-                                data: ship_tasks::MoveToEntity {
-                                    target: closest_asteroid.entity.into(),
-                                    stop_at_target: true,
-                                    desired_distance_to_target: 0.0,
-                                },
+                            mine_asteroid_event_writer.write(InsertTaskIntoQueueCommand {
+                                entity: ship_entity,
+                                insertion_mode: TaskInsertionMode::Append,
+                                task_data: MineAsteroid::new(closest_asteroid.entity),
                             });
-                            queue.push_back(TaskKind::MineAsteroid {
-                                data: ship_tasks::MineAsteroid::new(
-                                    closest_asteroid.entity,
-                                    reserved_amount,
-                                ),
-                            });
-
-                            apply_new_task_queue(
-                                &mut queue,
-                                &mut commands,
-                                ship_entity,
-                                &mut all_task_started_event_writers,
-                            );
                             return;
                         }
                     }

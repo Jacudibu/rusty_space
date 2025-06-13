@@ -413,17 +413,8 @@ fn list_selection_details(
                             .unwrap()
                             .name
                     ));
-                    let reserved = asteroid.ore - asteroid.remaining_after_reservations;
 
-                    ui.label(format!(
-                        "Amount: {}{}",
-                        asteroid.ore,
-                        if reserved > 0 {
-                            format!(" ({} Reserved)", reserved)
-                        } else {
-                            String::new()
-                        }
-                    ));
+                    ui.label(format!("Amount: {}", asteroid.ore_remaining,));
                 }
 
                 if let Some(production) = item.production {

@@ -1,18 +1,27 @@
 use crate::ship_ai::TaskComponent;
 use crate::ship_ai::ship_task::ShipTask;
+use crate::ship_ai::task_creation::{
+    GeneralPathfindingArgs, TaskCreation, create_preconditions_and_move_to_entity,
+};
 use crate::ship_ai::tasks::{finish_interaction, send_completion_events};
+use bevy::ecs::system::{StaticSystemParam, SystemParam};
 use bevy::log::error;
-use bevy::prelude::{Entity, EventReader, EventWriter, Query, Res};
+use bevy::prelude::{BevyError, Entity, EventReader, EventWriter, Query, Res};
 use common::components::interaction_queue::InteractionQueue;
+use common::components::task_kind::TaskKind;
+use common::components::task_queue::TaskQueue;
 use common::components::{GasHarvester, Inventory};
 use common::constants;
 use common::constants::BevyResult;
 use common::events::task_events::{
-    TaskCanceledWhileActiveEvent, TaskCompletedEvent, TaskStartedEvent,
+    InsertTaskIntoQueueCommand, TaskCanceledWhileActiveEvent, TaskCompletedEvent, TaskStartedEvent,
 };
 use common::game_data::ItemManifest;
 use common::simulation_time::{CurrentSimulationTimestamp, Milliseconds, SimulationTime};
-use common::types::ship_tasks::{AwaitingSignal, HarvestGas};
+use common::types::entity_wrappers::TypedEntity;
+use common::types::ship_tasks;
+use common::types::ship_tasks::{AwaitingSignal, HarvestGas, MineAsteroid};
+use std::collections::VecDeque;
 use std::sync::{Arc, Mutex};
 
 const MILLISECONDS_BETWEEN_UPDATES: Milliseconds = constants::ONE_SECOND_IN_MILLISECONDS;
@@ -136,5 +145,35 @@ impl ShipTask<HarvestGas> {
                 &mut signal_writer,
             );
         }
+    }
+}
+
+#[derive(SystemParam)]
+pub(crate) struct CreateHarvestGasArgs {}
+
+impl TaskCreation<HarvestGas, CreateHarvestGasArgs> for HarvestGas {
+    fn create_tasks_for_command(
+        event: &InsertTaskIntoQueueCommand<HarvestGas>,
+        task_queue: &TaskQueue,
+        general_pathfinding_args: &GeneralPathfindingArgs,
+        _args: &mut StaticSystemParam<CreateHarvestGasArgs>,
+    ) -> Result<VecDeque<TaskKind>, BevyError> {
+        let mut new_tasks = create_preconditions_and_move_to_entity(
+            event.entity,
+            event.task_data.target.into(),
+            task_queue,
+            general_pathfinding_args,
+        )?;
+
+        new_tasks.push_back(TaskKind::RequestAccess {
+            data: ship_tasks::RequestAccess {
+                target: TypedEntity::Celestial(event.task_data.target),
+            },
+        });
+        new_tasks.push_back(TaskKind::HarvestGas {
+            data: event.task_data.clone(),
+        });
+
+        Ok(new_tasks)
     }
 }

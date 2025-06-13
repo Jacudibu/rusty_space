@@ -27,6 +27,8 @@ use common::types::ship_tasks::{
 fn enable_insert_task_into_queue_commands(app: &mut App) {
     app.add_event::<InsertTaskIntoQueueCommand<Construct>>();
     app.add_event::<InsertTaskIntoQueueCommand<ExchangeWares>>();
+    app.add_event::<InsertTaskIntoQueueCommand<HarvestGas>>();
+    app.add_event::<InsertTaskIntoQueueCommand<MineAsteroid>>();
     app.add_event::<InsertTaskIntoQueueCommand<MoveToPosition>>();
     app.add_event::<InsertTaskIntoQueueCommand<MoveToSector>>();
 }
@@ -265,6 +267,7 @@ impl Plugin for ShipAiPlugin {
 
         app.add_event::<TaskCompletedEvent<MineAsteroid>>();
         app.add_event::<TaskStartedEvent<MineAsteroid>>();
+        app.add_systems(Update, create_task_command_listener::<MineAsteroid, _>);
         app.add_systems(
             FixedPostUpdate,
             ShipTask::<MineAsteroid>::on_task_started.run_if(in_state(SimulationState::Running)),
@@ -281,6 +284,7 @@ impl Plugin for ShipAiPlugin {
 
         app.add_event::<TaskCompletedEvent<HarvestGas>>();
         app.add_event::<TaskStartedEvent<HarvestGas>>();
+        app.add_systems(Update, create_task_command_listener::<HarvestGas, _>);
         app.add_systems(
             FixedPostUpdate,
             ShipTask::<HarvestGas>::on_task_started.run_if(in_state(SimulationState::Running)),

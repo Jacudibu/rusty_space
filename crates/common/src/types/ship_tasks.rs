@@ -88,20 +88,15 @@ pub struct MineAsteroid {
     /// The Asteroid which we are mining
     pub target: AsteroidEntity,
 
-    /// How much ore we have reserved from the target asteroid.
-    /// This value is synced with the asteroid, so do not just change this manually.
-    pub reserved_ore_amount: u32,
-
     /// A [SimulationTimestamp] denoting when our next item transfer with the asteroid is scheduled to happen.
     /// Will be initialized in the OnTaskStarted event.
     pub next_update: Option<SimulationTimestamp>,
 }
 impl ShipTaskData for MineAsteroid {}
 impl MineAsteroid {
-    pub fn new(target: AsteroidEntity, reserved_ore_amount: u32) -> Self {
+    pub fn new(target: AsteroidEntity) -> Self {
         Self {
             target,
-            reserved_ore_amount,
             next_update: None,
         }
     }

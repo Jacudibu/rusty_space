@@ -1,36 +1,22 @@
 use crate::ship_ai::behaviors::auto_mine;
 use crate::ship_ai::task_filters::ShipIsIdleFilter;
-use crate::ship_ai::tasks::apply_new_task_queue;
-use bevy::prelude::{Commands, Entity, EventWriter, Query, Res};
+use bevy::prelude::{Entity, EventWriter, Query, Res};
 use common::components::celestials::GasGiant;
 use common::components::ship_behavior::ShipBehavior;
-use common::components::task_kind::TaskKind;
-use common::components::task_queue::TaskQueue;
 use common::components::{BuyOrders, InSector, Inventory, Sector, SectorWithCelestials};
-use common::events::task_events::{
-    AllTaskStartedEventWriters, InsertTaskIntoQueueCommand, TaskInsertionMode,
-};
+use common::events::task_events::{InsertTaskIntoQueueCommand, TaskInsertionMode};
 use common::game_data::{ItemId, ItemManifest};
 use common::simulation_time::SimulationTime;
 use common::simulation_transform::SimulationTransform;
-use common::types::entity_wrappers::{SectorEntity, TypedEntity};
+use common::types::auto_mine_state;
+use common::types::entity_wrappers::SectorEntity;
 use common::types::ship_behaviors::AutoHarvestBehavior;
-use common::types::ship_tasks::{ExchangeWares, MoveToSector};
-use common::types::{auto_mine_state, ship_tasks};
+use common::types::ship_tasks::{ExchangeWares, HarvestGas, MoveToSector};
 
 #[allow(clippy::too_many_arguments)]
 pub fn handle_idle_ships(
-    mut commands: Commands,
     simulation_time: Res<SimulationTime>,
-    mut ships: Query<
-        (
-            Entity,
-            &mut TaskQueue,
-            &mut ShipBehavior<AutoHarvestBehavior>,
-            &InSector,
-        ),
-        ShipIsIdleFilter,
-    >,
+    mut ships: Query<(Entity, &mut ShipBehavior<AutoHarvestBehavior>, &InSector), ShipIsIdleFilter>,
     buy_orders: Query<(Entity, &mut BuyOrders, &InSector)>,
     mut inventories: Query<&mut Inventory>,
     all_sectors_with_gas_giants: Query<&SectorWithCelestials>,
@@ -38,15 +24,15 @@ pub fn handle_idle_ships(
     all_gas_giants: Query<&GasGiant>,
     all_transforms: Query<&SimulationTransform>,
     item_manifest: Res<ItemManifest>,
-    mut all_task_started_event_writers: AllTaskStartedEventWriters,
+    mut harvest_gas_event_writer: EventWriter<InsertTaskIntoQueueCommand<HarvestGas>>,
     mut exchange_wares_event_writer: EventWriter<InsertTaskIntoQueueCommand<ExchangeWares>>,
     mut move_to_sector_event_writer: EventWriter<InsertTaskIntoQueueCommand<MoveToSector>>,
 ) {
     let now = simulation_time.now();
     ships
         .iter_mut()
-        .filter(|(_, _, behavior, _)| now.has_passed(behavior.next_idle_update))
-        .for_each(|(ship_entity, mut queue, mut behavior, in_sector)| {
+        .filter(|(_, behavior, _)| now.has_passed(behavior.next_idle_update))
+        .for_each(|(ship_entity, mut behavior, in_sector)| {
             let ship_inventory = inventories.get_mut(ship_entity).unwrap();
             let used_space = ship_inventory.total_used_space();
             let remaining_space =
@@ -75,31 +61,11 @@ pub fn handle_idle_ships(
                                 )
                             })
                         {
-                            queue.push_back(TaskKind::MoveToEntity {
-                                data: ship_tasks::MoveToEntity {
-                                    target: TypedEntity::Celestial(*closest_planet),
-                                    stop_at_target: true,
-                                    desired_distance_to_target: 0.0,
-                                },
+                            harvest_gas_event_writer.write(InsertTaskIntoQueueCommand {
+                                entity: ship_entity,
+                                insertion_mode: TaskInsertionMode::Append,
+                                task_data: HarvestGas::new(*closest_planet, behavior.harvested_gas),
                             });
-                            queue.push_back(TaskKind::RequestAccess {
-                                data: ship_tasks::RequestAccess {
-                                    target: TypedEntity::Celestial(*closest_planet),
-                                },
-                            });
-                            queue.push_back(TaskKind::HarvestGas {
-                                data: ship_tasks::HarvestGas::new(
-                                    *closest_planet,
-                                    behavior.harvested_gas,
-                                ),
-                            });
-
-                            apply_new_task_queue(
-                                &mut queue,
-                                &mut commands,
-                                ship_entity,
-                                &mut all_task_started_event_writers,
-                            );
                             return;
                         }
                     }

@@ -210,11 +210,11 @@ fn get_task_end_sector_and_position(
         },
         TaskKind::MoveToSector { data } => SectorAndDockingStatus {
             docked_at: None,
-            sector: data.sector.into(),
+            sector: data.sector,
         },
         TaskKind::UseGate { data } => SectorAndDockingStatus {
             docked_at: None,
-            sector: get_sector(data.exit_sector.into(), in_sector_query)?,
+            sector: data.exit_sector,
         },
         TaskKind::MineAsteroid { data } => SectorAndDockingStatus {
             docked_at: None,
