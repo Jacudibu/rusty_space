@@ -10,7 +10,7 @@ use common::events::task_events::{
 use common::types::entity_wrappers::ShipEntity;
 use common::types::ship_tasks::{
     AwaitingSignal, Construct, DockAtEntity, ExchangeWares, HarvestGas, MineAsteroid, MoveToEntity,
-    MoveToPosition, RequestAccess, ShipTaskData, Undock, UseGate,
+    MoveToPosition, MoveToSector, RequestAccess, ShipTaskData, Undock, UseGate,
 };
 
 /// Send this event in order to request a ship to stop doing whatever it is doing right now, and also clear its entire task queue.
@@ -39,6 +39,7 @@ pub fn can_task_be_cancelled_while_active(task: &TaskKind) -> bool {
         TaskKind::MoveToPosition { .. } => {
             ShipTask::<MoveToPosition>::can_be_cancelled_while_active()
         }
+        TaskKind::MoveToSector { .. } => ShipTask::<MoveToSector>::can_be_cancelled_while_active(),
         TaskKind::UseGate { .. } => ShipTask::<UseGate>::can_be_cancelled_while_active(),
         TaskKind::MineAsteroid { .. } => ShipTask::<MineAsteroid>::can_be_cancelled_while_active(),
         TaskKind::HarvestGas { .. } => ShipTask::<HarvestGas>::can_be_cancelled_while_active(),
@@ -93,6 +94,9 @@ pub(crate) fn handle_task_cancellation_while_active_requests(
             }
             TaskKind::MoveToPosition { data } => {
                 write_event(&mut event_writers.move_to_position, event.entity, data)
+            }
+            TaskKind::MoveToSector { data } => {
+                write_event(&mut event_writers.move_to_sector, event.entity, data)
             }
             TaskKind::UseGate { data } => {
                 write_event(&mut event_writers.use_gate, event.entity, data)

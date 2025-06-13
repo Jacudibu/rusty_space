@@ -21,13 +21,14 @@ use common::states::SimulationState;
 use common::system_sets::CustomSystemSets;
 use common::types::ship_tasks::{
     AwaitingSignal, Construct, DockAtEntity, ExchangeWares, HarvestGas, MineAsteroid, MoveToEntity,
-    MoveToPosition, RequestAccess, ShipTaskData, Undock, UseGate,
+    MoveToPosition, MoveToSector, RequestAccess, ShipTaskData, Undock, UseGate,
 };
 
 fn enable_insert_task_into_queue_commands(app: &mut App) {
-    app.add_event::<InsertTaskIntoQueueCommand<MoveToPosition>>();
-    app.add_event::<InsertTaskIntoQueueCommand<ExchangeWares>>();
     app.add_event::<InsertTaskIntoQueueCommand<Construct>>();
+    app.add_event::<InsertTaskIntoQueueCommand<ExchangeWares>>();
+    app.add_event::<InsertTaskIntoQueueCommand<MoveToPosition>>();
+    app.add_event::<InsertTaskIntoQueueCommand<MoveToSector>>();
 }
 
 // TODO: clean up once we reunify task registration
@@ -46,6 +47,7 @@ fn enable_abortion(app: &mut App) {
     app.add_event::<TaskCanceledWhileActiveEvent<MineAsteroid>>();
     app.add_event::<TaskCanceledWhileActiveEvent<MoveToEntity>>();
     app.add_event::<TaskCanceledWhileActiveEvent<MoveToPosition>>();
+    app.add_event::<TaskCanceledWhileActiveEvent<MoveToSector>>();
     app.add_event::<TaskCanceledWhileActiveEvent<Undock>>();
     app.add_event::<TaskCanceledWhileActiveEvent<UseGate>>();
     app.add_event::<TaskCanceledWhileActiveEvent<RequestAccess>>();
@@ -71,6 +73,8 @@ fn enable_abortion(app: &mut App) {
                 .run_if(on_event::<TaskCanceledWhileActiveEvent<MoveToEntity>>),
             abort_tasks::<MoveToPosition>
                 .run_if(on_event::<TaskCanceledWhileActiveEvent<MoveToPosition>>),
+            abort_tasks::<MoveToSector>
+                .run_if(on_event::<TaskCanceledWhileActiveEvent<MoveToSector>>),
             abort_tasks::<Undock>.run_if(on_event::<TaskCanceledWhileActiveEvent<Undock>>),
             abort_tasks::<UseGate>.run_if(on_event::<TaskCanceledWhileActiveEvent<UseGate>>),
             abort_tasks::<RequestAccess>
@@ -96,6 +100,7 @@ fn enable_cancellation(app: &mut App) {
     app.add_event::<TaskCanceledWhileInQueueEvent<MineAsteroid>>();
     app.add_event::<TaskCanceledWhileInQueueEvent<MoveToEntity>>();
     app.add_event::<TaskCanceledWhileInQueueEvent<MoveToPosition>>();
+    app.add_event::<TaskCanceledWhileInQueueEvent<MoveToSector>>();
     app.add_event::<TaskCanceledWhileInQueueEvent<Undock>>();
     app.add_event::<TaskCanceledWhileInQueueEvent<UseGate>>();
     app.add_event::<TaskCanceledWhileInQueueEvent<RequestAccess>>();
@@ -225,6 +230,18 @@ impl Plugin for ShipAiPlugin {
                 ShipTask::<MoveToPosition>::run_tasks,
                 complete_tasks::<MoveToPosition>
                     .run_if(on_event::<TaskCompletedEvent<MoveToPosition>>),
+            )
+                .chain()
+                .run_if(in_state(SimulationState::Running)),
+        );
+
+        app.add_event::<TaskCompletedEvent<MoveToSector>>();
+        app.add_systems(Update, create_task_command_listener::<MoveToSector, _>);
+        app.add_systems(
+            FixedUpdate,
+            (
+                ShipTask::<MoveToSector>::run_tasks,
+                complete_tasks::<MoveToSector>.run_if(on_event::<TaskCompletedEvent<MoveToSector>>),
             )
                 .chain()
                 .run_if(in_state(SimulationState::Running)),

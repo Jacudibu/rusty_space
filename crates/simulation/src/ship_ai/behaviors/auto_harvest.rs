@@ -1,5 +1,4 @@
 use crate::ship_ai::behaviors::auto_mine;
-use crate::ship_ai::create_tasks_following_path::create_tasks_to_follow_path;
 use crate::ship_ai::task_filters::ShipIsIdleFilter;
 use crate::ship_ai::tasks::apply_new_task_queue;
 use bevy::prelude::{Commands, Entity, EventWriter, Query, Res};
@@ -8,13 +7,15 @@ use common::components::ship_behavior::ShipBehavior;
 use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
 use common::components::{BuyOrders, InSector, Inventory, Sector, SectorWithCelestials};
-use common::events::task_events::{AllTaskStartedEventWriters, InsertTaskIntoQueueCommand};
+use common::events::task_events::{
+    AllTaskStartedEventWriters, InsertTaskIntoQueueCommand, TaskInsertionMode,
+};
 use common::game_data::{ItemId, ItemManifest};
 use common::simulation_time::SimulationTime;
 use common::simulation_transform::SimulationTransform;
 use common::types::entity_wrappers::{SectorEntity, TypedEntity};
 use common::types::ship_behaviors::AutoHarvestBehavior;
-use common::types::ship_tasks::ExchangeWares;
+use common::types::ship_tasks::{ExchangeWares, MoveToSector};
 use common::types::{auto_mine_state, ship_tasks};
 
 #[allow(clippy::too_many_arguments)]
@@ -39,6 +40,7 @@ pub fn handle_idle_ships(
     item_manifest: Res<ItemManifest>,
     mut all_task_started_event_writers: AllTaskStartedEventWriters,
     mut exchange_wares_event_writer: EventWriter<InsertTaskIntoQueueCommand<ExchangeWares>>,
+    mut move_to_sector_event_writer: EventWriter<InsertTaskIntoQueueCommand<MoveToSector>>,
 ) {
     let now = simulation_time.now();
     ships
@@ -117,22 +119,13 @@ pub fn handle_idle_ships(
                         }
                     };
 
-                    let path = pathfinding::find_path(
-                        &all_sectors,
-                        &all_transforms,
-                        in_sector.sector,
-                        all_transforms.get(ship_entity).unwrap().translation,
-                        target_sector,
-                        None,
-                    )
-                    .unwrap();
-                    create_tasks_to_follow_path(&mut queue, path);
-                    apply_new_task_queue(
-                        &mut queue,
-                        &mut commands,
-                        ship_entity,
-                        &mut all_task_started_event_writers,
-                    );
+                    move_to_sector_event_writer.write(InsertTaskIntoQueueCommand {
+                        entity: ship_entity,
+                        insertion_mode: TaskInsertionMode::Append,
+                        task_data: MoveToSector {
+                            sector: target_sector,
+                        },
+                    });
                 }
                 auto_mine_state::AutoMineState::Trading => {
                     if auto_mine::try_sell_everything_in_inventory(

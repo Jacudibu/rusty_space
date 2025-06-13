@@ -69,19 +69,15 @@ impl ShipTask<MoveToPosition> {
 }
 
 #[derive(SystemParam)]
-pub struct MoveToPositionArgs<'w, 's> {
-    all_sectors: Query<'w, 's, &'static Sector>,
-    all_transforms: Query<'w, 's, &'static SimulationTransform>,
-}
+pub struct MoveToPositionArgs {}
 
-impl TaskCreation<MoveToPosition, MoveToPositionArgs<'_, '_>> for MoveToPosition {
+impl TaskCreation<MoveToPosition, MoveToPositionArgs> for MoveToPosition {
     fn create_tasks_for_command(
         event: &InsertTaskIntoQueueCommand<MoveToPosition>,
         task_queue: &TaskQueue,
         general_pathfinding_args: &GeneralPathfindingArgs,
-        args: &mut StaticSystemParam<MoveToPositionArgs>,
+        _args: &mut StaticSystemParam<MoveToPositionArgs>,
     ) -> Result<VecDeque<TaskKind>, BevyError> {
-        let args = args.deref();
         let mut new_tasks = create_preconditions_and_move_to_sector(
             event.entity,
             task_queue,

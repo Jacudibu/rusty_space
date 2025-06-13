@@ -1,6 +1,6 @@
 use crate::types::ship_tasks::{
     AwaitingSignal, Construct, DockAtEntity, ExchangeWares, HarvestGas, MineAsteroid, MoveToEntity,
-    MoveToPosition, RequestAccess, Undock, UseGate,
+    MoveToPosition, MoveToSector, RequestAccess, Undock, UseGate,
 };
 
 /// Enum to differentiate between the different ship tasks.
@@ -32,6 +32,9 @@ pub enum TaskKind {
     },
     MoveToPosition {
         data: MoveToPosition,
+    },
+    MoveToSector {
+        data: MoveToSector,
     },
     UseGate {
         data: UseGate,

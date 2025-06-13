@@ -1,4 +1,3 @@
-use crate::ship_ai::create_tasks_following_path::create_tasks_to_follow_path;
 use crate::ship_ai::task_filters::ShipIsIdleFilter;
 use crate::ship_ai::tasks::apply_new_task_queue;
 use crate::ship_ai::trade_plan::TradePlan;
@@ -18,7 +17,7 @@ use common::types::entity_wrappers::SectorEntity;
 use common::types::exchange_ware_data::ExchangeWareData;
 use common::types::ship_behaviors::AutoMineBehavior;
 use common::types::ship_tasks;
-use common::types::ship_tasks::ExchangeWares;
+use common::types::ship_tasks::{ExchangeWares, MoveToSector};
 
 #[allow(clippy::too_many_arguments)]
 pub fn handle_idle_ships(
@@ -42,6 +41,7 @@ pub fn handle_idle_ships(
     item_manifest: Res<ItemManifest>,
     mut all_task_started_event_writers: AllTaskStartedEventWriters,
     mut exchange_wares_event_writer: EventWriter<InsertTaskIntoQueueCommand<ExchangeWares>>,
+    mut move_to_sector_event_writer: EventWriter<InsertTaskIntoQueueCommand<MoveToSector>>,
 ) {
     let now = simulation_time.now();
 
@@ -132,22 +132,13 @@ pub fn handle_idle_ships(
                         }
                     };
 
-                    let path = pathfinding::find_path(
-                        &all_sectors,
-                        &all_transforms,
-                        in_sector.sector,
-                        all_transforms.get(ship_entity).unwrap().translation,
-                        target_sector,
-                        None,
-                    )
-                    .unwrap();
-                    create_tasks_to_follow_path(&mut queue, path);
-                    apply_new_task_queue(
-                        &mut queue,
-                        &mut commands,
-                        ship_entity,
-                        &mut all_task_started_event_writers,
-                    );
+                    move_to_sector_event_writer.write(InsertTaskIntoQueueCommand {
+                        entity: ship_entity,
+                        insertion_mode: TaskInsertionMode::Append,
+                        task_data: MoveToSector {
+                            sector: target_sector,
+                        },
+                    });
                 }
                 AutoMineState::Trading => {
                     if try_sell_everything_in_inventory(

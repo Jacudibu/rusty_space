@@ -86,6 +86,9 @@ pub(crate) fn send_cancellation_event(
         TaskKind::MoveToPosition { data } => {
             write_event(&mut event_writers.move_to_position, entity, data)
         }
+        TaskKind::MoveToSector { data } => {
+            write_event(&mut event_writers.move_to_sector, entity, data)
+        }
         TaskKind::UseGate { data } => write_event(&mut event_writers.use_gate, entity, data),
         TaskKind::MineAsteroid { data } => {
             write_event(&mut event_writers.mine_asteroid, entity, data)

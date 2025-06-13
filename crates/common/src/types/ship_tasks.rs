@@ -134,6 +134,14 @@ pub struct MoveToPosition {
 }
 impl ShipTaskData for MoveToPosition {}
 
+/// Ships with this task are currently moving towards a specific sector.
+#[derive(Clone, Debug)]
+pub struct MoveToSector {
+    /// The position to which we are moving.
+    pub sector: SectorEntity,
+}
+impl ShipTaskData for MoveToSector {}
+
 /// Intermediate task to reserve a spot inside an [`InteractionQueue`] attached to the [`target`].
 ///
 /// Will always be immediately completed on execution, with two possible results depending on the queue's state:

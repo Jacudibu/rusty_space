@@ -1,7 +1,7 @@
 use crate::types::entity_wrappers::ShipEntity;
 use crate::types::ship_tasks::{
     AwaitingSignal, Construct, DockAtEntity, ExchangeWares, HarvestGas, MineAsteroid, MoveToEntity,
-    MoveToPosition, RequestAccess, ShipTaskData, Undock, UseGate,
+    MoveToPosition, MoveToSector, RequestAccess, ShipTaskData, Undock, UseGate,
 };
 use bevy::ecs::system::SystemParam;
 use bevy::prelude::{Entity, Event, EventWriter};
@@ -121,6 +121,7 @@ pub struct AllTaskCancelledEventWriters<'w> {
     pub mine_asteroid: EventWriter<'w, TaskCanceledWhileInQueueEvent<MineAsteroid>>,
     pub move_to_entity: EventWriter<'w, TaskCanceledWhileInQueueEvent<MoveToEntity>>,
     pub move_to_position: EventWriter<'w, TaskCanceledWhileInQueueEvent<MoveToPosition>>,
+    pub move_to_sector: EventWriter<'w, TaskCanceledWhileInQueueEvent<MoveToSector>>,
     pub undock: EventWriter<'w, TaskCanceledWhileInQueueEvent<Undock>>,
     pub use_gate: EventWriter<'w, TaskCanceledWhileInQueueEvent<UseGate>>,
     pub request_access: EventWriter<'w, TaskCanceledWhileInQueueEvent<RequestAccess>>,
@@ -138,6 +139,7 @@ pub struct AllTaskAbortedEventWriters<'w> {
     pub mine_asteroid: EventWriter<'w, TaskCanceledWhileActiveEvent<MineAsteroid>>,
     pub move_to_entity: EventWriter<'w, TaskCanceledWhileActiveEvent<MoveToEntity>>,
     pub move_to_position: EventWriter<'w, TaskCanceledWhileActiveEvent<MoveToPosition>>,
+    pub move_to_sector: EventWriter<'w, TaskCanceledWhileActiveEvent<MoveToSector>>,
     pub undock: EventWriter<'w, TaskCanceledWhileActiveEvent<Undock>>,
     pub use_gate: EventWriter<'w, TaskCanceledWhileActiveEvent<UseGate>>,
     pub request_access: EventWriter<'w, TaskCanceledWhileActiveEvent<RequestAccess>>,

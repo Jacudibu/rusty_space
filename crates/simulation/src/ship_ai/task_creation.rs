@@ -208,6 +208,10 @@ fn get_task_end_sector_and_position(
             docked_at: None,
             sector: get_sector(data.sector_position.sector.into(), in_sector_query)?,
         },
+        TaskKind::MoveToSector { data } => SectorAndDockingStatus {
+            docked_at: None,
+            sector: data.sector.into(),
+        },
         TaskKind::UseGate { data } => SectorAndDockingStatus {
             docked_at: None,
             sector: get_sector(data.exit_sector.into(), in_sector_query)?,

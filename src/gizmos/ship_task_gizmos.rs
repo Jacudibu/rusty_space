@@ -74,6 +74,7 @@ fn draw_gizmos_for_task(
             gizmos.line(current_position, target_position, GIZMO_COLOR);
             target_position
         }
+        TaskKind::MoveToSector { .. } => current_position,
         TaskKind::UseGate { data } => {
             let gate = all_gates.get(data.enter_gate.into()).unwrap();
             gizmos.linestrip_2d(gate.transit_curve.iter_positions(10), GIZMO_COLOR);
