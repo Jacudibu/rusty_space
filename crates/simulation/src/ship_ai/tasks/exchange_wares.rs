@@ -19,7 +19,7 @@ use common::game_data::ItemManifest;
 use common::simulation_time::{CurrentSimulationTimestamp, SimulationTime};
 use common::types::exchange_ware_data::ExchangeWareData;
 use common::types::ship_tasks;
-use common::types::ship_tasks::ExchangeWares;
+use common::types::ship_tasks::{ExchangeWares, RequestAccessGoal};
 use common::types::trade_intent::TradeIntent;
 use std::collections::VecDeque;
 use std::ops::DerefMut;
@@ -189,6 +189,7 @@ impl TaskCreation<ExchangeWares, CreateExchangeWareArgs<'_, '_>> for ExchangeWar
         new_tasks.push_back(TaskKind::RequestAccess {
             data: ship_tasks::RequestAccess {
                 target: event.task_data.target,
+                goal: RequestAccessGoal::Docking,
             },
         });
         new_tasks.push_back(TaskKind::DockAtEntity {

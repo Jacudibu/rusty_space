@@ -1,12 +1,11 @@
 use bevy::math::Vec2;
 use bevy::prelude::{Commands, Name, Query, Sprite, Transform, default};
 use bevy::sprite::Anchor;
-use common::components::interaction_queue::InteractionQueue;
 use common::components::production_facility::ProductionFacility;
 use common::components::shipyard::Shipyard;
 use common::components::{
-    BuyOrders, ConstantOrbit, ConstructionSite, ConstructionSiteStatus, Inventory, Sector,
-    SectorWithCelestials, SelectableEntity, SellOrders, Station,
+    BuyOrders, ConstantOrbit, ConstructionSite, ConstructionSiteStatus, DockingBay, Inventory,
+    Sector, SectorWithCelestials, SelectableEntity, SellOrders, Station,
 };
 use common::constants;
 use common::game_data::{ConstructableModuleId, ItemId, ItemManifest, RecipeManifest};
@@ -159,7 +158,10 @@ pub fn spawn_station(
             Sprite::from_image(sprites.station.clone()),
             simulation_transform.as_bevy_transform(constants::z_layers::STATION),
             simulation_transform,
-            InteractionQueue::new(constants::SIMULTANEOUS_STATION_INTERACTIONS),
+            DockingBay::new(
+                constants::STATION_SHIP_CAPACITY,
+                constants::SIMULTANEOUS_STATION_INTERACTIONS,
+            ),
             SimulationScale::default(),
         ))
         .id();
@@ -349,8 +351,11 @@ fn spawn_construction_site(
             },
             Inventory::new(u32::MAX),
             data.buys,
-            // TODO: We don't really want to "dock" at construction sites, so not sure if an InteractionQueue is truly necessary
-            InteractionQueue::new(constants::SIMULTANEOUS_STATION_INTERACTIONS),
+            // TODO: We don't really want to "dock" at construction sites, so this is not truly necessary
+            DockingBay::new(
+                constants::STATION_SHIP_CAPACITY,
+                constants::SIMULTANEOUS_STATION_INTERACTIONS,
+            ),
         ))
         .id();
 

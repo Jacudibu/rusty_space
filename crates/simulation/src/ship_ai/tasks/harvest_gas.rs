@@ -20,7 +20,7 @@ use common::game_data::ItemManifest;
 use common::simulation_time::{CurrentSimulationTimestamp, Milliseconds, SimulationTime};
 use common::types::entity_wrappers::TypedEntity;
 use common::types::ship_tasks;
-use common::types::ship_tasks::{AwaitingSignal, HarvestGas};
+use common::types::ship_tasks::{AwaitingSignal, HarvestGas, RequestAccessGoal};
 use std::collections::VecDeque;
 use std::sync::{Arc, Mutex};
 
@@ -168,6 +168,7 @@ impl TaskCreation<HarvestGas, CreateHarvestGasArgs> for HarvestGas {
         new_tasks.push_back(TaskKind::RequestAccess {
             data: ship_tasks::RequestAccess {
                 target: TypedEntity::Celestial(event.task_data.target),
+                goal: RequestAccessGoal::PlanetOrbit,
             },
         });
         new_tasks.push_back(TaskKind::HarvestGas {

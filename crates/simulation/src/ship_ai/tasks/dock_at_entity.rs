@@ -7,13 +7,14 @@ use bevy::prelude::{
     Commands, Entity, EventReader, EventWriter, FloatExt, Query, Res, Time, Visibility,
 };
 use common::components;
-use common::components::Engine;
 use common::components::ship_velocity::ShipVelocity;
 use common::components::task_queue::TaskQueue;
+use common::components::{DockingBay, Engine};
 use common::constants;
+use common::constants::BevyResult;
 use common::events::task_events::{TaskCanceledWhileActiveEvent, TaskCompletedEvent};
 use common::simulation_transform::{SimulationScale, SimulationTransform};
-use common::types::ship_tasks::DockAtEntity;
+use common::types::ship_tasks::{AwaitingSignal, DockAtEntity};
 use std::sync::{Arc, Mutex};
 
 impl TaskComponent for ShipTask<DockAtEntity> {
@@ -97,10 +98,16 @@ impl ShipTask<DockAtEntity> {
         mut commands: Commands,
         mut event_reader: EventReader<TaskCompletedEvent<DockAtEntity>>,
         mut all_ships_with_task: Query<(&mut Visibility, &Self)>,
-    ) {
+        mut awaiting_signal_event_writer_for_next: EventWriter<TaskCompletedEvent<AwaitingSignal>>,
+        mut docking_bays: Query<&mut DockingBay>,
+    ) -> BevyResult {
         for event in event_reader.read() {
             if let Ok((mut visibility, task)) = all_ships_with_task.get_mut(event.entity.into()) {
                 *visibility = Visibility::Hidden;
+
+                let mut docking_bay = docking_bays.get_mut(task.target.into())?;
+                docking_bay
+                    .finish_docking(event.entity, &mut awaiting_signal_event_writer_for_next);
 
                 let mut entity_commands = commands.entity(event.entity.into());
                 entity_commands.insert(components::IsDocked::new(task.target));
@@ -111,6 +118,8 @@ impl ShipTask<DockAtEntity> {
                 );
             }
         }
+
+        Ok(())
     }
 
     pub(crate) fn cancel_task_inside_queue() {

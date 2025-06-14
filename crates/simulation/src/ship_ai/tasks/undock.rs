@@ -3,11 +3,15 @@ use crate::ship_ai::ship_task::ShipTask;
 use crate::ship_ai::task_result::TaskResult;
 use crate::ship_ai::tasks::{dock_at_entity, finish_interaction, send_completion_events};
 use bevy::log::error;
-use bevy::prelude::{Commands, Entity, EventReader, EventWriter, Query, Res, Time, Visibility};
+use bevy::prelude::{
+    Commands, Entity, EventReader, EventWriter, Query, Res, Time, Visibility, With,
+};
 use common::components::interaction_queue::InteractionQueue;
 use common::components::ship_velocity::ShipVelocity;
-use common::components::{Engine, IsDocked};
+use common::components::task_queue::TaskQueue;
+use common::components::{DockingBay, Engine, IsDocked};
 use common::constants;
+use common::constants::BevyResult;
 use common::events::task_events::TaskCompletedEvent;
 use common::events::task_events::TaskStartedEvent;
 use common::simulation_transform::{SimulationScale, SimulationTransform};
@@ -91,8 +95,6 @@ impl ShipTask<Undock> {
             &IsDocked,
         )>,
         mut started_tasks: EventReader<TaskStartedEvent<Undock>>,
-        mut interaction_queues: Query<&mut InteractionQueue>,
-        mut signal_writer: EventWriter<TaskCompletedEvent<AwaitingSignal>>,
     ) {
         // Compared to the other task_creation thingies we can cheat a little since we got IsDocked as a useful marker
         for task in started_tasks.read() {
@@ -106,17 +108,26 @@ impl ShipTask<Undock> {
                 continue;
             };
 
-            finish_interaction(
-                is_docked.at.into(),
-                &mut interaction_queues,
-                &mut signal_writer,
-            );
-
             *visibility = Visibility::Inherited;
             task.start_position = Some(transform.translation);
             //transform.scale = constants::DOCKING_SCALE_MIN;
             commands.entity(entity).remove::<IsDocked>();
         }
+    }
+
+    pub fn complete_tasks(
+        mut events: EventReader<TaskCompletedEvent<Undock>>,
+        all_ships_with_task: Query<&Self>,
+        mut awaiting_signal_event_writer: EventWriter<TaskCompletedEvent<AwaitingSignal>>,
+        mut docking_bays: Query<&mut DockingBay>,
+    ) -> BevyResult {
+        for event in events.read() {
+            let task = all_ships_with_task.get(event.entity.into())?;
+            let mut docking_bay = docking_bays.get_mut(task.from.into())?;
+            docking_bay.finish_undocking(event.entity, &mut awaiting_signal_event_writer);
+        }
+
+        Ok(())
     }
 
     pub(crate) fn cancel_task_inside_queue() {

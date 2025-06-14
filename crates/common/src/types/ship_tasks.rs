@@ -11,6 +11,12 @@ use bevy::math::Vec2;
 /// Marker trait to define that a struct may be used as a ShipTask during simulation.
 pub trait ShipTaskData: Clone + Send + Sync {}
 
+// mod signal_kind {
+//     struct Dock;
+//     struct Undock;
+//     struct HarvestGas;
+// }
+
 /// A ship with this task will be idle until it receives a signal through an event.
 #[derive(Clone, Debug)]
 pub struct AwaitingSignal {
@@ -146,8 +152,18 @@ impl ShipTaskData for MoveToSector {}
 pub struct RequestAccess {
     /// The entity we want to access. Should have an [InteractionQueue].
     pub target: TypedEntity,
+    /// What do we want to accomplish?
+    pub goal: RequestAccessGoal,
 }
 impl ShipTaskData for RequestAccess {}
+
+/// The kind of Access we want to [RequestAccess] for.
+#[derive(Clone, Debug)]
+pub enum RequestAccessGoal {
+    Docking,
+    Undocking,
+    PlanetOrbit,
+}
 
 /// Ships with this are currently undocking from another entity.
 /// They'll move in a straight line away from said entity whilst scaling into existence, after which this task completes.

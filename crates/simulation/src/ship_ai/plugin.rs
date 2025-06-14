@@ -137,22 +137,6 @@ impl Plugin for ShipAiPlugin {
             ),
         );
 
-        app.add_event::<TaskCompletedEvent<Undock>>();
-        app.add_event::<TaskStartedEvent<Undock>>();
-        app.add_systems(
-            FixedPostUpdate,
-            ShipTask::<Undock>::on_task_started.run_if(in_state(SimulationState::Running)),
-        );
-        app.add_systems(
-            FixedUpdate,
-            (
-                ShipTask::<Undock>::run_tasks,
-                complete_tasks::<Undock>.run_if(on_event::<TaskCompletedEvent<Undock>>),
-            )
-                .chain()
-                .run_if(in_state(SimulationState::Running)),
-        );
-
         app.add_event::<TaskCompletedEvent<ExchangeWares>>();
         app.add_event::<TaskStartedEvent<ExchangeWares>>();
         app.add_systems(Update, create_task_command_listener::<ExchangeWares, _>);
@@ -260,6 +244,23 @@ impl Plugin for ShipAiPlugin {
                 )
                     .chain()
                     .run_if(on_event::<TaskCompletedEvent<DockAtEntity>>),
+            )
+                .chain()
+                .run_if(in_state(SimulationState::Running)),
+        );
+
+        app.add_event::<TaskCompletedEvent<Undock>>();
+        app.add_event::<TaskStartedEvent<Undock>>();
+        app.add_systems(
+            FixedPostUpdate,
+            ShipTask::<Undock>::on_task_started.run_if(in_state(SimulationState::Running)),
+        );
+        app.add_systems(
+            FixedUpdate,
+            (
+                ShipTask::<Undock>::run_tasks,
+                ShipTask::<Undock>::complete_tasks,
+                complete_tasks::<Undock>.run_if(on_event::<TaskCompletedEvent<Undock>>),
             )
                 .chain()
                 .run_if(in_state(SimulationState::Running)),

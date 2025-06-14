@@ -16,7 +16,7 @@ use common::events::task_events::{
 use common::simulation_transform::SimulationTransform;
 use common::types::entity_wrappers::{SectorEntity, TypedEntity};
 use common::types::ship_tasks;
-use common::types::ship_tasks::{ShipTaskData, Undock};
+use common::types::ship_tasks::{RequestAccess, RequestAccessGoal, ShipTaskData, Undock};
 use std::collections::VecDeque;
 use std::error::Error;
 use std::fmt::{Debug, Display, Formatter};
@@ -308,6 +308,12 @@ pub fn create_preconditions_and_move_to_sector(
     //       OR check if we are docked as a precondition in MoveTo[X] Commands.
     //      Probably better than checking it here.
     if let Some(docked_at) = sector_and_docking_status.docked_at {
+        new_tasks.push_back(TaskKind::RequestAccess {
+            data: RequestAccess {
+                target: docked_at,
+                goal: RequestAccessGoal::Undocking,
+            },
+        });
         new_tasks.push_back(TaskKind::Undock {
             data: Undock {
                 start_position: None,
