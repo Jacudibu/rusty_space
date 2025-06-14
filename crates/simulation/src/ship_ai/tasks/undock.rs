@@ -4,7 +4,7 @@ use crate::ship_ai::task_result::TaskResult;
 use crate::ship_ai::tasks::{dock_at_entity, finish_interaction, send_completion_events};
 use bevy::log::error;
 use bevy::prelude::{
-    Commands, Entity, EventReader, EventWriter, Query, Res, Time, Visibility, With,
+    BevyError, Commands, Entity, EventReader, EventWriter, Query, Res, Time, Visibility, With,
 };
 use common::components::interaction_queue::InteractionQueue;
 use common::components::ship_velocity::ShipVelocity;
@@ -94,8 +94,9 @@ impl ShipTask<Undock> {
             &mut Visibility,
             &IsDocked,
         )>,
+        mut docking_bays: Query<&mut DockingBay>,
         mut started_tasks: EventReader<TaskStartedEvent<Undock>>,
-    ) {
+    ) -> BevyResult {
         // Compared to the other task_creation thingies we can cheat a little since we got IsDocked as a useful marker
         for task in started_tasks.read() {
             let Ok((entity, mut task, transform, mut visibility, is_docked)) =
@@ -112,7 +113,12 @@ impl ShipTask<Undock> {
             task.start_position = Some(transform.translation);
             //transform.scale = constants::DOCKING_SCALE_MIN;
             commands.entity(entity).remove::<IsDocked>();
+            docking_bays
+                .get_mut(task.from.into())?
+                .start_undocking(entity.into());
         }
+
+        Ok(())
     }
 
     pub fn complete_tasks(

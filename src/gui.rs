@@ -16,8 +16,8 @@ use common::components::shipyard::Shipyard;
 use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
 use common::components::{
-    Asteroid, BuyOrders, ConstructionSite, ConstructionSiteStatus, Gate, InSector, Inventory,
-    SelectableEntity, SellOrders, Ship, Station, TradeOrder,
+    Asteroid, BuyOrders, ConstructionSite, ConstructionSiteStatus, DockingBay, Gate, InSector,
+    Inventory, SelectableEntity, SellOrders, Ship, Station, TradeOrder,
 };
 use common::constants::BevyResult;
 use common::game_data::{
@@ -331,6 +331,7 @@ struct SelectableComponents {
     gate: Option<&'static Gate>,
     in_sector: Option<&'static InSector>,
     interaction_queue: Option<&'static InteractionQueue>,
+    docking_bay: Option<&'static DockingBay>,
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -382,6 +383,21 @@ fn list_selection_details(
                         interaction_queue.currently_interacting(),
                         interaction_queue.maximum_interactions()
                     ));
+                }
+
+                if let Some(docking_bay) = item.docking_bay {
+                    egui::CollapsingHeader::new(format!(
+                        "Docking Bay ({}/{})",
+                        docking_bay.docked.len(),
+                        docking_bay.capacity
+                    ))
+                    .default_open(true)
+                    .id_salt("docking_bay")
+                    .show(ui, |ui| {
+                        for x in docking_bay.docked.iter() {
+                            ui.label(format!("{}", names.get(x.into()).unwrap()));
+                        }
+                    });
                 }
 
                 if let Some(inventory) = item.inventory {

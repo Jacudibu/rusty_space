@@ -77,13 +77,15 @@ impl DockingBay {
         }
     }
 
-    /// Notifies the next waiting entity within the queue, if there are any.
+    /// Adds the ship to this docking bay and frees up the interaction slot.
+    /// Also notifies the next waiting entity within the queue, if there are any.
     pub fn finish_docking(
         &mut self,
         ship: ShipEntity,
         event_writer: &mut EventWriter<TaskCompletedEvent<AwaitingSignal>>,
     ) {
         self.occupied_active_slots.remove(&ship);
+        self.docked.insert(ship);
         if self.can_support_more_simultaneous_interactions() {
             if let Some(next) = self.undock_queue.pop_front() {
                 self.occupied_active_slots.insert(next);
@@ -99,7 +101,12 @@ impl DockingBay {
         }
     }
 
-    /// Notifies the next waiting entity within the queue, if there are any.
+    /// Removes this ship from the list of docked ships.
+    pub fn start_undocking(&mut self, entity: ShipEntity) {
+        self.docked.remove(&entity);
+    }
+
+    /// Frees up the interaction slot, then notifies the next waiting entity within the queue, if there are any.
     pub fn finish_undocking(
         &mut self,
         ship: ShipEntity,
