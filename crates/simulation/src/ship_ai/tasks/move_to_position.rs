@@ -7,15 +7,14 @@ use crate::ship_ai::task_result::TaskResult;
 use crate::ship_ai::tasks::{move_to_entity, send_completion_events};
 use bevy::ecs::system::{StaticSystemParam, SystemParam};
 use bevy::prelude::{BevyError, Entity, EventWriter, Query, Res, Time};
+use common::components::Engine;
 use common::components::ship_velocity::ShipVelocity;
 use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
-use common::components::{Engine, Sector};
 use common::events::task_events::{InsertTaskIntoQueueCommand, TaskCompletedEvent};
 use common::simulation_transform::SimulationTransform;
 use common::types::ship_tasks::MoveToPosition;
 use std::collections::VecDeque;
-use std::ops::Deref;
 use std::sync::{Arc, Mutex};
 
 impl TaskComponent for ShipTask<MoveToPosition> {

@@ -1,11 +1,10 @@
 use crate::can_task_be_cancelled_while_active;
 use crate::ship_ai::create_tasks_following_path::create_tasks_to_follow_path;
 use crate::ship_ai::tasks::apply_next_task;
-use bevy::ecs::error::panic;
 use bevy::ecs::system::{StaticSystemParam, SystemParam};
 use bevy::log::warn;
 use bevy::math::Vec2;
-use bevy::prelude::{BevyError, Commands, Entity, EventReader, Mut, Query, Transform};
+use bevy::prelude::{BevyError, Commands, Entity, EventReader, Query, Transform};
 use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
 use common::components::{InSector, IsDocked, Sector};

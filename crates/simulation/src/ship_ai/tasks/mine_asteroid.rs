@@ -13,16 +13,14 @@ use common::constants;
 use common::constants::BevyResult;
 use common::events::asteroid_was_fully_mined_event::AsteroidWasFullyMinedEvent;
 use common::events::task_events::{
-    InsertTaskIntoQueueCommand, TaskCanceledWhileInQueueEvent, TaskCompletedEvent, TaskStartedEvent,
+    InsertTaskIntoQueueCommand, TaskCompletedEvent, TaskStartedEvent,
 };
 use common::game_data::ItemManifest;
 use common::simulation_time::{CurrentSimulationTimestamp, Milliseconds, SimulationTime};
 use common::simulation_transform::SimulationScale;
 use common::types::entity_wrappers::AsteroidEntity;
-use common::types::ship_tasks;
 use common::types::ship_tasks::MineAsteroid;
 use std::collections::VecDeque;
-use std::ops::DerefMut;
 use std::sync::{Arc, Mutex};
 
 const MILLISECONDS_BETWEEN_UPDATES: Milliseconds = constants::ONE_SECOND_IN_MILLISECONDS;

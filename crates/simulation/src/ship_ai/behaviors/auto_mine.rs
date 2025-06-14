@@ -2,7 +2,6 @@ use crate::ship_ai::task_filters::ShipIsIdleFilter;
 use crate::ship_ai::trade_plan::TradePlan;
 use bevy::prelude::{Entity, EventWriter, Mut, Query, Res, Vec2};
 use common::components::ship_behavior::ShipBehavior;
-use common::components::task_queue::TaskQueue;
 use common::components::{BuyOrders, InSector, Inventory, Sector, SectorWithAsteroids};
 use common::events::task_events::{InsertTaskIntoQueueCommand, TaskInsertionMode};
 use common::game_data::{ItemId, ItemManifest};

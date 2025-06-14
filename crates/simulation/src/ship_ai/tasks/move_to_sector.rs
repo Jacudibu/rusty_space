@@ -12,7 +12,7 @@ use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
 use common::events::task_events::{InsertTaskIntoQueueCommand, TaskCompletedEvent};
 use common::types::entity_wrappers::SectorEntity;
-use common::types::ship_tasks::{MoveToPosition, MoveToSector};
+use common::types::ship_tasks::MoveToSector;
 use std::collections::VecDeque;
 use std::sync::{Arc, Mutex};
 

@@ -7,17 +7,14 @@ use bevy::ecs::system::{StaticSystemParam, SystemParam};
 use bevy::prelude::{BevyError, EventReader, Query, Res, error};
 use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
-use common::components::{BuyOrders, ConstructionSite, Inventory, SellOrders, Ship};
+use common::components::{ConstructionSite, Ship};
 use common::events::task_events::{
     InsertTaskIntoQueueCommand, TaskCanceledWhileActiveEvent, TaskStartedEvent,
 };
-use common::game_data::ItemManifest;
 use common::session_data::ShipConfigurationManifest;
 use common::types::entity_wrappers::ShipEntity;
-use common::types::ship_tasks;
-use common::types::ship_tasks::{Construct, ExchangeWares};
+use common::types::ship_tasks::Construct;
 use std::collections::VecDeque;
-use std::ops::DerefMut;
 
 impl TaskComponent for ShipTask<Construct> {
     fn can_be_cancelled_while_active() -> bool {

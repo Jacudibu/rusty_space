@@ -328,7 +328,7 @@ impl Plugin for ShipAiPlugin {
                 .run_if(in_state(SimulationState::Running)),
         );
 
-        app.add_systems(FixedUpdate, (stop_idle_ships::stop_idle_ships));
+        app.add_systems(FixedUpdate, stop_idle_ships::stop_idle_ships);
     }
 }
 

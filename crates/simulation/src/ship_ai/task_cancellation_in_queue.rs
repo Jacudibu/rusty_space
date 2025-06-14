@@ -6,7 +6,6 @@ use common::constants::BevyResult;
 use common::events::task_events::{AllTaskCancelledEventWriters, TaskCanceledWhileInQueueEvent};
 use common::types::entity_wrappers::ShipEntity;
 use common::types::ship_tasks::ShipTaskData;
-use std::collections::VecDeque;
 
 /// Send this event in order to request removing tasks from a task queue.
 #[derive(Event)]

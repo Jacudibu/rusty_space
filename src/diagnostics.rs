@@ -7,7 +7,7 @@ use iyes_perf_ui::entry::PerfUiEntry;
 use iyes_perf_ui::prelude::{
     ColorGradient, PerfUiEntryCpuUsage, PerfUiEntryEntityCount, PerfUiEntryFPS,
     PerfUiEntryFPSWorst, PerfUiEntryFrameTime, PerfUiEntryFrameTimeWorst, PerfUiEntryMemUsage,
-    PerfUiEntryRenderCpuTime, PerfUiRoot,
+    PerfUiRoot,
 };
 use iyes_perf_ui::{PerfUiAppExt, PerfUiPlugin};
 

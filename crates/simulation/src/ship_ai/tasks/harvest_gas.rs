@@ -20,7 +20,7 @@ use common::game_data::ItemManifest;
 use common::simulation_time::{CurrentSimulationTimestamp, Milliseconds, SimulationTime};
 use common::types::entity_wrappers::TypedEntity;
 use common::types::ship_tasks;
-use common::types::ship_tasks::{AwaitingSignal, HarvestGas, MineAsteroid};
+use common::types::ship_tasks::{AwaitingSignal, HarvestGas};
 use std::collections::VecDeque;
 use std::sync::{Arc, Mutex};
 
