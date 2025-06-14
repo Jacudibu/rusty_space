@@ -2,7 +2,7 @@ use crate::ship_ai::TaskComponent;
 use crate::ship_ai::ship_task::ShipTask;
 use crate::ship_ai::task_creation::{
     GeneralPathfindingArgs, TaskCreation, TaskCreationError, TaskCreationErrorReason,
-    create_preconditions_and_move_to_entity,
+    create_preconditions_and_dock_at_entity,
 };
 use crate::ship_ai::task_result::TaskResult;
 use crate::ship_ai::tasks::send_completion_events;
@@ -18,8 +18,7 @@ use common::events::task_events::{
 use common::game_data::ItemManifest;
 use common::simulation_time::{CurrentSimulationTimestamp, SimulationTime};
 use common::types::exchange_ware_data::ExchangeWareData;
-use common::types::ship_tasks;
-use common::types::ship_tasks::{ExchangeWares, RequestAccessGoal};
+use common::types::ship_tasks::ExchangeWares;
 use common::types::trade_intent::TradeIntent;
 use std::collections::VecDeque;
 use std::ops::DerefMut;
@@ -179,24 +178,12 @@ impl TaskCreation<ExchangeWares, CreateExchangeWareArgs<'_, '_>> for ExchangeWar
     ) -> Result<VecDeque<TaskKind>, BevyError> {
         let args = args.deref_mut();
 
-        let mut new_tasks = create_preconditions_and_move_to_entity(
+        let mut new_tasks = create_preconditions_and_dock_at_entity(
             event.entity,
             event.task_data.target,
             task_queue,
             general_pathfinding_args,
         )?;
-
-        new_tasks.push_back(TaskKind::RequestAccess {
-            data: ship_tasks::RequestAccess {
-                target: event.task_data.target,
-                goal: RequestAccessGoal::Docking,
-            },
-        });
-        new_tasks.push_back(TaskKind::DockAtEntity {
-            data: ship_tasks::DockAtEntity {
-                target: event.task_data.target,
-            },
-        });
 
         // TODO: I think Inventory/Order updates should be handled within a separate event handler
         //      (which could also just listen to the task creation event)

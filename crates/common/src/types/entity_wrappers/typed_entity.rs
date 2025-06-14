@@ -5,7 +5,7 @@ use crate::types::entity_wrappers::{
 use bevy::prelude::Entity;
 
 /// An enum-wrapper around entities to ensure type safety for mutually exclusive component combinations.
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum TypedEntity {
     Asteroid(AsteroidEntity),
     Celestial(CelestialEntity),

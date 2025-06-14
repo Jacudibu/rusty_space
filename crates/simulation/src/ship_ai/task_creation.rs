@@ -16,7 +16,7 @@ use common::events::task_events::{
 use common::simulation_transform::SimulationTransform;
 use common::types::entity_wrappers::{SectorEntity, TypedEntity};
 use common::types::ship_tasks;
-use common::types::ship_tasks::{RequestAccess, RequestAccessGoal, ShipTaskData, Undock};
+use common::types::ship_tasks::ShipTaskData;
 use std::collections::VecDeque;
 use std::error::Error;
 use std::fmt::{Debug, Display, Formatter};
@@ -205,7 +205,7 @@ fn get_task_end_sector_and_position(
         }
         TaskKind::MoveToPosition { data } => SectorAndDockingStatus {
             docked_at: None,
-            sector: get_sector(data.sector_position.sector.into(), in_sector_query)?,
+            sector: data.sector_position.sector,
         },
         TaskKind::MoveToSector { data } => SectorAndDockingStatus {
             docked_at: None,
@@ -226,6 +226,41 @@ fn get_task_end_sector_and_position(
     };
 
     Ok(result)
+}
+
+/// Creates all the necessary precondition (undock etc.) + movement tasks to dock at a specific entity.
+///
+/// # Returns
+/// A VecDequeue with the tasks.
+pub fn create_preconditions_and_dock_at_entity(
+    entity: Entity,
+    target_entity: TypedEntity,
+    task_queue: &TaskQueue,
+    args: &GeneralPathfindingArgs,
+) -> Result<VecDeque<TaskKind>, BevyError> {
+    if let Ok(is_docked) = args.is_docked.get(entity) {
+        if is_docked.at == target_entity {
+            // Nothing to do, yay!
+            return Ok(VecDeque::new());
+        }
+    }
+
+    let mut new_tasks =
+        create_preconditions_and_move_to_entity(entity, target_entity, task_queue, args)?;
+
+    new_tasks.push_back(TaskKind::RequestAccess {
+        data: ship_tasks::RequestAccess {
+            target: target_entity,
+            goal: ship_tasks::RequestAccessGoal::Docking,
+        },
+    });
+    new_tasks.push_back(TaskKind::DockAtEntity {
+        data: ship_tasks::DockAtEntity {
+            target: target_entity,
+        },
+    });
+
+    Ok(new_tasks)
 }
 
 /// Creates all the necessary precondition (undock etc.) + movement tasks to move to a specific entity.
@@ -309,13 +344,13 @@ pub fn create_preconditions_and_move_to_sector(
     //      Probably better than checking it here.
     if let Some(docked_at) = sector_and_docking_status.docked_at {
         new_tasks.push_back(TaskKind::RequestAccess {
-            data: RequestAccess {
+            data: ship_tasks::RequestAccess {
                 target: docked_at,
-                goal: RequestAccessGoal::Undocking,
+                goal: ship_tasks::RequestAccessGoal::Undocking,
             },
         });
         new_tasks.push_back(TaskKind::Undock {
-            data: Undock {
+            data: ship_tasks::Undock {
                 start_position: None,
                 from: docked_at,
             },
