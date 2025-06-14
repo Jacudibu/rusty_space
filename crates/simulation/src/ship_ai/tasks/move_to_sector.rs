@@ -32,7 +32,7 @@ fn verify_that_we_are_in_target_sector(
     }
 
     panic!("This task should never be run directly!");
-    TaskResult::Finished
+    // TaskResult::Finished
 }
 
 impl ShipTask<MoveToSector> {

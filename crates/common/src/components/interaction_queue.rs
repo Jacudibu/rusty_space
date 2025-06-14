@@ -13,6 +13,12 @@ pub struct InteractionQueue {
     waiting_queue: VecDeque<ShipEntity>,
 }
 
+#[derive(Debug, Eq, PartialEq)]
+pub enum InteractionQueueResult {
+    ProceedImmediately,
+    EnteredQueuePleaseAddAwaitingSignalToQueue,
+}
+
 impl InteractionQueue {
     pub fn new(maximum_simultaneous_interactions: u32) -> Self {
         Self {
@@ -35,13 +41,13 @@ impl InteractionQueue {
     /// # Returns
     /// - **Ok** - The entity may interact immediately.
     /// - **Err** - We are currently at capacity, the entity has been added to the queue and will receive a signal once it may proceed.
-    pub fn try_start_interaction(&mut self, requester: ShipEntity) -> Result<(), ()> {
+    pub fn try_start_interaction(&mut self, requester: ShipEntity) -> InteractionQueueResult {
         if self.currently_interacting < self.maximum_simultaneous_interactions {
             self.currently_interacting += 1;
-            Ok(())
+            InteractionQueueResult::ProceedImmediately
         } else {
             self.waiting_queue.push_back(requester);
-            Err(())
+            InteractionQueueResult::EnteredQueuePleaseAddAwaitingSignalToQueue
         }
     }
 
@@ -73,7 +79,7 @@ impl InteractionQueue {
 
 #[cfg(test)]
 mod test {
-    use crate::components::interaction_queue::InteractionQueue;
+    use crate::components::interaction_queue::{InteractionQueue, InteractionQueueResult};
     use bevy::prelude::{Component, Entity};
 
     use crate::types::entity_wrappers::typed_entity_wrapper::TypedEntityWrapper;
@@ -87,7 +93,10 @@ mod test {
     #[test]
     fn interacting_below_capacity() {
         let mut queue = InteractionQueue::new(2);
-        assert_eq!(Ok(()), queue.try_start_interaction(mock_entity_id(1)));
+        assert_eq!(
+            InteractionQueueResult::ProceedImmediately,
+            queue.try_start_interaction(mock_entity_id(1))
+        );
 
         assert_eq!(1, queue.currently_interacting)
     }
@@ -95,11 +104,17 @@ mod test {
     #[test]
     fn interacting_at_and_above_capacity() {
         let mut queue = InteractionQueue::new(2);
-        queue.try_start_interaction(mock_entity_id(1)).unwrap();
-        queue.try_start_interaction(mock_entity_id(2)).unwrap();
+        queue.try_start_interaction(mock_entity_id(1));
+        queue.try_start_interaction(mock_entity_id(2));
 
-        assert_eq!(Err(()), queue.try_start_interaction(mock_entity_id(3)));
-        assert_eq!(Err(()), queue.try_start_interaction(mock_entity_id(4)));
+        assert_eq!(
+            InteractionQueueResult::EnteredQueuePleaseAddAwaitingSignalToQueue,
+            queue.try_start_interaction(mock_entity_id(3))
+        );
+        assert_eq!(
+            InteractionQueueResult::EnteredQueuePleaseAddAwaitingSignalToQueue,
+            queue.try_start_interaction(mock_entity_id(4))
+        );
 
         assert_eq!(2, queue.currently_interacting);
         assert_eq!(2, queue.waiting_queue.len());
@@ -110,16 +125,25 @@ mod test {
     #[test]
     fn interacting_above_capacity_same_frame() {
         let mut queue = InteractionQueue::new(2);
-        queue.try_start_interaction(mock_entity_id(1)).unwrap();
-        queue.try_start_interaction(mock_entity_id(2)).unwrap();
+        queue.try_start_interaction(mock_entity_id(1));
+        queue.try_start_interaction(mock_entity_id(2));
 
         let first = mock_entity_id(1);
         let second = mock_entity_id(2);
         let third = mock_entity_id(3);
 
-        assert_eq!(Err(()), queue.try_start_interaction(first));
-        assert_eq!(Err(()), queue.try_start_interaction(second));
-        assert_eq!(Err(()), queue.try_start_interaction(third));
+        assert_eq!(
+            InteractionQueueResult::EnteredQueuePleaseAddAwaitingSignalToQueue,
+            queue.try_start_interaction(first)
+        );
+        assert_eq!(
+            InteractionQueueResult::EnteredQueuePleaseAddAwaitingSignalToQueue,
+            queue.try_start_interaction(second)
+        );
+        assert_eq!(
+            InteractionQueueResult::EnteredQueuePleaseAddAwaitingSignalToQueue,
+            queue.try_start_interaction(third)
+        );
 
         assert_eq!(2, queue.currently_interacting);
         assert_eq!(3, queue.waiting_queue.len());

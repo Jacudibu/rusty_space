@@ -1,3 +1,4 @@
+use crate::components::interaction_queue::InteractionQueueResult;
 use crate::events::task_events::TaskCompletedEvent;
 use crate::types::entity_wrappers::ShipEntity;
 use crate::types::ship_tasks::AwaitingSignal;
@@ -17,30 +18,31 @@ pub struct DockingBay {
     /// A queue for undocking. Undocking has a higher priority than docking in order to make room.
     pub undock_queue: VecDeque<ShipEntity>,
     /// Only this many ships may dock/undock at once
-    pub simultaneous_interaction_capacity: u32,
+    pub simultaneous_inbound_and_outbound_capacity: u32,
     /// How many ships may be docked at once.
     pub capacity: u32,
     /// All ships which are currently docked
-    pub occupied_active_slots: HashSet<ShipEntity>,
+    pub inbound_or_outbound_ships: HashSet<ShipEntity>,
     /// The ships which are currently docked here.
     pub docked: HashSet<ShipEntity>,
 }
 
 impl DockingBay {
-    pub fn new(capacity: u32, simultaneous_interaction_capacity: u32) -> Self {
+    pub fn new(capacity: u32, simultaneous_inbound_and_outbound_capacity: u32) -> Self {
         Self {
             capacity,
-            simultaneous_interaction_capacity,
+            simultaneous_inbound_and_outbound_capacity,
             dock_queue: Default::default(),
             undock_queue: Default::default(),
-            occupied_active_slots: Default::default(),
+            inbound_or_outbound_ships: Default::default(),
             docked: Default::default(),
         }
     }
 
     #[inline]
-    pub fn can_support_more_simultaneous_interactions(&self) -> bool {
-        self.simultaneous_interaction_capacity > self.occupied_active_slots.len() as u32
+    pub fn can_support_more_inbound_or_outbound_ships(&self) -> bool {
+        self.simultaneous_inbound_and_outbound_capacity
+            > self.inbound_or_outbound_ships.len() as u32
     }
 
     pub fn has_capacity_for_more_ships(&self) -> bool {
@@ -52,13 +54,13 @@ impl DockingBay {
     /// # Returns
     /// - **Ok** - The entity may interact immediately.
     /// - **Err** - We are currently at capacity, the entity has been added to the queue and will receive a signal once it may proceed.
-    pub fn try_dock(&mut self, requester: ShipEntity) -> Result<(), ()> {
-        if self.can_support_more_simultaneous_interactions() && self.has_capacity_for_more_ships() {
-            self.occupied_active_slots.insert(requester);
-            Ok(())
+    pub fn try_dock(&mut self, requester: ShipEntity) -> InteractionQueueResult {
+        if self.can_support_more_inbound_or_outbound_ships() && self.has_capacity_for_more_ships() {
+            self.inbound_or_outbound_ships.insert(requester);
+            InteractionQueueResult::ProceedImmediately
         } else {
             self.dock_queue.push_back(requester);
-            Err(())
+            InteractionQueueResult::EnteredQueuePleaseAddAwaitingSignalToQueue
         }
     }
 
@@ -67,13 +69,13 @@ impl DockingBay {
     /// # Returns
     /// - **Ok** - The entity may interact immediately.
     /// - **Err** - We are currently at capacity, the entity has been added to the queue and will receive a signal once it may proceed.
-    pub fn try_undock(&mut self, requester: ShipEntity) -> Result<(), ()> {
-        if self.can_support_more_simultaneous_interactions() {
-            self.occupied_active_slots.insert(requester);
-            Ok(())
+    pub fn try_undock(&mut self, requester: ShipEntity) -> InteractionQueueResult {
+        if self.can_support_more_inbound_or_outbound_ships() {
+            self.inbound_or_outbound_ships.insert(requester);
+            InteractionQueueResult::ProceedImmediately
         } else {
             self.undock_queue.push_back(requester);
-            Err(())
+            InteractionQueueResult::EnteredQueuePleaseAddAwaitingSignalToQueue
         }
     }
 
@@ -84,21 +86,9 @@ impl DockingBay {
         ship: ShipEntity,
         event_writer: &mut EventWriter<TaskCompletedEvent<AwaitingSignal>>,
     ) {
-        self.occupied_active_slots.remove(&ship);
+        self.inbound_or_outbound_ships.remove(&ship);
         self.docked.insert(ship);
-        if self.can_support_more_simultaneous_interactions() {
-            if let Some(next) = self.undock_queue.pop_front() {
-                self.occupied_active_slots.insert(next);
-                event_writer.write(TaskCompletedEvent::new(next));
-            }
-
-            if self.has_capacity_for_more_ships() {
-                if let Some(next) = self.dock_queue.pop_front() {
-                    self.occupied_active_slots.insert(next);
-                    event_writer.write(TaskCompletedEvent::new(next));
-                }
-            }
-        }
+        self.notify_next_ship_in_queue(event_writer);
     }
 
     /// Removes this ship from the list of docked ships.
@@ -109,19 +99,26 @@ impl DockingBay {
     /// Frees up the interaction slot, then notifies the next waiting entity within the queue, if there are any.
     pub fn finish_undocking(
         &mut self,
-        ship: ShipEntity,
+        ship: &ShipEntity,
         event_writer: &mut EventWriter<TaskCompletedEvent<AwaitingSignal>>,
     ) {
-        self.occupied_active_slots.remove(&ship);
-        if self.can_support_more_simultaneous_interactions() {
+        self.inbound_or_outbound_ships.remove(ship);
+        self.notify_next_ship_in_queue(event_writer);
+    }
+
+    fn notify_next_ship_in_queue(
+        &mut self,
+        event_writer: &mut EventWriter<TaskCompletedEvent<AwaitingSignal>>,
+    ) {
+        if self.can_support_more_inbound_or_outbound_ships() {
             if let Some(next) = self.undock_queue.pop_front() {
-                self.occupied_active_slots.insert(next);
+                self.inbound_or_outbound_ships.insert(next);
                 event_writer.write(TaskCompletedEvent::new(next));
             }
 
             if self.has_capacity_for_more_ships() {
                 if let Some(next) = self.dock_queue.pop_front() {
-                    self.occupied_active_slots.insert(next);
+                    self.inbound_or_outbound_ships.insert(next);
                     event_writer.write(TaskCompletedEvent::new(next));
                 }
             }

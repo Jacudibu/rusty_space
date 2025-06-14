@@ -1,14 +1,10 @@
 use crate::ship_ai::TaskComponent;
 use crate::ship_ai::ship_task::ShipTask;
 use crate::ship_ai::task_result::TaskResult;
-use crate::ship_ai::tasks::{dock_at_entity, finish_interaction, send_completion_events};
+use crate::ship_ai::tasks::{dock_at_entity, send_completion_events};
 use bevy::log::error;
-use bevy::prelude::{
-    BevyError, Commands, Entity, EventReader, EventWriter, Query, Res, Time, Visibility, With,
-};
-use common::components::interaction_queue::InteractionQueue;
+use bevy::prelude::{Commands, Entity, EventReader, EventWriter, Query, Res, Time, Visibility};
 use common::components::ship_velocity::ShipVelocity;
-use common::components::task_queue::TaskQueue;
 use common::components::{DockingBay, Engine, IsDocked};
 use common::constants;
 use common::constants::BevyResult;
@@ -87,19 +83,13 @@ impl ShipTask<Undock> {
     #[allow(clippy::type_complexity)]
     pub fn on_task_started(
         mut commands: Commands,
-        mut all_ships_with_task: Query<(
-            Entity,
-            &mut Self,
-            &SimulationTransform,
-            &mut Visibility,
-            &IsDocked,
-        )>,
+        mut all_ships_with_task: Query<(Entity, &mut Self, &SimulationTransform, &mut Visibility)>,
         mut docking_bays: Query<&mut DockingBay>,
         mut started_tasks: EventReader<TaskStartedEvent<Undock>>,
     ) -> BevyResult {
         // Compared to the other task_creation thingies we can cheat a little since we got IsDocked as a useful marker
         for task in started_tasks.read() {
-            let Ok((entity, mut task, transform, mut visibility, is_docked)) =
+            let Ok((entity, mut task, transform, mut visibility)) =
                 all_ships_with_task.get_mut(task.entity.into())
             else {
                 error!(
@@ -130,7 +120,7 @@ impl ShipTask<Undock> {
         for event in events.read() {
             let task = all_ships_with_task.get(event.entity.into())?;
             let mut docking_bay = docking_bays.get_mut(task.from.into())?;
-            docking_bay.finish_undocking(event.entity, &mut awaiting_signal_event_writer);
+            docking_bay.finish_undocking(&event.entity, &mut awaiting_signal_event_writer);
         }
 
         Ok(())

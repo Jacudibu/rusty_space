@@ -2,7 +2,7 @@ use crate::ship_ai::TaskComponent;
 use crate::ship_ai::ship_task::ShipTask;
 use bevy::prelude::{BevyError, Entity, EventWriter, Query};
 use common::components::DockingBay;
-use common::components::interaction_queue::InteractionQueue;
+use common::components::interaction_queue::{InteractionQueue, InteractionQueueResult};
 use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
 use common::constants::BevyResult;
@@ -15,11 +15,6 @@ impl TaskComponent for ShipTask<RequestAccess> {
     }
 }
 
-enum AccessIssue {
-    NeedToAwaitSignalForQueue,
-    BevyError(BevyError),
-}
-
 impl ShipTask<RequestAccess> {
     pub fn run_tasks(
         mut all_ships_with_task: Query<(Entity, &Self, &mut TaskQueue)>,
@@ -28,7 +23,7 @@ impl ShipTask<RequestAccess> {
         mut task_completions: EventWriter<TaskCompletedEvent<RequestAccess>>,
     ) -> BevyResult {
         for (entity, task, mut task_queue) in all_ships_with_task.iter_mut() {
-            if let Err(e) = match task.goal {
+            let result = match task.goal {
                 RequestAccessGoal::Docking => {
                     Self::access_dock(entity, task, &mut all_docking_bays)
                 }
@@ -38,14 +33,14 @@ impl ShipTask<RequestAccess> {
                 RequestAccessGoal::PlanetOrbit => {
                     Self::access_planet_orbit(entity, task, &mut all_interaction_queues)
                 }
-            } {
-                match e {
-                    AccessIssue::NeedToAwaitSignalForQueue => {
-                        task_queue.push_front(TaskKind::AwaitingSignal {
-                            data: AwaitingSignal { from: task.target },
-                        });
-                    }
-                    AccessIssue::BevyError(e) => return Err(e),
+            }?;
+
+            match result {
+                InteractionQueueResult::ProceedImmediately => {}
+                InteractionQueueResult::EnteredQueuePleaseAddAwaitingSignalToQueue => {
+                    task_queue.push_front(TaskKind::AwaitingSignal {
+                        data: AwaitingSignal { from: task.target },
+                    });
                 }
             }
 
@@ -68,50 +63,35 @@ impl ShipTask<RequestAccess> {
         entity: Entity,
         task: &ShipTask<RequestAccess>,
         all_docking_bays: &mut Query<&mut DockingBay>,
-    ) -> Result<(), AccessIssue> {
+    ) -> Result<InteractionQueueResult, BevyError> {
         let Ok(mut docking_bay) = all_docking_bays.get_mut(task.target.into()) else {
             todo!("In case no entity to dock at was found, cancel task");
         };
 
-        if docking_bay.try_dock(entity.into()).is_err() {
-            Err(AccessIssue::NeedToAwaitSignalForQueue)
-        } else {
-            Ok(())
-        }
+        Ok(docking_bay.try_dock(entity.into()))
     }
 
     fn access_undock(
         entity: Entity,
         task: &ShipTask<RequestAccess>,
         all_docking_bays: &mut Query<&mut DockingBay>,
-    ) -> Result<(), AccessIssue> {
+    ) -> Result<InteractionQueueResult, BevyError> {
         let Ok(mut docking_bay) = all_docking_bays.get_mut(task.target.into()) else {
             todo!("In case no entity to dock at was found, cancel task");
         };
 
-        if docking_bay.try_undock(entity.into()).is_err() {
-            Err(AccessIssue::NeedToAwaitSignalForQueue)
-        } else {
-            Ok(())
-        }
+        Ok(docking_bay.try_undock(entity.into()))
     }
 
     fn access_planet_orbit(
         entity: Entity,
         task: &ShipTask<RequestAccess>,
         all_interaction_queues: &mut Query<&mut InteractionQueue>,
-    ) -> Result<(), AccessIssue> {
+    ) -> Result<InteractionQueueResult, BevyError> {
         let Ok(mut interaction_queue) = all_interaction_queues.get_mut(task.target.into()) else {
             panic!("Planets cannot be destroyed, so this should never happen!")
         };
 
-        if interaction_queue
-            .try_start_interaction(entity.into())
-            .is_err()
-        {
-            Err(AccessIssue::NeedToAwaitSignalForQueue)
-        } else {
-            Ok(())
-        }
+        Ok(interaction_queue.try_start_interaction(entity.into()))
     }
 }

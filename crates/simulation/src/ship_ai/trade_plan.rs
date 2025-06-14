@@ -1,14 +1,7 @@
-use crate::ship_ai::create_tasks_following_path::create_tasks_to_follow_path;
 use bevy::prelude::{Entity, Query};
-use common::components::task_kind::TaskKind;
-use common::components::task_queue::TaskQueue;
-use common::components::{BuyOrders, InSector, Inventory, Sector, SellOrders, TradeOrder};
-use common::constants;
+use common::components::{BuyOrders, InSector, Inventory, SellOrders, TradeOrder};
 use common::game_data::{ItemId, ItemManifest};
-use common::simulation_transform::SimulationTransform;
 use common::types::entity_wrappers::{SectorEntity, TypedEntity};
-use common::types::exchange_ware_data::ExchangeWareData;
-use common::types::ship_tasks;
 
 /// Describes a complete trade run - first we buy cheap, then we sell high!
 pub struct TradePlan {
