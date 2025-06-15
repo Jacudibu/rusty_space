@@ -5,7 +5,9 @@ use crate::ship_ai::task_cancellation_active::{
 use crate::ship_ai::task_cancellation_in_queue::{
     TaskCancellationForTaskInQueueHandler, TaskCancellationWhileInQueueRequest,
 };
+use crate::ship_ai::task_completed::TaskCompletedEventHandler;
 use crate::ship_ai::task_creation::TaskCreationHandler;
+use crate::ship_ai::task_started::TaskStartedEventHandler;
 use crate::ship_ai::tasks::apply_next_task;
 use crate::ship_ai::{
     behaviors, stop_idle_ships, task_cancellation_active, task_cancellation_in_queue,
@@ -166,14 +168,14 @@ impl Plugin for ShipAiPlugin {
 
         app.add_systems(
             FixedPostUpdate,
-            ShipTask::<ExchangeWares>::on_task_started.run_if(in_state(SimulationState::Running)),
+            ExchangeWares::task_started_event_listener.run_if(in_state(SimulationState::Running)),
         );
         app.add_systems(
             FixedUpdate,
             (
                 ShipTask::<ExchangeWares>::run_tasks,
                 (
-                    ShipTask::<ExchangeWares>::complete_tasks,
+                    ExchangeWares::task_completed_event_listener,
                     complete_tasks::<ExchangeWares>,
                 )
                     .chain()

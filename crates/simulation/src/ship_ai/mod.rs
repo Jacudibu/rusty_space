@@ -5,10 +5,12 @@ mod ship_task;
 mod stop_idle_ships;
 pub mod task_cancellation_active;
 pub mod task_cancellation_in_queue;
+mod task_completed;
 mod task_creation;
 mod task_filters;
 mod task_metadata;
 mod task_result;
+mod task_started;
 mod tasks;
 mod trade_plan;
 

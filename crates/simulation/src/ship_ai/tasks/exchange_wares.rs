@@ -1,15 +1,17 @@
 use crate::ship_ai::ship_task::ShipTask;
 use crate::ship_ai::task_cancellation_active::TaskCancellationForActiveTaskHandler;
 use crate::ship_ai::task_cancellation_in_queue::TaskCancellationForTaskInQueueHandler;
+use crate::ship_ai::task_completed::TaskCompletedEventHandler;
 use crate::ship_ai::task_creation::{
     GeneralPathfindingArgs, TaskCreationError, TaskCreationErrorReason, TaskCreationHandler,
     create_preconditions_and_dock_at_entity,
 };
 use crate::ship_ai::task_result::TaskResult;
+use crate::ship_ai::task_started::TaskStartedEventHandler;
 use crate::ship_ai::tasks::send_completion_events;
 use crate::ship_ai::{NoArgs, TaskComponent};
 use bevy::ecs::system::{StaticSystemParam, SystemParam};
-use bevy::prelude::{BevyError, Entity, EventReader, EventWriter, Query, Res, error};
+use bevy::prelude::{BevyError, Entity, EventWriter, Query, Res};
 use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
 use common::components::{BuyOrders, Inventory, SellOrders, TradeOrder};
@@ -41,39 +43,6 @@ impl ShipTask<ExchangeWares> {
         }
     }
 
-    fn complete(
-        &self,
-        this_entity: Entity,
-        all_storages: &mut Query<&mut Inventory>,
-        event_writer: &mut EventWriter<InventoryUpdateForProductionEvent>,
-        item_manifest: &ItemManifest,
-    ) -> TaskResult {
-        match all_storages.get_many_mut([this_entity, self.target.into()]) {
-            Ok([mut this_inv, mut other_inv]) => {
-                match self.exchange_data {
-                    ExchangeWareData::Buy(item_id, amount) => {
-                        this_inv.complete_order(item_id, TradeIntent::Buy, amount, item_manifest);
-                        other_inv.complete_order(item_id, TradeIntent::Sell, amount, item_manifest);
-                    }
-                    ExchangeWareData::Sell(item_id, amount) => {
-                        this_inv.complete_order(item_id, TradeIntent::Sell, amount, item_manifest);
-                        other_inv.complete_order(item_id, TradeIntent::Buy, amount, item_manifest);
-                    }
-                }
-                event_writer.write(InventoryUpdateForProductionEvent::new(this_entity));
-                event_writer.write(InventoryUpdateForProductionEvent::new(self.target.into()));
-                TaskResult::Finished
-            }
-            Err(e) => {
-                error!(
-                    "Failed to execute ware exchange between {this_entity} and {:?}: {:?}",
-                    self.target, e
-                );
-                TaskResult::Aborted
-            }
-        }
-    }
-
     pub fn run_tasks(
         event_writer: EventWriter<TaskCompletedEvent<ExchangeWares>>,
         simulation_time: Res<SimulationTime>,
@@ -95,55 +64,61 @@ impl ShipTask<ExchangeWares> {
 
         send_completion_events(event_writer, task_completions);
     }
+}
 
-    pub fn complete_tasks(
-        mut event_reader: EventReader<TaskCompletedEvent<ExchangeWares>>,
-        mut all_ships_with_task: Query<&Self>,
-        mut all_storages: Query<&mut Inventory>,
-        mut event_writer: EventWriter<InventoryUpdateForProductionEvent>,
-        item_manifest: Res<ItemManifest>,
-    ) {
-        for event in event_reader.read() {
-            if let Ok(task) = all_ships_with_task.get_mut(event.entity.into()) {
-                task.complete(
-                    event.entity.into(),
-                    &mut all_storages,
-                    &mut event_writer,
-                    &item_manifest,
-                );
-            } else {
-                error!(
-                    "Unable to find entity for ExchangeWares task completion: {}",
-                    event.entity
-                );
+#[derive(SystemParam)]
+pub(crate) struct TaskStartedArgs<'w, 's> {
+    all_ships_with_task: Query<'w, 's, &'static mut ShipTask<ExchangeWares>>,
+    simulation_time: Res<'w, SimulationTime>,
+}
+
+impl<'w, 's> TaskStartedEventHandler<ExchangeWares, TaskStartedArgs<'w, 's>> for ExchangeWares {
+    fn on_task_started(
+        event: &TaskStartedEvent<ExchangeWares>,
+        args: &mut StaticSystemParam<TaskStartedArgs<'w, 's>>,
+    ) -> Result<(), BevyError> {
+        let finishes_at = args.simulation_time.now().add_seconds(2);
+        let mut created_component = args.all_ships_with_task.get_mut(event.entity.into())?;
+        created_component.finishes_at = finishes_at;
+        Ok(())
+    }
+}
+
+#[derive(SystemParam)]
+pub(crate) struct TaskCompletedArgs<'w, 's> {
+    all_ships_with_task: Query<'w, 's, &'static mut ShipTask<ExchangeWares>>,
+    all_storages: Query<'w, 's, &'static mut Inventory>,
+    inventory_update_event_writer: EventWriter<'w, InventoryUpdateForProductionEvent>,
+    item_manifest: Res<'w, ItemManifest>,
+}
+
+impl<'w, 's> TaskCompletedEventHandler<ExchangeWares, TaskCompletedArgs<'w, 's>> for ExchangeWares {
+    fn on_task_completed(
+        event: &TaskCompletedEvent<ExchangeWares>,
+        args: &mut StaticSystemParam<TaskCompletedArgs>,
+    ) -> Result<(), BevyError> {
+        let args = args.deref_mut();
+        let task = args.all_ships_with_task.get_mut(event.entity.into())?;
+
+        let [mut this_inv, mut other_inv] = args
+            .all_storages
+            .get_many_mut([event.entity.into(), task.target.into()])?;
+        match task.exchange_data {
+            ExchangeWareData::Buy(item_id, amount) => {
+                this_inv.complete_order(item_id, TradeIntent::Buy, amount, &args.item_manifest);
+                other_inv.complete_order(item_id, TradeIntent::Sell, amount, &args.item_manifest);
+            }
+            ExchangeWareData::Sell(item_id, amount) => {
+                this_inv.complete_order(item_id, TradeIntent::Sell, amount, &args.item_manifest);
+                other_inv.complete_order(item_id, TradeIntent::Buy, amount, &args.item_manifest);
             }
         }
-    }
+        args.inventory_update_event_writer
+            .write(InventoryUpdateForProductionEvent::new(event.entity.into()));
+        args.inventory_update_event_writer
+            .write(InventoryUpdateForProductionEvent::new(task.target.into()));
 
-    pub fn on_task_started(
-        mut query: Query<&mut Self>,
-        mut finished_events: EventReader<TaskStartedEvent<ExchangeWares>>,
-        simulation_time: Res<SimulationTime>,
-    ) {
-        let now = simulation_time.now();
-        for x in finished_events.read() {
-            let Ok(mut created_component) = query.get_mut(x.entity.into()) else {
-                continue;
-            };
-
-            created_component.finishes_at = now.add_seconds(2);
-        }
-    }
-
-    pub(crate) fn cancel_task_inside_queue(
-        mut events: EventReader<TaskCanceledWhileInQueueEvent<ExchangeWares>>,
-        mut inventories: Query<&mut Inventory>,
-    ) {
-        for event in events.read() {}
-    }
-
-    pub(crate) fn abort_running_task() {
-        panic!("Task cannot be properly aborted.");
+        Ok(())
     }
 }
 
