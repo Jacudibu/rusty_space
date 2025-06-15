@@ -1,10 +1,10 @@
-use crate::ship_ai::TaskComponent;
 use crate::ship_ai::ship_task::ShipTask;
 use crate::ship_ai::task_creation::{
     GeneralPathfindingArgs, TaskCreationEventHandler, create_preconditions_and_move_to_sector,
 };
 use crate::ship_ai::task_result::TaskResult;
 use crate::ship_ai::tasks::{move_to_entity, send_completion_events};
+use crate::ship_ai::{NoArgs, TaskComponent};
 use bevy::ecs::system::{StaticSystemParam, SystemParam};
 use bevy::prelude::{BevyError, Entity, EventWriter, Query, Res, Time};
 use common::components::Engine;
@@ -67,15 +67,14 @@ impl ShipTask<MoveToPosition> {
     }
 }
 
-#[derive(SystemParam)]
-pub struct MoveToPositionArgs {}
+impl<'w, 's> TaskCreationEventHandler<'w, 's, MoveToPosition> for MoveToPosition {
+    type Args = NoArgs;
 
-impl TaskCreationEventHandler<MoveToPosition, MoveToPositionArgs> for MoveToPosition {
     fn create_tasks_for_command(
         event: &InsertTaskIntoQueueCommand<MoveToPosition>,
         task_queue: &TaskQueue,
         general_pathfinding_args: &GeneralPathfindingArgs,
-        _args: &mut StaticSystemParam<MoveToPositionArgs>,
+        _args: &mut StaticSystemParam<Self::Args>,
     ) -> Result<VecDeque<TaskKind>, BevyError> {
         let mut new_tasks = create_preconditions_and_move_to_sector(
             event.entity,

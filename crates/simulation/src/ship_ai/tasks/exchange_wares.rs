@@ -42,10 +42,12 @@ pub(crate) struct TaskStartedArgs<'w, 's> {
     simulation_time: Res<'w, SimulationTime>,
 }
 
-impl<'w, 's> TaskStartedEventHandler<ExchangeWares, TaskStartedArgs<'w, 's>> for ExchangeWares {
+impl<'w, 's> TaskStartedEventHandler<'w, 's, ExchangeWares> for ExchangeWares {
+    type Args = TaskStartedArgs<'w, 's>;
+
     fn on_task_started(
         event: &TaskStartedEvent<ExchangeWares>,
-        args: &mut StaticSystemParam<TaskStartedArgs<'w, 's>>,
+        args: &mut StaticSystemParam<Self::Args>,
     ) -> Result<(), BevyError> {
         let finishes_at = args.simulation_time.now().add_seconds(2);
         let mut created_component = args.all_ships_with_task.get_mut(event.entity.into())?;
@@ -62,10 +64,12 @@ pub(crate) struct TaskCompletedArgs<'w, 's> {
     item_manifest: Res<'w, ItemManifest>,
 }
 
-impl<'w, 's> TaskCompletedEventHandler<ExchangeWares, TaskCompletedArgs<'w, 's>> for ExchangeWares {
+impl<'w, 's> TaskCompletedEventHandler<'w, 's, ExchangeWares> for ExchangeWares {
+    type Args = TaskCompletedArgs<'w, 's>;
+
     fn on_task_completed(
         event: &TaskCompletedEvent<ExchangeWares>,
-        args: &mut StaticSystemParam<TaskCompletedArgs>,
+        args: &mut StaticSystemParam<Self::Args>,
     ) -> Result<(), BevyError> {
         let args = args.deref_mut();
         let task = args.all_ships_with_task.get_mut(event.entity.into())?;
@@ -98,10 +102,12 @@ pub(crate) struct RunTasksArgs<'w, 's> {
     ships: Query<'w, 's, (Entity, &'static ShipTask<ExchangeWares>)>,
 }
 
-impl<'w, 's> TaskRunner<ExchangeWares, RunTasksArgs<'w, 's>> for ExchangeWares {
+impl<'w, 's> TaskRunner<'w, 's, ExchangeWares> for ExchangeWares {
+    type Args = RunTasksArgs<'w, 's>;
+
     fn run_all_tasks(
         event_writer: EventWriter<TaskCompletedEvent<ExchangeWares>>,
-        mut args: StaticSystemParam<RunTasksArgs<'w, 's>>,
+        mut args: StaticSystemParam<Self::Args>,
     ) -> BevyResult {
         let args = args.deref_mut();
         let now = args.simulation_time.now();
@@ -132,24 +138,25 @@ fn run_task(task: &ShipTask<ExchangeWares>, now: CurrentSimulationTimestamp) -> 
     }
 }
 
-impl TaskCancellationForActiveTaskEventHandler<ExchangeWares, NoArgs> for ExchangeWares {}
+impl<'w, 's> TaskCancellationForActiveTaskEventHandler<'w, 's, ExchangeWares> for ExchangeWares {
+    type Args = NoArgs;
+}
 
 #[derive(SystemParam)]
 pub(crate) struct CancelExchangeWareArgs<'w, 's> {
     inventories: Query<'w, 's, &'static mut Inventory>,
 }
 
-impl<'w, 's>
-    TaskCancellationForTaskInQueueEventHandler<ExchangeWares, CancelExchangeWareArgs<'w, 's>>
-    for ExchangeWares
-{
+impl<'w, 's> TaskCancellationForTaskInQueueEventHandler<'w, 's, ExchangeWares> for ExchangeWares {
+    type Args = CancelExchangeWareArgs<'w, 's>;
+
     fn can_task_be_cancelled_while_in_queue() -> bool {
         true
     }
 
     fn on_task_cancellation_while_in_queue(
         event: &TaskCanceledWhileInQueueEvent<ExchangeWares>,
-        args: &mut StaticSystemParam<CancelExchangeWareArgs>,
+        args: &mut StaticSystemParam<Self::Args>,
     ) -> Result<(), BevyError> {
         let exchange_data = &event.task_data.exchange_data;
         if let Ok(inventory) = args.inventories.get_mut(event.task_data.target.into()) {
@@ -177,12 +184,14 @@ pub(crate) struct CreateExchangeWareArgs<'w, 's> {
     item_manifest: Res<'w, ItemManifest>,
 }
 
-impl TaskCreationEventHandler<ExchangeWares, CreateExchangeWareArgs<'_, '_>> for ExchangeWares {
+impl<'w, 's> TaskCreationEventHandler<'w, 's, ExchangeWares> for ExchangeWares {
+    type Args = CreateExchangeWareArgs<'w, 's>;
+
     fn create_tasks_for_command(
         event: &InsertTaskIntoQueueCommand<ExchangeWares>,
         task_queue: &TaskQueue,
         general_pathfinding_args: &GeneralPathfindingArgs,
-        args: &mut StaticSystemParam<CreateExchangeWareArgs>,
+        args: &mut StaticSystemParam<Self::Args>,
     ) -> Result<VecDeque<TaskKind>, BevyError> {
         let args = args.deref_mut();
 

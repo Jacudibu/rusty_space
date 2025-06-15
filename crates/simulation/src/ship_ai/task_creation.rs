@@ -21,13 +21,15 @@ use std::collections::VecDeque;
 use std::error::Error;
 use std::fmt::{Debug, Display, Formatter};
 
-pub(crate) trait TaskCreationEventHandler<TaskData: ShipTaskData, Args: SystemParam> {
+pub(crate) trait TaskCreationEventHandler<'w, 's, TaskData: ShipTaskData> {
+    type Args: SystemParam;
+
     /// Creates a VecDequeue with all subtasks necessary to achieve this Task.
     fn create_tasks_for_command(
         event: &InsertTaskIntoQueueCommand<TaskData>,
         task_queue: &TaskQueue,
         general_pathfinding_args: &GeneralPathfindingArgs,
-        args: &mut StaticSystemParam<Args>,
+        args: &mut StaticSystemParam<Self::Args>,
     ) -> Result<VecDeque<TaskKind>, BevyError>;
 
     /// Listens to [InsertTaskIntoQueueCommand]<TaskData> Events and runs [Self::create_tasks_for_command] for each.
@@ -35,14 +37,13 @@ pub(crate) trait TaskCreationEventHandler<TaskData: ShipTaskData, Args: SystemPa
     fn task_creation_event_listener(
         mut events: EventReader<InsertTaskIntoQueueCommand<TaskData>>,
         general_pathfinding_args: GeneralPathfindingArgs,
-        mut args_for_creation: StaticSystemParam<Args>,
+        mut args_for_creation: StaticSystemParam<Self::Args>,
         mut all_task_queues: Query<&mut TaskQueue>,
         mut commands: Commands,
         mut all_task_started_event_writers: AllTaskStartedEventWriters,
     ) -> BevyResult
     where
-        TaskData: ShipTaskData + TaskCreationEventHandler<TaskData, Args>,
-        Args: SystemParam,
+        TaskData: ShipTaskData + TaskCreationEventHandler<'w, 's, TaskData, Args = Self::Args>,
     {
         for event in events.read() {
             let mut task_queue = all_task_queues.get_mut(event.entity)?;

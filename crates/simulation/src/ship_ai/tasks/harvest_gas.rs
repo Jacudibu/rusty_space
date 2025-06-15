@@ -1,9 +1,9 @@
-use crate::ship_ai::TaskComponent;
 use crate::ship_ai::ship_task::ShipTask;
 use crate::ship_ai::task_creation::{
     GeneralPathfindingArgs, TaskCreationEventHandler, create_preconditions_and_move_to_entity,
 };
 use crate::ship_ai::tasks::{finish_interaction, send_completion_events};
+use crate::ship_ai::{NoArgs, TaskComponent};
 use bevy::ecs::system::{StaticSystemParam, SystemParam};
 use bevy::log::error;
 use bevy::prelude::{BevyError, Entity, EventReader, EventWriter, Query, Res};
@@ -148,15 +148,14 @@ impl ShipTask<HarvestGas> {
     }
 }
 
-#[derive(SystemParam)]
-pub(crate) struct CreateHarvestGasArgs {}
+impl<'w, 's> TaskCreationEventHandler<'w, 's, HarvestGas> for HarvestGas {
+    type Args = NoArgs;
 
-impl TaskCreationEventHandler<HarvestGas, CreateHarvestGasArgs> for HarvestGas {
     fn create_tasks_for_command(
         event: &InsertTaskIntoQueueCommand<HarvestGas>,
         task_queue: &TaskQueue,
         general_pathfinding_args: &GeneralPathfindingArgs,
-        _args: &mut StaticSystemParam<CreateHarvestGasArgs>,
+        _args: &mut StaticSystemParam<Self::Args>,
     ) -> Result<VecDeque<TaskKind>, BevyError> {
         let mut new_tasks = create_preconditions_and_move_to_entity(
             event.entity,

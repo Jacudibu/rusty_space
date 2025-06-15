@@ -1,10 +1,10 @@
-use crate::ship_ai::TaskComponent;
 use crate::ship_ai::ship_task::ShipTask;
 use crate::ship_ai::task_creation::{
     GeneralPathfindingArgs, TaskCreationEventHandler, create_preconditions_and_move_to_sector,
 };
 use crate::ship_ai::task_result::TaskResult;
 use crate::ship_ai::tasks::send_completion_events;
+use crate::ship_ai::{NoArgs, TaskComponent};
 use bevy::ecs::system::{StaticSystemParam, SystemParam};
 use bevy::prelude::{BevyError, Entity, EventWriter, Query};
 use common::components::InSector;
@@ -64,15 +64,14 @@ impl ShipTask<MoveToSector> {
     }
 }
 
-#[derive(SystemParam)]
-pub struct MoveToSectorArgs {}
+impl<'w, 's> TaskCreationEventHandler<'w, 's, MoveToSector> for MoveToSector {
+    type Args = NoArgs;
 
-impl TaskCreationEventHandler<MoveToSector, MoveToSectorArgs> for MoveToSector {
     fn create_tasks_for_command(
         event: &InsertTaskIntoQueueCommand<MoveToSector>,
         task_queue: &TaskQueue,
         general_pathfinding_args: &GeneralPathfindingArgs,
-        _args: &mut StaticSystemParam<MoveToSectorArgs>,
+        _args: &mut StaticSystemParam<Self::Args>,
     ) -> Result<VecDeque<TaskKind>, BevyError> {
         let new_tasks = create_preconditions_and_move_to_sector(
             event.entity,

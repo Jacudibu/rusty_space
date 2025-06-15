@@ -116,24 +116,18 @@ fn enable_cancellation(app: &mut App) {
             .run_if(on_event::<TaskCanceledWhileInQueueEvent<MineAsteroid>>),),
     );
 
-    register_task_lifecycle::<ExchangeWares, _, _, _, _, _, _>(app);
+    register_task_lifecycle::<ExchangeWares>(app);
 }
 
-fn register_task_lifecycle<Task, T1, T2, T3, T4, T5, T6>(app: &mut App)
+fn register_task_lifecycle<Task>(app: &mut App)
 where
     Task: ShipTaskData
-        + TaskCreationEventHandler<Task, T1>
-        + TaskStartedEventHandler<Task, T2>
-        + TaskCancellationForTaskInQueueEventHandler<Task, T3>
-        + TaskRunner<Task, T4>
-        + TaskCancellationForActiveTaskEventHandler<Task, T5>
-        + TaskCompletedEventHandler<Task, T6>,
-    T1: SystemParam + 'static,
-    T2: SystemParam + 'static,
-    T3: SystemParam + 'static,
-    T4: SystemParam + 'static,
-    T5: SystemParam + 'static,
-    T6: SystemParam + 'static,
+        + TaskCreationEventHandler<'static, 'static, Task>
+        + TaskStartedEventHandler<'static, 'static, Task>
+        + TaskCancellationForTaskInQueueEventHandler<'static, 'static, Task>
+        + TaskRunner<'static, 'static, Task>
+        + TaskCancellationForActiveTaskEventHandler<'static, 'static, Task>
+        + TaskCompletedEventHandler<'static, 'static, Task>,
 {
     app.add_event::<InsertTaskIntoQueueCommand<Task>>();
     app.add_event::<TaskCanceledWhileInQueueEvent<Task>>();

@@ -42,18 +42,16 @@ impl<TaskData: ShipTaskData> Display
 impl<TaskData: ShipTaskData> Error for TaskCancellationForActiveTaskNotImplementedError<TaskData> {}
 
 /// This trait needs to be implemented for all tasks.
-pub(crate) trait TaskCancellationForActiveTaskEventHandler<
-    TaskData: ShipTaskData,
-    Args: SystemParam,
->
-{
+pub(crate) trait TaskCancellationForActiveTaskEventHandler<'w, 's, TaskData: ShipTaskData> {
+    type Args: SystemParam;
+
     fn can_task_be_cancelled_while_active() -> bool {
         false
     }
 
     fn on_task_cancellation_while_in_active(
         event: &TaskCanceledWhileActiveEvent<TaskData>,
-        args: &mut StaticSystemParam<Args>,
+        args: &mut StaticSystemParam<Self::Args>,
     ) -> Result<(), BevyError> {
         Err(BevyError::from(
             TaskCancellationForActiveTaskNotImplementedError {
@@ -68,7 +66,7 @@ pub(crate) trait TaskCancellationForActiveTaskEventHandler<
     fn cancellation_while_active_event_listener(
         mut commands: Commands,
         mut events: EventReader<TaskCanceledWhileActiveEvent<TaskData>>,
-        mut args: StaticSystemParam<Args>,
+        mut args: StaticSystemParam<Self::Args>,
     ) -> BevyResult {
         for event in events.read() {
             Self::on_task_cancellation_while_in_active(event, &mut args)?;
