@@ -5,7 +5,7 @@ use crate::ship_ai::task_cancellation_active::{
 use crate::ship_ai::task_cancellation_in_queue::{
     TaskCancellationForTaskInQueueHandler, TaskCancellationWhileInQueueRequest,
 };
-use crate::ship_ai::task_creation::create_task_command_listener;
+use crate::ship_ai::task_creation::TaskCreationHandler;
 use crate::ship_ai::tasks::apply_next_task;
 use crate::ship_ai::{
     behaviors, stop_idle_ships, task_cancellation_active, task_cancellation_in_queue,
@@ -31,7 +31,6 @@ use common::types::ship_tasks::{
 
 fn enable_insert_task_into_queue_commands(app: &mut App) {
     app.add_event::<InsertTaskIntoQueueCommand<Construct>>();
-    app.add_event::<InsertTaskIntoQueueCommand<ExchangeWares>>();
     app.add_event::<InsertTaskIntoQueueCommand<HarvestGas>>();
     app.add_event::<InsertTaskIntoQueueCommand<MineAsteroid>>();
     app.add_event::<InsertTaskIntoQueueCommand<MoveToPosition>>();
@@ -108,7 +107,7 @@ fn enable_cancellation(app: &mut App) {
     app.add_event::<TaskCanceledWhileInQueueEvent<UseGate>>();
     app.add_event::<TaskCanceledWhileInQueueEvent<RequestAccess>>();
 
-    register_cancellation::<ExchangeWares, _, _>(app);
+    register_task_lifecycle::<ExchangeWares, _, _, _>(app);
 
     app.add_systems(
         FixedPreUpdate,
@@ -117,16 +116,24 @@ fn enable_cancellation(app: &mut App) {
     );
 }
 
-fn register_cancellation<Task, ActiveHandlerArgs, QueueHandlerArgs>(app: &mut App)
+fn register_task_lifecycle<Task, Args1, Args2, Args3>(app: &mut App)
 where
     Task: ShipTaskData
-        + TaskCancellationForActiveTaskHandler<Task, ActiveHandlerArgs>
-        + TaskCancellationForTaskInQueueHandler<Task, QueueHandlerArgs>,
-    ActiveHandlerArgs: SystemParam + 'static,
-    QueueHandlerArgs: SystemParam + 'static,
+        + TaskCreationHandler<Task, Args1>
+        + TaskCancellationForActiveTaskHandler<Task, Args2>
+        + TaskCancellationForTaskInQueueHandler<Task, Args3>,
+    Args1: SystemParam + 'static,
+    Args2: SystemParam + 'static,
+    Args3: SystemParam + 'static,
 {
+    app.add_event::<InsertTaskIntoQueueCommand<Task>>();
+    app.add_systems(Update, Task::task_creation_event_listener);
+
+    app.add_event::<TaskCompletedEvent<Task>>();
+    app.add_event::<TaskStartedEvent<Task>>();
     app.add_event::<TaskCanceledWhileInQueueEvent<Task>>();
     app.add_event::<TaskCanceledWhileActiveEvent<Task>>();
+
     app.add_systems(
         FixedPreUpdate,
         (
@@ -157,9 +164,6 @@ impl Plugin for ShipAiPlugin {
             ),
         );
 
-        app.add_event::<TaskCompletedEvent<ExchangeWares>>();
-        app.add_event::<TaskStartedEvent<ExchangeWares>>();
-        app.add_systems(Update, create_task_command_listener::<ExchangeWares, _>);
         app.add_systems(
             FixedPostUpdate,
             ShipTask::<ExchangeWares>::on_task_started.run_if(in_state(SimulationState::Running)),
@@ -202,7 +206,7 @@ impl Plugin for ShipAiPlugin {
 
         app.add_event::<TaskCompletedEvent<Construct>>();
         app.add_event::<TaskStartedEvent<Construct>>();
-        app.add_systems(Update, create_task_command_listener::<Construct, _>);
+        app.add_systems(Update, Construct::task_creation_event_listener);
         app.add_systems(
             FixedPostUpdate,
             (ShipTask::<Construct>::on_task_started,).run_if(in_state(SimulationState::Running)),
@@ -229,7 +233,7 @@ impl Plugin for ShipAiPlugin {
         );
 
         app.add_event::<TaskCompletedEvent<MoveToPosition>>();
-        app.add_systems(Update, create_task_command_listener::<MoveToPosition, _>);
+        app.add_systems(Update, MoveToPosition::task_creation_event_listener);
         app.add_systems(
             FixedUpdate,
             (
@@ -242,7 +246,7 @@ impl Plugin for ShipAiPlugin {
         );
 
         app.add_event::<TaskCompletedEvent<MoveToSector>>();
-        app.add_systems(Update, create_task_command_listener::<MoveToSector, _>);
+        app.add_systems(Update, MoveToSector::task_creation_event_listener);
         app.add_systems(
             FixedUpdate,
             (
@@ -288,7 +292,7 @@ impl Plugin for ShipAiPlugin {
 
         app.add_event::<TaskCompletedEvent<MineAsteroid>>();
         app.add_event::<TaskStartedEvent<MineAsteroid>>();
-        app.add_systems(Update, create_task_command_listener::<MineAsteroid, _>);
+        app.add_systems(Update, MineAsteroid::task_creation_event_listener);
         app.add_systems(
             FixedPostUpdate,
             ShipTask::<MineAsteroid>::on_task_started.run_if(in_state(SimulationState::Running)),
@@ -305,7 +309,7 @@ impl Plugin for ShipAiPlugin {
 
         app.add_event::<TaskCompletedEvent<HarvestGas>>();
         app.add_event::<TaskStartedEvent<HarvestGas>>();
-        app.add_systems(Update, create_task_command_listener::<HarvestGas, _>);
+        app.add_systems(Update, HarvestGas::task_creation_event_listener);
         app.add_systems(
             FixedPostUpdate,
             ShipTask::<HarvestGas>::on_task_started.run_if(in_state(SimulationState::Running)),

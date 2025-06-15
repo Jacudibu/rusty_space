@@ -1,7 +1,7 @@
 use crate::ship_ai::TaskComponent;
 use crate::ship_ai::ship_task::ShipTask;
 use crate::ship_ai::task_creation::{
-    GeneralPathfindingArgs, TaskCreation, create_preconditions_and_move_to_sector,
+    GeneralPathfindingArgs, TaskCreationHandler, create_preconditions_and_move_to_sector,
 };
 use crate::ship_ai::task_result::TaskResult;
 use crate::ship_ai::tasks::{move_to_entity, send_completion_events};
@@ -70,7 +70,7 @@ impl ShipTask<MoveToPosition> {
 #[derive(SystemParam)]
 pub struct MoveToPositionArgs {}
 
-impl TaskCreation<MoveToPosition, MoveToPositionArgs> for MoveToPosition {
+impl TaskCreationHandler<MoveToPosition, MoveToPositionArgs> for MoveToPosition {
     fn create_tasks_for_command(
         event: &InsertTaskIntoQueueCommand<MoveToPosition>,
         task_queue: &TaskQueue,

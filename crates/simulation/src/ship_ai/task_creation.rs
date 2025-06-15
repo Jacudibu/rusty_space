@@ -21,7 +21,7 @@ use std::collections::VecDeque;
 use std::error::Error;
 use std::fmt::{Debug, Display, Formatter};
 
-pub(crate) trait TaskCreation<TaskData: ShipTaskData, Args: SystemParam> {
+pub(crate) trait TaskCreationHandler<TaskData: ShipTaskData, Args: SystemParam> {
     /// Creates a VecDequeue with all subtasks necessary to achieve this Task.
     fn create_tasks_for_command(
         event: &InsertTaskIntoQueueCommand<TaskData>,
@@ -29,6 +29,50 @@ pub(crate) trait TaskCreation<TaskData: ShipTaskData, Args: SystemParam> {
         general_pathfinding_args: &GeneralPathfindingArgs,
         args: &mut StaticSystemParam<Args>,
     ) -> Result<VecDeque<TaskKind>, BevyError>;
+
+    /// Listens to [InsertTaskIntoQueueCommand]<TaskData> Events and runs [Self::create_tasks_for_command] for each.
+    /// Usually you don't need to reimplement this.
+    fn task_creation_event_listener(
+        mut events: EventReader<InsertTaskIntoQueueCommand<TaskData>>,
+        general_pathfinding_args: GeneralPathfindingArgs,
+        mut args_for_creation: StaticSystemParam<Args>,
+        mut all_task_queues: Query<&mut TaskQueue>,
+        mut commands: Commands,
+        mut all_task_started_event_writers: AllTaskStartedEventWriters,
+    ) -> BevyResult
+    where
+        TaskData: ShipTaskData + TaskCreationHandler<TaskData, Args>,
+        Args: SystemParam,
+    {
+        for event in events.read() {
+            let mut task_queue = all_task_queues.get_mut(event.entity)?;
+            match TaskData::create_tasks_for_command(
+                event,
+                &task_queue,
+                &general_pathfinding_args,
+                &mut args_for_creation,
+            ) {
+                Err(e) => {
+                    warn!(
+                        "Error whilst running move_to_position_command_listener: {:?}",
+                        e
+                    );
+                }
+                Ok(tasks) => {
+                    apply_tasks(
+                        tasks,
+                        event.insertion_mode,
+                        event.entity,
+                        &mut task_queue, // Since creation didn't fail, this shouldn't fail either.
+                        &mut all_task_started_event_writers,
+                        commands.reborrow(),
+                    );
+                }
+            }
+        }
+
+        Ok(())
+    }
 }
 
 #[derive(Debug)]
@@ -53,48 +97,6 @@ pub(crate) enum TaskCreationErrorReason {
     TargetNotFound,
     BothNotFound,
     UnspecifiedError,
-}
-
-pub(crate) fn create_task_command_listener<TaskData, Args>(
-    mut events: EventReader<InsertTaskIntoQueueCommand<TaskData>>,
-    general_pathfinding_args: GeneralPathfindingArgs,
-    mut args_for_creation: StaticSystemParam<Args>,
-    mut all_task_queues: Query<&mut TaskQueue>,
-    mut commands: Commands,
-    mut all_task_started_event_writers: AllTaskStartedEventWriters,
-) -> BevyResult
-where
-    TaskData: ShipTaskData + TaskCreation<TaskData, Args>,
-    Args: SystemParam,
-{
-    for event in events.read() {
-        let mut task_queue = all_task_queues.get_mut(event.entity)?;
-        match TaskData::create_tasks_for_command(
-            event,
-            &task_queue,
-            &general_pathfinding_args,
-            &mut args_for_creation,
-        ) {
-            Err(e) => {
-                warn!(
-                    "Error whilst running move_to_position_command_listener: {:?}",
-                    e
-                );
-            }
-            Ok(tasks) => {
-                apply_tasks(
-                    tasks,
-                    event.insertion_mode,
-                    event.entity,
-                    &mut task_queue, // Since creation didn't fail, this shouldn't fail either.
-                    &mut all_task_started_event_writers,
-                    commands.reborrow(),
-                );
-            }
-        }
-    }
-
-    Ok(())
 }
 
 /// Applies the provided list of Tasks to the provided TaskQueue. Should be called at the end of CreateTaskCommand Listeners.

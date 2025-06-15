@@ -1,7 +1,7 @@
 use crate::ship_ai::TaskComponent;
 use crate::ship_ai::ship_task::ShipTask;
 use crate::ship_ai::task_creation::{
-    GeneralPathfindingArgs, TaskCreation, create_preconditions_and_move_to_entity,
+    GeneralPathfindingArgs, TaskCreationHandler, create_preconditions_and_move_to_entity,
 };
 use crate::ship_ai::tasks::{finish_interaction, send_completion_events};
 use bevy::ecs::system::{StaticSystemParam, SystemParam};
@@ -151,7 +151,7 @@ impl ShipTask<HarvestGas> {
 #[derive(SystemParam)]
 pub(crate) struct CreateHarvestGasArgs {}
 
-impl TaskCreation<HarvestGas, CreateHarvestGasArgs> for HarvestGas {
+impl TaskCreationHandler<HarvestGas, CreateHarvestGasArgs> for HarvestGas {
     fn create_tasks_for_command(
         event: &InsertTaskIntoQueueCommand<HarvestGas>,
         task_queue: &TaskQueue,

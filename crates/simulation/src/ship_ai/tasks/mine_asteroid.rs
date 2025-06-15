@@ -1,7 +1,7 @@
 use crate::ship_ai::TaskComponent;
 use crate::ship_ai::ship_task::ShipTask;
 use crate::ship_ai::task_creation::{
-    GeneralPathfindingArgs, TaskCreation, create_preconditions_and_move_to_entity,
+    GeneralPathfindingArgs, TaskCreationHandler, create_preconditions_and_move_to_entity,
 };
 use crate::ship_ai::tasks::send_completion_events;
 use bevy::ecs::system::{StaticSystemParam, SystemParam};
@@ -175,7 +175,7 @@ impl ShipTask<MineAsteroid> {
 #[derive(SystemParam)]
 pub(crate) struct CreateMineAsteroidArgs {}
 
-impl TaskCreation<MineAsteroid, CreateMineAsteroidArgs> for MineAsteroid {
+impl TaskCreationHandler<MineAsteroid, CreateMineAsteroidArgs> for MineAsteroid {
     fn create_tasks_for_command(
         event: &InsertTaskIntoQueueCommand<MineAsteroid>,
         task_queue: &TaskQueue,

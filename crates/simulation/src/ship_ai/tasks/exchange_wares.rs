@@ -2,7 +2,7 @@ use crate::ship_ai::ship_task::ShipTask;
 use crate::ship_ai::task_cancellation_active::TaskCancellationForActiveTaskHandler;
 use crate::ship_ai::task_cancellation_in_queue::TaskCancellationForTaskInQueueHandler;
 use crate::ship_ai::task_creation::{
-    GeneralPathfindingArgs, TaskCreation, TaskCreationError, TaskCreationErrorReason,
+    GeneralPathfindingArgs, TaskCreationError, TaskCreationErrorReason, TaskCreationHandler,
     create_preconditions_and_dock_at_entity,
 };
 use crate::ship_ai::task_result::TaskResult;
@@ -191,7 +191,7 @@ pub(crate) struct CreateExchangeWareArgs<'w, 's> {
     item_manifest: Res<'w, ItemManifest>,
 }
 
-impl TaskCreation<ExchangeWares, CreateExchangeWareArgs<'_, '_>> for ExchangeWares {
+impl TaskCreationHandler<ExchangeWares, CreateExchangeWareArgs<'_, '_>> for ExchangeWares {
     fn create_tasks_for_command(
         event: &InsertTaskIntoQueueCommand<ExchangeWares>,
         task_queue: &TaskQueue,
