@@ -75,8 +75,7 @@ pub mod colors {
 pub mod z_layers {
     pub const ASTEROID: f32 = 0.0;
     pub const STATION: f32 = 5.0;
-    pub const STATION_ICON: f32 = STATION + 1.0;
-    pub const BUILD_SITE: f32 = STATION_ICON + 1.0;
+    pub const BUILD_SITE: f32 = STATION + 1.0;
     pub const GATE: f32 = 5.0;
     pub const PLANET_AND_STARS: f32 = 5.0;
     pub const SHIP: f32 = 10.0;

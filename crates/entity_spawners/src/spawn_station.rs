@@ -147,7 +147,7 @@ pub fn spawn_station(
                 image: icon_sprite,
                 ..default()
             },
-            Transform::from_translation(Vec3::new(0.0, 0.0, constants::z_layers::STATION_ICON)),
+            Transform::from_translation(Vec3::new(0.0, 0.0, 0.1)),
         ))
         .id();
 
