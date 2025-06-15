@@ -10,6 +10,7 @@ mod task_creation;
 mod task_filters;
 mod task_metadata;
 mod task_result;
+mod task_runner;
 mod task_started;
 mod tasks;
 mod trade_plan;

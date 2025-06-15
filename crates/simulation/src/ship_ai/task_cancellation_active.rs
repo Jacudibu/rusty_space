@@ -24,7 +24,7 @@ pub struct TaskCancellationWhileActiveRequest {
     pub entity: ShipEntity,
 }
 
-/// Default error used during [TaskCancellationForActiveTaskHandler].
+/// Default error used during [TaskCancellationForActiveTaskEventHandler].
 #[derive(Debug)]
 struct TaskCancellationForActiveTaskNotImplementedError<TaskData: ShipTaskData> {
     pub entity: ShipEntity,
@@ -42,7 +42,11 @@ impl<TaskData: ShipTaskData> Display
 impl<TaskData: ShipTaskData> Error for TaskCancellationForActiveTaskNotImplementedError<TaskData> {}
 
 /// This trait needs to be implemented for all tasks.
-pub(crate) trait TaskCancellationForActiveTaskHandler<TaskData: ShipTaskData, Args: SystemParam> {
+pub(crate) trait TaskCancellationForActiveTaskEventHandler<
+    TaskData: ShipTaskData,
+    Args: SystemParam,
+>
+{
     fn can_task_be_cancelled_while_active() -> bool {
         false
     }

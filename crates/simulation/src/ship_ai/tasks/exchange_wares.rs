@@ -1,12 +1,13 @@
 use crate::ship_ai::ship_task::ShipTask;
-use crate::ship_ai::task_cancellation_active::TaskCancellationForActiveTaskHandler;
-use crate::ship_ai::task_cancellation_in_queue::TaskCancellationForTaskInQueueHandler;
+use crate::ship_ai::task_cancellation_active::TaskCancellationForActiveTaskEventHandler;
+use crate::ship_ai::task_cancellation_in_queue::TaskCancellationForTaskInQueueEventHandler;
 use crate::ship_ai::task_completed::TaskCompletedEventHandler;
 use crate::ship_ai::task_creation::{
-    GeneralPathfindingArgs, TaskCreationError, TaskCreationErrorReason, TaskCreationHandler,
+    GeneralPathfindingArgs, TaskCreationError, TaskCreationErrorReason, TaskCreationEventHandler,
     create_preconditions_and_dock_at_entity,
 };
 use crate::ship_ai::task_result::TaskResult;
+use crate::ship_ai::task_runner::TaskRunner;
 use crate::ship_ai::task_started::TaskStartedEventHandler;
 use crate::ship_ai::tasks::send_completion_events;
 use crate::ship_ai::{NoArgs, TaskComponent};
@@ -15,6 +16,7 @@ use bevy::prelude::{BevyError, Entity, EventWriter, Query, Res};
 use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
 use common::components::{BuyOrders, Inventory, SellOrders, TradeOrder};
+use common::constants::BevyResult;
 use common::events::inventory_update_for_production_event::InventoryUpdateForProductionEvent;
 use common::events::task_events::{
     InsertTaskIntoQueueCommand, TaskCanceledWhileInQueueEvent, TaskCompletedEvent, TaskStartedEvent,
@@ -31,38 +33,6 @@ use std::sync::{Arc, Mutex};
 impl TaskComponent for ShipTask<ExchangeWares> {
     fn can_be_cancelled_while_active() -> bool {
         false
-    }
-}
-
-impl ShipTask<ExchangeWares> {
-    fn run(&self, now: CurrentSimulationTimestamp) -> TaskResult {
-        if now.has_not_passed(self.finishes_at) {
-            TaskResult::Ongoing
-        } else {
-            TaskResult::Finished
-        }
-    }
-
-    pub fn run_tasks(
-        event_writer: EventWriter<TaskCompletedEvent<ExchangeWares>>,
-        simulation_time: Res<SimulationTime>,
-        ships: Query<(Entity, &Self)>,
-    ) {
-        let now = simulation_time.now();
-        let task_completions =
-            Arc::new(Mutex::new(Vec::<TaskCompletedEvent<ExchangeWares>>::new()));
-
-        ships
-            .par_iter()
-            .for_each(|(entity, task)| match task.run(now) {
-                TaskResult::Ongoing => {}
-                TaskResult::Finished | TaskResult::Aborted => task_completions
-                    .lock()
-                    .unwrap()
-                    .push(TaskCompletedEvent::<ExchangeWares>::new(entity.into())),
-            });
-
-        send_completion_events(event_writer, task_completions);
     }
 }
 
@@ -122,14 +92,55 @@ impl<'w, 's> TaskCompletedEventHandler<ExchangeWares, TaskCompletedArgs<'w, 's>>
     }
 }
 
-impl TaskCancellationForActiveTaskHandler<ExchangeWares, NoArgs> for ExchangeWares {}
+#[derive(SystemParam)]
+pub(crate) struct RunTasksArgs<'w, 's> {
+    simulation_time: Res<'w, SimulationTime>,
+    ships: Query<'w, 's, (Entity, &'static ShipTask<ExchangeWares>)>,
+}
+
+impl<'w, 's> TaskRunner<ExchangeWares, RunTasksArgs<'w, 's>> for ExchangeWares {
+    fn run_all_tasks(
+        event_writer: EventWriter<TaskCompletedEvent<ExchangeWares>>,
+        mut args: StaticSystemParam<RunTasksArgs<'w, 's>>,
+    ) -> BevyResult {
+        let args = args.deref_mut();
+        let now = args.simulation_time.now();
+        let task_completions =
+            Arc::new(Mutex::new(Vec::<TaskCompletedEvent<ExchangeWares>>::new()));
+
+        args.ships
+            .par_iter()
+            .for_each(|(entity, task)| match run_task(task, now) {
+                TaskResult::Ongoing => {}
+                TaskResult::Finished | TaskResult::Aborted => task_completions
+                    .lock()
+                    .unwrap()
+                    .push(TaskCompletedEvent::<ExchangeWares>::new(entity.into())),
+            });
+
+        send_completion_events(event_writer, task_completions);
+
+        Ok(())
+    }
+}
+
+fn run_task(task: &ShipTask<ExchangeWares>, now: CurrentSimulationTimestamp) -> TaskResult {
+    if now.has_not_passed(task.finishes_at) {
+        TaskResult::Ongoing
+    } else {
+        TaskResult::Finished
+    }
+}
+
+impl TaskCancellationForActiveTaskEventHandler<ExchangeWares, NoArgs> for ExchangeWares {}
 
 #[derive(SystemParam)]
 pub(crate) struct CancelExchangeWareArgs<'w, 's> {
     inventories: Query<'w, 's, &'static mut Inventory>,
 }
 
-impl<'w, 's> TaskCancellationForTaskInQueueHandler<ExchangeWares, CancelExchangeWareArgs<'w, 's>>
+impl<'w, 's>
+    TaskCancellationForTaskInQueueEventHandler<ExchangeWares, CancelExchangeWareArgs<'w, 's>>
     for ExchangeWares
 {
     fn can_task_be_cancelled_while_in_queue() -> bool {
@@ -166,7 +177,7 @@ pub(crate) struct CreateExchangeWareArgs<'w, 's> {
     item_manifest: Res<'w, ItemManifest>,
 }
 
-impl TaskCreationHandler<ExchangeWares, CreateExchangeWareArgs<'_, '_>> for ExchangeWares {
+impl TaskCreationEventHandler<ExchangeWares, CreateExchangeWareArgs<'_, '_>> for ExchangeWares {
     fn create_tasks_for_command(
         event: &InsertTaskIntoQueueCommand<ExchangeWares>,
         task_queue: &TaskQueue,

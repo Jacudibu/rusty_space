@@ -1,12 +1,13 @@
 use crate::ship_ai::ship_task::ShipTask;
 use crate::ship_ai::task_cancellation_active::{
-    TaskCancellationForActiveTaskHandler, TaskCancellationWhileActiveRequest,
+    TaskCancellationForActiveTaskEventHandler, TaskCancellationWhileActiveRequest,
 };
 use crate::ship_ai::task_cancellation_in_queue::{
-    TaskCancellationForTaskInQueueHandler, TaskCancellationWhileInQueueRequest,
+    TaskCancellationForTaskInQueueEventHandler, TaskCancellationWhileInQueueRequest,
 };
 use crate::ship_ai::task_completed::TaskCompletedEventHandler;
-use crate::ship_ai::task_creation::TaskCreationHandler;
+use crate::ship_ai::task_creation::TaskCreationEventHandler;
+use crate::ship_ai::task_runner::TaskRunner;
 use crate::ship_ai::task_started::TaskStartedEventHandler;
 use crate::ship_ai::tasks::apply_next_task;
 use crate::ship_ai::{
@@ -17,7 +18,7 @@ use bevy::ecs::system::SystemParam;
 use bevy::log::error;
 use bevy::prelude::{
     Commands, EventReader, FixedPostUpdate, FixedPreUpdate, FixedUpdate, IntoScheduleConfigs,
-    Plugin, Query, Update, With, in_state, on_event,
+    Plugin, PreUpdate, Query, Update, With, in_state, on_event,
 };
 use common::components::task_queue::TaskQueue;
 use common::events::task_events::{
@@ -109,41 +110,61 @@ fn enable_cancellation(app: &mut App) {
     app.add_event::<TaskCanceledWhileInQueueEvent<UseGate>>();
     app.add_event::<TaskCanceledWhileInQueueEvent<RequestAccess>>();
 
-    register_task_lifecycle::<ExchangeWares, _, _, _>(app);
-
     app.add_systems(
         FixedPreUpdate,
         (ShipTask::<MineAsteroid>::cancel_task_inside_queue
             .run_if(on_event::<TaskCanceledWhileInQueueEvent<MineAsteroid>>),),
     );
+
+    register_task_lifecycle::<ExchangeWares, _, _, _, _, _, _>(app);
 }
 
-fn register_task_lifecycle<Task, Args1, Args2, Args3>(app: &mut App)
+fn register_task_lifecycle<Task, T1, T2, T3, T4, T5, T6>(app: &mut App)
 where
     Task: ShipTaskData
-        + TaskCreationHandler<Task, Args1>
-        + TaskCancellationForActiveTaskHandler<Task, Args2>
-        + TaskCancellationForTaskInQueueHandler<Task, Args3>,
-    Args1: SystemParam + 'static,
-    Args2: SystemParam + 'static,
-    Args3: SystemParam + 'static,
+        + TaskCreationEventHandler<Task, T1>
+        + TaskStartedEventHandler<Task, T2>
+        + TaskCancellationForTaskInQueueEventHandler<Task, T3>
+        + TaskRunner<Task, T4>
+        + TaskCancellationForActiveTaskEventHandler<Task, T5>
+        + TaskCompletedEventHandler<Task, T6>,
+    T1: SystemParam + 'static,
+    T2: SystemParam + 'static,
+    T3: SystemParam + 'static,
+    T4: SystemParam + 'static,
+    T5: SystemParam + 'static,
+    T6: SystemParam + 'static,
 {
     app.add_event::<InsertTaskIntoQueueCommand<Task>>();
-    app.add_systems(Update, Task::task_creation_event_listener);
-
-    app.add_event::<TaskCompletedEvent<Task>>();
-    app.add_event::<TaskStartedEvent<Task>>();
     app.add_event::<TaskCanceledWhileInQueueEvent<Task>>();
+    app.add_event::<TaskStartedEvent<Task>>();
     app.add_event::<TaskCanceledWhileActiveEvent<Task>>();
+    app.add_event::<TaskCompletedEvent<Task>>();
 
     app.add_systems(
-        FixedPreUpdate,
+        PreUpdate,
         (
             Task::cancellation_while_in_queue_event_listener
                 .run_if(on_event::<TaskCanceledWhileInQueueEvent<Task>>),
             Task::cancellation_while_active_event_listener
                 .run_if(on_event::<TaskCanceledWhileActiveEvent<Task>>),
         ),
+    );
+    app.add_systems(Update, Task::task_creation_event_listener);
+    app.add_systems(
+        FixedUpdate,
+        (
+            Task::run_all_tasks,
+            (Task::task_completed_event_listener, complete_tasks::<Task>)
+                .chain()
+                .run_if(on_event::<TaskCompletedEvent<Task>>),
+        )
+            .chain()
+            .run_if(in_state(SimulationState::Running)),
+    );
+    app.add_systems(
+        FixedPostUpdate,
+        Task::task_started_event_listener.run_if(in_state(SimulationState::Running)),
     );
 }
 
@@ -164,25 +185,6 @@ impl Plugin for ShipAiPlugin {
                     .before(CustomSystemSets::RespawnAsteroids)
                     .run_if(in_state(SimulationState::Running)),
             ),
-        );
-
-        app.add_systems(
-            FixedPostUpdate,
-            ExchangeWares::task_started_event_listener.run_if(in_state(SimulationState::Running)),
-        );
-        app.add_systems(
-            FixedUpdate,
-            (
-                ShipTask::<ExchangeWares>::run_tasks,
-                (
-                    ExchangeWares::task_completed_event_listener,
-                    complete_tasks::<ExchangeWares>,
-                )
-                    .chain()
-                    .run_if(on_event::<TaskCompletedEvent<ExchangeWares>>),
-            )
-                .chain()
-                .run_if(in_state(SimulationState::Running)),
         );
 
         app.add_event::<TaskCompletedEvent<UseGate>>();

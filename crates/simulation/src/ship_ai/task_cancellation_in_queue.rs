@@ -19,7 +19,7 @@ pub struct TaskCancellationWhileInQueueRequest {
     pub task_position_in_queue: usize,
 }
 
-/// Default error used during [TaskCancellationForTaskInQueueHandler].
+/// Default error used during [TaskCancellationForTaskInQueueEventHandler].
 #[derive(Debug)]
 struct TaskCancellationInQueueNotImplementedError<TaskData: ShipTaskData> {
     entity: ShipEntity,
@@ -35,7 +35,11 @@ impl<TaskData: ShipTaskData> Display for TaskCancellationInQueueNotImplementedEr
 impl<TaskData: ShipTaskData> Error for TaskCancellationInQueueNotImplementedError<TaskData> {}
 
 /// This trait needs to be implemented for all tasks.
-pub(crate) trait TaskCancellationForTaskInQueueHandler<TaskData: ShipTaskData, Args: SystemParam> {
+pub(crate) trait TaskCancellationForTaskInQueueEventHandler<
+    TaskData: ShipTaskData,
+    Args: SystemParam,
+>
+{
     fn can_task_be_cancelled_while_in_queue() -> bool {
         false
     }

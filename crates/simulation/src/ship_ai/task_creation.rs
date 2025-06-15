@@ -21,7 +21,7 @@ use std::collections::VecDeque;
 use std::error::Error;
 use std::fmt::{Debug, Display, Formatter};
 
-pub(crate) trait TaskCreationHandler<TaskData: ShipTaskData, Args: SystemParam> {
+pub(crate) trait TaskCreationEventHandler<TaskData: ShipTaskData, Args: SystemParam> {
     /// Creates a VecDequeue with all subtasks necessary to achieve this Task.
     fn create_tasks_for_command(
         event: &InsertTaskIntoQueueCommand<TaskData>,
@@ -41,7 +41,7 @@ pub(crate) trait TaskCreationHandler<TaskData: ShipTaskData, Args: SystemParam> 
         mut all_task_started_event_writers: AllTaskStartedEventWriters,
     ) -> BevyResult
     where
-        TaskData: ShipTaskData + TaskCreationHandler<TaskData, Args>,
+        TaskData: ShipTaskData + TaskCreationEventHandler<TaskData, Args>,
         Args: SystemParam,
     {
         for event in events.read() {
