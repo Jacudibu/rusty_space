@@ -1,12 +1,17 @@
 use crate::ship_ai::ship_task::ShipTask;
-use crate::ship_ai::task_cancellation_active::TaskCancellationWhileActiveRequest;
-use crate::ship_ai::task_cancellation_in_queue::TaskCancellationWhileInQueueRequest;
+use crate::ship_ai::task_cancellation_active::{
+    TaskCancellationForActiveTaskHandler, TaskCancellationWhileActiveRequest,
+};
+use crate::ship_ai::task_cancellation_in_queue::{
+    TaskCancellationForTaskInQueueHandler, TaskCancellationWhileInQueueRequest,
+};
 use crate::ship_ai::task_creation::create_task_command_listener;
 use crate::ship_ai::tasks::apply_next_task;
 use crate::ship_ai::{
     behaviors, stop_idle_ships, task_cancellation_active, task_cancellation_in_queue,
 };
 use bevy::app::App;
+use bevy::ecs::system::SystemParam;
 use bevy::log::error;
 use bevy::prelude::{
     Commands, EventReader, FixedPostUpdate, FixedPreUpdate, FixedUpdate, IntoScheduleConfigs,
@@ -43,7 +48,6 @@ fn enable_abortion(app: &mut App) {
     app.add_event::<TaskCancellationWhileActiveRequest>();
     app.add_event::<TaskCanceledWhileActiveEvent<AwaitingSignal>>();
     app.add_event::<TaskCanceledWhileActiveEvent<Construct>>();
-    app.add_event::<TaskCanceledWhileActiveEvent<ExchangeWares>>();
     app.add_event::<TaskCanceledWhileActiveEvent<DockAtEntity>>();
     app.add_event::<TaskCanceledWhileActiveEvent<HarvestGas>>();
     app.add_event::<TaskCanceledWhileActiveEvent<MineAsteroid>>();
@@ -64,8 +68,6 @@ fn enable_abortion(app: &mut App) {
             abort_tasks::<AwaitingSignal>
                 .run_if(on_event::<TaskCanceledWhileActiveEvent<AwaitingSignal>>),
             abort_tasks::<Construct>.run_if(on_event::<TaskCanceledWhileActiveEvent<Construct>>),
-            abort_tasks::<ExchangeWares>
-                .run_if(on_event::<TaskCanceledWhileActiveEvent<ExchangeWares>>),
             abort_tasks::<DockAtEntity>
                 .run_if(on_event::<TaskCanceledWhileActiveEvent<DockAtEntity>>),
             abort_tasks::<HarvestGas>.run_if(on_event::<TaskCanceledWhileActiveEvent<HarvestGas>>),
@@ -96,7 +98,6 @@ fn enable_cancellation(app: &mut App) {
     app.add_event::<TaskCancellationWhileInQueueRequest>();
     app.add_event::<TaskCanceledWhileInQueueEvent<AwaitingSignal>>();
     app.add_event::<TaskCanceledWhileInQueueEvent<Construct>>();
-    app.add_event::<TaskCanceledWhileInQueueEvent<ExchangeWares>>();
     app.add_event::<TaskCanceledWhileInQueueEvent<DockAtEntity>>();
     app.add_event::<TaskCanceledWhileInQueueEvent<HarvestGas>>();
     app.add_event::<TaskCanceledWhileInQueueEvent<MineAsteroid>>();
@@ -107,13 +108,32 @@ fn enable_cancellation(app: &mut App) {
     app.add_event::<TaskCanceledWhileInQueueEvent<UseGate>>();
     app.add_event::<TaskCanceledWhileInQueueEvent<RequestAccess>>();
 
+    register_cancellation::<ExchangeWares, _, _>(app);
+
+    app.add_systems(
+        FixedPreUpdate,
+        (ShipTask::<MineAsteroid>::cancel_task_inside_queue
+            .run_if(on_event::<TaskCanceledWhileInQueueEvent<MineAsteroid>>),),
+    );
+}
+
+fn register_cancellation<Task, ActiveHandlerArgs, QueueHandlerArgs>(app: &mut App)
+where
+    Task: ShipTaskData
+        + TaskCancellationForActiveTaskHandler<Task, ActiveHandlerArgs>
+        + TaskCancellationForTaskInQueueHandler<Task, QueueHandlerArgs>,
+    ActiveHandlerArgs: SystemParam + 'static,
+    QueueHandlerArgs: SystemParam + 'static,
+{
+    app.add_event::<TaskCanceledWhileInQueueEvent<Task>>();
+    app.add_event::<TaskCanceledWhileActiveEvent<Task>>();
     app.add_systems(
         FixedPreUpdate,
         (
-            ShipTask::<ExchangeWares>::cancel_task_inside_queue
-                .run_if(on_event::<TaskCanceledWhileInQueueEvent<ExchangeWares>>),
-            ShipTask::<MineAsteroid>::cancel_task_inside_queue
-                .run_if(on_event::<TaskCanceledWhileInQueueEvent<MineAsteroid>>),
+            Task::cancellation_while_in_queue_event_listener
+                .run_if(on_event::<TaskCanceledWhileInQueueEvent<Task>>),
+            Task::cancellation_while_active_event_listener
+                .run_if(on_event::<TaskCanceledWhileActiveEvent<Task>>),
         ),
     );
 }
@@ -333,7 +353,7 @@ impl Plugin for ShipAiPlugin {
     }
 }
 
-fn complete_tasks<T: ShipTaskData + 'static>(
+fn complete_tasks<T: ShipTaskData>(
     mut commands: Commands,
     mut event_reader: EventReader<TaskCompletedEvent<T>>,
     mut all_ships_with_task: Query<&mut TaskQueue, With<ShipTask<T>>>,
@@ -359,7 +379,7 @@ fn complete_tasks<T: ShipTaskData + 'static>(
     }
 }
 
-fn abort_tasks<T: ShipTaskData + 'static>(
+fn abort_tasks<T: ShipTaskData>(
     mut commands: Commands,
     mut event_reader: EventReader<TaskCanceledWhileActiveEvent<T>>,
 ) {

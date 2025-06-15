@@ -30,7 +30,7 @@ use common::types::ship_tasks::{
 
 /// Unwraps the provided event arc and writes them all at once into the respective [TaskCompletedEvent] event writer.
 /// The main idea is that task runners can use par_iter_mut and then just pass any potential event completions in here.
-pub fn send_completion_events<T: ShipTaskData + 'static>(
+pub fn send_completion_events<T: ShipTaskData>(
     mut event_writer: EventWriter<TaskCompletedEvent<T>>,
     task_completions: Arc<Mutex<Vec<TaskCompletedEvent<T>>>>,
 ) {

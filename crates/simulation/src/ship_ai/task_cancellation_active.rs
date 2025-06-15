@@ -1,6 +1,7 @@
 use crate::ship_ai::ship_task::ShipTask;
 use crate::ship_ai::{TaskComponent, task_cancellation_in_queue};
-use bevy::prelude::{Event, EventReader, EventWriter, Query, info, warn};
+use bevy::ecs::system::{StaticSystemParam, SystemParam};
+use bevy::prelude::{BevyError, Commands, Event, EventReader, EventWriter, Query, info, warn};
 use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
 use common::constants::BevyResult;
@@ -12,6 +13,8 @@ use common::types::ship_tasks::{
     AwaitingSignal, Construct, DockAtEntity, ExchangeWares, HarvestGas, MineAsteroid, MoveToEntity,
     MoveToPosition, MoveToSector, RequestAccess, ShipTaskData, Undock, UseGate,
 };
+use std::error::Error;
+use std::fmt::{Debug, Display, Formatter};
 
 /// Send this event in order to request a ship to stop doing whatever it is doing right now, and also clear its entire task queue.
 /// Tasks which are aborted are also getting cancelled, so there's no reason to implement cancellation logic within the abortion handler.
@@ -19,6 +22,59 @@ use common::types::ship_tasks::{
 pub struct TaskCancellationWhileActiveRequest {
     /// The affected entity.
     pub entity: ShipEntity,
+}
+
+/// Default error used during [TaskCancellationForActiveTaskHandler].
+#[derive(Debug)]
+struct TaskCancellationForActiveTaskNotImplementedError<TaskData: ShipTaskData> {
+    pub entity: ShipEntity,
+    pub task_data: TaskData,
+}
+
+impl<TaskData: ShipTaskData> Display
+    for TaskCancellationForActiveTaskNotImplementedError<TaskData>
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        Debug::fmt(self, f)
+    }
+}
+
+impl<TaskData: ShipTaskData> Error for TaskCancellationForActiveTaskNotImplementedError<TaskData> {}
+
+/// This trait needs to be implemented for all tasks.
+pub(crate) trait TaskCancellationForActiveTaskHandler<TaskData: ShipTaskData, Args: SystemParam> {
+    fn can_task_be_cancelled_while_active() -> bool {
+        false
+    }
+
+    fn on_task_cancellation_while_in_active(
+        event: &TaskCanceledWhileActiveEvent<TaskData>,
+        args: &mut StaticSystemParam<Args>,
+    ) -> Result<(), BevyError> {
+        Err(BevyError::from(
+            TaskCancellationForActiveTaskNotImplementedError {
+                entity: event.entity,
+                task_data: event.task_data.clone(),
+            },
+        ))
+    }
+
+    /// Listens to TaskCancellation Events and runs [Self::on_task_cancellation_while_in_active] for each.
+    /// Usually you don't need to reimplement this.
+    fn cancellation_while_active_event_listener(
+        mut commands: Commands,
+        mut events: EventReader<TaskCanceledWhileActiveEvent<TaskData>>,
+        mut args: StaticSystemParam<Args>,
+    ) -> BevyResult {
+        for event in events.read() {
+            Self::on_task_cancellation_while_in_active(event, &mut args)?;
+            commands
+                .entity(event.entity.into())
+                .remove::<ShipTask<TaskData>>();
+        }
+
+        Ok(())
+    }
 }
 
 pub fn can_task_be_cancelled_while_active(task: &TaskKind) -> bool {
@@ -129,7 +185,7 @@ pub(crate) fn handle_task_cancellation_while_active_requests(
 }
 
 #[inline]
-fn write_event<T: ShipTaskData + 'static>(
+fn write_event<T: ShipTaskData>(
     event_writer: &mut EventWriter<TaskCanceledWhileActiveEvent<T>>,
     entity: ShipEntity,
     data: T,

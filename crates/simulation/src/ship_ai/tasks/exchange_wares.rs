@@ -1,11 +1,13 @@
-use crate::ship_ai::TaskComponent;
 use crate::ship_ai::ship_task::ShipTask;
+use crate::ship_ai::task_cancellation_active::TaskCancellationForActiveTaskHandler;
+use crate::ship_ai::task_cancellation_in_queue::TaskCancellationForTaskInQueueHandler;
 use crate::ship_ai::task_creation::{
     GeneralPathfindingArgs, TaskCreation, TaskCreationError, TaskCreationErrorReason,
     create_preconditions_and_dock_at_entity,
 };
 use crate::ship_ai::task_result::TaskResult;
 use crate::ship_ai::tasks::send_completion_events;
+use crate::ship_ai::{NoArgs, TaskComponent};
 use bevy::ecs::system::{StaticSystemParam, SystemParam};
 use bevy::prelude::{BevyError, Entity, EventReader, EventWriter, Query, Res, error};
 use common::components::task_kind::TaskKind;
@@ -137,27 +139,47 @@ impl ShipTask<ExchangeWares> {
         mut events: EventReader<TaskCanceledWhileInQueueEvent<ExchangeWares>>,
         mut inventories: Query<&mut Inventory>,
     ) {
-        for event in events.read() {
-            let exchange_data = &event.task_data.exchange_data;
-            if let Ok(inventory) = inventories.get_mut(event.task_data.target.into()) {
-                match exchange_data {
-                    ExchangeWareData::Buy(item_id, amount) => {}
-                    ExchangeWareData::Sell(item_id, amount) => {}
-                }
-            }
-
-            if let Ok(inventory) = inventories.get_mut(event.entity.into()) {
-                match exchange_data {
-                    ExchangeWareData::Buy(item_id, amount) => {}
-                    ExchangeWareData::Sell(item_id, amount) => {}
-                }
-            }
-            todo!("Inventory plans need to get adjusted")
-        }
+        for event in events.read() {}
     }
 
     pub(crate) fn abort_running_task() {
         panic!("Task cannot be properly aborted.");
+    }
+}
+
+impl TaskCancellationForActiveTaskHandler<ExchangeWares, NoArgs> for ExchangeWares {}
+
+#[derive(SystemParam)]
+pub(crate) struct CancelExchangeWareArgs<'w, 's> {
+    inventories: Query<'w, 's, &'static mut Inventory>,
+}
+
+impl<'w, 's> TaskCancellationForTaskInQueueHandler<ExchangeWares, CancelExchangeWareArgs<'w, 's>>
+    for ExchangeWares
+{
+    fn can_task_be_cancelled_while_in_queue() -> bool {
+        true
+    }
+
+    fn on_task_cancellation_while_in_queue(
+        event: &TaskCanceledWhileInQueueEvent<ExchangeWares>,
+        args: &mut StaticSystemParam<CancelExchangeWareArgs>,
+    ) -> Result<(), BevyError> {
+        let exchange_data = &event.task_data.exchange_data;
+        if let Ok(inventory) = args.inventories.get_mut(event.task_data.target.into()) {
+            match exchange_data {
+                ExchangeWareData::Buy(item_id, amount) => {}
+                ExchangeWareData::Sell(item_id, amount) => {}
+            }
+        }
+
+        if let Ok(inventory) = args.inventories.get_mut(event.entity.into()) {
+            match exchange_data {
+                ExchangeWareData::Buy(item_id, amount) => {}
+                ExchangeWareData::Sell(item_id, amount) => {}
+            }
+        }
+        todo!("Inventory plans need to get adjusted")
     }
 }
 

@@ -7,9 +7,10 @@ use crate::types::exchange_ware_data::ExchangeWareData;
 use crate::types::gate_traversal_state::GateTraversalState;
 use crate::types::sector_position::SectorPosition;
 use bevy::math::Vec2;
+use std::fmt::Debug;
 
 /// Marker trait to define that a struct may be used as a ShipTask during simulation.
-pub trait ShipTaskData: Clone + Send + Sync {}
+pub trait ShipTaskData: Clone + Debug + Send + Sync + 'static {}
 
 // mod signal_kind {
 //     struct Dock;

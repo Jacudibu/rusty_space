@@ -1,11 +1,14 @@
 use crate::TaskCancellationWhileActiveRequest;
-use bevy::prelude::{Event, EventReader, EventWriter, Query};
+use bevy::ecs::system::{StaticSystemParam, SystemParam};
+use bevy::prelude::{BevyError, Commands, Entity, Event, EventReader, EventWriter, Query};
 use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
 use common::constants::BevyResult;
 use common::events::task_events::{AllTaskCancelledEventWriters, TaskCanceledWhileInQueueEvent};
 use common::types::entity_wrappers::ShipEntity;
 use common::types::ship_tasks::ShipTaskData;
+use std::error::Error;
+use std::fmt::{Debug, Display, Formatter};
 
 /// Send this event in order to request removing tasks from a task queue.
 #[derive(Event)]
@@ -14,6 +17,53 @@ pub struct TaskCancellationWhileInQueueRequest {
     pub entity: ShipEntity,
     /// The index of the task which should be cancelled. This and all following tasks will be removed.
     pub task_position_in_queue: usize,
+}
+
+/// Default error used during [TaskCancellationForTaskInQueueHandler].
+#[derive(Debug)]
+struct TaskCancellationInQueueNotImplementedError<TaskData: ShipTaskData> {
+    entity: ShipEntity,
+    task_data: TaskData,
+}
+
+impl<TaskData: ShipTaskData> Display for TaskCancellationInQueueNotImplementedError<TaskData> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        Debug::fmt(self, f)
+    }
+}
+
+impl<TaskData: ShipTaskData> Error for TaskCancellationInQueueNotImplementedError<TaskData> {}
+
+/// This trait needs to be implemented for all tasks.
+pub(crate) trait TaskCancellationForTaskInQueueHandler<TaskData: ShipTaskData, Args: SystemParam> {
+    fn can_task_be_cancelled_while_in_queue() -> bool {
+        false
+    }
+
+    fn on_task_cancellation_while_in_queue(
+        event: &TaskCanceledWhileInQueueEvent<TaskData>,
+        args: &mut StaticSystemParam<Args>,
+    ) -> Result<(), BevyError> {
+        Err(BevyError::from(
+            TaskCancellationInQueueNotImplementedError {
+                entity: event.entity,
+                task_data: event.task_data.clone(),
+            },
+        ))
+    }
+
+    /// Listens to TaskCancellation Events and runs [Self::on_task_cancellation_while_in_queue] for each.
+    /// Usually you don't need to reimplement this.
+    fn cancellation_while_in_queue_event_listener(
+        mut events: EventReader<TaskCanceledWhileInQueueEvent<TaskData>>,
+        mut args: StaticSystemParam<Args>,
+    ) -> BevyResult {
+        for event in events.read() {
+            Self::on_task_cancellation_while_in_queue(event, &mut args)?;
+        }
+
+        Ok(())
+    }
 }
 
 pub(crate) fn handle_task_cancellation_while_in_queue_requests(
@@ -97,7 +147,7 @@ pub(crate) fn send_cancellation_event(
 }
 
 #[inline]
-fn write_event<T: ShipTaskData + 'static>(
+fn write_event<T: ShipTaskData>(
     event_writer: &mut EventWriter<TaskCanceledWhileInQueueEvent<T>>,
     entity: ShipEntity,
     data: T,
