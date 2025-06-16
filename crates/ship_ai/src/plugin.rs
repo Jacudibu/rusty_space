@@ -49,7 +49,6 @@ fn enable_abortion(app: &mut App) {
     app.add_event::<TaskCancellationWhileActiveRequest>();
     app.add_event::<TaskCanceledWhileActiveEvent<AwaitingSignal>>();
     app.add_event::<TaskCanceledWhileActiveEvent<Construct>>();
-    app.add_event::<TaskCanceledWhileActiveEvent<DockAtEntity>>();
     app.add_event::<TaskCanceledWhileActiveEvent<HarvestGas>>();
     app.add_event::<TaskCanceledWhileActiveEvent<MineAsteroid>>();
     app.add_event::<TaskCanceledWhileActiveEvent<MoveToEntity>>();
@@ -68,8 +67,6 @@ fn enable_abortion(app: &mut App) {
             abort_tasks::<AwaitingSignal>
                 .run_if(on_event::<TaskCanceledWhileActiveEvent<AwaitingSignal>>),
             abort_tasks::<Construct>.run_if(on_event::<TaskCanceledWhileActiveEvent<Construct>>),
-            abort_tasks::<DockAtEntity>
-                .run_if(on_event::<TaskCanceledWhileActiveEvent<DockAtEntity>>),
             abort_tasks::<HarvestGas>.run_if(on_event::<TaskCanceledWhileActiveEvent<HarvestGas>>),
             abort_tasks::<MineAsteroid>
                 .run_if(on_event::<TaskCanceledWhileActiveEvent<MineAsteroid>>),
@@ -97,7 +94,6 @@ fn enable_cancellation(app: &mut App) {
     app.add_event::<TaskCancellationWhileInQueueRequest>();
     app.add_event::<TaskCanceledWhileInQueueEvent<AwaitingSignal>>();
     app.add_event::<TaskCanceledWhileInQueueEvent<Construct>>();
-    app.add_event::<TaskCanceledWhileInQueueEvent<DockAtEntity>>();
     app.add_event::<TaskCanceledWhileInQueueEvent<HarvestGas>>();
     app.add_event::<TaskCanceledWhileInQueueEvent<MineAsteroid>>();
     app.add_event::<TaskCanceledWhileInQueueEvent<MoveToEntity>>();
@@ -112,8 +108,9 @@ fn enable_cancellation(app: &mut App) {
             .run_if(on_event::<TaskCanceledWhileInQueueEvent<MineAsteroid>>),),
     );
 
-    register_task_lifecycle::<UseGate>(app);
+    register_task_lifecycle::<DockAtEntity>(app);
     register_task_lifecycle::<ExchangeWares>(app);
+    register_task_lifecycle::<UseGate>(app);
 }
 
 fn register_task_lifecycle<Task>(app: &mut App)
@@ -225,22 +222,6 @@ impl Plugin for ShipAiPlugin {
             (
                 ShipTask::<MoveToSector>::run_tasks,
                 complete_tasks::<MoveToSector>.run_if(on_event::<TaskCompletedEvent<MoveToSector>>),
-            )
-                .chain()
-                .run_if(in_state(SimulationState::Running)),
-        );
-
-        app.add_event::<TaskCompletedEvent<DockAtEntity>>();
-        app.add_systems(
-            FixedUpdate,
-            (
-                ShipTask::<DockAtEntity>::run_tasks,
-                (
-                    ShipTask::<DockAtEntity>::complete_tasks,
-                    complete_tasks::<DockAtEntity>,
-                )
-                    .chain()
-                    .run_if(on_event::<TaskCompletedEvent<DockAtEntity>>),
             )
                 .chain()
                 .run_if(in_state(SimulationState::Running)),
