@@ -49,7 +49,7 @@ pub struct TaskUpdateRunnerArgsMut<'w, 's> {
     ships: Query<'w, 's, (Entity, &'static ShipTask<MoveToSector>, &'static InSector)>,
 }
 
-impl<'w, 's> TaskUpdateRunner<'w, 's, MoveToSector> for MoveToSector {
+impl<'w, 's> TaskUpdateRunner<'w, 's, Self> for MoveToSector {
     type Args = ();
     type ArgsMut = TaskUpdateRunnerArgsMut<'w, 's>;
 
@@ -78,7 +78,7 @@ impl<'w, 's> TaskUpdateRunner<'w, 's, MoveToSector> for MoveToSector {
     }
 }
 
-impl<'w, 's> TaskCreationEventHandler<'w, 's, MoveToSector> for MoveToSector {
+impl<'w, 's> TaskCreationEventHandler<'w, 's, Self> for MoveToSector {
     type Args = ();
     type ArgsMut = ();
 
@@ -101,7 +101,7 @@ impl<'w, 's> TaskCreationEventHandler<'w, 's, MoveToSector> for MoveToSector {
     }
 }
 
-impl<'w, 's> TaskStartedEventHandler<'w, 's, MoveToSector> for MoveToSector {
+impl<'w, 's> TaskStartedEventHandler<'w, 's, Self> for MoveToSector {
     type Args = ();
     type ArgsMut = ();
 
@@ -110,7 +110,7 @@ impl<'w, 's> TaskStartedEventHandler<'w, 's, MoveToSector> for MoveToSector {
     }
 }
 
-impl<'w, 's> TaskCancellationForTaskInQueueEventHandler<'w, 's, MoveToSector> for MoveToSector {
+impl<'w, 's> TaskCancellationForTaskInQueueEventHandler<'w, 's, Self> for MoveToSector {
     type Args = ();
     type ArgsMut = ();
 
@@ -123,7 +123,7 @@ impl<'w, 's> TaskCancellationForTaskInQueueEventHandler<'w, 's, MoveToSector> fo
     }
 }
 
-impl<'w, 's> TaskCancellationForActiveTaskEventHandler<'w, 's, MoveToSector> for MoveToSector {
+impl<'w, 's> TaskCancellationForActiveTaskEventHandler<'w, 's, Self> for MoveToSector {
     type Args = ();
     type ArgsMut = ();
 
@@ -136,7 +136,7 @@ impl<'w, 's> TaskCancellationForActiveTaskEventHandler<'w, 's, MoveToSector> for
     }
 }
 
-impl<'w, 's> TaskCompletedEventHandler<'w, 's, MoveToSector> for MoveToSector {
+impl<'w, 's> TaskCompletedEventHandler<'w, 's, Self> for MoveToSector {
     type Args = ();
     type ArgsMut = ();
 

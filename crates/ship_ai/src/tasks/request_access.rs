@@ -77,7 +77,7 @@ pub struct TaskUpdateRunnerArgsMut<'w, 's> {
     all_docking_bays: Query<'w, 's, &'static mut DockingBay>,
 }
 
-impl<'w, 's> TaskUpdateRunner<'w, 's, RequestAccess> for RequestAccess {
+impl<'w, 's> TaskUpdateRunner<'w, 's, Self> for RequestAccess {
     type Args = ();
     type ArgsMut = TaskUpdateRunnerArgsMut<'w, 's>;
 
@@ -118,7 +118,7 @@ impl<'w, 's> TaskUpdateRunner<'w, 's, RequestAccess> for RequestAccess {
     }
 }
 
-impl<'w, 's> TaskCreationEventHandler<'w, 's, RequestAccess> for RequestAccess {
+impl<'w, 's> TaskCreationEventHandler<'w, 's, Self> for RequestAccess {
     type Args = ();
     type ArgsMut = ();
 
@@ -137,7 +137,7 @@ impl<'w, 's> TaskCreationEventHandler<'w, 's, RequestAccess> for RequestAccess {
     }
 }
 
-impl<'w, 's> TaskStartedEventHandler<'w, 's, RequestAccess> for RequestAccess {
+impl<'w, 's> TaskStartedEventHandler<'w, 's, Self> for RequestAccess {
     type Args = ();
     type ArgsMut = ();
 
@@ -146,7 +146,7 @@ impl<'w, 's> TaskStartedEventHandler<'w, 's, RequestAccess> for RequestAccess {
     }
 }
 
-impl<'w, 's> TaskCancellationForTaskInQueueEventHandler<'w, 's, RequestAccess> for RequestAccess {
+impl<'w, 's> TaskCancellationForTaskInQueueEventHandler<'w, 's, Self> for RequestAccess {
     type Args = ();
     type ArgsMut = ();
 
@@ -159,7 +159,7 @@ impl<'w, 's> TaskCancellationForTaskInQueueEventHandler<'w, 's, RequestAccess> f
     }
 }
 
-impl<'w, 's> TaskCancellationForActiveTaskEventHandler<'w, 's, RequestAccess> for RequestAccess {
+impl<'w, 's> TaskCancellationForActiveTaskEventHandler<'w, 's, Self> for RequestAccess {
     type Args = ();
     type ArgsMut = ();
 
@@ -169,7 +169,7 @@ impl<'w, 's> TaskCancellationForActiveTaskEventHandler<'w, 's, RequestAccess> fo
     }
 }
 
-impl<'w, 's> TaskCompletedEventHandler<'w, 's, RequestAccess> for RequestAccess {
+impl<'w, 's> TaskCompletedEventHandler<'w, 's, Self> for RequestAccess {
     type Args = ();
     type ArgsMut = ();
 

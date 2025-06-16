@@ -59,14 +59,14 @@ fn scale_based_on_distance(
     scale_based_on_docking_distance(scale, ratio);
 }
 
-impl<'w, 's> TaskCancellationForActiveTaskEventHandler<'w, 's, DockAtEntity> for DockAtEntity {
+impl<'w, 's> TaskCancellationForActiveTaskEventHandler<'w, 's, Self> for DockAtEntity {
     type Args = ();
     type ArgsMut = ();
 
     // TODO: Technically, this can be cancelled: Just insert undock with inverted starting progress
 }
 
-impl<'w, 's> TaskCancellationForTaskInQueueEventHandler<'w, 's, DockAtEntity> for DockAtEntity {
+impl<'w, 's> TaskCancellationForTaskInQueueEventHandler<'w, 's, Self> for DockAtEntity {
     type Args = ();
     type ArgsMut = ();
 
@@ -79,7 +79,7 @@ impl<'w, 's> TaskCancellationForTaskInQueueEventHandler<'w, 's, DockAtEntity> fo
     }
 }
 
-impl<'w, 's> TaskCreationEventHandler<'w, 's, DockAtEntity> for DockAtEntity {
+impl<'w, 's> TaskCreationEventHandler<'w, 's, Self> for DockAtEntity {
     type Args = ();
     type ArgsMut = ();
 
@@ -94,7 +94,7 @@ impl<'w, 's> TaskCreationEventHandler<'w, 's, DockAtEntity> for DockAtEntity {
     }
 }
 
-impl<'w, 's> TaskStartedEventHandler<'w, 's, DockAtEntity> for DockAtEntity {
+impl<'w, 's> TaskStartedEventHandler<'w, 's, Self> for DockAtEntity {
     type Args = ();
     type ArgsMut = ();
 
@@ -124,7 +124,7 @@ pub struct TaskRunnerArgsMut<'w, 's> {
     >,
 }
 
-impl<'w, 's> TaskUpdateRunner<'w, 's, DockAtEntity> for DockAtEntity {
+impl<'w, 's> TaskUpdateRunner<'w, 's, Self> for DockAtEntity {
     type Args = TaskRunnerArgs<'w, 's>;
     type ArgsMut = TaskRunnerArgsMut<'w, 's>;
 
@@ -174,7 +174,7 @@ pub struct TaskCompletedArgsMut<'w, 's> {
     docking_bays: Query<'w, 's, &'static mut DockingBay>,
 }
 
-impl<'w, 's> TaskCompletedEventHandler<'w, 's, DockAtEntity> for DockAtEntity {
+impl<'w, 's> TaskCompletedEventHandler<'w, 's, Self> for DockAtEntity {
     type Args = ();
     type ArgsMut = TaskCompletedArgsMut<'w, 's>;
 

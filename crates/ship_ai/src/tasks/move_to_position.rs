@@ -50,7 +50,7 @@ pub struct TaskUpdateRunnerArgsMut<'w, 's> {
     >,
 }
 
-impl<'w, 's> TaskUpdateRunner<'w, 's, MoveToPosition> for MoveToPosition {
+impl<'w, 's> TaskUpdateRunner<'w, 's, Self> for MoveToPosition {
     type Args = TaskUpdateRunnerArgs<'w, 's>;
     type ArgsMut = TaskUpdateRunnerArgsMut<'w, 's>;
 
@@ -91,7 +91,7 @@ impl<'w, 's> TaskUpdateRunner<'w, 's, MoveToPosition> for MoveToPosition {
     }
 }
 
-impl<'w, 's> TaskCreationEventHandler<'w, 's, MoveToPosition> for MoveToPosition {
+impl<'w, 's> TaskCreationEventHandler<'w, 's, Self> for MoveToPosition {
     type Args = ();
     type ArgsMut = ();
 
@@ -118,7 +118,7 @@ impl<'w, 's> TaskCreationEventHandler<'w, 's, MoveToPosition> for MoveToPosition
     }
 }
 
-impl<'w, 's> TaskStartedEventHandler<'w, 's, MoveToPosition> for MoveToPosition {
+impl<'w, 's> TaskStartedEventHandler<'w, 's, Self> for MoveToPosition {
     type Args = ();
     type ArgsMut = ();
 
@@ -127,7 +127,7 @@ impl<'w, 's> TaskStartedEventHandler<'w, 's, MoveToPosition> for MoveToPosition 
     }
 }
 
-impl<'w, 's> TaskCancellationForTaskInQueueEventHandler<'w, 's, MoveToPosition> for MoveToPosition {
+impl<'w, 's> TaskCancellationForTaskInQueueEventHandler<'w, 's, Self> for MoveToPosition {
     type Args = ();
     type ArgsMut = ();
 
@@ -140,7 +140,7 @@ impl<'w, 's> TaskCancellationForTaskInQueueEventHandler<'w, 's, MoveToPosition> 
     }
 }
 
-impl<'w, 's> TaskCancellationForActiveTaskEventHandler<'w, 's, MoveToPosition> for MoveToPosition {
+impl<'w, 's> TaskCancellationForActiveTaskEventHandler<'w, 's, Self> for MoveToPosition {
     type Args = ();
     type ArgsMut = ();
 
@@ -153,7 +153,7 @@ impl<'w, 's> TaskCancellationForActiveTaskEventHandler<'w, 's, MoveToPosition> f
     }
 }
 
-impl<'w, 's> TaskCompletedEventHandler<'w, 's, MoveToPosition> for MoveToPosition {
+impl<'w, 's> TaskCompletedEventHandler<'w, 's, Self> for MoveToPosition {
     type Args = ();
     type ArgsMut = ();
 

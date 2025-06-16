@@ -44,7 +44,7 @@ pub(crate) struct TaskStartedArgsMut<'w, 's> {
     all_ships_with_task: Query<'w, 's, &'static mut ShipTask<ExchangeWares>>,
 }
 
-impl<'w, 's> TaskStartedEventHandler<'w, 's, ExchangeWares> for ExchangeWares {
+impl<'w, 's> TaskStartedEventHandler<'w, 's, Self> for ExchangeWares {
     type Args = TaskStartedArgs<'w>;
     type ArgsMut = TaskStartedArgsMut<'w, 's>;
 
@@ -72,7 +72,7 @@ pub(crate) struct TaskCompletedArgsMut<'w, 's> {
     inventory_update_event_writer: EventWriter<'w, InventoryUpdateForProductionEvent>,
 }
 
-impl<'w, 's> TaskCompletedEventHandler<'w, 's, ExchangeWares> for ExchangeWares {
+impl<'w, 's> TaskCompletedEventHandler<'w, 's, Self> for ExchangeWares {
     type Args = TaskCompletedArgs<'w>;
     type ArgsMut = TaskCompletedArgsMut<'w, 's>;
 
@@ -118,7 +118,7 @@ pub(crate) struct RunTasksArgsMut<'w, 's> {
     ships: Query<'w, 's, (Entity, &'static ShipTask<ExchangeWares>)>,
 }
 
-impl<'w, 's> TaskUpdateRunner<'w, 's, ExchangeWares> for ExchangeWares {
+impl<'w, 's> TaskUpdateRunner<'w, 's, Self> for ExchangeWares {
     type Args = RunTasksArgs<'w>;
     type ArgsMut = RunTasksArgsMut<'w, 's>;
 
@@ -154,7 +154,7 @@ fn run_task(task: &ShipTask<ExchangeWares>, now: CurrentSimulationTimestamp) -> 
     }
 }
 
-impl<'w, 's> TaskCancellationForActiveTaskEventHandler<'w, 's, ExchangeWares> for ExchangeWares {
+impl<'w, 's> TaskCancellationForActiveTaskEventHandler<'w, 's, Self> for ExchangeWares {
     type Args = ();
     type ArgsMut = ();
 }
@@ -164,7 +164,7 @@ pub(crate) struct CancelExchangeWareArgsMut<'w, 's> {
     inventories: Query<'w, 's, &'static mut Inventory>,
 }
 
-impl<'w, 's> TaskCancellationForTaskInQueueEventHandler<'w, 's, ExchangeWares> for ExchangeWares {
+impl<'w, 's> TaskCancellationForTaskInQueueEventHandler<'w, 's, Self> for ExchangeWares {
     type Args = ();
     type ArgsMut = CancelExchangeWareArgsMut<'w, 's>;
 
@@ -208,7 +208,7 @@ pub(crate) struct CreateExchangeWareArgsMut<'w, 's> {
     inventories: Query<'w, 's, &'static mut Inventory>,
 }
 
-impl<'w, 's> TaskCreationEventHandler<'w, 's, ExchangeWares> for ExchangeWares {
+impl<'w, 's> TaskCreationEventHandler<'w, 's, Self> for ExchangeWares {
     type Args = CreateExchangeWareArgs<'w>;
     type ArgsMut = CreateExchangeWareArgsMut<'w, 's>;
 

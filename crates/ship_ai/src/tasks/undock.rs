@@ -77,7 +77,7 @@ pub struct TaskUpdateRunnerArgsMut<'w, 's> {
     >,
 }
 
-impl<'w, 's> TaskUpdateRunner<'w, 's, Undock> for Undock {
+impl<'w, 's> TaskUpdateRunner<'w, 's, Self> for Undock {
     type Args = TaskUpdateRunnerArgs<'w>;
     type ArgsMut = TaskUpdateRunnerArgsMut<'w, 's>;
 
@@ -112,7 +112,7 @@ impl<'w, 's> TaskUpdateRunner<'w, 's, Undock> for Undock {
     }
 }
 
-impl<'w, 's> TaskCreationEventHandler<'w, 's, Undock> for Undock {
+impl<'w, 's> TaskCreationEventHandler<'w, 's, Self> for Undock {
     type Args = ();
     type ArgsMut = ();
 
@@ -143,7 +143,7 @@ pub struct TaskStartedArgsMut<'w, 's> {
     >,
 }
 
-impl<'w, 's> TaskStartedEventHandler<'w, 's, Undock> for Undock {
+impl<'w, 's> TaskStartedEventHandler<'w, 's, Self> for Undock {
     type Args = ();
     type ArgsMut = TaskStartedArgsMut<'w, 's>;
 
@@ -169,7 +169,7 @@ impl<'w, 's> TaskStartedEventHandler<'w, 's, Undock> for Undock {
     }
 }
 
-impl<'w, 's> TaskCancellationForTaskInQueueEventHandler<'w, 's, Undock> for Undock {
+impl<'w, 's> TaskCancellationForTaskInQueueEventHandler<'w, 's, Self> for Undock {
     type Args = ();
     type ArgsMut = ();
 
@@ -182,7 +182,7 @@ impl<'w, 's> TaskCancellationForTaskInQueueEventHandler<'w, 's, Undock> for Undo
     }
 }
 
-impl<'w, 's> TaskCancellationForActiveTaskEventHandler<'w, 's, Undock> for Undock {
+impl<'w, 's> TaskCancellationForActiveTaskEventHandler<'w, 's, Self> for Undock {
     type Args = ();
     type ArgsMut = ();
 }
@@ -197,7 +197,7 @@ pub struct TaskRunnerArgsMut<'w, 's> {
     docking_bays: Query<'w, 's, &'static mut DockingBay>,
 }
 
-impl<'w, 's> TaskCompletedEventHandler<'w, 's, Undock> for Undock {
+impl<'w, 's> TaskCompletedEventHandler<'w, 's, Self> for Undock {
     type Args = TaskRunnerArgs<'w, 's>;
     type ArgsMut = TaskRunnerArgsMut<'w, 's>;
 

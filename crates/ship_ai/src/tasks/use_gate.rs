@@ -118,7 +118,7 @@ pub struct TaskRunnerArgsMut<'w, 's> {
     >,
 }
 
-impl<'w, 's> TaskUpdateRunner<'w, 's, UseGate> for UseGate {
+impl<'w, 's> TaskUpdateRunner<'w, 's, Self> for UseGate {
     type Args = TaskRunnerArgs<'w, 's>;
     type ArgsMut = TaskRunnerArgsMut<'w, 's>;
 
@@ -156,7 +156,7 @@ impl<'w, 's> TaskUpdateRunner<'w, 's, UseGate> for UseGate {
     }
 }
 
-impl<'w, 's> TaskCreationEventHandler<'w, 's, UseGate> for UseGate {
+impl<'w, 's> TaskCreationEventHandler<'w, 's, Self> for UseGate {
     type Args = ();
     type ArgsMut = ();
 
@@ -182,7 +182,7 @@ pub(crate) struct TaskStartedArgsMut<'w, 's> {
     all_sectors: Query<'w, 's, &'static mut Sector>,
 }
 
-impl<'w, 's> TaskStartedEventHandler<'w, 's, UseGate> for UseGate {
+impl<'w, 's> TaskStartedEventHandler<'w, 's, Self> for UseGate {
     type Args = TaskStartedArgs<'w, 's>;
     type ArgsMut = TaskStartedArgsMut<'w, 's>;
 
@@ -202,7 +202,7 @@ impl<'w, 's> TaskStartedEventHandler<'w, 's, UseGate> for UseGate {
     }
 }
 
-impl<'w, 's> TaskCancellationForTaskInQueueEventHandler<'w, 's, UseGate> for UseGate {
+impl<'w, 's> TaskCancellationForTaskInQueueEventHandler<'w, 's, Self> for UseGate {
     type Args = ();
     type ArgsMut = ();
 
@@ -215,7 +215,7 @@ impl<'w, 's> TaskCancellationForTaskInQueueEventHandler<'w, 's, UseGate> for Use
     }
 }
 
-impl<'w, 's> TaskCancellationForActiveTaskEventHandler<'w, 's, UseGate> for UseGate {
+impl<'w, 's> TaskCancellationForActiveTaskEventHandler<'w, 's, Self> for UseGate {
     type Args = ();
     type ArgsMut = ();
 }
@@ -227,7 +227,7 @@ pub(crate) struct TaskCompletedArgsMut<'w, 's> {
     all_sectors: Query<'w, 's, &'static mut Sector>,
 }
 
-impl<'w, 's> TaskCompletedEventHandler<'w, 's, UseGate> for UseGate {
+impl<'w, 's> TaskCompletedEventHandler<'w, 's, Self> for UseGate {
     type Args = ();
     type ArgsMut = TaskCompletedArgsMut<'w, 's>;
 
