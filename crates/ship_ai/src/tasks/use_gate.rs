@@ -7,18 +7,14 @@ use crate::task_lifecycle_traits::task_creation::{
 };
 use crate::task_lifecycle_traits::task_started::TaskStartedEventHandler;
 use crate::task_lifecycle_traits::task_update_runner::TaskUpdateRunner;
-use crate::tasks::send_completion_events;
 use crate::utility::ship_task::ShipTask;
 use crate::utility::task_result::TaskResult;
 use bevy::ecs::system::{StaticSystemParam, SystemParam};
-use bevy::prelude::{
-    BevyError, Commands, CubicCurve, Entity, EventWriter, Query, Res, Time, Vec2, With,
-};
+use bevy::prelude::{BevyError, Commands, CubicCurve, Entity, Query, Res, Time, Vec2, With};
 use common::components::ship_velocity::ShipVelocity;
 use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
 use common::components::{Gate, InSector, Sector};
-use common::constants::BevyResult;
 use common::events::task_events::{InsertTaskIntoQueueCommand, TaskStartedEvent};
 use common::events::task_events::{TaskCanceledWhileInQueueEvent, TaskCompletedEvent};
 use common::simulation_transform::SimulationTransform;
@@ -127,10 +123,9 @@ impl<'w, 's> TaskUpdateRunner<'w, 's, UseGate> for UseGate {
     type ArgsMut = TaskRunnerArgsMut<'w, 's>;
 
     fn run_all_tasks(
-        event_writer: EventWriter<TaskCompletedEvent<UseGate>>,
         args: StaticSystemParam<Self::Args>,
         mut args_mut: StaticSystemParam<Self::ArgsMut>,
-    ) -> BevyResult {
+    ) -> Result<Arc<Mutex<Vec<TaskCompletedEvent<UseGate>>>>, BevyError> {
         let args = args.deref();
         let args_mut = args_mut.deref_mut();
 
@@ -157,8 +152,7 @@ impl<'w, 's> TaskUpdateRunner<'w, 's, UseGate> for UseGate {
                 }
             });
 
-        send_completion_events(event_writer, task_completions);
-        Ok(())
+        Ok(task_completions)
     }
 }
 

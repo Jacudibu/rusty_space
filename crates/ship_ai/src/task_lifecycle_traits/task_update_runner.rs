@@ -1,8 +1,10 @@
+use crate::tasks::send_completion_events;
 use bevy::ecs::system::{StaticSystemParam, SystemParam};
-use bevy::prelude::EventWriter;
+use bevy::prelude::{BevyError, EventWriter};
 use common::constants::BevyResult;
 use common::events::task_events::TaskCompletedEvent;
 use common::types::ship_tasks::ShipTaskData;
+use std::sync::{Arc, Mutex};
 
 pub(crate) trait TaskUpdateRunner<'w, 's, Task: ShipTaskData> {
     /// The immutable arguments used when calling the functions of this trait.
@@ -11,9 +13,27 @@ pub(crate) trait TaskUpdateRunner<'w, 's, Task: ShipTaskData> {
     type ArgsMut: SystemParam;
 
     /// Executed once per SimulationTick, this is where the main logic of the task is being executed.
+    /// Tasks are usually executed with par_iter_mut.
+    ///
+    /// TaskCompletions are happening rather rarely, which is why we use an Arc<Mutex<Vec>> to collect the results.
+    ///
+    /// # Returns
+    /// the [TaskCompletedEvent]s which have been collected during execution.
     fn run_all_tasks(
+        args: StaticSystemParam<Self::Args>,
+        args_mut: StaticSystemParam<Self::ArgsMut>,
+    ) -> Result<Arc<Mutex<Vec<TaskCompletedEvent<Task>>>>, BevyError>;
+
+    /// Executes [Self::run_all_tasks] and sends the completion events that occurred whilst running them.
+    ///
+    /// Usually you don't need to reimplement this.
+    fn update(
         event_writer: EventWriter<TaskCompletedEvent<Task>>,
         args: StaticSystemParam<Self::Args>,
         args_mut: StaticSystemParam<Self::ArgsMut>,
-    ) -> BevyResult;
+    ) -> BevyResult {
+        let completions = Self::run_all_tasks(args, args_mut)?;
+        send_completion_events(event_writer, completions);
+        Ok(())
+    }
 }

@@ -141,7 +141,7 @@ where
     app.add_systems(
         FixedUpdate,
         (
-            Task::run_all_tasks,
+            Task::update,
             (Task::task_completed_event_listener, complete_tasks::<Task>)
                 .chain()
                 .run_if(on_event::<TaskCompletedEvent<Task>>),

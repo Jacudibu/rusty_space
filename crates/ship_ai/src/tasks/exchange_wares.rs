@@ -24,7 +24,7 @@ use common::events::task_events::{
 use common::game_data::ItemManifest;
 use common::simulation_time::{CurrentSimulationTimestamp, SimulationTime};
 use common::types::exchange_ware_data::ExchangeWareData;
-use common::types::ship_tasks::ExchangeWares;
+use common::types::ship_tasks::{DockAtEntity, ExchangeWares};
 use common::types::trade_intent::TradeIntent;
 use std::collections::VecDeque;
 use std::ops::DerefMut;
@@ -125,10 +125,9 @@ impl<'w, 's> TaskUpdateRunner<'w, 's, ExchangeWares> for ExchangeWares {
     type ArgsMut = RunTasksArgsMut<'w, 's>;
 
     fn run_all_tasks(
-        event_writer: EventWriter<TaskCompletedEvent<ExchangeWares>>,
         args: StaticSystemParam<Self::Args>,
         mut args_mut: StaticSystemParam<Self::ArgsMut>,
-    ) -> BevyResult {
+    ) -> Result<Arc<Mutex<Vec<TaskCompletedEvent<ExchangeWares>>>>, BevyError> {
         let args_mut = args_mut.deref_mut();
         let now = args.simulation_time.now();
         let task_completions =
@@ -145,9 +144,7 @@ impl<'w, 's> TaskUpdateRunner<'w, 's, ExchangeWares> for ExchangeWares {
                     .push(TaskCompletedEvent::<ExchangeWares>::new(entity.into())),
             });
 
-        send_completion_events(event_writer, task_completions);
-
-        Ok(())
+        Ok(task_completions)
     }
 }
 

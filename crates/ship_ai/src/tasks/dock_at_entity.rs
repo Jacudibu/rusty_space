@@ -140,10 +140,9 @@ impl<'w, 's> TaskUpdateRunner<'w, 's, DockAtEntity> for DockAtEntity {
     type ArgsMut = TaskRunnerArgsMut<'w, 's>;
 
     fn run_all_tasks(
-        event_writer: EventWriter<TaskCompletedEvent<DockAtEntity>>,
         args: StaticSystemParam<Self::Args>,
         mut args_mut: StaticSystemParam<Self::ArgsMut>,
-    ) -> BevyResult {
+    ) -> Result<Arc<Mutex<Vec<TaskCompletedEvent<DockAtEntity>>>>, BevyError> {
         let args = args.deref();
         let args_mut = args_mut.deref_mut();
 
@@ -174,9 +173,7 @@ impl<'w, 's> TaskUpdateRunner<'w, 's, DockAtEntity> for DockAtEntity {
             },
         );
 
-        send_completion_events(event_writer, task_completions);
-
-        Ok(())
+        Ok(task_completions)
     }
 }
 
