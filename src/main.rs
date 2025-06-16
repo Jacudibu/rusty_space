@@ -42,7 +42,7 @@ fn main() {
         gizmos::GizmoPlugin,
         gui::GUIPlugin,
         session_data::SessionDataPlugin,
-        ship_controller::ShipControllerPlugin,
+        ship_user_controller::ShipControllerPlugin,
         simulation::plugin::SimulationPlugin,
         test_universe::TestUniverseDataPlugin,
         universe_loader::UniverseLoadingPlugin,

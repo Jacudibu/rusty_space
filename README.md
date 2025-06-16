@@ -19,11 +19,13 @@ flowchart BT
     simulation --> entity_spawners
 
     simulation --> pathfinding
+    ship_user_controller --> entity_selection
 
     main --> entity_selection
     main --> universe_builder
     main --> universe_loader
     main --> simulation
+    main --> ship_user_controller
     main --> camera
 ```
 

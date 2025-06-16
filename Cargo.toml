@@ -25,7 +25,7 @@ entity_spawners = { path = "crates/entity_spawners" }
 entity_selection = { path = "crates/entity_selection" }
 pathfinding = { path = "crates/pathfinding" }
 persistence = { path = "crates/persistence" }
-ship_controller = { path = "crates/ship_controller" }
+ship_user_controller = { path = "crates/ship_user_controller" }
 simulation = { path = "crates/simulation" }
 test_utils = { path = "crates/test_utils" }
 universe_builder = { path = "crates/universe_builder" }
@@ -43,7 +43,7 @@ common = { workspace = true }
 entity_spawners = { workspace = true }
 entity_selection = { workspace = true }
 persistence = { workspace = true }
-ship_controller = { workspace = true }
+ship_user_controller = { workspace = true }
 simulation = { workspace = true }
 universe_builder = { workspace = true }
 universe_loader = { workspace = true }
