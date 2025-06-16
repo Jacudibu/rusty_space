@@ -55,7 +55,6 @@ fn enable_abortion(app: &mut App) {
     app.add_event::<TaskCanceledWhileActiveEvent<MoveToPosition>>();
     app.add_event::<TaskCanceledWhileActiveEvent<MoveToSector>>();
     app.add_event::<TaskCanceledWhileActiveEvent<Undock>>();
-    app.add_event::<TaskCanceledWhileActiveEvent<UseGate>>();
     app.add_event::<TaskCanceledWhileActiveEvent<RequestAccess>>();
 
     app.add_systems(
@@ -80,7 +79,6 @@ fn enable_abortion(app: &mut App) {
             abort_tasks::<MoveToSector>
                 .run_if(on_event::<TaskCanceledWhileActiveEvent<MoveToSector>>),
             abort_tasks::<Undock>.run_if(on_event::<TaskCanceledWhileActiveEvent<Undock>>),
-            abort_tasks::<UseGate>.run_if(on_event::<TaskCanceledWhileActiveEvent<UseGate>>),
             abort_tasks::<RequestAccess>
                 .run_if(on_event::<TaskCanceledWhileActiveEvent<RequestAccess>>),
         ),
@@ -105,7 +103,6 @@ fn enable_cancellation(app: &mut App) {
     app.add_event::<TaskCanceledWhileInQueueEvent<MoveToPosition>>();
     app.add_event::<TaskCanceledWhileInQueueEvent<MoveToSector>>();
     app.add_event::<TaskCanceledWhileInQueueEvent<Undock>>();
-    app.add_event::<TaskCanceledWhileInQueueEvent<UseGate>>();
     app.add_event::<TaskCanceledWhileInQueueEvent<RequestAccess>>();
 
     app.add_systems(
@@ -114,6 +111,7 @@ fn enable_cancellation(app: &mut App) {
             .run_if(on_event::<TaskCanceledWhileInQueueEvent<MineAsteroid>>),),
     );
 
+    register_task_lifecycle::<UseGate>(app);
     register_task_lifecycle::<ExchangeWares>(app);
 }
 
@@ -132,7 +130,6 @@ where
     app.add_event::<TaskStartedEvent<Task>>();
     app.add_event::<TaskCanceledWhileActiveEvent<Task>>();
     app.add_event::<TaskCompletedEvent<Task>>();
-
     app.add_systems(
         PreUpdate,
         (
@@ -177,27 +174,6 @@ impl Plugin for ShipAiPlugin {
                     .before(CustomSystemSets::RespawnAsteroids)
                     .run_if(in_state(SimulationState::Running)),
             ),
-        );
-
-        app.add_event::<TaskCompletedEvent<UseGate>>();
-        app.add_event::<TaskStartedEvent<UseGate>>();
-        app.add_systems(
-            FixedPostUpdate,
-            ShipTask::<UseGate>::on_task_started.run_if(in_state(SimulationState::Running)),
-        );
-        app.add_systems(
-            FixedUpdate,
-            (
-                ShipTask::<UseGate>::run_tasks,
-                (
-                    ShipTask::<UseGate>::complete_tasks,
-                    complete_tasks::<UseGate>,
-                )
-                    .chain()
-                    .run_if(on_event::<TaskCompletedEvent<UseGate>>),
-            )
-                .chain()
-                .run_if(in_state(SimulationState::Running)),
         );
 
         app.add_event::<TaskCompletedEvent<Construct>>();

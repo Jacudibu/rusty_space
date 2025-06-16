@@ -1,21 +1,34 @@
-use bevy::prelude::{
-    Commands, CubicCurve, Entity, EventReader, EventWriter, Query, Res, Time, Vec2, With, error,
-};
-use std::sync::{Arc, Mutex};
-
 use crate::ship_ai::TaskComponent;
 use crate::ship_ai::ship_task::ShipTask;
+use crate::ship_ai::task_lifecycle_traits::task_cancellation_active::TaskCancellationForActiveTaskEventHandler;
+use crate::ship_ai::task_lifecycle_traits::task_cancellation_in_queue::TaskCancellationForTaskInQueueEventHandler;
+use crate::ship_ai::task_lifecycle_traits::task_completed::TaskCompletedEventHandler;
+use crate::ship_ai::task_lifecycle_traits::task_creation::{
+    GeneralPathfindingArgs, TaskCreationEventHandler,
+};
+use crate::ship_ai::task_lifecycle_traits::task_started::TaskStartedEventHandler;
+use crate::ship_ai::task_lifecycle_traits::task_update_runner::TaskUpdateRunner;
 use crate::ship_ai::task_result::TaskResult;
 use crate::ship_ai::tasks::send_completion_events;
+use bevy::ecs::system::{StaticSystemParam, SystemParam};
+use bevy::prelude::{
+    BevyError, Commands, CubicCurve, Entity, EventWriter, Query, Res, Time, Vec2, With,
+};
 use common::components::ship_velocity::ShipVelocity;
+use common::components::task_kind::TaskKind;
+use common::components::task_queue::TaskQueue;
 use common::components::{Gate, InSector, Sector};
-use common::events::task_events::TaskCompletedEvent;
-use common::events::task_events::TaskStartedEvent;
+use common::constants::BevyResult;
+use common::events::task_events::{InsertTaskIntoQueueCommand, TaskStartedEvent};
+use common::events::task_events::{TaskCanceledWhileInQueueEvent, TaskCompletedEvent};
 use common::simulation_transform::SimulationTransform;
 use common::types::entity_wrappers::ShipEntity;
 use common::types::gate_traversal_state::GateTraversalState;
 use common::types::ship_tasks::UseGate;
 use common::{constants, interpolation};
+use std::collections::VecDeque;
+use std::ops::{Deref, DerefMut};
+use std::sync::{Arc, Mutex};
 
 impl TaskComponent for ShipTask<UseGate> {
     fn can_be_cancelled_while_active() -> bool {
@@ -57,52 +70,85 @@ fn traverse_curve(
     }
 }
 
-impl ShipTask<UseGate> {
-    fn run(
-        &mut self,
-        delta_travel: f32,
-        transform: &mut SimulationTransform,
-        transit_curve_query: &Query<&Gate>,
-    ) -> TaskResult {
-        self.progress += delta_travel;
-        let curve = &transit_curve_query
-            .get(self.enter_gate.into())
-            .unwrap()
-            .transit_curve;
+fn run(
+    task: &mut ShipTask<UseGate>,
+    delta_travel: f32,
+    transform: &mut SimulationTransform,
+    transit_curve_query: &Query<&Gate>,
+) -> Result<TaskResult, BevyError> {
+    task.progress += delta_travel;
+    let curve = &transit_curve_query
+        .get(task.enter_gate.into())?
+        .transit_curve;
 
-        match self.traversal_state {
-            GateTraversalState::JustCreated => {
-                self.traversal_state = GateTraversalState::BlendingIntoMotion {
-                    origin: transform.translation,
-                };
+    let result = match task.traversal_state {
+        GateTraversalState::JustCreated => {
+            task.traversal_state = GateTraversalState::BlendingIntoMotion {
+                origin: transform.translation,
+            };
 
-                blend_to_curve(transform.translation, transform, self.progress, curve)
-            }
-            GateTraversalState::BlendingIntoMotion { origin } => {
-                if self.progress < GATE_ENTER_BLEND_THRESHOLD {
-                    blend_to_curve(origin, transform, self.progress, curve)
-                } else {
-                    self.traversal_state = GateTraversalState::TraversingLine;
-                    traverse_curve(transform, self.progress, curve)
-                }
-            }
-            GateTraversalState::TraversingLine => traverse_curve(transform, self.progress, curve),
+            blend_to_curve(transform.translation, transform, task.progress, curve)
         }
-    }
+        GateTraversalState::BlendingIntoMotion { origin } => {
+            if task.progress < GATE_ENTER_BLEND_THRESHOLD {
+                blend_to_curve(origin, transform, task.progress, curve)
+            } else {
+                task.traversal_state = GateTraversalState::TraversingLine;
+                traverse_curve(transform, task.progress, curve)
+            }
+        }
+        GateTraversalState::TraversingLine => traverse_curve(transform, task.progress, curve),
+    };
 
-    pub fn run_tasks(
+    Ok(result)
+}
+
+#[derive(SystemParam)]
+pub struct TaskRunnerArgs<'w, 's> {
+    time: Res<'w, Time>,
+    transit_curve_query: Query<'w, 's, &'static Gate>,
+}
+
+#[derive(SystemParam)]
+pub struct TaskRunnerArgsMut<'w, 's> {
+    ships: Query<
+        'w,
+        's,
+        (
+            Entity,
+            &'static mut ShipTask<UseGate>,
+            &'static mut SimulationTransform,
+        ),
+    >,
+}
+
+impl<'w, 's> TaskUpdateRunner<'w, 's, UseGate> for UseGate {
+    type Args = TaskRunnerArgs<'w, 's>;
+    type ArgsMut = TaskRunnerArgsMut<'w, 's>;
+
+    fn run_all_tasks(
         event_writer: EventWriter<TaskCompletedEvent<UseGate>>,
-        time: Res<Time>,
-        mut ships: Query<(Entity, &mut Self, &mut SimulationTransform)>,
-        transit_curve_query: Query<&Gate>,
-    ) {
-        let task_completions = Arc::new(Mutex::new(Vec::<TaskCompletedEvent<UseGate>>::new()));
-        let delta_travel = time.delta_secs() / constants::SECONDS_TO_TRAVEL_THROUGH_GATE;
+        args: StaticSystemParam<Self::Args>,
+        mut args_mut: StaticSystemParam<Self::ArgsMut>,
+    ) -> BevyResult {
+        let args = args.deref();
+        let args_mut = args_mut.deref_mut();
 
-        ships
+        let task_completions = Arc::new(Mutex::new(Vec::<TaskCompletedEvent<UseGate>>::new()));
+        let delta_travel = args.time.delta_secs() / constants::SECONDS_TO_TRAVEL_THROUGH_GATE;
+
+        args_mut
+            .ships
             .par_iter_mut()
             .for_each(|(entity, mut task, mut transform)| {
-                match task.run(delta_travel, &mut transform, &transit_curve_query) {
+                match run(
+                    &mut task,
+                    delta_travel,
+                    &mut transform,
+                    &args.transit_curve_query,
+                )
+                .unwrap() // TODO: Error handling!
+                {
                     TaskResult::Ongoing => {}
                     TaskResult::Finished | TaskResult::Aborted => task_completions
                         .lock()
@@ -112,56 +158,108 @@ impl ShipTask<UseGate> {
             });
 
         send_completion_events(event_writer, task_completions);
+        Ok(())
+    }
+}
+
+impl<'w, 's> TaskCreationEventHandler<'w, 's, UseGate> for UseGate {
+    type Args = ();
+    type ArgsMut = ();
+
+    fn create_tasks_for_command(
+        event: &InsertTaskIntoQueueCommand<UseGate>,
+        task_queue: &TaskQueue,
+        general_pathfinding_args: &GeneralPathfindingArgs,
+        args: &StaticSystemParam<Self::Args>,
+        args_mut: &mut StaticSystemParam<Self::ArgsMut>,
+    ) -> Result<VecDeque<TaskKind>, BevyError> {
+        todo!()
+    }
+}
+
+#[derive(SystemParam)]
+pub(crate) struct TaskStartedArgs<'w, 's> {
+    in_sector: Query<'w, 's, &'static InSector, With<ShipTask<UseGate>>>,
+}
+
+#[derive(SystemParam)]
+pub(crate) struct TaskStartedArgsMut<'w, 's> {
+    commands: Commands<'w, 's>,
+    all_sectors: Query<'w, 's, &'static mut Sector>,
+}
+
+impl<'w, 's> TaskStartedEventHandler<'w, 's, UseGate> for UseGate {
+    type Args = TaskStartedArgs<'w, 's>;
+    type ArgsMut = TaskStartedArgsMut<'w, 's>;
+
+    fn on_task_started(
+        event: &TaskStartedEvent<UseGate>,
+        args: &StaticSystemParam<Self::Args>,
+        args_mut: &mut StaticSystemParam<Self::ArgsMut>,
+    ) -> Result<(), BevyError> {
+        let args_mut = args_mut.deref_mut();
+
+        let in_sector = args.in_sector.get(event.entity.into())?;
+
+        let mut sector = args_mut.all_sectors.get_mut(in_sector.get().into())?;
+        sector.remove_ship(&mut args_mut.commands, event.entity);
+
+        Ok(())
+    }
+}
+
+impl<'w, 's> TaskCancellationForTaskInQueueEventHandler<'w, 's, UseGate> for UseGate {
+    type Args = ();
+    type ArgsMut = ();
+
+    fn can_task_be_cancelled_while_in_queue() -> bool {
+        true
     }
 
-    pub fn complete_tasks(
-        mut commands: Commands,
-        mut event_reader: EventReader<TaskCompletedEvent<UseGate>>,
-        mut all_ships_with_task: Query<(&Self, &mut ShipVelocity)>,
-        mut all_sectors: Query<&mut Sector>,
-    ) {
-        for event in event_reader.read() {
-            if let Ok((task, mut velocity)) = all_ships_with_task.get_mut(event.entity.into()) {
-                all_sectors
-                    .get_mut(task.exit_sector.into())
-                    .unwrap()
-                    .add_ship(
-                        &mut commands,
-                        task.exit_sector,
-                        ShipEntity::from(event.entity),
-                    );
-
-                velocity.forward *= 0.5;
-            } else {
-                error!(
-                    "Unable to find entity for UseGate task completion: {}",
-                    event.entity
-                );
-            }
-        }
+    fn on_task_cancellation_while_in_queue(
+        _event: &TaskCanceledWhileInQueueEvent<UseGate>,
+        _args: &StaticSystemParam<Self::Args>,
+        _args_mut: &mut StaticSystemParam<Self::ArgsMut>,
+    ) -> Result<(), BevyError> {
+        Ok(())
     }
+}
 
-    pub fn on_task_started(
-        mut commands: Commands,
-        query: Query<&InSector, With<Self>>,
-        mut triggers: EventReader<TaskStartedEvent<UseGate>>,
-        mut all_sectors: Query<&mut Sector>,
-    ) {
-        for x in triggers.read() {
-            let Ok(in_sector) = query.get(x.entity.into()) else {
-                continue;
-            };
+impl<'w, 's> TaskCancellationForActiveTaskEventHandler<'w, 's, UseGate> for UseGate {
+    type Args = ();
+    type ArgsMut = ();
+}
 
-            let mut sector = all_sectors.get_mut(in_sector.get().into()).unwrap();
-            sector.remove_ship(&mut commands, ShipEntity::from(x.entity));
-        }
-    }
+#[derive(SystemParam)]
+pub(crate) struct TaskCompletedArgsMut<'w, 's> {
+    commands: Commands<'w, 's>,
+    all_ships_with_task: Query<'w, 's, (&'static ShipTask<UseGate>, &'static mut ShipVelocity)>,
+    all_sectors: Query<'w, 's, &'static mut Sector>,
+}
 
-    pub(crate) fn cancel_task_inside_queue() {
-        // Nothing needs to be done
-    }
+impl<'w, 's> TaskCompletedEventHandler<'w, 's, UseGate> for UseGate {
+    type Args = ();
+    type ArgsMut = TaskCompletedArgsMut<'w, 's>;
 
-    pub(crate) fn abort_running_task() {
-        panic!("UseGate cannot be aborted!");
+    fn on_task_completed(
+        event: &TaskCompletedEvent<UseGate>,
+        _args: &StaticSystemParam<Self::Args>,
+        args_mut: &mut StaticSystemParam<Self::ArgsMut>,
+    ) -> Result<(), BevyError> {
+        let args_mut = args_mut.deref_mut();
+        let (task, mut velocity) = args_mut.all_ships_with_task.get_mut(event.entity.into())?;
+
+        args_mut
+            .all_sectors
+            .get_mut(task.exit_sector.into())?
+            .add_ship(
+                &mut args_mut.commands,
+                task.exit_sector,
+                ShipEntity::from(event.entity),
+            );
+
+        velocity.forward *= 0.5;
+
+        Ok(())
     }
 }
