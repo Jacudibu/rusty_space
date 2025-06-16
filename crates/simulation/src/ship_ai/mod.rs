@@ -3,15 +3,11 @@ mod create_tasks_following_path;
 pub mod plugin;
 mod ship_task;
 mod stop_idle_ships;
-pub mod task_cancellation_active;
-pub mod task_cancellation_in_queue;
-mod task_completed;
-mod task_creation;
 mod task_filters;
+pub(crate) mod task_lifecycle_traits;
 mod task_metadata;
+mod task_preconditions;
 mod task_result;
-mod task_runner;
-mod task_started;
 mod tasks;
 mod trade_plan;
 

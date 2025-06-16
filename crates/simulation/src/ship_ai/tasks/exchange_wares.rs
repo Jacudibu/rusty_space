@@ -1,15 +1,15 @@
 use crate::ship_ai::TaskComponent;
 use crate::ship_ai::ship_task::ShipTask;
-use crate::ship_ai::task_cancellation_active::TaskCancellationForActiveTaskEventHandler;
-use crate::ship_ai::task_cancellation_in_queue::TaskCancellationForTaskInQueueEventHandler;
-use crate::ship_ai::task_completed::TaskCompletedEventHandler;
-use crate::ship_ai::task_creation::{
+use crate::ship_ai::task_lifecycle_traits::task_cancellation_active::TaskCancellationForActiveTaskEventHandler;
+use crate::ship_ai::task_lifecycle_traits::task_cancellation_in_queue::TaskCancellationForTaskInQueueEventHandler;
+use crate::ship_ai::task_lifecycle_traits::task_completed::TaskCompletedEventHandler;
+use crate::ship_ai::task_lifecycle_traits::task_creation::{
     GeneralPathfindingArgs, TaskCreationError, TaskCreationErrorReason, TaskCreationEventHandler,
-    create_preconditions_and_dock_at_entity,
 };
+use crate::ship_ai::task_lifecycle_traits::task_started::TaskStartedEventHandler;
+use crate::ship_ai::task_lifecycle_traits::task_update_runner::TaskUpdateRunner;
+use crate::ship_ai::task_preconditions::create_preconditions_and_dock_at_entity;
 use crate::ship_ai::task_result::TaskResult;
-use crate::ship_ai::task_runner::TaskRunner;
-use crate::ship_ai::task_started::TaskStartedEventHandler;
 use crate::ship_ai::tasks::send_completion_events;
 use bevy::ecs::system::{StaticSystemParam, SystemParam};
 use bevy::prelude::{BevyError, Entity, EventWriter, Query, Res};
@@ -102,7 +102,7 @@ pub(crate) struct RunTasksArgs<'w, 's> {
     ships: Query<'w, 's, (Entity, &'static ShipTask<ExchangeWares>)>,
 }
 
-impl<'w, 's> TaskRunner<'w, 's, ExchangeWares> for ExchangeWares {
+impl<'w, 's> TaskUpdateRunner<'w, 's, ExchangeWares> for ExchangeWares {
     type Args = RunTasksArgs<'w, 's>;
 
     fn run_all_tasks(

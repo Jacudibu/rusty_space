@@ -1,8 +1,9 @@
 use crate::ship_ai::TaskComponent;
 use crate::ship_ai::ship_task::ShipTask;
-use crate::ship_ai::task_creation::{
-    GeneralPathfindingArgs, TaskCreationEventHandler, create_preconditions_and_move_to_entity,
+use crate::ship_ai::task_lifecycle_traits::task_creation::{
+    GeneralPathfindingArgs, TaskCreationEventHandler,
 };
+use crate::ship_ai::task_preconditions::create_preconditions_and_move_to_entity;
 use crate::ship_ai::tasks::{finish_interaction, send_completion_events};
 use bevy::ecs::system::StaticSystemParam;
 use bevy::log::error;

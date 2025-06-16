@@ -1,18 +1,17 @@
 use crate::ship_ai::ship_task::ShipTask;
-use crate::ship_ai::task_cancellation_active::{
+use crate::ship_ai::task_lifecycle_traits::task_cancellation_active::{
     TaskCancellationForActiveTaskEventHandler, TaskCancellationWhileActiveRequest,
 };
-use crate::ship_ai::task_cancellation_in_queue::{
+use crate::ship_ai::task_lifecycle_traits::task_cancellation_in_queue::{
     TaskCancellationForTaskInQueueEventHandler, TaskCancellationWhileInQueueRequest,
 };
-use crate::ship_ai::task_completed::TaskCompletedEventHandler;
-use crate::ship_ai::task_creation::TaskCreationEventHandler;
-use crate::ship_ai::task_runner::TaskRunner;
-use crate::ship_ai::task_started::TaskStartedEventHandler;
+use crate::ship_ai::task_lifecycle_traits::task_completed::TaskCompletedEventHandler;
+use crate::ship_ai::task_lifecycle_traits::task_creation::TaskCreationEventHandler;
+use crate::ship_ai::task_lifecycle_traits::task_started::TaskStartedEventHandler;
+use crate::ship_ai::task_lifecycle_traits::task_update_runner::TaskUpdateRunner;
+use crate::ship_ai::task_lifecycle_traits::{task_cancellation_active, task_cancellation_in_queue};
 use crate::ship_ai::tasks::apply_next_task;
-use crate::ship_ai::{
-    behaviors, stop_idle_ships, task_cancellation_active, task_cancellation_in_queue,
-};
+use crate::ship_ai::{behaviors, stop_idle_ships};
 use bevy::app::App;
 use bevy::log::error;
 use bevy::prelude::{
@@ -124,7 +123,7 @@ where
         + TaskCreationEventHandler<'static, 'static, Task>
         + TaskStartedEventHandler<'static, 'static, Task>
         + TaskCancellationForTaskInQueueEventHandler<'static, 'static, Task>
-        + TaskRunner<'static, 'static, Task>
+        + TaskUpdateRunner<'static, 'static, Task>
         + TaskCancellationForActiveTaskEventHandler<'static, 'static, Task>
         + TaskCompletedEventHandler<'static, 'static, Task>,
 {
