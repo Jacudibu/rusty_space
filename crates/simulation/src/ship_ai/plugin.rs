@@ -14,7 +14,6 @@ use crate::ship_ai::{
     behaviors, stop_idle_ships, task_cancellation_active, task_cancellation_in_queue,
 };
 use bevy::app::App;
-use bevy::ecs::system::SystemParam;
 use bevy::log::error;
 use bevy::prelude::{
     Commands, EventReader, FixedPostUpdate, FixedPreUpdate, FixedUpdate, IntoScheduleConfigs,

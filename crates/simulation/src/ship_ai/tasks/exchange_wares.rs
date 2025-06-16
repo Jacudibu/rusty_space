@@ -1,3 +1,4 @@
+use crate::ship_ai::TaskComponent;
 use crate::ship_ai::ship_task::ShipTask;
 use crate::ship_ai::task_cancellation_active::TaskCancellationForActiveTaskEventHandler;
 use crate::ship_ai::task_cancellation_in_queue::TaskCancellationForTaskInQueueEventHandler;
@@ -10,7 +11,6 @@ use crate::ship_ai::task_result::TaskResult;
 use crate::ship_ai::task_runner::TaskRunner;
 use crate::ship_ai::task_started::TaskStartedEventHandler;
 use crate::ship_ai::tasks::send_completion_events;
-use crate::ship_ai::{NoArgs, TaskComponent};
 use bevy::ecs::system::{StaticSystemParam, SystemParam};
 use bevy::prelude::{BevyError, Entity, EventWriter, Query, Res};
 use common::components::task_kind::TaskKind;
@@ -139,7 +139,7 @@ fn run_task(task: &ShipTask<ExchangeWares>, now: CurrentSimulationTimestamp) -> 
 }
 
 impl<'w, 's> TaskCancellationForActiveTaskEventHandler<'w, 's, ExchangeWares> for ExchangeWares {
-    type Args = NoArgs;
+    type Args = ();
 }
 
 #[derive(SystemParam)]

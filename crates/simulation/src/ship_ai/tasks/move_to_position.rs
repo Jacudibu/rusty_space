@@ -1,11 +1,11 @@
+use crate::ship_ai::TaskComponent;
 use crate::ship_ai::ship_task::ShipTask;
 use crate::ship_ai::task_creation::{
     GeneralPathfindingArgs, TaskCreationEventHandler, create_preconditions_and_move_to_sector,
 };
 use crate::ship_ai::task_result::TaskResult;
 use crate::ship_ai::tasks::{move_to_entity, send_completion_events};
-use crate::ship_ai::{NoArgs, TaskComponent};
-use bevy::ecs::system::{StaticSystemParam, SystemParam};
+use bevy::ecs::system::StaticSystemParam;
 use bevy::prelude::{BevyError, Entity, EventWriter, Query, Res, Time};
 use common::components::Engine;
 use common::components::ship_velocity::ShipVelocity;
@@ -68,7 +68,7 @@ impl ShipTask<MoveToPosition> {
 }
 
 impl<'w, 's> TaskCreationEventHandler<'w, 's, MoveToPosition> for MoveToPosition {
-    type Args = NoArgs;
+    type Args = ();
 
     fn create_tasks_for_command(
         event: &InsertTaskIntoQueueCommand<MoveToPosition>,

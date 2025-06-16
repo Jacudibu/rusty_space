@@ -15,7 +15,6 @@ mod task_started;
 mod tasks;
 mod trade_plan;
 
-use bevy::ecs::system::SystemParam;
 use bevy::prelude::Component;
 
 /// Marker trait to denote that a struct is used to describe Ship Tasks.
@@ -24,7 +23,3 @@ pub trait TaskComponent: Component + Send + Sync + 'static {
     /// Some tasks cannot be aborted because there's no way to stop midway, such as using a gate.
     fn can_be_cancelled_while_active() -> bool;
 }
-
-/// Empty [SystemParam], for our generic systems which don't need any extra arguments to function.
-#[derive(SystemParam)]
-pub struct NoArgs {}

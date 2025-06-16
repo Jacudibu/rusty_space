@@ -1,10 +1,10 @@
+use crate::ship_ai::TaskComponent;
 use crate::ship_ai::ship_task::ShipTask;
 use crate::ship_ai::task_creation::{
     GeneralPathfindingArgs, TaskCreationEventHandler, create_preconditions_and_move_to_entity,
 };
 use crate::ship_ai::tasks::send_completion_events;
-use crate::ship_ai::{NoArgs, TaskComponent};
-use bevy::ecs::system::{StaticSystemParam, SystemParam};
+use bevy::ecs::system::StaticSystemParam;
 use bevy::prelude::{BevyError, Entity, EventReader, EventWriter, Query, Res};
 use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
@@ -173,7 +173,7 @@ impl ShipTask<MineAsteroid> {
 }
 
 impl<'w, 's> TaskCreationEventHandler<'w, 's, MineAsteroid> for MineAsteroid {
-    type Args = NoArgs;
+    type Args = ();
 
     fn create_tasks_for_command(
         event: &InsertTaskIntoQueueCommand<MineAsteroid>,

@@ -1,9 +1,9 @@
+use crate::ship_ai::TaskComponent;
 use crate::ship_ai::ship_task::ShipTask;
 use crate::ship_ai::task_creation::{
     GeneralPathfindingArgs, TaskCreationEventHandler, create_preconditions_and_move_to_entity,
 };
-use crate::ship_ai::{NoArgs, TaskComponent};
-use bevy::ecs::system::{StaticSystemParam, SystemParam};
+use bevy::ecs::system::StaticSystemParam;
 use bevy::prelude::{BevyError, EventReader, Query, Res, error};
 use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
@@ -83,7 +83,7 @@ pub fn deregister_ship(site: &mut ConstructionSite, entity: ShipEntity) {
 }
 
 impl<'w, 's> TaskCreationEventHandler<'w, 's, Construct> for Construct {
-    type Args = NoArgs;
+    type Args = ();
 
     fn create_tasks_for_command(
         event: &InsertTaskIntoQueueCommand<Construct>,

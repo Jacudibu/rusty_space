@@ -1,6 +1,6 @@
 use crate::TaskCancellationWhileActiveRequest;
 use bevy::ecs::system::{StaticSystemParam, SystemParam};
-use bevy::prelude::{BevyError, Commands, Entity, Event, EventReader, EventWriter, Query};
+use bevy::prelude::{BevyError, Event, EventReader, EventWriter, Query};
 use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
 use common::constants::BevyResult;
