@@ -96,6 +96,7 @@ impl Error for TaskCreationError {}
 #[derive(Debug)]
 /// An enum to further explain what went wrong during task creation.
 pub(crate) enum TaskCreationErrorReason {
+    CreationOfThisTaskIsNotSupported,
     OwnEntityNotFound,
     TargetNotFound,
     BothNotFound,

@@ -54,7 +54,6 @@ fn enable_abortion(app: &mut App) {
     app.add_event::<TaskCanceledWhileActiveEvent<MoveToEntity>>();
     app.add_event::<TaskCanceledWhileActiveEvent<MoveToPosition>>();
     app.add_event::<TaskCanceledWhileActiveEvent<MoveToSector>>();
-    app.add_event::<TaskCanceledWhileActiveEvent<RequestAccess>>();
 
     app.add_systems(
         FixedPreUpdate,
@@ -75,8 +74,6 @@ fn enable_abortion(app: &mut App) {
                 .run_if(on_event::<TaskCanceledWhileActiveEvent<MoveToPosition>>),
             abort_tasks::<MoveToSector>
                 .run_if(on_event::<TaskCanceledWhileActiveEvent<MoveToSector>>),
-            abort_tasks::<RequestAccess>
-                .run_if(on_event::<TaskCanceledWhileActiveEvent<RequestAccess>>),
         ),
     );
 }
@@ -97,7 +94,6 @@ fn enable_cancellation(app: &mut App) {
     app.add_event::<TaskCanceledWhileInQueueEvent<MoveToEntity>>();
     app.add_event::<TaskCanceledWhileInQueueEvent<MoveToPosition>>();
     app.add_event::<TaskCanceledWhileInQueueEvent<MoveToSector>>();
-    app.add_event::<TaskCanceledWhileInQueueEvent<RequestAccess>>();
 
     app.add_systems(
         FixedPreUpdate,
@@ -107,6 +103,7 @@ fn enable_cancellation(app: &mut App) {
 
     register_task_lifecycle::<DockAtEntity>(app);
     register_task_lifecycle::<ExchangeWares>(app);
+    register_task_lifecycle::<RequestAccess>(app);
     register_task_lifecycle::<Undock>(app);
     register_task_lifecycle::<UseGate>(app);
 }
@@ -264,16 +261,9 @@ impl Plugin for ShipAiPlugin {
                 .run_if(in_state(SimulationState::Running)),
         );
 
-        app.add_event::<TaskCompletedEvent<RequestAccess>>();
         app.add_systems(
             FixedUpdate,
-            (
-                stop_idle_ships::stop_idle_ships,
-                ShipTask::<RequestAccess>::run_tasks,
-                complete_tasks::<RequestAccess>
-                    .run_if(on_event::<TaskCompletedEvent<RequestAccess>>),
-            )
-                .run_if(in_state(SimulationState::Running)),
+            (stop_idle_ships::stop_idle_ships,).run_if(in_state(SimulationState::Running)),
         );
 
         app.add_event::<TaskCompletedEvent<AwaitingSignal>>();
