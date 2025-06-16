@@ -49,7 +49,7 @@ pub(crate) trait TaskCancellationForTaskInQueueEventHandler<'w, 's, TaskData: Sh
         false
     }
 
-    /// If set to true, the event listener system won't be registered at all.
+    /// If set to true, the event listener system won't be registered at all. Only do this if there's no custom logic necessary.
     fn skip_cancelled_in_queue() -> bool {
         false
     }

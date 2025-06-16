@@ -1,16 +1,28 @@
 use crate::TaskComponent;
-use crate::tasks::send_completion_events;
+use crate::task_lifecycle_traits::task_cancellation_active::TaskCancellationForActiveTaskEventHandler;
+use crate::task_lifecycle_traits::task_cancellation_in_queue::TaskCancellationForTaskInQueueEventHandler;
+use crate::task_lifecycle_traits::task_completed::TaskCompletedEventHandler;
+use crate::task_lifecycle_traits::task_creation::{
+    GeneralPathfindingArgs, TaskCreationEventHandler,
+};
+use crate::task_lifecycle_traits::task_started::TaskStartedEventHandler;
+use crate::task_lifecycle_traits::task_update_runner::TaskUpdateRunner;
 use crate::utility::ship_task::ShipTask;
 use crate::utility::task_result::TaskResult;
+use bevy::ecs::system::{StaticSystemParam, SystemParam};
 use bevy::math::{Rot2, Vec2};
-use bevy::prelude::{Entity, EventWriter, Query, Res, Time, warn};
+use bevy::prelude::{BevyError, Entity, Query, Res, Time, warn};
 use common::components::Engine;
 use common::components::ship_velocity::ShipVelocity;
-use common::events::task_events::TaskCompletedEvent;
+use common::components::task_kind::TaskKind;
+use common::components::task_queue::TaskQueue;
+use common::events::task_events::{InsertTaskIntoQueueCommand, TaskCompletedEvent};
 use common::simulation_transform::SimulationTransform;
 use common::types::entity_wrappers::TypedEntity;
 use common::types::ship_tasks::MoveToEntity;
+use std::collections::VecDeque;
 use std::f32::consts::{FRAC_PI_2, PI};
+use std::ops::{Deref, DerefMut};
 use std::sync::{Arc, Mutex};
 
 impl TaskComponent for ShipTask<MoveToEntity> {
@@ -143,17 +155,42 @@ pub(crate) fn are_we_facing_the_target(angle_difference: f32) -> bool {
     angle_difference.abs() < std::f32::consts::FRAC_PI_3
 }
 
-impl ShipTask<MoveToEntity> {
-    pub fn run_tasks(
-        event_writer: EventWriter<TaskCompletedEvent<MoveToEntity>>,
-        time: Res<Time>,
-        mut ships: Query<(Entity, &Self, &Engine, &mut ShipVelocity)>,
-        all_transforms: Query<&SimulationTransform>,
-    ) {
-        let task_completions = Arc::new(Mutex::new(Vec::<TaskCompletedEvent<MoveToEntity>>::new()));
-        let delta_seconds = time.delta_secs();
+#[derive(SystemParam)]
+pub struct TaskUpdateRunnerArgs<'w, 's> {
+    time: Res<'w, Time>,
+    all_transforms: Query<'w, 's, &'static SimulationTransform>,
+}
 
-        ships
+#[derive(SystemParam)]
+pub struct TaskUpdateRunnerArgsMut<'w, 's> {
+    ships: Query<
+        'w,
+        's,
+        (
+            Entity,
+            &'static ShipTask<MoveToEntity>,
+            &'static Engine,
+            &'static mut ShipVelocity,
+        ),
+    >,
+}
+
+impl<'w, 's> TaskUpdateRunner<'w, 's, Self> for MoveToEntity {
+    type Args = TaskUpdateRunnerArgs<'w, 's>;
+    type ArgsMut = TaskUpdateRunnerArgsMut<'w, 's>;
+
+    fn run_all_tasks(
+        args: StaticSystemParam<Self::Args>,
+        mut args_mut: StaticSystemParam<Self::ArgsMut>,
+    ) -> Result<Arc<Mutex<Vec<TaskCompletedEvent<Self>>>>, BevyError> {
+        let args = args.deref();
+        let args_mut = args_mut.deref_mut();
+
+        let task_completions = Arc::new(Mutex::new(Vec::<TaskCompletedEvent<Self>>::new()));
+        let delta_seconds = args.time.delta_secs();
+
+        args_mut
+            .ships
             .par_iter_mut()
             .for_each(|(entity, task, engine, mut velocity)| {
                 match move_to_entity(
@@ -161,7 +198,7 @@ impl ShipTask<MoveToEntity> {
                     task.target,
                     task.desired_distance_to_target,
                     task.stop_at_target,
-                    &all_transforms,
+                    &args.all_transforms,
                     engine,
                     &mut velocity,
                     delta_seconds,
@@ -170,18 +207,71 @@ impl ShipTask<MoveToEntity> {
                     TaskResult::Finished | TaskResult::Aborted => task_completions
                         .lock()
                         .unwrap()
-                        .push(TaskCompletedEvent::<MoveToEntity>::new(entity.into())),
+                        .push(TaskCompletedEvent::<Self>::new(entity.into())),
                 }
             });
 
-        send_completion_events(event_writer, task_completions);
+        Ok(task_completions)
+    }
+}
+
+impl<'w, 's> TaskCreationEventHandler<'w, 's, Self> for MoveToEntity {
+    type Args = ();
+    type ArgsMut = ();
+
+    fn create_tasks_for_command(
+        _event: &InsertTaskIntoQueueCommand<Self>,
+        _task_queue: &TaskQueue,
+        _general_pathfinding_args: &GeneralPathfindingArgs,
+        _args: &StaticSystemParam<Self::Args>,
+        _args_mut: &mut StaticSystemParam<Self::ArgsMut>,
+    ) -> Result<VecDeque<TaskKind>, BevyError> {
+        todo!(
+            "that's gotta wait until we have all the entity position update listening figured out"
+        )
+    }
+}
+
+impl<'w, 's> TaskStartedEventHandler<'w, 's, Self> for MoveToEntity {
+    type Args = ();
+    type ArgsMut = ();
+
+    fn skip_started() -> bool {
+        true
+    }
+}
+
+impl<'w, 's> TaskCancellationForTaskInQueueEventHandler<'w, 's, Self> for MoveToEntity {
+    type Args = ();
+    type ArgsMut = ();
+
+    fn can_task_be_cancelled_while_in_queue() -> bool {
+        true
     }
 
-    pub(crate) fn cancel_task_inside_queue() {
-        // Nothing needs to be done
+    fn skip_cancelled_in_queue() -> bool {
+        true
+    }
+}
+
+impl<'w, 's> TaskCancellationForActiveTaskEventHandler<'w, 's, Self> for MoveToEntity {
+    type Args = ();
+    type ArgsMut = ();
+
+    fn can_task_be_cancelled_while_active() -> bool {
+        true
     }
 
-    pub(crate) fn abort_running_task() {
-        // Nothing needs to be done
+    fn skip_cancelled_while_active() -> bool {
+        true
+    }
+}
+
+impl<'w, 's> TaskCompletedEventHandler<'w, 's, Self> for MoveToEntity {
+    type Args = ();
+    type ArgsMut = ();
+
+    fn skip_completed() -> bool {
+        true
     }
 }

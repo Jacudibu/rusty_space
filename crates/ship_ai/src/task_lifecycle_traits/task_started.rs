@@ -11,7 +11,7 @@ pub(crate) trait TaskStartedEventHandler<'w, 's, Task: ShipTaskData> {
     /// The mutable arguments used when calling the functions of this trait.
     type ArgsMut: SystemParam;
 
-    /// If set to true, the event listener system won't be registered at all.
+    /// If set to true, the event listener system won't be registered at all. Only do this if there's no custom logic necessary.
     fn skip_started() -> bool {
         false
     }

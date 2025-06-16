@@ -57,7 +57,7 @@ pub(crate) trait TaskCancellationForActiveTaskEventHandler<'w, 's, TaskData: Shi
         false
     }
 
-    /// If set to true, the event listener system won't be registered at all.
+    /// If set to true, the event listener system won't be registered at all. Only do this if there's no custom logic necessary.
     fn skip_cancelled_while_active() -> bool {
         true
     }

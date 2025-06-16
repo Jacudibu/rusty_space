@@ -35,7 +35,6 @@ fn enable_insert_task_into_queue_commands(app: &mut App) {
     app.add_event::<InsertTaskIntoQueueCommand<Construct>>();
     app.add_event::<InsertTaskIntoQueueCommand<HarvestGas>>();
     app.add_event::<InsertTaskIntoQueueCommand<MineAsteroid>>();
-    app.add_event::<InsertTaskIntoQueueCommand<MoveToSector>>();
 }
 
 // TODO: clean up once we reunify task registration
@@ -50,8 +49,6 @@ fn enable_abortion(app: &mut App) {
     app.add_event::<TaskCanceledWhileActiveEvent<Construct>>();
     app.add_event::<TaskCanceledWhileActiveEvent<HarvestGas>>();
     app.add_event::<TaskCanceledWhileActiveEvent<MineAsteroid>>();
-    app.add_event::<TaskCanceledWhileActiveEvent<MoveToEntity>>();
-    app.add_event::<TaskCanceledWhileActiveEvent<MoveToSector>>();
 
     app.add_systems(
         FixedPreUpdate,
@@ -66,10 +63,6 @@ fn enable_abortion(app: &mut App) {
             abort_tasks::<HarvestGas>.run_if(on_event::<TaskCanceledWhileActiveEvent<HarvestGas>>),
             abort_tasks::<MineAsteroid>
                 .run_if(on_event::<TaskCanceledWhileActiveEvent<MineAsteroid>>),
-            abort_tasks::<MoveToEntity>
-                .run_if(on_event::<TaskCanceledWhileActiveEvent<MoveToEntity>>),
-            abort_tasks::<MoveToSector>
-                .run_if(on_event::<TaskCanceledWhileActiveEvent<MoveToSector>>),
         ),
     );
 }
@@ -87,8 +80,6 @@ fn enable_cancellation(app: &mut App) {
     app.add_event::<TaskCanceledWhileInQueueEvent<Construct>>();
     app.add_event::<TaskCanceledWhileInQueueEvent<HarvestGas>>();
     app.add_event::<TaskCanceledWhileInQueueEvent<MineAsteroid>>();
-    app.add_event::<TaskCanceledWhileInQueueEvent<MoveToEntity>>();
-    app.add_event::<TaskCanceledWhileInQueueEvent<MoveToSector>>();
 
     app.add_systems(
         FixedPreUpdate,
@@ -98,7 +89,9 @@ fn enable_cancellation(app: &mut App) {
 
     register_task_lifecycle::<DockAtEntity>(app);
     register_task_lifecycle::<ExchangeWares>(app);
+    register_task_lifecycle::<MoveToEntity>(app);
     register_task_lifecycle::<MoveToPosition>(app);
+    register_task_lifecycle::<MoveToSector>(app);
     register_task_lifecycle::<RequestAccess>(app);
     register_task_lifecycle::<Undock>(app);
     register_task_lifecycle::<UseGate>(app);
@@ -202,29 +195,6 @@ impl Plugin for ShipAiPlugin {
             (
                 ShipTask::<Construct>::run_tasks,
                 complete_tasks::<Construct>.run_if(on_event::<TaskCompletedEvent<Construct>>),
-            )
-                .chain()
-                .run_if(in_state(SimulationState::Running)),
-        );
-
-        app.add_event::<TaskCompletedEvent<MoveToEntity>>();
-        app.add_systems(
-            FixedUpdate,
-            (
-                ShipTask::<MoveToEntity>::run_tasks,
-                complete_tasks::<MoveToEntity>.run_if(on_event::<TaskCompletedEvent<MoveToEntity>>),
-            )
-                .chain()
-                .run_if(in_state(SimulationState::Running)),
-        );
-
-        app.add_event::<TaskCompletedEvent<MoveToSector>>();
-        app.add_systems(Update, MoveToSector::task_creation_event_listener);
-        app.add_systems(
-            FixedUpdate,
-            (
-                ShipTask::<MoveToSector>::run_tasks,
-                complete_tasks::<MoveToSector>.run_if(on_event::<TaskCompletedEvent<MoveToSector>>),
             )
                 .chain()
                 .run_if(in_state(SimulationState::Running)),
