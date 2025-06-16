@@ -1,5 +1,5 @@
 use crate::can_task_be_cancelled_while_active;
-use crate::ship_ai::tasks::apply_next_task;
+use crate::tasks::apply_next_task;
 use bevy::ecs::system::{StaticSystemParam, SystemParam};
 use bevy::log::warn;
 use bevy::prelude::{BevyError, Commands, Entity, EventReader, Query, Transform};

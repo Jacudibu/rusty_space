@@ -1,11 +1,11 @@
-use crate::ship_ai::TaskComponent;
-use crate::ship_ai::ship_task::ShipTask;
-use crate::ship_ai::task_lifecycle_traits::task_creation::{
+use crate::TaskComponent;
+use crate::task_lifecycle_traits::task_creation::{
     GeneralPathfindingArgs, TaskCreationEventHandler,
 };
-use crate::ship_ai::task_preconditions::create_preconditions_and_move_to_sector;
-use crate::ship_ai::task_result::TaskResult;
-use crate::ship_ai::tasks::{move_to_entity, send_completion_events};
+use crate::tasks::{move_to_entity, send_completion_events};
+use crate::utility::ship_task::ShipTask;
+use crate::utility::task_preconditions::create_preconditions_and_move_to_sector;
+use crate::utility::task_result::TaskResult;
 use bevy::ecs::system::StaticSystemParam;
 use bevy::prelude::{BevyError, Entity, EventWriter, Query, Res, Time};
 use common::components::Engine;

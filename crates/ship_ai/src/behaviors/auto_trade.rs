@@ -1,7 +1,7 @@
 use bevy::prelude::{Entity, EventWriter, Query, Res};
 
-use crate::ship_ai::task_filters::ShipIsIdleFilter;
-use crate::ship_ai::trade_plan::TradePlan;
+use crate::utility::task_filters::ShipIsIdleFilter;
+use crate::utility::trade_plan::TradePlan;
 use common::components::ship_behavior::ShipBehavior;
 use common::components::{BuyOrders, InSector, Inventory, SellOrders};
 use common::constants;

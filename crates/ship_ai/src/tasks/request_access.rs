@@ -1,5 +1,5 @@
-use crate::ship_ai::TaskComponent;
-use crate::ship_ai::ship_task::ShipTask;
+use crate::TaskComponent;
+use crate::utility::ship_task::ShipTask;
 use bevy::prelude::{BevyError, Entity, EventWriter, Query};
 use common::components::DockingBay;
 use common::components::interaction_queue::{InteractionQueue, InteractionQueueResult};

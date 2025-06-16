@@ -1,5 +1,5 @@
 [package]
-name = "simulation"
+name = "ship_ai"
 version = "0.1.0"
 edition = "2024"
 
@@ -8,7 +8,7 @@ bevy = "0.16.0"
 
 # internal dependencies
 common = { workspace = true }
-entity_spawners = { workspace = true }
+pathfinding = { workspace = true }
 
 [dev-dependencies]
 test_utils = { workspace = true }

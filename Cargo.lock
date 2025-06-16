@@ -4631,6 +4631,7 @@ dependencies = [
  "hexx",
  "iyes_perf_ui",
  "persistence",
+ "ship_ai",
  "ship_user_controller",
  "simulation",
  "test_utils",
@@ -4773,6 +4774,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "ship_ai"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "common",
+ "pathfinding",
+ "test_utils",
+]
+
+[[package]]
 name = "ship_user_controller"
 version = "0.1.0"
 dependencies = [
@@ -4811,7 +4822,6 @@ dependencies = [
  "bevy",
  "common",
  "entity_spawners",
- "pathfinding",
  "test_utils",
 ]
 

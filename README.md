@@ -13,18 +13,19 @@ flowchart BT
     entity_selection --> common
 
     entity_spawners --> persistence
+    ship_user_controller --> entity_selection
 
+    ship_ai --> pathfinding
     universe_builder --> entity_spawners
     universe_loader --> entity_spawners
     simulation --> entity_spawners
 
-    simulation --> pathfinding
-    ship_user_controller --> entity_selection
 
     main --> entity_selection
     main --> universe_builder
     main --> universe_loader
     main --> simulation
+    main --> ship_ai
     main --> ship_user_controller
     main --> camera
 ```

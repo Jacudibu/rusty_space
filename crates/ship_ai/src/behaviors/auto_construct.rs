@@ -1,4 +1,4 @@
-use crate::ship_ai::task_filters::ShipIsIdleFilter;
+use crate::utility::task_filters::ShipIsIdleFilter;
 use bevy::prelude::{Entity, EventWriter, Query, Res};
 use common::components::ship_behavior::ShipBehavior;
 use common::components::{InSector, Sector};

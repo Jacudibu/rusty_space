@@ -1,15 +1,15 @@
-use crate::ship_ai::TaskComponent;
-use crate::ship_ai::ship_task::ShipTask;
-use crate::ship_ai::task_lifecycle_traits::task_cancellation_active::TaskCancellationForActiveTaskEventHandler;
-use crate::ship_ai::task_lifecycle_traits::task_cancellation_in_queue::TaskCancellationForTaskInQueueEventHandler;
-use crate::ship_ai::task_lifecycle_traits::task_completed::TaskCompletedEventHandler;
-use crate::ship_ai::task_lifecycle_traits::task_creation::{
+use crate::TaskComponent;
+use crate::task_lifecycle_traits::task_cancellation_active::TaskCancellationForActiveTaskEventHandler;
+use crate::task_lifecycle_traits::task_cancellation_in_queue::TaskCancellationForTaskInQueueEventHandler;
+use crate::task_lifecycle_traits::task_completed::TaskCompletedEventHandler;
+use crate::task_lifecycle_traits::task_creation::{
     GeneralPathfindingArgs, TaskCreationEventHandler,
 };
-use crate::ship_ai::task_lifecycle_traits::task_started::TaskStartedEventHandler;
-use crate::ship_ai::task_lifecycle_traits::task_update_runner::TaskUpdateRunner;
-use crate::ship_ai::task_result::TaskResult;
-use crate::ship_ai::tasks::send_completion_events;
+use crate::task_lifecycle_traits::task_started::TaskStartedEventHandler;
+use crate::task_lifecycle_traits::task_update_runner::TaskUpdateRunner;
+use crate::tasks::send_completion_events;
+use crate::utility::ship_task::ShipTask;
+use crate::utility::task_result::TaskResult;
 use bevy::ecs::system::{StaticSystemParam, SystemParam};
 use bevy::prelude::{
     BevyError, Commands, CubicCurve, Entity, EventWriter, Query, Res, Time, Vec2, With,

@@ -1,4 +1,4 @@
-use crate::ship_ai::ship_task::ShipTask;
+use crate::utility::ship_task::ShipTask;
 use bevy::ecs::query::QueryFilter;
 use bevy::prelude::{With, Without};
 use common::components;

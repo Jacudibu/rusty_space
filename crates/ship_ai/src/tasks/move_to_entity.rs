@@ -1,7 +1,7 @@
-use crate::ship_ai::TaskComponent;
-use crate::ship_ai::ship_task::ShipTask;
-use crate::ship_ai::task_result::TaskResult;
-use crate::ship_ai::tasks::send_completion_events;
+use crate::TaskComponent;
+use crate::tasks::send_completion_events;
+use crate::utility::ship_task::ShipTask;
+use crate::utility::task_result::TaskResult;
 use bevy::math::{Rot2, Vec2};
 use bevy::prelude::{Entity, EventWriter, Query, Res, Time, warn};
 use common::components::Engine;

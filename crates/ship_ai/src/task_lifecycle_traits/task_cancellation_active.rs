@@ -1,6 +1,6 @@
-use crate::ship_ai::TaskComponent;
-use crate::ship_ai::ship_task::ShipTask;
-use crate::ship_ai::task_lifecycle_traits::task_cancellation_in_queue;
+use crate::TaskComponent;
+use crate::task_lifecycle_traits::task_cancellation_in_queue;
+use crate::utility::ship_task::ShipTask;
 use bevy::ecs::system::{StaticSystemParam, SystemParam};
 use bevy::prelude::{BevyError, Commands, Event, EventReader, EventWriter, Query, info, warn};
 use common::components::task_kind::TaskKind;

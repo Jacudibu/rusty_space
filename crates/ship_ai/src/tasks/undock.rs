@@ -1,7 +1,7 @@
-use crate::ship_ai::TaskComponent;
-use crate::ship_ai::ship_task::ShipTask;
-use crate::ship_ai::task_result::TaskResult;
-use crate::ship_ai::tasks::{dock_at_entity, send_completion_events};
+use crate::TaskComponent;
+use crate::tasks::{dock_at_entity, send_completion_events};
+use crate::utility::ship_task::ShipTask;
+use crate::utility::task_result::TaskResult;
 use bevy::log::error;
 use bevy::prelude::{Commands, Entity, EventReader, EventWriter, Query, Res, Time, Visibility};
 use common::components::ship_velocity::ShipVelocity;

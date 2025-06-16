@@ -1,5 +1,4 @@
-use crate::ship_ai::create_tasks_following_path::create_tasks_to_follow_path;
-use crate::ship_ai::task_lifecycle_traits::task_creation::{
+use crate::task_lifecycle_traits::task_creation::{
     GeneralPathfindingArgs, TaskCreationError, TaskCreationErrorReason,
 };
 use bevy::math::Vec2;
@@ -11,6 +10,7 @@ use common::constants;
 use common::simulation_transform::SimulationTransform;
 use common::types::entity_wrappers::{SectorEntity, TypedEntity};
 use common::types::ship_tasks;
+use pathfinding::PathElement;
 use std::collections::VecDeque;
 
 struct SectorAndDockingStatus {
@@ -260,4 +260,20 @@ fn create_move_to_sector_tasks(
     }
 
     Ok(())
+}
+
+/// Creates the individual tasks required to follow a precalculated path.
+pub fn create_tasks_to_follow_path(queue: &mut VecDeque<TaskKind>, path: Vec<PathElement>) {
+    for x in path {
+        queue.push_back(TaskKind::MoveToEntity {
+            data: ship_tasks::MoveToEntity {
+                target: x.gate_pair.from.into(),
+                stop_at_target: false,
+                desired_distance_to_target: 0.0,
+            },
+        });
+        queue.push_back(TaskKind::UseGate {
+            data: ship_tasks::UseGate::new(x.gate_pair.from, x.exit_sector),
+        })
+    }
 }

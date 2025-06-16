@@ -15,7 +15,7 @@ mod request_access;
 mod undock;
 mod use_gate;
 
-use crate::ship_ai::ship_task::ShipTask;
+use crate::utility::ship_task::ShipTask;
 use common::components::interaction_queue::InteractionQueue;
 use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
@@ -151,7 +151,7 @@ pub fn finish_interaction(
 
 #[cfg(test)]
 mod test {
-    use crate::ship_ai::tasks::apply_new_task_queue;
+    use crate::tasks::apply_new_task_queue;
     use bevy::app::App;
     use bevy::ecs::system::RunSystemOnce;
     use bevy::prelude::{BevyError, Commands, Entity, Query};

@@ -1,5 +1,5 @@
-use crate::ship_ai::behaviors::auto_mine;
-use crate::ship_ai::task_filters::ShipIsIdleFilter;
+use crate::behaviors::auto_mine;
+use crate::utility::task_filters::ShipIsIdleFilter;
 use bevy::prelude::{Entity, EventWriter, Query, Res};
 use common::components::celestials::GasGiant;
 use common::components::ship_behavior::ShipBehavior;

@@ -1,4 +1,4 @@
-use crate::{asteroids, construction_sites, physics, production, ship_ai};
+use crate::{asteroids, construction_sites, physics, production};
 use bevy::prelude::{
     App, ButtonInput, IntoScheduleConfigs, KeyCode, NextState, Plugin, Res, ResMut, State, Time,
     Update, Virtual, in_state,
@@ -18,7 +18,6 @@ impl Plugin for SimulationPlugin {
             construction_sites::ConstructionSiteUpdaterPlugin,
             physics::plugin::PhysicsPlugin,
             production::plugin::ProductionPlugin,
-            ship_ai::plugin::ShipAiPlugin,
         ));
         app.add_systems(
             Update,

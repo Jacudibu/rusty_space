@@ -1,15 +1,8 @@
 mod behaviors;
-mod create_tasks_following_path;
-pub mod plugin;
-mod ship_task;
-mod stop_idle_ships;
-mod task_filters;
-pub(crate) mod task_lifecycle_traits;
-mod task_metadata;
-mod task_preconditions;
-mod task_result;
+mod plugin;
+mod task_lifecycle_traits;
 mod tasks;
-mod trade_plan;
+mod utility;
 
 use bevy::prelude::Component;
 
@@ -19,3 +12,8 @@ pub trait TaskComponent: Component + Send + Sync + 'static {
     /// Some tasks cannot be aborted because there's no way to stop midway, such as using a gate.
     fn can_be_cancelled_while_active() -> bool;
 }
+
+pub use plugin::ShipAiPlugin;
+pub use task_lifecycle_traits::task_cancellation_active::TaskCancellationWhileActiveRequest;
+pub use task_lifecycle_traits::task_cancellation_active::can_task_be_cancelled_while_active;
+pub use task_lifecycle_traits::task_cancellation_in_queue::TaskCancellationWhileInQueueRequest;

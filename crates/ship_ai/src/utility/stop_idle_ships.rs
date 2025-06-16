@@ -1,4 +1,4 @@
-use crate::ship_ai::task_filters::ShipIsIdleFilter;
+use crate::utility::task_filters::ShipIsIdleFilter;
 use bevy::prelude::{Query, Res, Time, Without};
 use common::components::ship_velocity::ShipVelocity;
 use common::components::{Engine, IsDocked};
