@@ -35,16 +35,24 @@ impl<TaskData: ShipTaskData> Display for TaskCancellationInQueueNotImplementedEr
 impl<TaskData: ShipTaskData> Error for TaskCancellationInQueueNotImplementedError<TaskData> {}
 
 /// This trait needs to be implemented for all tasks.
+///
+/// Provides a blanket implementation which prints errors in case we attempt to cancel a task which
+/// is not supposed to be cancelled
 pub(crate) trait TaskCancellationForTaskInQueueEventHandler<'w, 's, TaskData: ShipTaskData> {
+    /// The immutable arguments used when calling the functions of this trait.
     type Args: SystemParam;
+    /// The mutable arguments used when calling the functions of this trait.
+    type ArgsMut: SystemParam;
 
+    /// Whether this task can be cancelled while it is still in the queue
     fn can_task_be_cancelled_while_in_queue() -> bool {
         false
     }
 
     fn on_task_cancellation_while_in_queue(
         event: &TaskCanceledWhileInQueueEvent<TaskData>,
-        _args: &mut StaticSystemParam<Self::Args>,
+        _args: &StaticSystemParam<Self::Args>,
+        _args_mut: &mut StaticSystemParam<Self::ArgsMut>,
     ) -> Result<(), BevyError> {
         Err(BevyError::from(
             TaskCancellationInQueueNotImplementedError {
@@ -58,10 +66,11 @@ pub(crate) trait TaskCancellationForTaskInQueueEventHandler<'w, 's, TaskData: Sh
     /// Usually you don't need to reimplement this.
     fn cancellation_while_in_queue_event_listener(
         mut events: EventReader<TaskCanceledWhileInQueueEvent<TaskData>>,
-        mut args: StaticSystemParam<Self::Args>,
+        args: StaticSystemParam<Self::Args>,
+        mut args_mut: StaticSystemParam<Self::ArgsMut>,
     ) -> BevyResult {
         for event in events.read() {
-            Self::on_task_cancellation_while_in_queue(event, &mut args)?;
+            Self::on_task_cancellation_while_in_queue(event, &args, &mut args_mut)?;
         }
 
         Ok(())

@@ -37,44 +37,56 @@ impl TaskComponent for ShipTask<ExchangeWares> {
 }
 
 #[derive(SystemParam)]
-pub(crate) struct TaskStartedArgs<'w, 's> {
-    all_ships_with_task: Query<'w, 's, &'static mut ShipTask<ExchangeWares>>,
+pub(crate) struct TaskStartedArgs<'w> {
     simulation_time: Res<'w, SimulationTime>,
 }
 
+#[derive(SystemParam)]
+pub(crate) struct TaskStartedArgsMut<'w, 's> {
+    all_ships_with_task: Query<'w, 's, &'static mut ShipTask<ExchangeWares>>,
+}
+
 impl<'w, 's> TaskStartedEventHandler<'w, 's, ExchangeWares> for ExchangeWares {
-    type Args = TaskStartedArgs<'w, 's>;
+    type Args = TaskStartedArgs<'w>;
+    type ArgsMut = TaskStartedArgsMut<'w, 's>;
 
     fn on_task_started(
         event: &TaskStartedEvent<ExchangeWares>,
-        args: &mut StaticSystemParam<Self::Args>,
+        args: &StaticSystemParam<Self::Args>,
+        args_mut: &mut StaticSystemParam<Self::ArgsMut>,
     ) -> Result<(), BevyError> {
-        let finishes_at = args.simulation_time.now().add_seconds(2);
-        let mut created_component = args.all_ships_with_task.get_mut(event.entity.into())?;
-        created_component.finishes_at = finishes_at;
+        let args_mut = args_mut.deref_mut();
+        let mut created_component = args_mut.all_ships_with_task.get_mut(event.entity.into())?;
+        created_component.finishes_at = args.simulation_time.now().add_seconds(2);
         Ok(())
     }
 }
 
 #[derive(SystemParam)]
-pub(crate) struct TaskCompletedArgs<'w, 's> {
-    all_ships_with_task: Query<'w, 's, &'static mut ShipTask<ExchangeWares>>,
-    all_storages: Query<'w, 's, &'static mut Inventory>,
-    inventory_update_event_writer: EventWriter<'w, InventoryUpdateForProductionEvent>,
+pub(crate) struct TaskCompletedArgs<'w> {
     item_manifest: Res<'w, ItemManifest>,
 }
 
+#[derive(SystemParam)]
+pub(crate) struct TaskCompletedArgsMut<'w, 's> {
+    all_ships_with_task: Query<'w, 's, &'static mut ShipTask<ExchangeWares>>,
+    all_storages: Query<'w, 's, &'static mut Inventory>,
+    inventory_update_event_writer: EventWriter<'w, InventoryUpdateForProductionEvent>,
+}
+
 impl<'w, 's> TaskCompletedEventHandler<'w, 's, ExchangeWares> for ExchangeWares {
-    type Args = TaskCompletedArgs<'w, 's>;
+    type Args = TaskCompletedArgs<'w>;
+    type ArgsMut = TaskCompletedArgsMut<'w, 's>;
 
     fn on_task_completed(
         event: &TaskCompletedEvent<ExchangeWares>,
-        args: &mut StaticSystemParam<Self::Args>,
+        args: &StaticSystemParam<Self::Args>,
+        args_mut: &mut StaticSystemParam<Self::ArgsMut>,
     ) -> Result<(), BevyError> {
-        let args = args.deref_mut();
-        let task = args.all_ships_with_task.get_mut(event.entity.into())?;
+        let args_mut = args_mut.deref_mut();
+        let task = args_mut.all_ships_with_task.get_mut(event.entity.into())?;
 
-        let [mut this_inv, mut other_inv] = args
+        let [mut this_inv, mut other_inv] = args_mut
             .all_storages
             .get_many_mut([event.entity.into(), task.target.into()])?;
         match task.exchange_data {
@@ -87,9 +99,11 @@ impl<'w, 's> TaskCompletedEventHandler<'w, 's, ExchangeWares> for ExchangeWares 
                 other_inv.complete_order(item_id, TradeIntent::Buy, amount, &args.item_manifest);
             }
         }
-        args.inventory_update_event_writer
+        args_mut
+            .inventory_update_event_writer
             .write(InventoryUpdateForProductionEvent::new(event.entity.into()));
-        args.inventory_update_event_writer
+        args_mut
+            .inventory_update_event_writer
             .write(InventoryUpdateForProductionEvent::new(task.target.into()));
 
         Ok(())
@@ -97,24 +111,31 @@ impl<'w, 's> TaskCompletedEventHandler<'w, 's, ExchangeWares> for ExchangeWares 
 }
 
 #[derive(SystemParam)]
-pub(crate) struct RunTasksArgs<'w, 's> {
+pub(crate) struct RunTasksArgs<'w> {
     simulation_time: Res<'w, SimulationTime>,
+}
+
+#[derive(SystemParam)]
+pub(crate) struct RunTasksArgsMut<'w, 's> {
     ships: Query<'w, 's, (Entity, &'static ShipTask<ExchangeWares>)>,
 }
 
 impl<'w, 's> TaskUpdateRunner<'w, 's, ExchangeWares> for ExchangeWares {
-    type Args = RunTasksArgs<'w, 's>;
+    type Args = RunTasksArgs<'w>;
+    type ArgsMut = RunTasksArgsMut<'w, 's>;
 
     fn run_all_tasks(
         event_writer: EventWriter<TaskCompletedEvent<ExchangeWares>>,
-        mut args: StaticSystemParam<Self::Args>,
+        args: StaticSystemParam<Self::Args>,
+        mut args_mut: StaticSystemParam<Self::ArgsMut>,
     ) -> BevyResult {
-        let args = args.deref_mut();
+        let args_mut = args_mut.deref_mut();
         let now = args.simulation_time.now();
         let task_completions =
             Arc::new(Mutex::new(Vec::<TaskCompletedEvent<ExchangeWares>>::new()));
 
-        args.ships
+        args_mut
+            .ships
             .par_iter()
             .for_each(|(entity, task)| match run_task(task, now) {
                 TaskResult::Ongoing => {}
@@ -140,15 +161,17 @@ fn run_task(task: &ShipTask<ExchangeWares>, now: CurrentSimulationTimestamp) -> 
 
 impl<'w, 's> TaskCancellationForActiveTaskEventHandler<'w, 's, ExchangeWares> for ExchangeWares {
     type Args = ();
+    type ArgsMut = ();
 }
 
 #[derive(SystemParam)]
-pub(crate) struct CancelExchangeWareArgs<'w, 's> {
+pub(crate) struct CancelExchangeWareArgsMut<'w, 's> {
     inventories: Query<'w, 's, &'static mut Inventory>,
 }
 
 impl<'w, 's> TaskCancellationForTaskInQueueEventHandler<'w, 's, ExchangeWares> for ExchangeWares {
-    type Args = CancelExchangeWareArgs<'w, 's>;
+    type Args = ();
+    type ArgsMut = CancelExchangeWareArgsMut<'w, 's>;
 
     fn can_task_be_cancelled_while_in_queue() -> bool {
         true
@@ -156,17 +179,19 @@ impl<'w, 's> TaskCancellationForTaskInQueueEventHandler<'w, 's, ExchangeWares> f
 
     fn on_task_cancellation_while_in_queue(
         event: &TaskCanceledWhileInQueueEvent<ExchangeWares>,
-        args: &mut StaticSystemParam<Self::Args>,
+        _: &StaticSystemParam<Self::Args>,
+        args_mut: &mut StaticSystemParam<Self::ArgsMut>,
     ) -> Result<(), BevyError> {
+        let args_mut = args_mut.deref_mut();
         let exchange_data = &event.task_data.exchange_data;
-        if let Ok(inventory) = args.inventories.get_mut(event.task_data.target.into()) {
+        if let Ok(inventory) = args_mut.inventories.get_mut(event.task_data.target.into()) {
             match exchange_data {
                 ExchangeWareData::Buy(item_id, amount) => {}
                 ExchangeWareData::Sell(item_id, amount) => {}
             }
         }
 
-        if let Ok(inventory) = args.inventories.get_mut(event.entity.into()) {
+        if let Ok(inventory) = args_mut.inventories.get_mut(event.entity.into()) {
             match exchange_data {
                 ExchangeWareData::Buy(item_id, amount) => {}
                 ExchangeWareData::Sell(item_id, amount) => {}
@@ -177,23 +202,29 @@ impl<'w, 's> TaskCancellationForTaskInQueueEventHandler<'w, 's, ExchangeWares> f
 }
 
 #[derive(SystemParam)]
-pub(crate) struct CreateExchangeWareArgs<'w, 's> {
-    buy_orders: Query<'w, 's, &'static mut BuyOrders>,
-    sell_orders: Query<'w, 's, &'static mut SellOrders>,
-    inventories: Query<'w, 's, &'static mut Inventory>,
+pub(crate) struct CreateExchangeWareArgs<'w> {
     item_manifest: Res<'w, ItemManifest>,
 }
 
+#[derive(SystemParam)]
+pub(crate) struct CreateExchangeWareArgsMut<'w, 's> {
+    buy_orders: Query<'w, 's, &'static mut BuyOrders>,
+    sell_orders: Query<'w, 's, &'static mut SellOrders>,
+    inventories: Query<'w, 's, &'static mut Inventory>,
+}
+
 impl<'w, 's> TaskCreationEventHandler<'w, 's, ExchangeWares> for ExchangeWares {
-    type Args = CreateExchangeWareArgs<'w, 's>;
+    type Args = CreateExchangeWareArgs<'w>;
+    type ArgsMut = CreateExchangeWareArgsMut<'w, 's>;
 
     fn create_tasks_for_command(
         event: &InsertTaskIntoQueueCommand<ExchangeWares>,
         task_queue: &TaskQueue,
         general_pathfinding_args: &GeneralPathfindingArgs,
-        args: &mut StaticSystemParam<Self::Args>,
+        args: &StaticSystemParam<Self::Args>,
+        args_mut: &mut StaticSystemParam<Self::ArgsMut>,
     ) -> Result<VecDeque<TaskKind>, BevyError> {
-        let args = args.deref_mut();
+        let args_mut = args_mut.deref_mut();
 
         let mut new_tasks = create_preconditions_and_dock_at_entity(
             event.entity,
@@ -205,12 +236,12 @@ impl<'w, 's> TaskCreationEventHandler<'w, 's, ExchangeWares> for ExchangeWares {
         // TODO: I think Inventory/Order updates should be handled within a separate event handler
         //      (which could also just listen to the task creation event)
         //      ...on the other hand side, task creation validation happening earlier and here is nice to have too?
-        let Ok([mut this_inv, mut other_inv]) = args
+        let Ok([mut this_inv, mut other_inv]) = args_mut
             .inventories
             .get_many_mut([event.entity, event.task_data.target.into()])
         else {
-            let this = args.inventories.get(event.entity);
-            let other = args.inventories.get(event.task_data.target.into());
+            let this = args_mut.inventories.get(event.entity);
+            let other = args_mut.inventories.get(event.task_data.target.into());
 
             let reason = if this.is_err() {
                 if other.is_err() {
@@ -245,15 +276,15 @@ impl<'w, 's> TaskCreationEventHandler<'w, 's, ExchangeWares> for ExchangeWares {
         update_buy_and_sell_orders_for_entity(
             event.entity,
             &this_inv,
-            &mut args.buy_orders,
-            &mut args.sell_orders,
+            &mut args_mut.buy_orders,
+            &mut args_mut.sell_orders,
             &args.item_manifest,
         );
         update_buy_and_sell_orders_for_entity(
             event.task_data.target.into(),
             &other_inv,
-            &mut args.buy_orders,
-            &mut args.sell_orders,
+            &mut args_mut.buy_orders,
+            &mut args_mut.sell_orders,
             &args.item_manifest,
         );
 

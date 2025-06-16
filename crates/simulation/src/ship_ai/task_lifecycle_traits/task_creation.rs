@@ -17,14 +17,18 @@ use std::error::Error;
 use std::fmt::{Debug, Display, Formatter};
 
 pub(crate) trait TaskCreationEventHandler<'w, 's, TaskData: ShipTaskData> {
+    /// The immutable arguments used when calling the functions of this trait.
     type Args: SystemParam;
+    /// The mutable arguments used when calling the functions of this trait.
+    type ArgsMut: SystemParam;
 
     /// Creates a VecDequeue with all subtasks necessary to achieve this Task.
     fn create_tasks_for_command(
         event: &InsertTaskIntoQueueCommand<TaskData>,
         task_queue: &TaskQueue,
         general_pathfinding_args: &GeneralPathfindingArgs,
-        args: &mut StaticSystemParam<Self::Args>,
+        args: &StaticSystemParam<Self::Args>,
+        args_mut: &mut StaticSystemParam<Self::ArgsMut>,
     ) -> Result<VecDeque<TaskKind>, BevyError>;
 
     /// Listens to [InsertTaskIntoQueueCommand]<TaskData> Events and runs [Self::create_tasks_for_command] for each.
@@ -32,13 +36,15 @@ pub(crate) trait TaskCreationEventHandler<'w, 's, TaskData: ShipTaskData> {
     fn task_creation_event_listener(
         mut events: EventReader<InsertTaskIntoQueueCommand<TaskData>>,
         general_pathfinding_args: GeneralPathfindingArgs,
-        mut args_for_creation: StaticSystemParam<Self::Args>,
+        args: StaticSystemParam<Self::Args>,
+        mut args_mut: StaticSystemParam<Self::ArgsMut>,
         mut all_task_queues: Query<&mut TaskQueue>,
         mut commands: Commands,
         mut all_task_started_event_writers: AllTaskStartedEventWriters,
     ) -> BevyResult
     where
-        TaskData: ShipTaskData + TaskCreationEventHandler<'w, 's, TaskData, Args = Self::Args>,
+        TaskData: ShipTaskData
+            + TaskCreationEventHandler<'w, 's, TaskData, Args = Self::Args, ArgsMut = Self::ArgsMut>,
     {
         for event in events.read() {
             let mut task_queue = all_task_queues.get_mut(event.entity)?;
@@ -46,7 +52,8 @@ pub(crate) trait TaskCreationEventHandler<'w, 's, TaskData: ShipTaskData> {
                 event,
                 &task_queue,
                 &general_pathfinding_args,
-                &mut args_for_creation,
+                &args,
+                &mut args_mut,
             ) {
                 Err(e) => {
                     warn!(

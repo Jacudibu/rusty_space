@@ -67,12 +67,14 @@ impl ShipTask<MoveToSector> {
 
 impl<'w, 's> TaskCreationEventHandler<'w, 's, MoveToSector> for MoveToSector {
     type Args = ();
+    type ArgsMut = ();
 
     fn create_tasks_for_command(
         event: &InsertTaskIntoQueueCommand<MoveToSector>,
         task_queue: &TaskQueue,
         general_pathfinding_args: &GeneralPathfindingArgs,
-        _args: &mut StaticSystemParam<Self::Args>,
+        _args: &StaticSystemParam<Self::Args>,
+        _args_mut: &mut StaticSystemParam<Self::ArgsMut>,
     ) -> Result<VecDeque<TaskKind>, BevyError> {
         let new_tasks = create_preconditions_and_move_to_sector(
             event.entity,

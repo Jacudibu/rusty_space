@@ -85,12 +85,14 @@ pub fn deregister_ship(site: &mut ConstructionSite, entity: ShipEntity) {
 
 impl<'w, 's> TaskCreationEventHandler<'w, 's, Construct> for Construct {
     type Args = ();
+    type ArgsMut = ();
 
     fn create_tasks_for_command(
         event: &InsertTaskIntoQueueCommand<Construct>,
         task_queue: &TaskQueue,
         general_pathfinding_args: &GeneralPathfindingArgs,
-        _: &mut StaticSystemParam<Self::Args>,
+        _args: &StaticSystemParam<Self::Args>,
+        _args_mut: &mut StaticSystemParam<Self::ArgsMut>,
     ) -> Result<VecDeque<TaskKind>, BevyError> {
         // let args = args.deref_mut();
 
