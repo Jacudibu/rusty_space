@@ -1,17 +1,31 @@
 use crate::TaskComponent;
-use crate::tasks::{dock_at_entity, send_completion_events};
+use crate::task_lifecycle_traits::task_cancellation_active::TaskCancellationForActiveTaskEventHandler;
+use crate::task_lifecycle_traits::task_cancellation_in_queue::TaskCancellationForTaskInQueueEventHandler;
+use crate::task_lifecycle_traits::task_completed::TaskCompletedEventHandler;
+use crate::task_lifecycle_traits::task_creation::{
+    GeneralPathfindingArgs, TaskCreationEventHandler,
+};
+use crate::task_lifecycle_traits::task_started::TaskStartedEventHandler;
+use crate::task_lifecycle_traits::task_update_runner::TaskUpdateRunner;
+use crate::tasks::dock_at_entity;
 use crate::utility::ship_task::ShipTask;
 use crate::utility::task_result::TaskResult;
-use bevy::log::error;
-use bevy::prelude::{Commands, Entity, EventReader, EventWriter, Query, Res, Time, Visibility};
+use bevy::ecs::system::{StaticSystemParam, SystemParam};
+use bevy::prelude::{
+    BevyError, Commands, Entity, EventReader, EventWriter, Query, Res, Time, Visibility,
+};
 use common::components::ship_velocity::ShipVelocity;
+use common::components::task_kind::TaskKind;
+use common::components::task_queue::TaskQueue;
 use common::components::{DockingBay, Engine, IsDocked};
 use common::constants;
 use common::constants::BevyResult;
-use common::events::task_events::TaskCompletedEvent;
-use common::events::task_events::TaskStartedEvent;
+use common::events::task_events::{InsertTaskIntoQueueCommand, TaskStartedEvent};
+use common::events::task_events::{TaskCanceledWhileInQueueEvent, TaskCompletedEvent};
 use common::simulation_transform::{SimulationScale, SimulationTransform};
 use common::types::ship_tasks::{AwaitingSignal, Undock};
+use std::collections::VecDeque;
+use std::ops::{Deref, DerefMut};
 use std::sync::{Arc, Mutex};
 
 impl TaskComponent for ShipTask<Undock> {
@@ -20,49 +34,69 @@ impl TaskComponent for ShipTask<Undock> {
     }
 }
 
-impl ShipTask<Undock> {
-    fn run(
-        &self,
-        transform: &SimulationTransform,
-        scale: &mut SimulationScale,
-        velocity: &mut ShipVelocity,
-        engine: &Engine,
-        delta_seconds: f32,
-    ) -> TaskResult {
-        velocity.accelerate(engine, delta_seconds);
-        if let Some(start_position) = self.start_position {
-            let ratio = start_position.distance_squared(transform.translation)
-                / constants::DOCKING_DISTANCE_TO_STATION_SQUARED;
-            if ratio > 1.0 {
-                scale.scale = 1.0;
-                TaskResult::Finished
-            } else {
-                dock_at_entity::scale_based_on_docking_distance(scale, ratio);
-                TaskResult::Ongoing
-            }
+fn run(
+    task: &ShipTask<Undock>,
+    transform: &SimulationTransform,
+    scale: &mut SimulationScale,
+    velocity: &mut ShipVelocity,
+    engine: &Engine,
+    delta_seconds: f32,
+) -> TaskResult {
+    velocity.accelerate(engine, delta_seconds);
+    if let Some(start_position) = task.start_position {
+        let ratio = start_position.distance_squared(transform.translation)
+            / constants::DOCKING_DISTANCE_TO_STATION_SQUARED;
+        if ratio > 1.0 {
+            scale.scale = 1.0;
+            TaskResult::Finished
         } else {
-            // We just started and aren't even initialized yet
+            dock_at_entity::scale_based_on_docking_distance(scale, ratio);
             TaskResult::Ongoing
         }
+    } else {
+        // We just started and aren't even initialized yet
+        TaskResult::Ongoing
     }
+}
 
-    pub fn run_tasks(
-        event_writer: EventWriter<TaskCompletedEvent<Undock>>,
-        time: Res<Time>,
-        mut ships: Query<(
+#[derive(SystemParam)]
+pub struct TaskUpdateRunnerArgs<'w> {
+    time: Res<'w, Time>,
+}
+
+#[derive(SystemParam)]
+pub struct TaskUpdateRunnerArgsMut<'w, 's> {
+    ships: Query<
+        'w,
+        's,
+        (
             Entity,
-            &Self,
-            &SimulationTransform,
-            &mut SimulationScale,
-            &Engine,
-            &mut ShipVelocity,
-        )>,
-    ) {
-        let task_completions = Arc::new(Mutex::new(Vec::<TaskCompletedEvent<Undock>>::new()));
-        let delta_seconds = time.delta_secs();
+            &'static ShipTask<Undock>,
+            &'static SimulationTransform,
+            &'static mut SimulationScale,
+            &'static Engine,
+            &'static mut ShipVelocity,
+        ),
+    >,
+}
 
-        ships.par_iter_mut().for_each(
-            |(entity, task, transform, mut scale, engine, mut velocity)| match task.run(
+impl<'w, 's> TaskUpdateRunner<'w, 's, Undock> for Undock {
+    type Args = TaskUpdateRunnerArgs<'w>;
+    type ArgsMut = TaskUpdateRunnerArgsMut<'w, 's>;
+
+    fn run_all_tasks(
+        args: StaticSystemParam<Self::Args>,
+        mut args_mut: StaticSystemParam<Self::ArgsMut>,
+    ) -> Result<Arc<Mutex<Vec<TaskCompletedEvent<Undock>>>>, BevyError> {
+        let args = args.deref();
+        let args_mut = args_mut.deref_mut();
+
+        let task_completions = Arc::new(Mutex::new(Vec::<TaskCompletedEvent<Undock>>::new()));
+        let delta_seconds = args.time.delta_secs();
+
+        args_mut.ships.par_iter_mut().for_each(
+            |(entity, task, transform, mut scale, engine, mut velocity)| match run(
+                task,
                 transform,
                 &mut scale,
                 &mut velocity,
@@ -77,60 +111,115 @@ impl ShipTask<Undock> {
             },
         );
 
-        send_completion_events(event_writer, task_completions);
+        Ok(task_completions)
     }
+}
 
-    #[allow(clippy::type_complexity)]
-    pub fn on_task_started(
-        mut commands: Commands,
-        mut all_ships_with_task: Query<(Entity, &mut Self, &SimulationTransform, &mut Visibility)>,
-        mut docking_bays: Query<&mut DockingBay>,
-        mut started_tasks: EventReader<TaskStartedEvent<Undock>>,
-    ) -> BevyResult {
-        // Compared to the other task_creation thingies we can cheat a little since we got IsDocked as a useful marker
-        for task in started_tasks.read() {
-            let Ok((entity, mut task, transform, mut visibility)) =
-                all_ships_with_task.get_mut(task.entity.into())
-            else {
-                error!(
-                    "Was unable to start undock task for entity {:?}: Entity not found.",
-                    task.entity
-                );
-                continue;
-            };
+impl<'w, 's> TaskCreationEventHandler<'w, 's, Undock> for Undock {
+    type Args = ();
+    type ArgsMut = ();
 
-            *visibility = Visibility::Inherited;
-            task.start_position = Some(transform.translation);
-            //transform.scale = constants::DOCKING_SCALE_MIN;
-            commands.entity(entity).remove::<IsDocked>();
-            docking_bays
-                .get_mut(task.from.into())?
-                .start_undocking(entity.into());
-        }
+    fn create_tasks_for_command(
+        _event: &InsertTaskIntoQueueCommand<Undock>,
+        _task_queue: &TaskQueue,
+        _general_pathfinding_args: &GeneralPathfindingArgs,
+        _args: &StaticSystemParam<Self::Args>,
+        _args_mut: &mut StaticSystemParam<Self::ArgsMut>,
+    ) -> Result<VecDeque<TaskKind>, BevyError> {
+        todo!()
+    }
+}
+
+#[derive(SystemParam)]
+pub struct TaskStartedArgsMut<'w, 's> {
+    commands: Commands<'w, 's>,
+    docking_bays: Query<'w, 's, &'static mut DockingBay>,
+    all_ships_with_task: Query<
+        'w,
+        's,
+        (
+            Entity,
+            &'static mut ShipTask<Undock>,
+            &'static SimulationTransform,
+            &'static mut Visibility,
+        ),
+    >,
+}
+
+impl<'w, 's> TaskStartedEventHandler<'w, 's, Undock> for Undock {
+    type Args = ();
+    type ArgsMut = TaskStartedArgsMut<'w, 's>;
+
+    fn on_task_started(
+        event: &TaskStartedEvent<Undock>,
+        _args: &StaticSystemParam<Self::Args>,
+        args_mut: &mut StaticSystemParam<Self::ArgsMut>,
+    ) -> Result<(), BevyError> {
+        let args_mut = args_mut.deref_mut();
+
+        let (entity, mut task, transform, mut visibility) =
+            args_mut.all_ships_with_task.get_mut(event.entity.into())?;
+
+        *visibility = Visibility::Inherited;
+        task.start_position = Some(transform.translation);
+        args_mut.commands.entity(entity).remove::<IsDocked>();
+        args_mut
+            .docking_bays
+            .get_mut(task.from.into())?
+            .start_undocking(entity.into());
 
         Ok(())
     }
+}
 
-    pub fn complete_tasks(
-        mut events: EventReader<TaskCompletedEvent<Undock>>,
-        all_ships_with_task: Query<&Self>,
-        mut awaiting_signal_event_writer: EventWriter<TaskCompletedEvent<AwaitingSignal>>,
-        mut docking_bays: Query<&mut DockingBay>,
+impl<'w, 's> TaskCancellationForTaskInQueueEventHandler<'w, 's, Undock> for Undock {
+    type Args = ();
+    type ArgsMut = ();
+
+    fn can_task_be_cancelled_while_in_queue() -> bool {
+        true
+    }
+
+    fn cancellation_while_in_queue_event_listener(
+        _events: EventReader<TaskCanceledWhileInQueueEvent<Undock>>,
+        _args: StaticSystemParam<Self::Args>,
+        _args_mut: StaticSystemParam<Self::ArgsMut>,
     ) -> BevyResult {
-        for event in events.read() {
-            let task = all_ships_with_task.get(event.entity.into())?;
-            let mut docking_bay = docking_bays.get_mut(task.from.into())?;
-            docking_bay.finish_undocking(&event.entity, &mut awaiting_signal_event_writer);
-        }
-
         Ok(())
     }
+}
 
-    pub(crate) fn cancel_task_inside_queue() {
-        // Nothing needs to be done
-    }
+impl<'w, 's> TaskCancellationForActiveTaskEventHandler<'w, 's, Undock> for Undock {
+    type Args = ();
+    type ArgsMut = ();
+}
 
-    pub(crate) fn abort_running_task() {
-        panic!("Undock cannot be aborted!");
+#[derive(SystemParam)]
+pub struct TaskRunnerArgs<'w, 's> {
+    all_ships_with_task: Query<'w, 's, &'static ShipTask<Undock>>,
+}
+#[derive(SystemParam)]
+pub struct TaskRunnerArgsMut<'w, 's> {
+    awaiting_signal_event_writer: EventWriter<'w, TaskCompletedEvent<AwaitingSignal>>,
+    docking_bays: Query<'w, 's, &'static mut DockingBay>,
+}
+
+impl<'w, 's> TaskCompletedEventHandler<'w, 's, Undock> for Undock {
+    type Args = TaskRunnerArgs<'w, 's>;
+    type ArgsMut = TaskRunnerArgsMut<'w, 's>;
+
+    fn on_task_completed(
+        event: &TaskCompletedEvent<Undock>,
+        args: &StaticSystemParam<Self::Args>,
+        args_mut: &mut StaticSystemParam<Self::ArgsMut>,
+    ) -> Result<(), BevyError> {
+        let args = args.deref();
+        let args_mut = args_mut.deref_mut();
+
+        let task = args.all_ships_with_task.get(event.entity.into())?;
+        let mut docking_bay = args_mut.docking_bays.get_mut(task.from.into())?;
+        docking_bay.finish_undocking(&event.entity, &mut args_mut.awaiting_signal_event_writer);
+
+        Ok(())
     }
 }

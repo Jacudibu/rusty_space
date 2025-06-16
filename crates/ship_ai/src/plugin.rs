@@ -54,7 +54,6 @@ fn enable_abortion(app: &mut App) {
     app.add_event::<TaskCanceledWhileActiveEvent<MoveToEntity>>();
     app.add_event::<TaskCanceledWhileActiveEvent<MoveToPosition>>();
     app.add_event::<TaskCanceledWhileActiveEvent<MoveToSector>>();
-    app.add_event::<TaskCanceledWhileActiveEvent<Undock>>();
     app.add_event::<TaskCanceledWhileActiveEvent<RequestAccess>>();
 
     app.add_systems(
@@ -76,7 +75,6 @@ fn enable_abortion(app: &mut App) {
                 .run_if(on_event::<TaskCanceledWhileActiveEvent<MoveToPosition>>),
             abort_tasks::<MoveToSector>
                 .run_if(on_event::<TaskCanceledWhileActiveEvent<MoveToSector>>),
-            abort_tasks::<Undock>.run_if(on_event::<TaskCanceledWhileActiveEvent<Undock>>),
             abort_tasks::<RequestAccess>
                 .run_if(on_event::<TaskCanceledWhileActiveEvent<RequestAccess>>),
         ),
@@ -99,7 +97,6 @@ fn enable_cancellation(app: &mut App) {
     app.add_event::<TaskCanceledWhileInQueueEvent<MoveToEntity>>();
     app.add_event::<TaskCanceledWhileInQueueEvent<MoveToPosition>>();
     app.add_event::<TaskCanceledWhileInQueueEvent<MoveToSector>>();
-    app.add_event::<TaskCanceledWhileInQueueEvent<Undock>>();
     app.add_event::<TaskCanceledWhileInQueueEvent<RequestAccess>>();
 
     app.add_systems(
@@ -110,6 +107,7 @@ fn enable_cancellation(app: &mut App) {
 
     register_task_lifecycle::<DockAtEntity>(app);
     register_task_lifecycle::<ExchangeWares>(app);
+    register_task_lifecycle::<Undock>(app);
     register_task_lifecycle::<UseGate>(app);
 }
 
@@ -222,23 +220,6 @@ impl Plugin for ShipAiPlugin {
             (
                 ShipTask::<MoveToSector>::run_tasks,
                 complete_tasks::<MoveToSector>.run_if(on_event::<TaskCompletedEvent<MoveToSector>>),
-            )
-                .chain()
-                .run_if(in_state(SimulationState::Running)),
-        );
-
-        app.add_event::<TaskCompletedEvent<Undock>>();
-        app.add_event::<TaskStartedEvent<Undock>>();
-        app.add_systems(
-            FixedPostUpdate,
-            ShipTask::<Undock>::on_task_started.run_if(in_state(SimulationState::Running)),
-        );
-        app.add_systems(
-            FixedUpdate,
-            (
-                ShipTask::<Undock>::run_tasks,
-                ShipTask::<Undock>::complete_tasks,
-                complete_tasks::<Undock>.run_if(on_event::<TaskCompletedEvent<Undock>>),
             )
                 .chain()
                 .run_if(in_state(SimulationState::Running)),
