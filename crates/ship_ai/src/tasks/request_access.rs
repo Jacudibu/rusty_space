@@ -14,12 +14,9 @@ use common::components::DockingBay;
 use common::components::interaction_queue::{InteractionQueue, InteractionQueueResult};
 use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
-use common::events::task_events::{
-    InsertTaskIntoQueueCommand, TaskCanceledWhileInQueueEvent, TaskCompletedEvent, TaskStartedEvent,
-};
+use common::events::task_events::{InsertTaskIntoQueueCommand, TaskCompletedEvent};
 use common::types::ship_tasks::{AwaitingSignal, RequestAccess, RequestAccessGoal};
 use std::collections::VecDeque;
-use std::fmt::Display;
 use std::ops::DerefMut;
 use std::sync::{Arc, Mutex};
 
@@ -144,12 +141,8 @@ impl<'w, 's> TaskStartedEventHandler<'w, 's, RequestAccess> for RequestAccess {
     type Args = ();
     type ArgsMut = ();
 
-    fn on_task_started(
-        _event: &TaskStartedEvent<RequestAccess>,
-        _args: &StaticSystemParam<Self::Args>,
-        _args_mut: &mut StaticSystemParam<Self::ArgsMut>,
-    ) -> Result<(), BevyError> {
-        Ok(())
+    fn skip_started() -> bool {
+        true
     }
 }
 
@@ -161,12 +154,8 @@ impl<'w, 's> TaskCancellationForTaskInQueueEventHandler<'w, 's, RequestAccess> f
         true
     }
 
-    fn on_task_cancellation_while_in_queue(
-        _event: &TaskCanceledWhileInQueueEvent<RequestAccess>,
-        _args: &StaticSystemParam<Self::Args>,
-        _args_mut: &mut StaticSystemParam<Self::ArgsMut>,
-    ) -> Result<(), BevyError> {
-        Ok(())
+    fn skip_cancelled_in_queue() -> bool {
+        true
     }
 }
 
@@ -184,11 +173,7 @@ impl<'w, 's> TaskCompletedEventHandler<'w, 's, RequestAccess> for RequestAccess 
     type Args = ();
     type ArgsMut = ();
 
-    fn on_task_completed(
-        event: &TaskCompletedEvent<RequestAccess>,
-        args: &StaticSystemParam<Self::Args>,
-        args_mut: &mut StaticSystemParam<Self::ArgsMut>,
-    ) -> Result<(), BevyError> {
-        Ok(())
+    fn skip_completed() -> bool {
+        true
     }
 }

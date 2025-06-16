@@ -57,6 +57,12 @@ pub(crate) trait TaskCancellationForActiveTaskEventHandler<'w, 's, TaskData: Shi
         false
     }
 
+    /// If set to true, the event listener system won't be registered at all.
+    fn skip_cancelled_while_active() -> bool {
+        true
+    }
+
+    /// You need to either override this or set [Self::skip_cancelled_while_active] to true so the event listener won't be registered.
     fn on_task_cancellation_while_in_active(
         event: &TaskCanceledWhileActiveEvent<TaskData>,
         _args: &StaticSystemParam<Self::Args>,
@@ -70,7 +76,7 @@ pub(crate) trait TaskCancellationForActiveTaskEventHandler<'w, 's, TaskData: Shi
         ))
     }
 
-    /// Listens to TaskCancellation Events and runs [Self::on_task_cancellation_while_in_active] for each.
+    /// Listens to [TaskCanceledWhileActiveEvent]s and runs [Self::on_task_cancellation_while_in_active] for each.
     /// Usually you don't need to reimplement this.
     fn cancellation_while_active_event_listener(
         mut commands: Commands,

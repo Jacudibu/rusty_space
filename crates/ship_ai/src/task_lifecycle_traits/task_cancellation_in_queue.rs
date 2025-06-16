@@ -49,6 +49,12 @@ pub(crate) trait TaskCancellationForTaskInQueueEventHandler<'w, 's, TaskData: Sh
         false
     }
 
+    /// If set to true, the event listener system won't be registered at all.
+    fn skip_cancelled_in_queue() -> bool {
+        false
+    }
+
+    /// You need to either override this or set [Self::skip_cancelled_in_queue] to true so the event listener won't be registered.
     fn on_task_cancellation_while_in_queue(
         event: &TaskCanceledWhileInQueueEvent<TaskData>,
         _args: &StaticSystemParam<Self::Args>,
@@ -62,7 +68,7 @@ pub(crate) trait TaskCancellationForTaskInQueueEventHandler<'w, 's, TaskData: Sh
         ))
     }
 
-    /// Listens to TaskCancellation Events and runs [Self::on_task_cancellation_while_in_queue] for each.
+    /// Listens to [TaskCancellationWhileInQueueEvent]s and runs [Self::on_task_cancellation_while_in_queue] for each.
     /// Usually you don't need to reimplement this.
     fn cancellation_while_in_queue_event_listener(
         mut events: EventReader<TaskCanceledWhileInQueueEvent<TaskData>>,

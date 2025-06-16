@@ -7,7 +7,6 @@ use crate::task_lifecycle_traits::task_creation::{
 };
 use crate::task_lifecycle_traits::task_started::TaskStartedEventHandler;
 use crate::task_lifecycle_traits::task_update_runner::TaskUpdateRunner;
-use crate::tasks::send_completion_events;
 use crate::utility::ship_task::ShipTask;
 use crate::utility::task_preconditions::create_preconditions_and_dock_at_entity;
 use crate::utility::task_result::TaskResult;
@@ -16,7 +15,6 @@ use bevy::prelude::{BevyError, Entity, EventWriter, Query, Res};
 use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
 use common::components::{BuyOrders, Inventory, SellOrders, TradeOrder};
-use common::constants::BevyResult;
 use common::events::inventory_update_for_production_event::InventoryUpdateForProductionEvent;
 use common::events::task_events::{
     InsertTaskIntoQueueCommand, TaskCanceledWhileInQueueEvent, TaskCompletedEvent, TaskStartedEvent,
@@ -24,7 +22,7 @@ use common::events::task_events::{
 use common::game_data::ItemManifest;
 use common::simulation_time::{CurrentSimulationTimestamp, SimulationTime};
 use common::types::exchange_ware_data::ExchangeWareData;
-use common::types::ship_tasks::{DockAtEntity, ExchangeWares};
+use common::types::ship_tasks::ExchangeWares;
 use common::types::trade_intent::TradeIntent;
 use std::collections::VecDeque;
 use std::ops::DerefMut;

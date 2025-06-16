@@ -7,12 +7,12 @@ use crate::task_lifecycle_traits::task_creation::{
 };
 use crate::task_lifecycle_traits::task_started::TaskStartedEventHandler;
 use crate::task_lifecycle_traits::task_update_runner::TaskUpdateRunner;
-use crate::tasks::{move_to_entity, send_completion_events};
+use crate::tasks::move_to_entity;
 use crate::utility::ship_task::ShipTask;
 use crate::utility::task_result::TaskResult;
 use bevy::ecs::system::{StaticSystemParam, SystemParam};
 use bevy::prelude::{
-    BevyError, Commands, Entity, EventReader, EventWriter, FloatExt, Query, Res, Time, Visibility,
+    BevyError, Commands, Entity, EventWriter, FloatExt, Query, Res, Time, Visibility,
 };
 use common::components;
 use common::components::ship_velocity::ShipVelocity;
@@ -20,10 +20,7 @@ use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
 use common::components::{DockingBay, Engine};
 use common::constants;
-use common::constants::BevyResult;
-use common::events::task_events::{
-    InsertTaskIntoQueueCommand, TaskCanceledWhileInQueueEvent, TaskCompletedEvent, TaskStartedEvent,
-};
+use common::events::task_events::{InsertTaskIntoQueueCommand, TaskCompletedEvent};
 use common::simulation_transform::{SimulationScale, SimulationTransform};
 use common::types::ship_tasks::{AwaitingSignal, DockAtEntity};
 use std::collections::VecDeque;
@@ -77,12 +74,8 @@ impl<'w, 's> TaskCancellationForTaskInQueueEventHandler<'w, 's, DockAtEntity> fo
         true
     }
 
-    fn cancellation_while_in_queue_event_listener(
-        _events: EventReader<TaskCanceledWhileInQueueEvent<DockAtEntity>>,
-        _args: StaticSystemParam<Self::Args>,
-        _args_mut: StaticSystemParam<Self::ArgsMut>,
-    ) -> BevyResult {
-        Ok(())
+    fn skip_cancelled_in_queue() -> bool {
+        true
     }
 }
 
@@ -105,12 +98,8 @@ impl<'w, 's> TaskStartedEventHandler<'w, 's, DockAtEntity> for DockAtEntity {
     type Args = ();
     type ArgsMut = ();
 
-    fn on_task_started(
-        _event: &TaskStartedEvent<DockAtEntity>,
-        _args: &StaticSystemParam<Self::Args>,
-        _args_mut: &mut StaticSystemParam<Self::ArgsMut>,
-    ) -> Result<(), BevyError> {
-        Ok(())
+    fn skip_started() -> bool {
+        true
     }
 }
 

@@ -11,13 +11,21 @@ pub(crate) trait TaskStartedEventHandler<'w, 's, Task: ShipTaskData> {
     /// The mutable arguments used when calling the functions of this trait.
     type ArgsMut: SystemParam;
 
+    /// If set to true, the event listener system won't be registered at all.
+    fn skip_started() -> bool {
+        false
+    }
+
+    /// You need to either override this or set [Self::skip_started] to true so the event listener won't be registered.
     fn on_task_started(
         event: &TaskStartedEvent<Task>,
         args: &StaticSystemParam<Self::Args>,
         args_mut: &mut StaticSystemParam<Self::ArgsMut>,
-    ) -> Result<(), BevyError>;
+    ) -> Result<(), BevyError> {
+        todo!("Return a helpful error in case this isn't implemented")
+    }
 
-    /// Listens to TaskCancellation Events and runs [Self::on_task_started] for each.
+    /// Listens to [TaskStartedEvent]s and runs [Self::on_task_started] for each.
     /// Usually you don't need to reimplement this.
     fn task_started_event_listener(
         mut events: EventReader<TaskStartedEvent<Task>>,

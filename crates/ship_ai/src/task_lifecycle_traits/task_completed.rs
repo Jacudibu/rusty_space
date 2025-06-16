@@ -11,11 +11,19 @@ pub(crate) trait TaskCompletedEventHandler<'w, 's, Task: ShipTaskData> {
     /// The mutable arguments used when calling the functions of this trait.
     type ArgsMut: SystemParam;
 
+    /// If set to true, the event listener system won't be registered at all.
+    fn skip_completed() -> bool {
+        false
+    }
+
+    /// You need to either override this or set [Self::skip_completed] to true so the event listener won't be registered.
     fn on_task_completed(
         event: &TaskCompletedEvent<Task>,
         args: &StaticSystemParam<Self::Args>,
         args_mut: &mut StaticSystemParam<Self::ArgsMut>,
-    ) -> Result<(), BevyError>;
+    ) -> Result<(), BevyError> {
+        todo!("Return a helpful error in case this isn't implemented")
+    }
 
     /// Listens to TaskCancellation Events and runs [Self::on_task_completed] for each.
     /// Usually you don't need to reimplement this.

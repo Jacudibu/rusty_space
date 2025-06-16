@@ -11,17 +11,14 @@ use crate::tasks::dock_at_entity;
 use crate::utility::ship_task::ShipTask;
 use crate::utility::task_result::TaskResult;
 use bevy::ecs::system::{StaticSystemParam, SystemParam};
-use bevy::prelude::{
-    BevyError, Commands, Entity, EventReader, EventWriter, Query, Res, Time, Visibility,
-};
+use bevy::prelude::{BevyError, Commands, Entity, EventWriter, Query, Res, Time, Visibility};
 use common::components::ship_velocity::ShipVelocity;
 use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
 use common::components::{DockingBay, Engine, IsDocked};
 use common::constants;
-use common::constants::BevyResult;
+use common::events::task_events::TaskCompletedEvent;
 use common::events::task_events::{InsertTaskIntoQueueCommand, TaskStartedEvent};
-use common::events::task_events::{TaskCanceledWhileInQueueEvent, TaskCompletedEvent};
 use common::simulation_transform::{SimulationScale, SimulationTransform};
 use common::types::ship_tasks::{AwaitingSignal, Undock};
 use std::collections::VecDeque;
@@ -180,12 +177,8 @@ impl<'w, 's> TaskCancellationForTaskInQueueEventHandler<'w, 's, Undock> for Undo
         true
     }
 
-    fn cancellation_while_in_queue_event_listener(
-        _events: EventReader<TaskCanceledWhileInQueueEvent<Undock>>,
-        _args: StaticSystemParam<Self::Args>,
-        _args_mut: StaticSystemParam<Self::ArgsMut>,
-    ) -> BevyResult {
-        Ok(())
+    fn skip_cancelled_in_queue() -> bool {
+        true
     }
 }
 

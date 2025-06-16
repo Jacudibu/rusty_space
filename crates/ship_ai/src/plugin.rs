@@ -17,7 +17,7 @@ use bevy::app::App;
 use bevy::log::error;
 use bevy::prelude::{
     Commands, EventReader, FixedPostUpdate, FixedPreUpdate, FixedUpdate, IntoScheduleConfigs,
-    Plugin, PreUpdate, Query, Update, With, in_state, on_event,
+    IntoSystem, Plugin, PreUpdate, Query, SystemSet, Update, With, in_state, on_event,
 };
 use common::components::task_queue::TaskQueue;
 use common::events::task_events::{
@@ -35,7 +35,6 @@ fn enable_insert_task_into_queue_commands(app: &mut App) {
     app.add_event::<InsertTaskIntoQueueCommand<Construct>>();
     app.add_event::<InsertTaskIntoQueueCommand<HarvestGas>>();
     app.add_event::<InsertTaskIntoQueueCommand<MineAsteroid>>();
-    app.add_event::<InsertTaskIntoQueueCommand<MoveToPosition>>();
     app.add_event::<InsertTaskIntoQueueCommand<MoveToSector>>();
 }
 
@@ -52,7 +51,6 @@ fn enable_abortion(app: &mut App) {
     app.add_event::<TaskCanceledWhileActiveEvent<HarvestGas>>();
     app.add_event::<TaskCanceledWhileActiveEvent<MineAsteroid>>();
     app.add_event::<TaskCanceledWhileActiveEvent<MoveToEntity>>();
-    app.add_event::<TaskCanceledWhileActiveEvent<MoveToPosition>>();
     app.add_event::<TaskCanceledWhileActiveEvent<MoveToSector>>();
 
     app.add_systems(
@@ -70,8 +68,6 @@ fn enable_abortion(app: &mut App) {
                 .run_if(on_event::<TaskCanceledWhileActiveEvent<MineAsteroid>>),
             abort_tasks::<MoveToEntity>
                 .run_if(on_event::<TaskCanceledWhileActiveEvent<MoveToEntity>>),
-            abort_tasks::<MoveToPosition>
-                .run_if(on_event::<TaskCanceledWhileActiveEvent<MoveToPosition>>),
             abort_tasks::<MoveToSector>
                 .run_if(on_event::<TaskCanceledWhileActiveEvent<MoveToSector>>),
         ),
@@ -92,7 +88,6 @@ fn enable_cancellation(app: &mut App) {
     app.add_event::<TaskCanceledWhileInQueueEvent<HarvestGas>>();
     app.add_event::<TaskCanceledWhileInQueueEvent<MineAsteroid>>();
     app.add_event::<TaskCanceledWhileInQueueEvent<MoveToEntity>>();
-    app.add_event::<TaskCanceledWhileInQueueEvent<MoveToPosition>>();
     app.add_event::<TaskCanceledWhileInQueueEvent<MoveToSector>>();
 
     app.add_systems(
@@ -103,6 +98,7 @@ fn enable_cancellation(app: &mut App) {
 
     register_task_lifecycle::<DockAtEntity>(app);
     register_task_lifecycle::<ExchangeWares>(app);
+    register_task_lifecycle::<MoveToPosition>(app);
     register_task_lifecycle::<RequestAccess>(app);
     register_task_lifecycle::<Undock>(app);
     register_task_lifecycle::<UseGate>(app);
@@ -123,31 +119,56 @@ where
     app.add_event::<TaskStartedEvent<Task>>();
     app.add_event::<TaskCanceledWhileActiveEvent<Task>>();
     app.add_event::<TaskCompletedEvent<Task>>();
-    app.add_systems(
-        PreUpdate,
-        (
+
+    if !Task::skip_cancelled_in_queue() {
+        app.add_systems(
+            PreUpdate,
             Task::cancellation_while_in_queue_event_listener
                 .run_if(on_event::<TaskCanceledWhileInQueueEvent<Task>>),
+        );
+    }
+
+    if !Task::skip_cancelled_while_active() {
+        app.add_systems(
+            PreUpdate,
             Task::cancellation_while_active_event_listener
                 .run_if(on_event::<TaskCanceledWhileActiveEvent<Task>>),
-        ),
-    );
+        );
+    }
+
     app.add_systems(Update, Task::task_creation_event_listener);
-    app.add_systems(
-        FixedUpdate,
-        (
-            Task::update,
-            (Task::task_completed_event_listener, complete_tasks::<Task>)
+
+    // TODO: There must be *some* cleaner way to do this?
+    if Task::skip_completed() {
+        app.add_systems(
+            FixedUpdate,
+            (
+                Task::update,
+                complete_tasks::<Task>.run_if(on_event::<TaskCompletedEvent<Task>>),
+            )
                 .chain()
-                .run_if(on_event::<TaskCompletedEvent<Task>>),
-        )
-            .chain()
-            .run_if(in_state(SimulationState::Running)),
-    );
-    app.add_systems(
-        FixedPostUpdate,
-        Task::task_started_event_listener.run_if(in_state(SimulationState::Running)),
-    );
+                .run_if(in_state(SimulationState::Running)),
+        );
+    } else {
+        app.add_systems(
+            FixedUpdate,
+            (
+                Task::update,
+                (Task::task_completed_event_listener, complete_tasks::<Task>)
+                    .chain()
+                    .run_if(on_event::<TaskCompletedEvent<Task>>),
+            )
+                .chain()
+                .run_if(in_state(SimulationState::Running)),
+        );
+    };
+
+    if !Task::skip_started() {
+        app.add_systems(
+            FixedPostUpdate,
+            Task::task_started_event_listener.run_if(in_state(SimulationState::Running)),
+        );
+    }
 }
 
 pub struct ShipAiPlugin;
@@ -192,19 +213,6 @@ impl Plugin for ShipAiPlugin {
             (
                 ShipTask::<MoveToEntity>::run_tasks,
                 complete_tasks::<MoveToEntity>.run_if(on_event::<TaskCompletedEvent<MoveToEntity>>),
-            )
-                .chain()
-                .run_if(in_state(SimulationState::Running)),
-        );
-
-        app.add_event::<TaskCompletedEvent<MoveToPosition>>();
-        app.add_systems(Update, MoveToPosition::task_creation_event_listener);
-        app.add_systems(
-            FixedUpdate,
-            (
-                ShipTask::<MoveToPosition>::run_tasks,
-                complete_tasks::<MoveToPosition>
-                    .run_if(on_event::<TaskCompletedEvent<MoveToPosition>>),
             )
                 .chain()
                 .run_if(in_state(SimulationState::Running)),

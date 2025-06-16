@@ -15,8 +15,8 @@ use common::components::ship_velocity::ShipVelocity;
 use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
 use common::components::{Gate, InSector, Sector};
+use common::events::task_events::TaskCompletedEvent;
 use common::events::task_events::{InsertTaskIntoQueueCommand, TaskStartedEvent};
-use common::events::task_events::{TaskCanceledWhileInQueueEvent, TaskCompletedEvent};
 use common::simulation_transform::SimulationTransform;
 use common::types::entity_wrappers::ShipEntity;
 use common::types::gate_traversal_state::GateTraversalState;
@@ -210,12 +210,8 @@ impl<'w, 's> TaskCancellationForTaskInQueueEventHandler<'w, 's, UseGate> for Use
         true
     }
 
-    fn on_task_cancellation_while_in_queue(
-        _event: &TaskCanceledWhileInQueueEvent<UseGate>,
-        _args: &StaticSystemParam<Self::Args>,
-        _args_mut: &mut StaticSystemParam<Self::ArgsMut>,
-    ) -> Result<(), BevyError> {
-        Ok(())
+    fn skip_cancelled_in_queue() -> bool {
+        true
     }
 }
 
