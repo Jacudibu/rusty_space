@@ -19,6 +19,7 @@ use crate::utility::ship_task::ShipTask;
 use common::components::interaction_queue::InteractionQueue;
 use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
+use common::constants::BevyResult;
 use common::events::task_events::{
     AllTaskStartedEventWriters, TaskCompletedEvent, TaskStartedEvent,
 };
@@ -140,13 +141,10 @@ pub fn finish_interaction(
     queue_entity: Entity,
     interaction_queues: &mut Query<&mut InteractionQueue>,
     signal_writer: &mut EventWriter<TaskCompletedEvent<AwaitingSignal>>,
-) {
-    let Ok(mut queue_entity) = interaction_queues.get_mut(queue_entity) else {
-        warn!("Was unable to find queue entity in finish interaction!");
-        return;
-    };
-
+) -> BevyResult {
+    let mut queue_entity = interaction_queues.get_mut(queue_entity)?;
     queue_entity.finish_interaction(signal_writer);
+    Ok(())
 }
 
 #[cfg(test)]

@@ -17,7 +17,7 @@ use bevy::app::App;
 use bevy::log::error;
 use bevy::prelude::{
     Commands, EventReader, FixedPostUpdate, FixedPreUpdate, FixedUpdate, IntoScheduleConfigs,
-    IntoSystem, Plugin, PreUpdate, Query, SystemSet, Update, With, in_state, on_event,
+    Plugin, PreUpdate, Query, SystemSet, Update, With, in_state, on_event,
 };
 use common::components::task_queue::TaskQueue;
 use common::events::task_events::{
@@ -33,8 +33,6 @@ use common::types::ship_tasks::{
 
 fn enable_insert_task_into_queue_commands(app: &mut App) {
     app.add_event::<InsertTaskIntoQueueCommand<Construct>>();
-    app.add_event::<InsertTaskIntoQueueCommand<HarvestGas>>();
-    app.add_event::<InsertTaskIntoQueueCommand<MineAsteroid>>();
 }
 
 // TODO: clean up once we reunify task registration
@@ -47,22 +45,15 @@ fn enable_abortion(app: &mut App) {
     app.add_event::<TaskCancellationWhileActiveRequest>();
     app.add_event::<TaskCanceledWhileActiveEvent<AwaitingSignal>>();
     app.add_event::<TaskCanceledWhileActiveEvent<Construct>>();
-    app.add_event::<TaskCanceledWhileActiveEvent<HarvestGas>>();
-    app.add_event::<TaskCanceledWhileActiveEvent<MineAsteroid>>();
 
     app.add_systems(
         FixedPreUpdate,
         (
             ShipTask::<Construct>::abort_running_task
                 .run_if(on_event::<TaskCanceledWhileActiveEvent<Construct>>),
-            ShipTask::<HarvestGas>::abort_running_task
-                .run_if(on_event::<TaskCanceledWhileActiveEvent<HarvestGas>>),
             abort_tasks::<AwaitingSignal>
                 .run_if(on_event::<TaskCanceledWhileActiveEvent<AwaitingSignal>>),
             abort_tasks::<Construct>.run_if(on_event::<TaskCanceledWhileActiveEvent<Construct>>),
-            abort_tasks::<HarvestGas>.run_if(on_event::<TaskCanceledWhileActiveEvent<HarvestGas>>),
-            abort_tasks::<MineAsteroid>
-                .run_if(on_event::<TaskCanceledWhileActiveEvent<MineAsteroid>>),
         ),
     );
 }
@@ -78,17 +69,11 @@ fn enable_cancellation(app: &mut App) {
     app.add_event::<TaskCancellationWhileInQueueRequest>();
     app.add_event::<TaskCanceledWhileInQueueEvent<AwaitingSignal>>();
     app.add_event::<TaskCanceledWhileInQueueEvent<Construct>>();
-    app.add_event::<TaskCanceledWhileInQueueEvent<HarvestGas>>();
-    app.add_event::<TaskCanceledWhileInQueueEvent<MineAsteroid>>();
-
-    app.add_systems(
-        FixedPreUpdate,
-        (ShipTask::<MineAsteroid>::cancel_task_inside_queue
-            .run_if(on_event::<TaskCanceledWhileInQueueEvent<MineAsteroid>>),),
-    );
 
     register_task_lifecycle::<DockAtEntity>(app);
     register_task_lifecycle::<ExchangeWares>(app);
+    register_task_lifecycle::<HarvestGas>(app);
+    register_task_lifecycle::<MineAsteroid>(app);
     register_task_lifecycle::<MoveToEntity>(app);
     register_task_lifecycle::<MoveToPosition>(app);
     register_task_lifecycle::<MoveToSector>(app);
@@ -195,45 +180,6 @@ impl Plugin for ShipAiPlugin {
             (
                 ShipTask::<Construct>::run_tasks,
                 complete_tasks::<Construct>.run_if(on_event::<TaskCompletedEvent<Construct>>),
-            )
-                .chain()
-                .run_if(in_state(SimulationState::Running)),
-        );
-
-        app.add_event::<TaskCompletedEvent<MineAsteroid>>();
-        app.add_event::<TaskStartedEvent<MineAsteroid>>();
-        app.add_systems(Update, MineAsteroid::task_creation_event_listener);
-        app.add_systems(
-            FixedPostUpdate,
-            ShipTask::<MineAsteroid>::on_task_started.run_if(in_state(SimulationState::Running)),
-        );
-        app.add_systems(
-            FixedUpdate,
-            (
-                ShipTask::<MineAsteroid>::run_tasks,
-                complete_tasks::<MineAsteroid>.run_if(on_event::<TaskCompletedEvent<MineAsteroid>>),
-            )
-                .chain()
-                .run_if(in_state(SimulationState::Running)),
-        );
-
-        app.add_event::<TaskCompletedEvent<HarvestGas>>();
-        app.add_event::<TaskStartedEvent<HarvestGas>>();
-        app.add_systems(Update, HarvestGas::task_creation_event_listener);
-        app.add_systems(
-            FixedPostUpdate,
-            ShipTask::<HarvestGas>::on_task_started.run_if(in_state(SimulationState::Running)),
-        );
-        app.add_systems(
-            FixedUpdate,
-            (
-                ShipTask::<HarvestGas>::run_tasks,
-                (
-                    ShipTask::<HarvestGas>::complete_tasks,
-                    complete_tasks::<HarvestGas>,
-                )
-                    .chain()
-                    .run_if(on_event::<TaskCompletedEvent<HarvestGas>>),
             )
                 .chain()
                 .run_if(in_state(SimulationState::Running)),

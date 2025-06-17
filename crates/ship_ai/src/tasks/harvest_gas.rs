@@ -1,19 +1,22 @@
 use crate::TaskComponent;
+use crate::task_lifecycle_traits::task_cancellation_active::TaskCancellationForActiveTaskEventHandler;
+use crate::task_lifecycle_traits::task_cancellation_in_queue::TaskCancellationForTaskInQueueEventHandler;
+use crate::task_lifecycle_traits::task_completed::TaskCompletedEventHandler;
 use crate::task_lifecycle_traits::task_creation::{
     GeneralPathfindingArgs, TaskCreationEventHandler,
 };
-use crate::tasks::{finish_interaction, send_completion_events};
+use crate::task_lifecycle_traits::task_started::TaskStartedEventHandler;
+use crate::task_lifecycle_traits::task_update_runner::TaskUpdateRunner;
+use crate::tasks::finish_interaction;
 use crate::utility::ship_task::ShipTask;
 use crate::utility::task_preconditions::create_preconditions_and_move_to_entity;
-use bevy::ecs::system::StaticSystemParam;
-use bevy::log::error;
-use bevy::prelude::{BevyError, Entity, EventReader, EventWriter, Query, Res};
+use bevy::ecs::system::{StaticSystemParam, SystemParam};
+use bevy::prelude::{BevyError, Entity, EventWriter, Query, Res};
 use common::components::interaction_queue::InteractionQueue;
 use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
 use common::components::{GasHarvester, Inventory};
 use common::constants;
-use common::constants::BevyResult;
 use common::events::task_events::{
     InsertTaskIntoQueueCommand, TaskCanceledWhileActiveEvent, TaskCompletedEvent, TaskStartedEvent,
 };
@@ -23,6 +26,7 @@ use common::types::entity_wrappers::TypedEntity;
 use common::types::ship_tasks;
 use common::types::ship_tasks::{AwaitingSignal, HarvestGas, RequestAccessGoal};
 use std::collections::VecDeque;
+use std::ops::{Deref, DerefMut};
 use std::sync::{Arc, Mutex};
 
 const MILLISECONDS_BETWEEN_UPDATES: Milliseconds = constants::ONE_SECOND_IN_MILLISECONDS;
@@ -39,113 +43,84 @@ impl TaskComponent for ShipTask<HarvestGas> {
     }
 }
 
-impl ShipTask<HarvestGas> {
-    fn run(
-        &mut self,
-        inventory: &mut Inventory,
-        now: CurrentSimulationTimestamp,
-        harvesting_component: &GasHarvester,
-        item_manifest: &ItemManifest,
-    ) -> TaskResult {
-        if now.has_not_passed(self.next_update.unwrap()) {
-            return TaskResult::Skip;
-        }
-
-        let remaining_space = inventory.remaining_space_for(&self.gas, item_manifest);
-        let harvested_amount = harvesting_component.amount_per_second.min(remaining_space);
-
-        inventory.add_item(self.gas, harvested_amount, item_manifest);
-
-        if remaining_space == harvested_amount {
-            TaskResult::Finished
-        } else {
-            self.next_update
-                .unwrap()
-                .add_milliseconds(MILLISECONDS_BETWEEN_UPDATES);
-            TaskResult::Ongoing
-        }
+fn run(
+    task: &mut ShipTask<HarvestGas>,
+    inventory: &mut Inventory,
+    now: CurrentSimulationTimestamp,
+    harvesting_component: &GasHarvester,
+    item_manifest: &ItemManifest,
+) -> TaskResult {
+    if now.has_not_passed(task.next_update.unwrap()) {
+        return TaskResult::Skip;
     }
 
-    pub fn run_tasks(
-        event_writer: EventWriter<TaskCompletedEvent<HarvestGas>>,
-        simulation_time: Res<SimulationTime>,
-        mut ships: Query<(Entity, &mut Self, &mut Inventory, &GasHarvester)>,
-        item_manifest: Res<ItemManifest>,
-    ) {
+    let remaining_space = inventory.remaining_space_for(&task.gas, item_manifest);
+    let harvested_amount = harvesting_component.amount_per_second.min(remaining_space);
+
+    inventory.add_item(task.gas, harvested_amount, item_manifest);
+
+    if remaining_space == harvested_amount {
+        TaskResult::Finished
+    } else {
+        task.next_update
+            .unwrap()
+            .add_milliseconds(MILLISECONDS_BETWEEN_UPDATES);
+        TaskResult::Ongoing
+    }
+}
+
+#[derive(SystemParam)]
+pub struct TaskUpdateRunnerArgs<'w> {
+    simulation_time: Res<'w, SimulationTime>,
+    item_manifest: Res<'w, ItemManifest>,
+}
+
+#[derive(SystemParam)]
+pub struct TaskUpdateRunnerArgsMut<'w, 's> {
+    ships: Query<
+        'w,
+        's,
+        (
+            Entity,
+            &'static mut ShipTask<HarvestGas>,
+            &'static mut Inventory,
+            &'static GasHarvester,
+        ),
+    >,
+}
+
+impl<'w, 's> TaskUpdateRunner<'w, 's, Self> for HarvestGas {
+    type Args = TaskUpdateRunnerArgs<'w>;
+    type ArgsMut = TaskUpdateRunnerArgsMut<'w, 's>;
+
+    fn run_all_tasks(
+        args: StaticSystemParam<Self::Args>,
+        mut args_mut: StaticSystemParam<Self::ArgsMut>,
+    ) -> Result<Arc<Mutex<Vec<TaskCompletedEvent<Self>>>>, BevyError> {
+        let args = args.deref();
+        let args_mut = args_mut.deref_mut();
+
         let task_completions = Arc::new(Mutex::new(Vec::<TaskCompletedEvent<HarvestGas>>::new()));
-        let now = simulation_time.now();
+        let now = args.simulation_time.now();
 
-        ships
-            .par_iter_mut()
-            .for_each(|(entity, mut task, mut inventory, harvesting_component)| {
-                match task.run(&mut inventory, now, harvesting_component, &item_manifest) {
-                    TaskResult::Skip => {}
-                    TaskResult::Ongoing => {}
-                    TaskResult::Finished => task_completions
-                        .lock()
-                        .unwrap()
-                        .push(TaskCompletedEvent::<HarvestGas>::new(entity.into())),
-                }
-            });
+        args_mut.ships.par_iter_mut().for_each(
+            |(entity, mut task, mut inventory, harvesting_component)| match run(
+                &mut task,
+                &mut inventory,
+                now,
+                harvesting_component,
+                &args.item_manifest,
+            ) {
+                TaskResult::Skip => {}
+                TaskResult::Ongoing => {}
+                TaskResult::Finished => task_completions
+                    .lock()
+                    .unwrap()
+                    .push(TaskCompletedEvent::<HarvestGas>::new(entity.into())),
+            },
+        );
 
-        send_completion_events(event_writer, task_completions);
-    }
-
-    pub fn complete_tasks(
-        mut event_reader: EventReader<TaskCompletedEvent<HarvestGas>>,
-        mut all_ships_with_task: Query<&Self>,
-        mut interaction_queues: Query<&mut InteractionQueue>,
-        mut signal_writer: EventWriter<TaskCompletedEvent<AwaitingSignal>>,
-    ) {
-        for event in event_reader.read() {
-            if let Ok(task) = all_ships_with_task.get_mut(event.entity.into()) {
-                finish_interaction(
-                    task.target.into(),
-                    &mut interaction_queues,
-                    &mut signal_writer,
-                );
-            } else {
-                error!(
-                    "Unable to find entity for HarvestGas task completion: {}",
-                    event.entity
-                );
-            }
-        }
-    }
-
-    pub(crate) fn on_task_started(
-        mut all_ships_with_task: Query<&mut Self>,
-        mut started_tasks: EventReader<TaskStartedEvent<HarvestGas>>,
-        simulation_time: Res<SimulationTime>,
-    ) -> BevyResult {
-        for event in started_tasks.read() {
-            let mut task = all_ships_with_task.get_mut(event.entity.into())?;
-            task.next_update = Some(
-                simulation_time
-                    .now()
-                    .add_milliseconds(MILLISECONDS_BETWEEN_UPDATES),
-            );
-        }
-
-        Ok(())
-    }
-
-    pub(crate) fn cancel_task_inside_queue() {
-        // Nothing needs to be done.
-    }
-
-    pub(crate) fn abort_running_task(
-        mut event_reader: EventReader<TaskCanceledWhileActiveEvent<HarvestGas>>,
-        mut interaction_queues: Query<&mut InteractionQueue>,
-        mut signal_writer: EventWriter<TaskCompletedEvent<AwaitingSignal>>,
-    ) {
-        for event in event_reader.read() {
-            finish_interaction(
-                event.task_data.target.into(),
-                &mut interaction_queues,
-                &mut signal_writer,
-            );
-        }
+        Ok(task_completions)
     }
 }
 
@@ -178,5 +153,108 @@ impl<'w, 's> TaskCreationEventHandler<'w, 's, HarvestGas> for HarvestGas {
         });
 
         Ok(new_tasks)
+    }
+}
+
+#[derive(SystemParam)]
+pub struct TaskStartedArgs<'w> {
+    simulation_time: Res<'w, SimulationTime>,
+}
+
+#[derive(SystemParam)]
+pub struct TaskStartedArgsMut<'w, 's> {
+    all_ships_with_task: Query<'w, 's, &'static mut ShipTask<HarvestGas>>,
+}
+
+impl<'w, 's> TaskStartedEventHandler<'w, 's, Self> for HarvestGas {
+    type Args = TaskStartedArgs<'w>;
+    type ArgsMut = TaskStartedArgsMut<'w, 's>;
+
+    fn on_task_started(
+        event: &TaskStartedEvent<Self>,
+        args: &StaticSystemParam<Self::Args>,
+        args_mut: &mut StaticSystemParam<Self::ArgsMut>,
+    ) -> Result<(), BevyError> {
+        let args = args.deref();
+        let args_mut = args_mut.deref_mut();
+
+        let mut task = args_mut.all_ships_with_task.get_mut(event.entity.into())?;
+        task.next_update = Some(
+            args.simulation_time
+                .now()
+                .add_milliseconds(MILLISECONDS_BETWEEN_UPDATES),
+        );
+
+        Ok(())
+    }
+}
+
+impl<'w, 's> TaskCancellationForTaskInQueueEventHandler<'w, 's, Self> for HarvestGas {
+    type Args = ();
+    type ArgsMut = ();
+
+    fn can_task_be_cancelled_while_in_queue() -> bool {
+        true
+    }
+
+    fn skip_cancelled_in_queue() -> bool {
+        true
+    }
+}
+
+#[derive(SystemParam)]
+pub struct TaskCancellationWhileActiveArgsMut<'w, 's> {
+    interaction_queues: Query<'w, 's, &'static mut InteractionQueue>,
+    signal_writer: EventWriter<'w, TaskCompletedEvent<AwaitingSignal>>,
+}
+
+impl<'w, 's> TaskCancellationForActiveTaskEventHandler<'w, 's, Self> for HarvestGas {
+    type Args = ();
+    type ArgsMut = TaskCancellationWhileActiveArgsMut<'w, 's>;
+
+    fn can_task_be_cancelled_while_active() -> bool {
+        true
+    }
+
+    fn on_task_cancellation_while_in_active(
+        event: &TaskCanceledWhileActiveEvent<Self>,
+        _args: &StaticSystemParam<Self::Args>,
+        args_mut: &mut StaticSystemParam<Self::ArgsMut>,
+    ) -> Result<(), BevyError> {
+        let args_mut = args_mut.deref_mut();
+
+        finish_interaction(
+            event.task_data.target.into(),
+            &mut args_mut.interaction_queues,
+            &mut args_mut.signal_writer,
+        )
+    }
+}
+
+#[derive(SystemParam)]
+pub struct TaskCompletedArgsMut<'w, 's> {
+    all_ships_with_task: Query<'w, 's, &'static ShipTask<HarvestGas>>,
+    interaction_queues: Query<'w, 's, &'static mut InteractionQueue>,
+    signal_writer: EventWriter<'w, TaskCompletedEvent<AwaitingSignal>>,
+}
+
+impl<'w, 's> TaskCompletedEventHandler<'w, 's, Self> for HarvestGas {
+    type Args = ();
+    type ArgsMut = TaskCompletedArgsMut<'w, 's>;
+
+    fn on_task_completed(
+        event: &TaskCompletedEvent<Self>,
+        _args: &StaticSystemParam<Self::Args>,
+        args_mut: &mut StaticSystemParam<Self::ArgsMut>,
+    ) -> Result<(), BevyError> {
+        let args_mut = args_mut.deref_mut();
+
+        let task = args_mut.all_ships_with_task.get_mut(event.entity.into())?;
+
+        finish_interaction(
+            task.target.into(),
+            &mut args_mut.interaction_queues,
+            &mut args_mut.signal_writer,
+        )
     }
 }
