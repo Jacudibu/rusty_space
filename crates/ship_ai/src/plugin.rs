@@ -20,6 +20,7 @@ use bevy::prelude::{
     Query, Update, With, in_state, on_event,
 };
 use common::components::task_queue::TaskQueue;
+use common::events::send_signal_event::SendSignalEvent;
 use common::events::task_events::{
     AllTaskStartedEventWriters, InsertTaskIntoQueueCommand, TaskCanceledWhileActiveEvent,
     TaskCanceledWhileInQueueEvent, TaskCompletedEvent, TaskStartedEvent,
@@ -51,7 +52,7 @@ fn enable_cancellation(app: &mut App) {
 
     app.add_event::<TaskCancellationWhileInQueueRequest>();
 
-    // register_task_lifecycle::<AwaitingSignal>(app);
+    register_task_lifecycle::<AwaitingSignal>(app);
     register_task_lifecycle::<Construct>(app);
     register_task_lifecycle::<DockAtEntity>(app);
     register_task_lifecycle::<ExchangeWares>(app);
@@ -135,6 +136,8 @@ where
 pub struct ShipAiPlugin;
 impl Plugin for ShipAiPlugin {
     fn build(&self, app: &mut App) {
+        app.add_event::<SendSignalEvent>();
+
         enable_abortion(app);
         enable_cancellation(app);
 
@@ -153,21 +156,6 @@ impl Plugin for ShipAiPlugin {
         app.add_systems(
             FixedUpdate,
             (stop_idle_ships::stop_idle_ships,).run_if(in_state(SimulationState::Running)),
-        );
-
-        // TODO: Fix this oddity; *All* cleanup tasks should just run after *all* task completion events have run
-        app.add_event::<InsertTaskIntoQueueCommand<AwaitingSignal>>();
-        app.add_event::<TaskCanceledWhileInQueueEvent<AwaitingSignal>>();
-        app.add_event::<TaskStartedEvent<AwaitingSignal>>();
-        app.add_event::<TaskCanceledWhileActiveEvent<AwaitingSignal>>();
-        app.add_event::<TaskCompletedEvent<AwaitingSignal>>();
-        app.add_systems(
-            FixedUpdate,
-            (complete_tasks::<AwaitingSignal>
-                .run_if(on_event::<TaskCompletedEvent<AwaitingSignal>>)
-                .after(complete_tasks::<Undock>) // TODO <-- Bad, we don't want these extra sausages
-                .after(complete_tasks::<HarvestGas>),)
-                .run_if(in_state(SimulationState::Running)),
         );
 
         app.add_systems(FixedUpdate, stop_idle_ships::stop_idle_ships);

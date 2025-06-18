@@ -26,7 +26,7 @@ pub(crate) trait TaskUpdateRunner<'w, 's, Task: ShipTaskData> {
 
     /// Executes [Self::run_all_tasks] and sends the completion events that occurred whilst running them.
     ///
-    /// Usually you don't need to reimplement this.
+    /// Usually you don't need to reimplement this, but if you do, make sure to call [send_completion_events] at the end!
     fn update(
         event_writer: EventWriter<TaskCompletedEvent<Task>>,
         args: StaticSystemParam<Self::Args>,

@@ -19,7 +19,7 @@ use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
 use common::events::task_events::{InsertTaskIntoQueueCommand, TaskCompletedEvent};
 use common::simulation_transform::SimulationTransform;
-use common::types::ship_tasks::{MoveToPosition, MoveToSector};
+use common::types::ship_tasks::MoveToPosition;
 use std::collections::VecDeque;
 use std::ops::{Deref, DerefMut};
 use std::sync::{Arc, Mutex};

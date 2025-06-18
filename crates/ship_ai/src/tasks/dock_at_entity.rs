@@ -20,9 +20,10 @@ use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
 use common::components::{DockingBay, Engine};
 use common::constants;
+use common::events::send_signal_event::SendSignalEvent;
 use common::events::task_events::{InsertTaskIntoQueueCommand, TaskCompletedEvent};
 use common::simulation_transform::{SimulationScale, SimulationTransform};
-use common::types::ship_tasks::{AwaitingSignal, DockAtEntity};
+use common::types::ship_tasks::DockAtEntity;
 use std::collections::VecDeque;
 use std::ops::{Deref, DerefMut};
 use std::sync::{Arc, Mutex};
@@ -170,7 +171,7 @@ impl<'w, 's> TaskUpdateRunner<'w, 's, Self> for DockAtEntity {
 pub struct TaskCompletedArgsMut<'w, 's> {
     commands: Commands<'w, 's>,
     all_ships_with_task: Query<'w, 's, (&'static mut Visibility, &'static ShipTask<DockAtEntity>)>,
-    awaiting_signal_event_writer_for_next: EventWriter<'w, TaskCompletedEvent<AwaitingSignal>>,
+    send_signal_event_writer: EventWriter<'w, SendSignalEvent>,
     docking_bays: Query<'w, 's, &'static mut DockingBay>,
 }
 
@@ -189,10 +190,7 @@ impl<'w, 's> TaskCompletedEventHandler<'w, 's, Self> for DockAtEntity {
         *visibility = Visibility::Hidden;
 
         let mut docking_bay = args_mut.docking_bays.get_mut(task.target.into())?;
-        docking_bay.finish_docking(
-            event.entity,
-            &mut args_mut.awaiting_signal_event_writer_for_next,
-        );
+        docking_bay.finish_docking(event.entity, &mut args_mut.send_signal_event_writer);
 
         let mut entity_commands = args_mut.commands.entity(event.entity.into());
         entity_commands.insert(components::IsDocked::new(task.target));

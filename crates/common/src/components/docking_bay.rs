@@ -1,7 +1,6 @@
 use crate::components::interaction_queue::InteractionQueueResult;
-use crate::events::task_events::TaskCompletedEvent;
+use crate::events::send_signal_event::SendSignalEvent;
 use crate::types::entity_wrappers::ShipEntity;
-use crate::types::ship_tasks::AwaitingSignal;
 use bevy::prelude::{Component, EventWriter};
 use std::collections::{HashSet, VecDeque};
 
@@ -84,7 +83,7 @@ impl DockingBay {
     pub fn finish_docking(
         &mut self,
         ship: ShipEntity,
-        event_writer: &mut EventWriter<TaskCompletedEvent<AwaitingSignal>>,
+        event_writer: &mut EventWriter<SendSignalEvent>,
     ) {
         self.inbound_or_outbound_ships.remove(&ship);
         self.docked.insert(ship);
@@ -100,26 +99,23 @@ impl DockingBay {
     pub fn finish_undocking(
         &mut self,
         ship: &ShipEntity,
-        event_writer: &mut EventWriter<TaskCompletedEvent<AwaitingSignal>>,
+        event_writer: &mut EventWriter<SendSignalEvent>,
     ) {
         self.inbound_or_outbound_ships.remove(ship);
         self.notify_next_ship_in_queue(event_writer);
     }
 
-    fn notify_next_ship_in_queue(
-        &mut self,
-        event_writer: &mut EventWriter<TaskCompletedEvent<AwaitingSignal>>,
-    ) {
+    fn notify_next_ship_in_queue(&mut self, event_writer: &mut EventWriter<SendSignalEvent>) {
         if self.can_support_more_inbound_or_outbound_ships() {
             if let Some(next) = self.undock_queue.pop_front() {
                 self.inbound_or_outbound_ships.insert(next);
-                event_writer.write(TaskCompletedEvent::new(next));
+                event_writer.write(SendSignalEvent { entity: next });
             }
 
             if self.has_capacity_for_more_ships() {
                 if let Some(next) = self.dock_queue.pop_front() {
                     self.inbound_or_outbound_ships.insert(next);
-                    event_writer.write(TaskCompletedEvent::new(next));
+                    event_writer.write(SendSignalEvent { entity: next });
                 }
             }
         }

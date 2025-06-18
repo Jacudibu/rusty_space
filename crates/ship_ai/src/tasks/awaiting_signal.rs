@@ -7,13 +7,15 @@ use crate::task_lifecycle_traits::task_creation::{
 };
 use crate::task_lifecycle_traits::task_started::TaskStartedEventHandler;
 use crate::task_lifecycle_traits::task_update_runner::TaskUpdateRunner;
+use crate::tasks::send_completion_events;
 use crate::utility::ship_task::ShipTask;
 use bevy::ecs::system::{StaticSystemParam, SystemParam};
-use bevy::prelude::{BevyError, EventWriter, Query};
+use bevy::prelude::{BevyError, EventReader, EventWriter, Query};
 use common::components::interaction_queue::InteractionQueue;
 use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
 use common::constants::BevyResult;
+use common::events::send_signal_event::SendSignalEvent;
 use common::events::task_events::{
     InsertTaskIntoQueueCommand, TaskCanceledWhileActiveEvent, TaskCompletedEvent,
 };
@@ -28,9 +30,14 @@ impl TaskComponent for ShipTask<AwaitingSignal> {
     }
 }
 
+#[derive(SystemParam)]
+pub struct TaskUpdateRunnerArgsMut<'w, 's> {
+    signal_reader: EventReader<'w, 's, SendSignalEvent>,
+}
+
 impl<'w, 's> TaskUpdateRunner<'w, 's, Self> for AwaitingSignal {
     type Args = ();
-    type ArgsMut = ();
+    type ArgsMut = TaskUpdateRunnerArgsMut<'w, 's>;
 
     fn run_all_tasks(
         _args: StaticSystemParam<Self::Args>,
@@ -40,10 +47,19 @@ impl<'w, 's> TaskUpdateRunner<'w, 's, Self> for AwaitingSignal {
     }
 
     fn update(
-        _event_writer: EventWriter<TaskCompletedEvent<Self>>,
+        event_writer: EventWriter<TaskCompletedEvent<Self>>,
         _args: StaticSystemParam<Self::Args>,
-        _args_mut: StaticSystemParam<Self::ArgsMut>,
+        mut args_mut: StaticSystemParam<Self::ArgsMut>,
     ) -> BevyResult {
+        let args_mut = args_mut.deref_mut();
+
+        let completions = args_mut
+            .signal_reader
+            .read()
+            .map(|event| TaskCompletedEvent::<AwaitingSignal>::new(event.entity))
+            .collect();
+
+        send_completion_events(event_writer, Arc::new(Mutex::new(completions)));
         Ok(())
     }
 }

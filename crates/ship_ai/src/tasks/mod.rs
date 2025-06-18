@@ -1,5 +1,5 @@
 use bevy::ecs::system::EntityCommands;
-use bevy::prelude::{Commands, Entity, EventWriter, Query, warn};
+use bevy::prelude::{Commands, Entity, EventWriter, Query};
 use std::sync::{Arc, Mutex};
 
 mod awaiting_signal;
@@ -20,6 +20,7 @@ use common::components::interaction_queue::InteractionQueue;
 use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
 use common::constants::BevyResult;
+use common::events::send_signal_event::SendSignalEvent;
 use common::events::task_events::{
     AllTaskStartedEventWriters, TaskCompletedEvent, TaskStartedEvent,
 };
@@ -140,7 +141,7 @@ pub fn apply_next_task(
 pub fn finish_interaction(
     queue_entity: Entity,
     interaction_queues: &mut Query<&mut InteractionQueue>,
-    signal_writer: &mut EventWriter<TaskCompletedEvent<AwaitingSignal>>,
+    signal_writer: &mut EventWriter<SendSignalEvent>,
 ) -> BevyResult {
     let mut queue_entity = interaction_queues.get_mut(queue_entity)?;
     queue_entity.finish_interaction(signal_writer);

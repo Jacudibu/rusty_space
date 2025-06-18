@@ -17,10 +17,11 @@ use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
 use common::components::{DockingBay, Engine, IsDocked};
 use common::constants;
+use common::events::send_signal_event::SendSignalEvent;
 use common::events::task_events::TaskCompletedEvent;
 use common::events::task_events::{InsertTaskIntoQueueCommand, TaskStartedEvent};
 use common::simulation_transform::{SimulationScale, SimulationTransform};
-use common::types::ship_tasks::{AwaitingSignal, Undock};
+use common::types::ship_tasks::Undock;
 use std::collections::VecDeque;
 use std::ops::{Deref, DerefMut};
 use std::sync::{Arc, Mutex};
@@ -193,7 +194,7 @@ pub struct TaskRunnerArgs<'w, 's> {
 }
 #[derive(SystemParam)]
 pub struct TaskRunnerArgsMut<'w, 's> {
-    awaiting_signal_event_writer: EventWriter<'w, TaskCompletedEvent<AwaitingSignal>>,
+    send_signal_event_writer: EventWriter<'w, SendSignalEvent>,
     docking_bays: Query<'w, 's, &'static mut DockingBay>,
 }
 
@@ -211,7 +212,7 @@ impl<'w, 's> TaskCompletedEventHandler<'w, 's, Self> for Undock {
 
         let task = args.all_ships_with_task.get(event.entity.into())?;
         let mut docking_bay = args_mut.docking_bays.get_mut(task.from.into())?;
-        docking_bay.finish_undocking(&event.entity, &mut args_mut.awaiting_signal_event_writer);
+        docking_bay.finish_undocking(&event.entity, &mut args_mut.send_signal_event_writer);
 
         Ok(())
     }

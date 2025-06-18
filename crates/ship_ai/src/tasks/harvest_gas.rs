@@ -17,6 +17,7 @@ use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
 use common::components::{GasHarvester, Inventory};
 use common::constants;
+use common::events::send_signal_event::SendSignalEvent;
 use common::events::task_events::{
     InsertTaskIntoQueueCommand, TaskCanceledWhileActiveEvent, TaskCompletedEvent, TaskStartedEvent,
 };
@@ -24,7 +25,7 @@ use common::game_data::ItemManifest;
 use common::simulation_time::{CurrentSimulationTimestamp, Milliseconds, SimulationTime};
 use common::types::entity_wrappers::TypedEntity;
 use common::types::ship_tasks;
-use common::types::ship_tasks::{AwaitingSignal, HarvestGas, RequestAccessGoal};
+use common::types::ship_tasks::{HarvestGas, RequestAccessGoal};
 use std::collections::VecDeque;
 use std::ops::{Deref, DerefMut};
 use std::sync::{Arc, Mutex};
@@ -205,7 +206,7 @@ impl<'w, 's> TaskCancellationForTaskInQueueEventHandler<'w, 's, Self> for Harves
 #[derive(SystemParam)]
 pub struct TaskCancellationWhileActiveArgsMut<'w, 's> {
     interaction_queues: Query<'w, 's, &'static mut InteractionQueue>,
-    signal_writer: EventWriter<'w, TaskCompletedEvent<AwaitingSignal>>,
+    signal_writer: EventWriter<'w, SendSignalEvent>,
 }
 
 impl<'w, 's> TaskCancellationForActiveTaskEventHandler<'w, 's, Self> for HarvestGas {
@@ -235,7 +236,7 @@ impl<'w, 's> TaskCancellationForActiveTaskEventHandler<'w, 's, Self> for Harvest
 pub struct TaskCompletedArgsMut<'w, 's> {
     all_ships_with_task: Query<'w, 's, &'static ShipTask<HarvestGas>>,
     interaction_queues: Query<'w, 's, &'static mut InteractionQueue>,
-    signal_writer: EventWriter<'w, TaskCompletedEvent<AwaitingSignal>>,
+    signal_writer: EventWriter<'w, SendSignalEvent>,
 }
 
 impl<'w, 's> TaskCompletedEventHandler<'w, 's, Self> for HarvestGas {
