@@ -17,7 +17,7 @@ use bevy::app::App;
 use bevy::log::error;
 use bevy::prelude::{
     Commands, EventReader, FixedPostUpdate, FixedPreUpdate, FixedUpdate, IntoScheduleConfigs,
-    Plugin, PreUpdate, Query, SystemSet, Update, With, in_state, on_event,
+    Plugin, PreUpdate, Query, Update, With, in_state, on_event,
 };
 use common::components::task_queue::TaskQueue;
 use common::events::task_events::{
@@ -31,10 +31,6 @@ use common::types::ship_tasks::{
     MoveToPosition, MoveToSector, RequestAccess, ShipTaskData, Undock, UseGate,
 };
 
-fn enable_insert_task_into_queue_commands(app: &mut App) {
-    app.add_event::<InsertTaskIntoQueueCommand<Construct>>();
-}
-
 // TODO: clean up once we reunify task registration
 fn enable_abortion(app: &mut App) {
     app.add_systems(
@@ -44,17 +40,11 @@ fn enable_abortion(app: &mut App) {
 
     app.add_event::<TaskCancellationWhileActiveRequest>();
     app.add_event::<TaskCanceledWhileActiveEvent<AwaitingSignal>>();
-    app.add_event::<TaskCanceledWhileActiveEvent<Construct>>();
 
     app.add_systems(
         FixedPreUpdate,
-        (
-            ShipTask::<Construct>::abort_running_task
-                .run_if(on_event::<TaskCanceledWhileActiveEvent<Construct>>),
-            abort_tasks::<AwaitingSignal>
-                .run_if(on_event::<TaskCanceledWhileActiveEvent<AwaitingSignal>>),
-            abort_tasks::<Construct>.run_if(on_event::<TaskCanceledWhileActiveEvent<Construct>>),
-        ),
+        (abort_tasks::<AwaitingSignal>
+            .run_if(on_event::<TaskCanceledWhileActiveEvent<AwaitingSignal>>),),
     );
 }
 
@@ -68,8 +58,8 @@ fn enable_cancellation(app: &mut App) {
 
     app.add_event::<TaskCancellationWhileInQueueRequest>();
     app.add_event::<TaskCanceledWhileInQueueEvent<AwaitingSignal>>();
-    app.add_event::<TaskCanceledWhileInQueueEvent<Construct>>();
 
+    register_task_lifecycle::<Construct>(app);
     register_task_lifecycle::<DockAtEntity>(app);
     register_task_lifecycle::<ExchangeWares>(app);
     register_task_lifecycle::<HarvestGas>(app);
@@ -152,7 +142,6 @@ where
 pub struct ShipAiPlugin;
 impl Plugin for ShipAiPlugin {
     fn build(&self, app: &mut App) {
-        enable_insert_task_into_queue_commands(app);
         enable_abortion(app);
         enable_cancellation(app);
 
@@ -166,23 +155,6 @@ impl Plugin for ShipAiPlugin {
                     .before(CustomSystemSets::RespawnAsteroids)
                     .run_if(in_state(SimulationState::Running)),
             ),
-        );
-
-        app.add_event::<TaskCompletedEvent<Construct>>();
-        app.add_event::<TaskStartedEvent<Construct>>();
-        app.add_systems(Update, Construct::task_creation_event_listener);
-        app.add_systems(
-            FixedPostUpdate,
-            (ShipTask::<Construct>::on_task_started,).run_if(in_state(SimulationState::Running)),
-        );
-        app.add_systems(
-            FixedUpdate,
-            (
-                ShipTask::<Construct>::run_tasks,
-                complete_tasks::<Construct>.run_if(on_event::<TaskCompletedEvent<Construct>>),
-            )
-                .chain()
-                .run_if(in_state(SimulationState::Running)),
         );
 
         app.add_systems(

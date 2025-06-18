@@ -1,70 +1,33 @@
 use crate::TaskComponent;
+use crate::task_lifecycle_traits::task_cancellation_active::TaskCancellationForActiveTaskEventHandler;
+use crate::task_lifecycle_traits::task_cancellation_in_queue::TaskCancellationForTaskInQueueEventHandler;
+use crate::task_lifecycle_traits::task_completed::TaskCompletedEventHandler;
 use crate::task_lifecycle_traits::task_creation::{
     GeneralPathfindingArgs, TaskCreationEventHandler,
 };
+use crate::task_lifecycle_traits::task_started::TaskStartedEventHandler;
+use crate::task_lifecycle_traits::task_update_runner::TaskUpdateRunner;
 use crate::utility::ship_task::ShipTask;
 use crate::utility::task_preconditions::create_preconditions_and_move_to_entity;
-use bevy::ecs::system::StaticSystemParam;
-use bevy::prelude::{BevyError, EventReader, Query, Res, error};
+use bevy::ecs::system::{StaticSystemParam, SystemParam};
+use bevy::prelude::{BevyError, EventWriter, Query, Res, error};
 use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
 use common::components::{ConstructionSite, Ship};
+use common::constants::BevyResult;
 use common::events::task_events::{
-    InsertTaskIntoQueueCommand, TaskCanceledWhileActiveEvent, TaskStartedEvent,
+    InsertTaskIntoQueueCommand, TaskCanceledWhileActiveEvent, TaskCompletedEvent, TaskStartedEvent,
 };
 use common::session_data::ShipConfigurationManifest;
 use common::types::entity_wrappers::ShipEntity;
 use common::types::ship_tasks::Construct;
 use std::collections::VecDeque;
+use std::ops::DerefMut;
+use std::sync::{Arc, Mutex};
 
 impl TaskComponent for ShipTask<Construct> {
     fn can_be_cancelled_while_active() -> bool {
         true
-    }
-}
-
-impl ShipTask<Construct> {
-    pub fn on_task_started(
-        construction_tasks: Query<(&Self, &Ship)>,
-        mut construction_sites: Query<&mut ConstructionSite>,
-        mut event_reader: EventReader<TaskStartedEvent<Construct>>,
-        ship_configurations: Res<ShipConfigurationManifest>,
-    ) {
-        for event in event_reader.read() {
-            let (task, ship) = construction_tasks.get(event.entity.into()).unwrap();
-            let mut construction_site = construction_sites.get_mut(task.target.into()).unwrap();
-            let ship_config = ship_configurations.get_by_id(&ship.config_id()).unwrap();
-            let Some(build_power) = ship_config.computed_stats.build_power else {
-                error!(
-                    "Attempted to start construction task on ship without build power: {:?}",
-                    event.entity
-                );
-                continue;
-            };
-
-            register_ship(&mut construction_site, event.entity, build_power);
-        }
-    }
-
-    pub(crate) fn run_tasks() {
-        // Individual ships don't do anything whilst constructing, that's handled inside construction_site_updater
-    }
-
-    pub(crate) fn cancel_task_inside_queue() {
-        // Nothing needs to be done.
-    }
-
-    pub(crate) fn abort_running_task(
-        mut cancelled_tasks: EventReader<TaskCanceledWhileActiveEvent<Construct>>,
-        mut construction_sites: Query<&mut ConstructionSite>,
-    ) {
-        for event in cancelled_tasks.read() {
-            let Ok(mut site) = construction_sites.get_mut(event.task_data.target.into()) else {
-                continue;
-            };
-
-            deregister_ship(&mut site, event.entity);
-        }
     }
 }
 
@@ -83,7 +46,27 @@ pub fn deregister_ship(site: &mut ConstructionSite, entity: ShipEntity) {
     }
 }
 
-impl<'w, 's> TaskCreationEventHandler<'w, 's, Construct> for Construct {
+impl<'w, 's> TaskUpdateRunner<'w, 's, Self> for Construct {
+    type Args = ();
+    type ArgsMut = ();
+
+    fn run_all_tasks(
+        _args: StaticSystemParam<Self::Args>,
+        _args_mut: StaticSystemParam<Self::ArgsMut>,
+    ) -> Result<Arc<Mutex<Vec<TaskCompletedEvent<Self>>>>, BevyError> {
+        panic!("This should never be called")
+    }
+
+    fn update(
+        _event_writer: EventWriter<TaskCompletedEvent<Self>>,
+        _args: StaticSystemParam<Self::Args>,
+        _args_mut: StaticSystemParam<Self::ArgsMut>,
+    ) -> BevyResult {
+        Ok(())
+    }
+}
+
+impl<'w, 's> TaskCreationEventHandler<'w, 's, Self> for Construct {
     type Args = ();
     type ArgsMut = ();
 
@@ -108,5 +91,96 @@ impl<'w, 's> TaskCreationEventHandler<'w, 's, Construct> for Construct {
         });
 
         Ok(new_tasks)
+    }
+}
+
+#[derive(SystemParam)]
+pub struct TaskStartedArgsMut<'w, 's> {
+    construction_tasks: Query<'w, 's, (&'static ShipTask<Construct>, &'static Ship)>,
+    construction_sites: Query<'w, 's, &'static mut ConstructionSite>,
+    ship_configurations: Res<'w, ShipConfigurationManifest>,
+}
+
+impl<'w, 's> TaskStartedEventHandler<'w, 's, Self> for Construct {
+    type Args = ();
+    type ArgsMut = TaskStartedArgsMut<'w, 's>;
+
+    fn on_task_started(
+        event: &TaskStartedEvent<Self>,
+        _args: &StaticSystemParam<Self::Args>,
+        args_mut: &mut StaticSystemParam<Self::ArgsMut>,
+    ) -> Result<(), BevyError> {
+        let args_mut = args_mut.deref_mut();
+
+        let (task, ship) = args_mut.construction_tasks.get(event.entity.into())?;
+        let mut construction_site = args_mut.construction_sites.get_mut(task.target.into())?;
+
+        let Some(ship_config) = args_mut.ship_configurations.get_by_id(&ship.config_id()) else {
+            error!(
+                "Attempted to start construction task on ship without existing configuration: {:?}",
+                event.entity
+            );
+            return Ok(());
+        };
+
+        let Some(build_power) = ship_config.computed_stats.build_power else {
+            error!(
+                "Attempted to start construction task on ship without build power: {:?}",
+                event.entity
+            );
+            return Ok(());
+        };
+
+        register_ship(&mut construction_site, event.entity, build_power);
+        Ok(())
+    }
+}
+impl<'w, 's> TaskCancellationForTaskInQueueEventHandler<'w, 's, Self> for Construct {
+    type Args = ();
+    type ArgsMut = ();
+
+    fn can_task_be_cancelled_while_in_queue() -> bool {
+        true
+    }
+
+    fn skip_cancelled_in_queue() -> bool {
+        true
+    }
+}
+
+#[derive(SystemParam)]
+pub struct TaskCancellationForActiveTaskArgsMut<'w, 's> {
+    construction_sites: Query<'w, 's, &'static mut ConstructionSite>,
+}
+
+impl<'w, 's> TaskCancellationForActiveTaskEventHandler<'w, 's, Self> for Construct {
+    type Args = ();
+    type ArgsMut = TaskCancellationForActiveTaskArgsMut<'w, 's>;
+
+    fn can_task_be_cancelled_while_active() -> bool {
+        true
+    }
+
+    fn on_task_cancellation_while_in_active(
+        event: &TaskCanceledWhileActiveEvent<Self>,
+        _args: &StaticSystemParam<Self::Args>,
+        args_mut: &mut StaticSystemParam<Self::ArgsMut>,
+    ) -> Result<(), BevyError> {
+        let args_mut = args_mut.deref_mut();
+        let mut site = args_mut
+            .construction_sites
+            .get_mut(event.task_data.target.into())?;
+
+        deregister_ship(&mut site, event.entity);
+        Ok(())
+    }
+}
+
+impl<'w, 's> TaskCompletedEventHandler<'w, 's, Self> for Construct {
+    type Args = ();
+    type ArgsMut = ();
+
+    fn skip_completed() -> bool {
+        true
     }
 }
