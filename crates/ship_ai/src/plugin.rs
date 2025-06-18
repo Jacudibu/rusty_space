@@ -16,8 +16,8 @@ use crate::utility::stop_idle_ships;
 use bevy::app::App;
 use bevy::log::error;
 use bevy::prelude::{
-    Commands, EventReader, FixedPostUpdate, FixedPreUpdate, FixedUpdate, IntoScheduleConfigs,
-    Plugin, PreUpdate, Query, Update, With, in_state, on_event,
+    Commands, EventReader, FixedPostUpdate, FixedUpdate, IntoScheduleConfigs, Plugin, PreUpdate,
+    Query, Update, With, in_state, on_event,
 };
 use common::components::task_queue::TaskQueue;
 use common::events::task_events::{
@@ -39,13 +39,6 @@ fn enable_abortion(app: &mut App) {
     );
 
     app.add_event::<TaskCancellationWhileActiveRequest>();
-    app.add_event::<TaskCanceledWhileActiveEvent<AwaitingSignal>>();
-
-    app.add_systems(
-        FixedPreUpdate,
-        (abort_tasks::<AwaitingSignal>
-            .run_if(on_event::<TaskCanceledWhileActiveEvent<AwaitingSignal>>),),
-    );
 }
 
 // TODO: clean up once we reunify task registration
@@ -57,8 +50,8 @@ fn enable_cancellation(app: &mut App) {
     );
 
     app.add_event::<TaskCancellationWhileInQueueRequest>();
-    app.add_event::<TaskCanceledWhileInQueueEvent<AwaitingSignal>>();
 
+    // register_task_lifecycle::<AwaitingSignal>(app);
     register_task_lifecycle::<Construct>(app);
     register_task_lifecycle::<DockAtEntity>(app);
     register_task_lifecycle::<ExchangeWares>(app);
@@ -162,15 +155,18 @@ impl Plugin for ShipAiPlugin {
             (stop_idle_ships::stop_idle_ships,).run_if(in_state(SimulationState::Running)),
         );
 
+        // TODO: Fix this oddity; *All* cleanup tasks should just run after *all* task completion events have run
+        app.add_event::<InsertTaskIntoQueueCommand<AwaitingSignal>>();
+        app.add_event::<TaskCanceledWhileInQueueEvent<AwaitingSignal>>();
+        app.add_event::<TaskStartedEvent<AwaitingSignal>>();
+        app.add_event::<TaskCanceledWhileActiveEvent<AwaitingSignal>>();
         app.add_event::<TaskCompletedEvent<AwaitingSignal>>();
         app.add_systems(
             FixedUpdate,
-            (
-                complete_tasks::<AwaitingSignal>
-                    .run_if(on_event::<TaskCompletedEvent<AwaitingSignal>>)
-                    .after(complete_tasks::<Undock>)
-                    .after(complete_tasks::<HarvestGas>), // TODO: Could be replaced with a more general "disengage orbit" task or something alike
-            )
+            (complete_tasks::<AwaitingSignal>
+                .run_if(on_event::<TaskCompletedEvent<AwaitingSignal>>)
+                .after(complete_tasks::<Undock>) // TODO <-- Bad, we don't want these extra sausages
+                .after(complete_tasks::<HarvestGas>),)
                 .run_if(in_state(SimulationState::Running)),
         );
 
@@ -201,16 +197,5 @@ fn complete_tasks<T: ShipTaskData>(
                 event.entity
             );
         }
-    }
-}
-
-fn abort_tasks<T: ShipTaskData>(
-    mut commands: Commands,
-    mut event_reader: EventReader<TaskCanceledWhileActiveEvent<T>>,
-) {
-    for event in event_reader.read() {
-        let entity = event.entity.into();
-        let mut entity_commands = commands.entity(entity);
-        entity_commands.remove::<ShipTask<T>>();
     }
 }

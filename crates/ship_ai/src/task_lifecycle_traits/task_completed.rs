@@ -18,9 +18,9 @@ pub(crate) trait TaskCompletedEventHandler<'w, 's, Task: ShipTaskData> {
 
     /// You need to either override this or set [Self::skip_completed] to true so the event listener won't be registered.
     fn on_task_completed(
-        event: &TaskCompletedEvent<Task>,
-        args: &StaticSystemParam<Self::Args>,
-        args_mut: &mut StaticSystemParam<Self::ArgsMut>,
+        _event: &TaskCompletedEvent<Task>,
+        _args: &StaticSystemParam<Self::Args>,
+        _args_mut: &mut StaticSystemParam<Self::ArgsMut>,
     ) -> Result<(), BevyError> {
         todo!("Return a helpful error in case this isn't implemented")
     }
