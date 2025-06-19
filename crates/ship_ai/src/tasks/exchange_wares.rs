@@ -1,4 +1,3 @@
-use crate::TaskComponent;
 use crate::task_lifecycle_traits::task_cancellation_active::TaskCancellationForActiveTaskEventHandler;
 use crate::task_lifecycle_traits::task_cancellation_in_queue::TaskCancellationForTaskInQueueEventHandler;
 use crate::task_lifecycle_traits::task_completed::TaskCompletedEventHandler;
@@ -27,12 +26,6 @@ use common::types::trade_intent::TradeIntent;
 use std::collections::VecDeque;
 use std::ops::DerefMut;
 use std::sync::{Arc, Mutex};
-
-impl TaskComponent for ShipTask<ExchangeWares> {
-    fn can_be_cancelled_while_active() -> bool {
-        false
-    }
-}
 
 #[derive(SystemParam)]
 pub(crate) struct TaskStartedArgs<'w> {
@@ -167,10 +160,6 @@ pub(crate) struct CancelExchangeWareArgsMut<'w, 's> {
 impl<'w, 's> TaskCancellationForTaskInQueueEventHandler<'w, 's, Self> for ExchangeWares {
     type Args = ();
     type ArgsMut = CancelExchangeWareArgsMut<'w, 's>;
-
-    fn can_task_be_cancelled_while_in_queue() -> bool {
-        true
-    }
 
     fn on_task_cancellation_while_in_queue(
         event: &TaskCanceledWhileInQueueEvent<ExchangeWares>,

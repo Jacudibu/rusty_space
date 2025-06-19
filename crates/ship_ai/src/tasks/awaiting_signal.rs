@@ -1,4 +1,4 @@
-use crate::TaskComponent;
+use crate::task_lifecycle_traits::send_completion_events;
 use crate::task_lifecycle_traits::task_cancellation_active::TaskCancellationForActiveTaskEventHandler;
 use crate::task_lifecycle_traits::task_cancellation_in_queue::TaskCancellationForTaskInQueueEventHandler;
 use crate::task_lifecycle_traits::task_completed::TaskCompletedEventHandler;
@@ -7,8 +7,6 @@ use crate::task_lifecycle_traits::task_creation::{
 };
 use crate::task_lifecycle_traits::task_started::TaskStartedEventHandler;
 use crate::task_lifecycle_traits::task_update_runner::TaskUpdateRunner;
-use crate::tasks::send_completion_events;
-use crate::utility::ship_task::ShipTask;
 use bevy::ecs::system::{StaticSystemParam, SystemParam};
 use bevy::prelude::{BevyError, EventReader, EventWriter, Query};
 use common::components::interaction_queue::InteractionQueue;
@@ -23,12 +21,6 @@ use common::types::ship_tasks::AwaitingSignal;
 use std::collections::VecDeque;
 use std::ops::DerefMut;
 use std::sync::{Arc, Mutex};
-
-impl TaskComponent for ShipTask<AwaitingSignal> {
-    fn can_be_cancelled_while_active() -> bool {
-        true
-    }
-}
 
 #[derive(SystemParam)]
 pub struct TaskUpdateRunnerArgsMut<'w, 's> {
@@ -91,10 +83,6 @@ impl<'w, 's> TaskStartedEventHandler<'w, 's, Self> for AwaitingSignal {
 impl<'w, 's> TaskCancellationForTaskInQueueEventHandler<'w, 's, Self> for AwaitingSignal {
     type Args = ();
     type ArgsMut = ();
-
-    fn can_task_be_cancelled_while_in_queue() -> bool {
-        true
-    }
 
     fn skip_cancelled_in_queue() -> bool {
         true

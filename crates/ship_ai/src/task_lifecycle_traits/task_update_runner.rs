@@ -1,4 +1,4 @@
-use crate::tasks::send_completion_events;
+use crate::task_lifecycle_traits::send_completion_events;
 use bevy::ecs::system::{StaticSystemParam, SystemParam};
 use bevy::prelude::{BevyError, EventWriter};
 use common::constants::BevyResult;

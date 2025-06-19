@@ -10,20 +10,16 @@ use crate::task_lifecycle_traits::task_creation::TaskCreationEventHandler;
 use crate::task_lifecycle_traits::task_started::TaskStartedEventHandler;
 use crate::task_lifecycle_traits::task_update_runner::TaskUpdateRunner;
 use crate::task_lifecycle_traits::{task_cancellation_active, task_cancellation_in_queue};
-use crate::tasks::apply_next_task;
-use crate::utility::ship_task::ShipTask;
 use crate::utility::stop_idle_ships;
 use bevy::app::App;
-use bevy::log::error;
 use bevy::prelude::{
-    Commands, EventReader, FixedPostUpdate, FixedUpdate, IntoScheduleConfigs, Plugin, PreUpdate,
-    Query, Update, With, in_state, on_event,
+    FixedPostUpdate, FixedUpdate, IntoScheduleConfigs, Plugin, PreUpdate, Update, in_state,
+    on_event,
 };
-use common::components::task_queue::TaskQueue;
 use common::events::send_signal_event::SendSignalEvent;
 use common::events::task_events::{
-    AllTaskStartedEventWriters, InsertTaskIntoQueueCommand, TaskCanceledWhileActiveEvent,
-    TaskCanceledWhileInQueueEvent, TaskCompletedEvent, TaskStartedEvent,
+    InsertTaskIntoQueueCommand, TaskCanceledWhileActiveEvent, TaskCanceledWhileInQueueEvent,
+    TaskCompletedEvent, TaskStartedEvent,
 };
 use common::states::SimulationState;
 use common::system_sets::CustomSystemSets;
@@ -32,8 +28,46 @@ use common::types::ship_tasks::{
     MoveToPosition, MoveToSector, RequestAccess, ShipTaskData, Undock, UseGate,
 };
 
-// TODO: clean up once we reunify task registration
-fn enable_abortion(app: &mut App) {
+pub struct ShipAiPlugin;
+impl Plugin for ShipAiPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_event::<SendSignalEvent>();
+
+        register_task_lifecycle::<AwaitingSignal>(app);
+        register_task_lifecycle::<Construct>(app);
+        register_task_lifecycle::<DockAtEntity>(app);
+        register_task_lifecycle::<ExchangeWares>(app);
+        register_task_lifecycle::<HarvestGas>(app);
+        register_task_lifecycle::<MineAsteroid>(app);
+        register_task_lifecycle::<MoveToEntity>(app);
+        register_task_lifecycle::<MoveToPosition>(app);
+        register_task_lifecycle::<MoveToSector>(app);
+        register_task_lifecycle::<RequestAccess>(app);
+        register_task_lifecycle::<Undock>(app);
+        register_task_lifecycle::<UseGate>(app);
+
+        app.add_systems(
+            FixedUpdate,
+            (
+                behaviors::auto_construct::handle_idle_ships,
+                behaviors::auto_trade::handle_idle_ships,
+                behaviors::auto_harvest::handle_idle_ships,
+                behaviors::auto_mine::handle_idle_ships.before(CustomSystemSets::RespawnAsteroids),
+            )
+                .run_if(in_state(SimulationState::Running)),
+        );
+
+        app.add_systems(
+            FixedUpdate,
+            (stop_idle_ships::stop_idle_ships).run_if(in_state(SimulationState::Running)),
+        );
+
+        enable_cancelling_active_tasks(app);
+        enable_cancelling_tasks_in_queue(app);
+    }
+}
+
+fn enable_cancelling_active_tasks(app: &mut App) {
     app.add_systems(
         Update,
         task_cancellation_active::handle_task_cancellation_while_active_requests,
@@ -42,8 +76,7 @@ fn enable_abortion(app: &mut App) {
     app.add_event::<TaskCancellationWhileActiveRequest>();
 }
 
-// TODO: clean up once we reunify task registration
-fn enable_cancellation(app: &mut App) {
+fn enable_cancelling_tasks_in_queue(app: &mut App) {
     app.add_systems(
         Update,
         task_cancellation_in_queue::handle_task_cancellation_while_in_queue_requests
@@ -51,19 +84,6 @@ fn enable_cancellation(app: &mut App) {
     );
 
     app.add_event::<TaskCancellationWhileInQueueRequest>();
-
-    register_task_lifecycle::<AwaitingSignal>(app);
-    register_task_lifecycle::<Construct>(app);
-    register_task_lifecycle::<DockAtEntity>(app);
-    register_task_lifecycle::<ExchangeWares>(app);
-    register_task_lifecycle::<HarvestGas>(app);
-    register_task_lifecycle::<MineAsteroid>(app);
-    register_task_lifecycle::<MoveToEntity>(app);
-    register_task_lifecycle::<MoveToPosition>(app);
-    register_task_lifecycle::<MoveToSector>(app);
-    register_task_lifecycle::<RequestAccess>(app);
-    register_task_lifecycle::<Undock>(app);
-    register_task_lifecycle::<UseGate>(app);
 }
 
 fn register_task_lifecycle<Task>(app: &mut App)
@@ -106,7 +126,8 @@ where
             FixedUpdate,
             (
                 Task::update,
-                complete_tasks::<Task>.run_if(on_event::<TaskCompletedEvent<Task>>),
+                Task::remove_completed_task_and_start_next_one
+                    .run_if(on_event::<TaskCompletedEvent<Task>>),
             )
                 .chain()
                 .run_if(in_state(SimulationState::Running)),
@@ -116,7 +137,10 @@ where
             FixedUpdate,
             (
                 Task::update,
-                (Task::task_completed_event_listener, complete_tasks::<Task>)
+                (
+                    Task::task_completed_event_listener,
+                    Task::remove_completed_task_and_start_next_one,
+                )
                     .chain()
                     .run_if(on_event::<TaskCompletedEvent<Task>>),
             )
@@ -130,60 +154,5 @@ where
             FixedPostUpdate,
             Task::task_started_event_listener.run_if(in_state(SimulationState::Running)),
         );
-    }
-}
-
-pub struct ShipAiPlugin;
-impl Plugin for ShipAiPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_event::<SendSignalEvent>();
-
-        enable_abortion(app);
-        enable_cancellation(app);
-
-        app.add_systems(
-            FixedUpdate,
-            (
-                behaviors::auto_construct::handle_idle_ships,
-                behaviors::auto_trade::handle_idle_ships,
-                behaviors::auto_harvest::handle_idle_ships,
-                behaviors::auto_mine::handle_idle_ships
-                    .before(CustomSystemSets::RespawnAsteroids)
-                    .run_if(in_state(SimulationState::Running)),
-            ),
-        );
-
-        app.add_systems(
-            FixedUpdate,
-            (stop_idle_ships::stop_idle_ships,).run_if(in_state(SimulationState::Running)),
-        );
-
-        app.add_systems(FixedUpdate, stop_idle_ships::stop_idle_ships);
-    }
-}
-
-fn complete_tasks<T: ShipTaskData>(
-    mut commands: Commands,
-    mut event_reader: EventReader<TaskCompletedEvent<T>>,
-    mut all_ships_with_task: Query<&mut TaskQueue, With<ShipTask<T>>>,
-    mut task_started_event_writers: AllTaskStartedEventWriters,
-) {
-    for event in event_reader.read() {
-        if let Ok(mut queue) = all_ships_with_task.get_mut(event.entity.into()) {
-            let entity = event.entity.into();
-            let mut entity_commands = commands.entity(entity);
-            entity_commands.remove::<ShipTask<T>>();
-            apply_next_task(
-                &mut queue,
-                entity.into(),
-                &mut entity_commands,
-                &mut task_started_event_writers,
-            );
-        } else {
-            error!(
-                "Unable to find entity for generic task completion: {}",
-                event.entity
-            );
-        }
     }
 }

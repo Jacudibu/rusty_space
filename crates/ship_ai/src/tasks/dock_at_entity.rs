@@ -1,4 +1,3 @@
-use crate::TaskComponent;
 use crate::task_lifecycle_traits::task_cancellation_active::TaskCancellationForActiveTaskEventHandler;
 use crate::task_lifecycle_traits::task_cancellation_in_queue::TaskCancellationForTaskInQueueEventHandler;
 use crate::task_lifecycle_traits::task_completed::TaskCompletedEventHandler;
@@ -27,12 +26,6 @@ use common::types::ship_tasks::DockAtEntity;
 use std::collections::VecDeque;
 use std::ops::{Deref, DerefMut};
 use std::sync::{Arc, Mutex};
-
-impl TaskComponent for ShipTask<DockAtEntity> {
-    fn can_be_cancelled_while_active() -> bool {
-        false
-    }
-}
 
 pub fn scale_based_on_docking_distance(scale: &mut SimulationScale, ratio: f32) {
     if ratio < 0.5 {
@@ -70,10 +63,6 @@ impl<'w, 's> TaskCancellationForActiveTaskEventHandler<'w, 's, Self> for DockAtE
 impl<'w, 's> TaskCancellationForTaskInQueueEventHandler<'w, 's, Self> for DockAtEntity {
     type Args = ();
     type ArgsMut = ();
-
-    fn can_task_be_cancelled_while_in_queue() -> bool {
-        true
-    }
 
     fn skip_cancelled_in_queue() -> bool {
         true

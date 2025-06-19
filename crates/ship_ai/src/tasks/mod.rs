@@ -1,5 +1,5 @@
 use bevy::ecs::system::EntityCommands;
-use bevy::prelude::{Commands, Entity, EventWriter, Query};
+use bevy::prelude::{Entity, EventWriter, Query};
 use std::sync::{Arc, Mutex};
 
 mod awaiting_signal;
@@ -21,50 +21,12 @@ use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
 use common::constants::BevyResult;
 use common::events::send_signal_event::SendSignalEvent;
-use common::events::task_events::{
-    AllTaskStartedEventWriters, TaskCompletedEvent, TaskStartedEvent,
-};
+use common::events::task_events::{AllTaskStartedEventWriters, TaskStartedEvent};
 use common::types::entity_wrappers::ShipEntity;
 use common::types::ship_tasks::{
     AwaitingSignal, Construct, DockAtEntity, ExchangeWares, HarvestGas, MineAsteroid, MoveToEntity,
-    MoveToPosition, MoveToSector, RequestAccess, ShipTaskData, Undock, UseGate,
+    MoveToPosition, MoveToSector, RequestAccess, Undock, UseGate,
 };
-
-/// Unwraps the provided event arc and writes them all at once into the respective [TaskCompletedEvent] event writer.
-/// The main idea is that task runners can use par_iter_mut and then just pass any potential event completions in here.
-pub fn send_completion_events<T: ShipTaskData>(
-    mut event_writer: EventWriter<TaskCompletedEvent<T>>,
-    task_completions: Arc<Mutex<Vec<TaskCompletedEvent<T>>>>,
-) {
-    match Arc::try_unwrap(task_completions) {
-        Ok(task_completions) => {
-            let batch = task_completions.into_inner().unwrap();
-            if !batch.is_empty() {
-                event_writer.write_batch(batch);
-            }
-        }
-        Err(_) => {
-            todo!()
-        }
-    }
-}
-
-/// Creates the Task Component for the first item in the queue to the provided entity.
-/// Should be called by behaviors when transitioning away from idle states.
-pub fn apply_new_task_queue(
-    task_queue: &mut TaskQueue,
-    commands: &mut Commands,
-    entity: Entity,
-    task_started_event_writers: &mut AllTaskStartedEventWriters,
-) {
-    let mut commands = commands.entity(entity);
-    apply_next_task(
-        task_queue,
-        entity.into(),
-        &mut commands,
-        task_started_event_writers,
-    );
-}
 
 /// Applies the next task in the queue to be the new active task, or sets it to None if the queue is empty.
 pub fn apply_next_task(
@@ -150,14 +112,14 @@ pub fn finish_interaction(
 
 #[cfg(test)]
 mod test {
-    use crate::tasks::apply_new_task_queue;
+    use crate::tasks::apply_next_task;
     use bevy::app::App;
     use bevy::ecs::system::RunSystemOnce;
     use bevy::prelude::{BevyError, Commands, Entity, Query};
     use common::components::task_kind::TaskKind;
     use common::components::task_queue::TaskQueue;
     use common::events::task_events::AllTaskStartedEventWriters;
-    use common::types::entity_wrappers::{StationEntity, TypedEntity};
+    use common::types::entity_wrappers::TypedEntity;
     use common::types::ship_tasks::{MoveToEntity, Undock};
     use std::collections::VecDeque;
 
@@ -178,10 +140,10 @@ mod test {
                   mut commands: Commands,
                   mut task_queue: Query<&mut TaskQueue>| {
                 let mut task_queue = task_queue.single_mut().unwrap();
-                apply_new_task_queue(
+                apply_next_task(
                     &mut task_queue,
-                    &mut commands,
-                    entity,
+                    entity.into(),
+                    &mut commands.entity(entity),
                     &mut all_task_started_event_writers,
                 )
             },

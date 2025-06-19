@@ -1,4 +1,3 @@
-use crate::TaskComponent;
 use crate::task_lifecycle_traits::task_cancellation_active::TaskCancellationForActiveTaskEventHandler;
 use crate::task_lifecycle_traits::task_cancellation_in_queue::TaskCancellationForTaskInQueueEventHandler;
 use crate::task_lifecycle_traits::task_completed::TaskCompletedEventHandler;
@@ -25,12 +24,6 @@ use common::types::ship_tasks::Undock;
 use std::collections::VecDeque;
 use std::ops::{Deref, DerefMut};
 use std::sync::{Arc, Mutex};
-
-impl TaskComponent for ShipTask<Undock> {
-    fn can_be_cancelled_while_active() -> bool {
-        false
-    }
-}
 
 fn run(
     task: &ShipTask<Undock>,
@@ -173,10 +166,6 @@ impl<'w, 's> TaskStartedEventHandler<'w, 's, Self> for Undock {
 impl<'w, 's> TaskCancellationForTaskInQueueEventHandler<'w, 's, Self> for Undock {
     type Args = ();
     type ArgsMut = ();
-
-    fn can_task_be_cancelled_while_in_queue() -> bool {
-        true
-    }
 
     fn skip_cancelled_in_queue() -> bool {
         true

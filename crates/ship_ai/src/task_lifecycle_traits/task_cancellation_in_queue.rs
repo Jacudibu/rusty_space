@@ -1,4 +1,5 @@
 use crate::TaskCancellationWhileActiveRequest;
+use crate::task_lifecycle_traits::{TaskTraitFunctionalityNotImplementedError, TaskTraitKind};
 use bevy::ecs::system::{StaticSystemParam, SystemParam};
 use bevy::prelude::{BevyError, Event, EventReader, EventWriter, Query};
 use common::components::task_kind::TaskKind;
@@ -6,9 +7,11 @@ use common::components::task_queue::TaskQueue;
 use common::constants::BevyResult;
 use common::events::task_events::{AllTaskCancelledEventWriters, TaskCanceledWhileInQueueEvent};
 use common::types::entity_wrappers::ShipEntity;
-use common::types::ship_tasks::ShipTaskData;
-use std::error::Error;
-use std::fmt::{Debug, Display, Formatter};
+use common::types::ship_tasks::{
+    AwaitingSignal, Construct, DockAtEntity, ExchangeWares, HarvestGas, MineAsteroid, MoveToEntity,
+    MoveToPosition, MoveToSector, RequestAccess, ShipTaskData, Undock, UseGate,
+};
+use std::fmt::{Debug, Display};
 
 /// Send this event in order to request removing tasks from a task queue.
 #[derive(Event)]
@@ -19,21 +22,6 @@ pub struct TaskCancellationWhileInQueueRequest {
     pub task_position_in_queue: usize,
 }
 
-/// Default error used during [TaskCancellationForTaskInQueueEventHandler].
-#[derive(Debug)]
-struct TaskCancellationInQueueNotImplementedError<TaskData: ShipTaskData> {
-    entity: ShipEntity,
-    task_data: TaskData,
-}
-
-impl<TaskData: ShipTaskData> Display for TaskCancellationInQueueNotImplementedError<TaskData> {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        Debug::fmt(self, f)
-    }
-}
-
-impl<TaskData: ShipTaskData> Error for TaskCancellationInQueueNotImplementedError<TaskData> {}
-
 /// This trait needs to be implemented for all tasks.
 ///
 /// Provides a blanket implementation which prints errors in case we attempt to cancel a task which
@@ -43,11 +31,6 @@ pub(crate) trait TaskCancellationForTaskInQueueEventHandler<'w, 's, TaskData: Sh
     type Args: SystemParam;
     /// The mutable arguments used when calling the functions of this trait.
     type ArgsMut: SystemParam;
-
-    /// Whether this task can be cancelled while it is still in the queue
-    fn can_task_be_cancelled_while_in_queue() -> bool {
-        false
-    }
 
     /// If set to true, the event listener system won't be registered at all. Only do this if there's no custom logic necessary.
     fn skip_cancelled_in_queue() -> bool {
@@ -60,12 +43,11 @@ pub(crate) trait TaskCancellationForTaskInQueueEventHandler<'w, 's, TaskData: Sh
         _args: &StaticSystemParam<Self::Args>,
         _args_mut: &mut StaticSystemParam<Self::ArgsMut>,
     ) -> Result<(), BevyError> {
-        Err(BevyError::from(
-            TaskCancellationInQueueNotImplementedError {
-                entity: event.entity,
-                task_data: event.task_data.clone(),
-            },
-        ))
+        Err(BevyError::from(TaskTraitFunctionalityNotImplementedError {
+            entity: event.entity,
+            task_data: event.task_data.clone().into(),
+            kind: TaskTraitKind::CancellationInQueue,
+        }))
     }
 
     /// Listens to [TaskCancellationWhileInQueueEvent]s and runs [Self::on_task_cancellation_while_in_queue] for each.

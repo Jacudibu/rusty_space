@@ -1,4 +1,3 @@
-use crate::TaskComponent;
 use crate::task_lifecycle_traits::task_cancellation_active::TaskCancellationForActiveTaskEventHandler;
 use crate::task_lifecycle_traits::task_cancellation_in_queue::TaskCancellationForTaskInQueueEventHandler;
 use crate::task_lifecycle_traits::task_completed::TaskCompletedEventHandler;
@@ -34,12 +33,6 @@ enum TaskResult {
     Skip,
     Ongoing { mined_amount: u32 },
     Finished { mined_amount: u32 },
-}
-
-impl TaskComponent for ShipTask<MineAsteroid> {
-    fn can_be_cancelled_while_active() -> bool {
-        true
-    }
 }
 
 fn run(
@@ -236,10 +229,6 @@ impl<'w, 's> TaskStartedEventHandler<'w, 's, Self> for MineAsteroid {
 impl<'w, 's> TaskCancellationForTaskInQueueEventHandler<'w, 's, Self> for MineAsteroid {
     type Args = ();
     type ArgsMut = ();
-
-    fn can_task_be_cancelled_while_in_queue() -> bool {
-        true
-    }
 
     fn skip_cancelled_in_queue() -> bool {
         true

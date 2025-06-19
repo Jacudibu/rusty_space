@@ -1,3 +1,4 @@
+use crate::task_lifecycle_traits::{TaskTraitFunctionalityNotImplementedError, TaskTraitKind};
 use bevy::ecs::system::{StaticSystemParam, SystemParam};
 use bevy::prelude::{BevyError, EventReader};
 use common::constants::BevyResult;
@@ -19,10 +20,16 @@ pub(crate) trait TaskStartedEventHandler<'w, 's, Task: ShipTaskData> {
     /// You need to either override this or set [Self::skip_started] to true so the event listener won't be registered.
     fn on_task_started(
         event: &TaskStartedEvent<Task>,
-        args: &StaticSystemParam<Self::Args>,
-        args_mut: &mut StaticSystemParam<Self::ArgsMut>,
+        _args: &StaticSystemParam<Self::Args>,
+        _args_mut: &mut StaticSystemParam<Self::ArgsMut>,
     ) -> Result<(), BevyError> {
-        todo!("Return a helpful error in case this isn't implemented")
+        Err(BevyError::from(
+            TaskTraitFunctionalityNotImplementedError::<Task> {
+                entity: event.entity,
+                task_data: None,
+                kind: TaskTraitKind::Starting,
+            },
+        ))
     }
 
     /// Listens to [TaskStartedEvent]s and runs [Self::on_task_started] for each.
