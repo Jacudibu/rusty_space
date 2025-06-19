@@ -34,7 +34,9 @@ use common::types::exchange_ware_data::ExchangeWareData;
 use common::types::sprite_handles::SpriteHandles;
 use entity_selection::components::EntityIsSelected;
 use entity_selection::mouse_cursor::MouseCursor;
-use ship_ai::{TaskCancellationWhileActiveRequest, TaskCancellationWhileInQueueRequest};
+use ship_ai::{
+    TaskCancellationWhileActiveRequest, TaskCancellationWhileInQueueRequest, TaskKindExt,
+};
 
 pub struct GUIPlugin;
 impl Plugin for GUIPlugin {
@@ -711,7 +713,7 @@ fn print_task_list_element(
 
         match task_list_element_kind {
             TaskListElementKind::ActiveTask => {
-                if ship_ai::can_task_be_cancelled_while_active(task) && ui.button("x").clicked() {
+                if task.can_task_be_cancelled_while_active() && ui.button("x").clicked() {
                     abortion_request_writer.write(TaskCancellationWhileActiveRequest {
                         entity: entity.into(),
                     });

@@ -21,30 +21,17 @@ use common::events::task_events::{
     InsertTaskIntoQueueCommand, TaskCanceledWhileActiveEvent, TaskCanceledWhileInQueueEvent,
     TaskCompletedEvent, TaskStartedEvent,
 };
+use common::impl_all_task_kinds;
 use common::states::SimulationState;
 use common::system_sets::CustomSystemSets;
-use common::types::ship_tasks::{
-    AwaitingSignal, Construct, DockAtEntity, ExchangeWares, HarvestGas, MineAsteroid, MoveToEntity,
-    MoveToPosition, MoveToSector, RequestAccess, ShipTaskData, Undock, UseGate,
-};
+use common::types::ship_tasks::*;
 
 pub struct ShipAiPlugin;
 impl Plugin for ShipAiPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<SendSignalEvent>();
 
-        register_task_lifecycle::<AwaitingSignal>(app);
-        register_task_lifecycle::<Construct>(app);
-        register_task_lifecycle::<DockAtEntity>(app);
-        register_task_lifecycle::<ExchangeWares>(app);
-        register_task_lifecycle::<HarvestGas>(app);
-        register_task_lifecycle::<MineAsteroid>(app);
-        register_task_lifecycle::<MoveToEntity>(app);
-        register_task_lifecycle::<MoveToPosition>(app);
-        register_task_lifecycle::<MoveToSector>(app);
-        register_task_lifecycle::<RequestAccess>(app);
-        register_task_lifecycle::<Undock>(app);
-        register_task_lifecycle::<UseGate>(app);
+        register_all_ship_task_lifecycles(app);
 
         app.add_systems(
             FixedUpdate,
@@ -65,6 +52,18 @@ impl Plugin for ShipAiPlugin {
         enable_cancelling_active_tasks(app);
         enable_cancelling_tasks_in_queue(app);
     }
+}
+
+fn register_all_ship_task_lifecycles(app: &mut App) {
+    macro_rules! register_lifecycles_for_all_tasks {
+            ($(($variant:ident, $snake_case_variant:ident)),*) => {
+                $(
+                    register_task_lifecycle::<$variant>(app);
+                )*
+            };
+        }
+
+    impl_all_task_kinds!(register_lifecycles_for_all_tasks);
 }
 
 fn enable_cancelling_active_tasks(app: &mut App) {

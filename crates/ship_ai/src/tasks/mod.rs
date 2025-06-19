@@ -1,6 +1,5 @@
 use bevy::ecs::system::EntityCommands;
 use bevy::prelude::{Entity, EventWriter, Query};
-use std::sync::{Arc, Mutex};
 
 mod awaiting_signal;
 mod construct;
@@ -15,18 +14,13 @@ mod request_access;
 mod undock;
 mod use_gate;
 
-use crate::utility::ship_task::ShipTask;
+use crate::task_kind_extension::TaskKindExtInternal;
 use common::components::interaction_queue::InteractionQueue;
-use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
 use common::constants::BevyResult;
 use common::events::send_signal_event::SendSignalEvent;
-use common::events::task_events::{AllTaskStartedEventWriters, TaskStartedEvent};
+use common::events::task_events::AllTaskStartedEventWriters;
 use common::types::entity_wrappers::ShipEntity;
-use common::types::ship_tasks::{
-    AwaitingSignal, Construct, DockAtEntity, ExchangeWares, HarvestGas, MineAsteroid, MoveToEntity,
-    MoveToPosition, MoveToSector, RequestAccess, Undock, UseGate,
-};
 
 /// Applies the next task in the queue to be the new active task, or sets it to None if the queue is empty.
 pub fn apply_next_task(
@@ -40,62 +34,8 @@ pub fn apply_next_task(
         return;
     };
 
-    match next_task.clone() {
-        TaskKind::ExchangeWares { data } => {
-            task_started_event_writers
-                .exchange_wares
-                .write(TaskStartedEvent::new(entity));
-            entity_commands.insert(ShipTask::<ExchangeWares>::new(data));
-        }
-        TaskKind::MoveToEntity { data } => {
-            entity_commands.insert(ShipTask::<MoveToEntity>::new(data));
-        }
-        TaskKind::MoveToPosition { data } => {
-            entity_commands.insert(ShipTask::<MoveToPosition>::new(data));
-        }
-        TaskKind::MoveToSector { data } => {
-            entity_commands.insert(ShipTask::<MoveToSector>::new(data));
-        }
-        TaskKind::UseGate { data } => {
-            task_started_event_writers
-                .use_gate
-                .write(TaskStartedEvent::new(entity));
-            entity_commands.insert(ShipTask::<UseGate>::new(data));
-        }
-        TaskKind::MineAsteroid { data } => {
-            task_started_event_writers
-                .mine_asteroid
-                .write(TaskStartedEvent::new(entity));
-            entity_commands.insert(ShipTask::<MineAsteroid>::new(data));
-        }
-        TaskKind::HarvestGas { data } => {
-            task_started_event_writers
-                .harvest_gas
-                .write(TaskStartedEvent::new(entity));
-            entity_commands.insert(ShipTask::<HarvestGas>::new(data));
-        }
-        TaskKind::AwaitingSignal { data } => {
-            entity_commands.insert(ShipTask::<AwaitingSignal>::new(data));
-        }
-        TaskKind::Construct { data } => {
-            task_started_event_writers
-                .construct
-                .write(TaskStartedEvent::new(entity));
-            entity_commands.insert(ShipTask::<Construct>::new(data));
-        }
-        TaskKind::RequestAccess { data } => {
-            entity_commands.insert(ShipTask::<RequestAccess>::new(data));
-        }
-        TaskKind::DockAtEntity { data } => {
-            entity_commands.insert(ShipTask::<DockAtEntity>::new(data));
-        }
-        TaskKind::Undock { data } => {
-            task_started_event_writers
-                .undock
-                .write(TaskStartedEvent::new(entity));
-            entity_commands.insert(ShipTask::<Undock>::new(data));
-        }
-    }
+    next_task.add_task_to_entity(entity_commands);
+    task_started_event_writers.write_event(entity, next_task);
 }
 
 /// Notify an [InteractionQueue] that the interaction has been finished, if it still exists.

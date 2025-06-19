@@ -1,4 +1,4 @@
-use crate::can_task_be_cancelled_while_active;
+use crate::TaskKindExt;
 use crate::tasks::apply_next_task;
 use bevy::ecs::system::{StaticSystemParam, SystemParam};
 use bevy::log::warn;
@@ -119,7 +119,7 @@ fn apply_tasks(
         }
         TaskInsertionMode::Prepend => {
             if let Some(active_task) = queue.active_task.clone() {
-                if !can_task_be_cancelled_while_active(&active_task) {
+                if !active_task.can_task_be_cancelled_while_active() {
                     todo!(
                         "So, uh, this should probably just be skipped! Ideally before we do all the earlier calculation."
                     )

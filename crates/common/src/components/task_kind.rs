@@ -4,6 +4,8 @@ use crate::types::ship_tasks::{
 };
 
 /// Enum to differentiate between the different ship tasks.
+///
+/// If you implement logic for this, consider using a macro with [impl_all_task_kinds] in case every case does the same thing.
 #[derive(Clone)]
 pub enum TaskKind {
     /// Indicates that our ship is waiting for an external entity (e.g. a station or the player) to signal the ship to continue with its next task.
@@ -46,3 +48,29 @@ pub enum TaskKind {
         data: HarvestGas,
     },
 }
+
+/// Pass another macro in here with ($(($variant:ident, $snake_case_variant:ident)),*) => {...}
+/// and it will populate the arguments with values for every [TaskKind]
+///
+/// see <https://lukaswirth.dev/tlborm/decl-macros/patterns/callbacks.html> to clarify the magic behind this
+#[macro_export]
+macro_rules! impl_all_task_kinds {
+    ($callback:ident) => {
+        $callback! {
+            (AwaitingSignal, awaiting_signal),
+            (Construct, construct),
+            (DockAtEntity, dock_at_entity),
+            (ExchangeWares, exchange_wares),
+            (HarvestGas, harvest_gas),
+            (MineAsteroid, mine_asteroid),
+            (MoveToEntity, move_to_entity),
+            (MoveToPosition, move_to_position),
+            (MoveToSector, move_to_sector),
+            (RequestAccess, request_access),
+            (Undock, undock),
+            (UseGate, use_gate)
+        }
+    };
+}
+
+pub use impl_all_task_kinds;

@@ -99,57 +99,9 @@ pub(crate) fn handle_task_cancellation_while_in_queue_requests(
         };
 
         for task in queue.queue.split_off(split_position) {
-            send_cancellation_event(&mut event_writers, event.entity, task);
+            event_writers.write_event(event.entity, task);
         }
     }
 
     Ok(())
-}
-
-pub(crate) fn send_cancellation_event(
-    event_writers: &mut AllTaskCancelledEventWriters,
-    entity: ShipEntity,
-    task: TaskKind,
-) {
-    match task {
-        TaskKind::AwaitingSignal { data } => {
-            write_event(&mut event_writers.awaiting_signal, entity, data)
-        }
-        TaskKind::Construct { data } => {
-            write_event(&mut event_writers.construct, entity, data);
-        }
-        TaskKind::RequestAccess { data } => {
-            write_event(&mut event_writers.request_access, entity, data)
-        }
-        TaskKind::DockAtEntity { data } => {
-            write_event(&mut event_writers.dock_at_entity, entity, data)
-        }
-        TaskKind::Undock { data } => write_event(&mut event_writers.undock, entity, data),
-        TaskKind::ExchangeWares { data } => {
-            write_event(&mut event_writers.exchange_wares, entity, data)
-        }
-        TaskKind::MoveToEntity { data } => {
-            write_event(&mut event_writers.move_to_entity, entity, data)
-        }
-        TaskKind::MoveToPosition { data } => {
-            write_event(&mut event_writers.move_to_position, entity, data)
-        }
-        TaskKind::MoveToSector { data } => {
-            write_event(&mut event_writers.move_to_sector, entity, data)
-        }
-        TaskKind::UseGate { data } => write_event(&mut event_writers.use_gate, entity, data),
-        TaskKind::MineAsteroid { data } => {
-            write_event(&mut event_writers.mine_asteroid, entity, data)
-        }
-        TaskKind::HarvestGas { data } => write_event(&mut event_writers.harvest_gas, entity, data),
-    }
-}
-
-#[inline]
-fn write_event<T: ShipTaskData>(
-    event_writer: &mut EventWriter<TaskCanceledWhileInQueueEvent<T>>,
-    entity: ShipEntity,
-    data: T,
-) {
-    event_writer.write(TaskCanceledWhileInQueueEvent::new(entity, data));
 }

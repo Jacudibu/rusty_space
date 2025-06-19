@@ -1,3 +1,5 @@
+use crate::components::task_kind::TaskKind;
+use crate::impl_all_task_kinds;
 use crate::types::entity_wrappers::ShipEntity;
 use crate::types::ship_tasks::{
     AwaitingSignal, Construct, DockAtEntity, ExchangeWares, HarvestGas, MineAsteroid, MoveToEntity,
@@ -97,50 +99,64 @@ pub enum TaskInsertionMode {
     // Replace,
 }
 
-/// A [SystemParam] collection of all [TaskStartedEvent] EventWriters.
-/// Right now this needs to be passed into all behaviors to initiate new tasks.
-#[derive(SystemParam)]
-pub struct AllTaskStartedEventWriters<'w> {
-    pub exchange_wares: EventWriter<'w, TaskStartedEvent<ExchangeWares>>,
-    pub use_gate: EventWriter<'w, TaskStartedEvent<UseGate>>,
-    pub undock: EventWriter<'w, TaskStartedEvent<Undock>>,
-    pub construct: EventWriter<'w, TaskStartedEvent<Construct>>,
-    pub mine_asteroid: EventWriter<'w, TaskStartedEvent<MineAsteroid>>,
-    pub harvest_gas: EventWriter<'w, TaskStartedEvent<HarvestGas>>,
+/// Creates TaskEventWriters and methods for them.
+///
+macro_rules! impl_task_events {
+    ($(($variant:ident, $snake_case_variant:ident)),*) => {
+        /// A [SystemParam] collection of all [TaskStartedEvent] EventWriters.
+        /// Right now this needs to be passed into all behaviors to initiate new tasks.
+        #[derive(SystemParam)]
+        pub struct AllTaskStartedEventWriters<'w> {
+            $(pub $snake_case_variant: EventWriter<'w, TaskStartedEvent<$variant>>),*
+        }
+
+        impl<'w> AllTaskStartedEventWriters<'w> {
+            /// Writes a [TaskStartedEvent] into the respective [EventWriter].
+            pub fn write_event(&mut self, entity: ShipEntity, task: &TaskKind) {
+                match task {
+                    $(TaskKind::$variant { .. } => {
+                        self.$snake_case_variant.write(TaskStartedEvent::new(entity));
+                    }),*
+                }
+            }
+        }
+
+        /// A [SystemParam] collection of all [TaskCanceledWhileInQueueEvent] EventWriters.
+        /// These are called after a task was removed from the task queue.
+        #[derive(SystemParam)]
+        pub struct AllTaskCancelledEventWriters<'w> {
+            $(pub $snake_case_variant: EventWriter<'w, TaskCanceledWhileInQueueEvent<$variant>>),*
+        }
+
+        impl<'w> AllTaskCancelledEventWriters<'w> {
+            /// Writes a [TaskCanceledWhileInQueueEvent] into the respective [EventWriter].
+            pub fn write_event(&mut self, entity: ShipEntity, task: TaskKind) {
+                match task {
+                    $(TaskKind::$variant { data } => {
+                        self.$snake_case_variant.write(TaskCanceledWhileInQueueEvent::new(entity, data));
+                    }),*
+                }
+            }
+        }
+
+        /// A [SystemParam] collection of all [TaskCanceledWhileActiveEvent] EventWriters.
+        /// These are called after a task was removed from the task queue.
+        #[derive(SystemParam)]
+        pub struct AllTaskAbortedEventWriters<'w> {
+            $(pub $snake_case_variant: EventWriter<'w, TaskCanceledWhileActiveEvent<$variant>>),*
+        }
+
+        impl<'w> AllTaskAbortedEventWriters<'w> {
+            /// Writes a [TaskCanceledWhileInQueueEvent] into the respective [EventWriter].
+            pub fn write_event(&mut self, entity: ShipEntity, task: TaskKind) {
+                match task {
+                    $(TaskKind::$variant { data } => {
+                        self.$snake_case_variant.write(TaskCanceledWhileActiveEvent::new(entity, data));
+                    }),*
+                }
+            }
+        }
+    };
 }
 
-/// A [SystemParam] collection of all [TaskCanceledWhileInQueueEvent] EventWriters.
-/// These are called after a task was removed from the task queue.
-#[derive(SystemParam)]
-pub struct AllTaskCancelledEventWriters<'w> {
-    pub awaiting_signal: EventWriter<'w, TaskCanceledWhileInQueueEvent<AwaitingSignal>>,
-    pub construct: EventWriter<'w, TaskCanceledWhileInQueueEvent<Construct>>,
-    pub exchange_wares: EventWriter<'w, TaskCanceledWhileInQueueEvent<ExchangeWares>>,
-    pub dock_at_entity: EventWriter<'w, TaskCanceledWhileInQueueEvent<DockAtEntity>>,
-    pub harvest_gas: EventWriter<'w, TaskCanceledWhileInQueueEvent<HarvestGas>>,
-    pub mine_asteroid: EventWriter<'w, TaskCanceledWhileInQueueEvent<MineAsteroid>>,
-    pub move_to_entity: EventWriter<'w, TaskCanceledWhileInQueueEvent<MoveToEntity>>,
-    pub move_to_position: EventWriter<'w, TaskCanceledWhileInQueueEvent<MoveToPosition>>,
-    pub move_to_sector: EventWriter<'w, TaskCanceledWhileInQueueEvent<MoveToSector>>,
-    pub undock: EventWriter<'w, TaskCanceledWhileInQueueEvent<Undock>>,
-    pub use_gate: EventWriter<'w, TaskCanceledWhileInQueueEvent<UseGate>>,
-    pub request_access: EventWriter<'w, TaskCanceledWhileInQueueEvent<RequestAccess>>,
-}
-
-/// A [SystemParam] collection of all [TaskCanceledWhileActiveEvent] EventWriters.
-/// These are called after a task was removed from the task queue.
-#[derive(SystemParam)]
-pub struct AllTaskAbortedEventWriters<'w> {
-    pub awaiting_signal: EventWriter<'w, TaskCanceledWhileActiveEvent<AwaitingSignal>>,
-    pub construct: EventWriter<'w, TaskCanceledWhileActiveEvent<Construct>>,
-    pub exchange_wares: EventWriter<'w, TaskCanceledWhileActiveEvent<ExchangeWares>>,
-    pub dock_at_entity: EventWriter<'w, TaskCanceledWhileActiveEvent<DockAtEntity>>,
-    pub harvest_gas: EventWriter<'w, TaskCanceledWhileActiveEvent<HarvestGas>>,
-    pub mine_asteroid: EventWriter<'w, TaskCanceledWhileActiveEvent<MineAsteroid>>,
-    pub move_to_entity: EventWriter<'w, TaskCanceledWhileActiveEvent<MoveToEntity>>,
-    pub move_to_position: EventWriter<'w, TaskCanceledWhileActiveEvent<MoveToPosition>>,
-    pub move_to_sector: EventWriter<'w, TaskCanceledWhileActiveEvent<MoveToSector>>,
-    pub undock: EventWriter<'w, TaskCanceledWhileActiveEvent<Undock>>,
-    pub use_gate: EventWriter<'w, TaskCanceledWhileActiveEvent<UseGate>>,
-    pub request_access: EventWriter<'w, TaskCanceledWhileActiveEvent<RequestAccess>>,
-}
+impl_all_task_kinds!(impl_task_events);

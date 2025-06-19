@@ -7,6 +7,5 @@ In multiplayer sessions, behaviors are only run on the session owner's machine, 
 #### Adding new ShipTasks
 1. Add a `NewTask` struct in (common) `ship_tasks`
 2. Add it to (common) `TaskKind`
-3. Add `Without<ShipTask<NewTask>>` to `ShipIsIdleFilter`
+3. Fix compile errors for missing `TaskKind` matches
 4. Implement all `task_lifecycle_traits` for `NewTask`
-5. Call `register_task_lifecycle` in `/ship_ai/plugin.rs`
