@@ -4,6 +4,8 @@ An economy focused RTS / Space Sandbox written in Rust and Bevy, highly inspired
 
 Right now things are still very Work-in-Progressy. I'll be more open to contributions once I've figured out more about the general direction this will take, which includes filling [docs](docs) with a proper game design document. :>
 
+[Here's a sorta prioritized todo/task list.](https://github.com/users/Jacudibu/projects/4/views/1)
+
 ## Crate overview
 ```mermaid
 flowchart BT
