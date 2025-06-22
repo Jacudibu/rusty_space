@@ -1,6 +1,5 @@
 use crate::game_data::ItemId;
 use crate::types::auto_mine_state::AutoMineState;
-use bevy::prelude::Component;
 
 /// Marker trait to define that a struct may be used as a ShipBehavior during simulation.
 pub trait ShipBehaviorData: Send + Sync {}
@@ -25,6 +24,9 @@ pub struct AutoMineBehavior {
 impl ShipBehaviorData for AutoMineBehavior {}
 
 /// Ships with this behavior will attempt to buy low and sell high.
-#[derive(Component)]
 pub struct AutoTradeBehavior {}
 impl ShipBehaviorData for AutoTradeBehavior {}
+
+/// Ships with this behavior will do nothing on their own.
+pub struct HoldPositionBehavior {}
+impl ShipBehaviorData for HoldPositionBehavior {}

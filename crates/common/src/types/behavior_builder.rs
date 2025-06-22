@@ -3,6 +3,7 @@ use crate::game_data::ItemId;
 use crate::types::auto_mine_state::AutoMineState;
 use crate::types::ship_behaviors::{
     AutoConstructBehavior, AutoHarvestBehavior, AutoMineBehavior, AutoTradeBehavior,
+    HoldPositionBehavior,
 };
 use bevy::prelude::EntityCommands;
 
@@ -19,6 +20,7 @@ pub enum BehaviorBuilder {
         state: AutoMineState,
         harvested_gas: ItemId,
     },
+    HoldPosition,
 }
 
 impl BehaviorBuilder {
@@ -44,6 +46,9 @@ impl BehaviorBuilder {
                     state,
                     harvested_gas,
                 }));
+            }
+            BehaviorBuilder::HoldPosition => {
+                entity_commands.insert(ShipBehavior::new(HoldPositionBehavior {}));
             }
         };
     }

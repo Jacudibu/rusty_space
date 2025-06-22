@@ -27,10 +27,23 @@ pub struct TestApp {
 }
 
 impl TestApp {
-    pub fn with_stations() {}
-    pub fn with_sectors() {}
-    pub fn with_ships() {}
-    pub fn with_gate_pairs() {}
+    pub fn with_stations(mut self, stations: StationBuilder) -> Self {
+        self.stations = stations;
+        self
+    }
+    pub fn with_sectors(mut self, sectors: SectorBuilder) -> Self {
+        self.sectors = sectors;
+        self
+    }
+    pub fn with_ships(mut self, ships: ShipBuilder) -> Self {
+        self.ships = ships;
+        self
+    }
+
+    pub fn gate_pairs(mut self, gate_pairs: GatePairBuilder) -> Self {
+        self.gate_pairs = gate_pairs;
+        self
+    }
 
     pub fn add_plugins<M>(&mut self, plugins: impl Plugins<M>) -> &mut Self {
         self.app.add_plugins(plugins);

@@ -144,7 +144,6 @@ pub enum AutoMineStateSaveData {
 }
 
 #[derive(Serialize, Deserialize, Copy, Clone, Debug, PartialEq)]
-#[allow(clippy::enum_variant_names)] // Ideally this should fix itself once we have more behaviors
 pub enum ShipBehaviorSaveData {
     AutoTrade,
     AutoConstruct,
@@ -156,6 +155,7 @@ pub enum ShipBehaviorSaveData {
         harvested_gas: ItemId,
         state: AutoMineStateSaveData,
     },
+    HoldPosition,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]

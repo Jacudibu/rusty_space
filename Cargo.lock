@@ -4779,8 +4779,11 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "common",
+ "hexx",
  "pathfinding",
+ "persistence",
  "test_utils",
+ "universe_builder",
 ]
 
 [[package]]

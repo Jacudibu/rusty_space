@@ -11,4 +11,7 @@ common = { workspace = true }
 pathfinding = { workspace = true }
 
 [dev-dependencies]
+hexx = { workspace = true }
+persistence = { workspace = true }
+universe_builder = { workspace = true }
 test_utils = { workspace = true }

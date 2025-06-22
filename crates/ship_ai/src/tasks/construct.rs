@@ -173,3 +173,101 @@ impl<'w, 's> TaskCompletedEventHandler<'w, 's, Self> for Construct {
         true
     }
 }
+
+#[cfg(test)]
+mod test {
+    use crate::task_lifecycle_traits::task_started::TaskStartedEventHandler;
+    use crate::utility::ship_task::ShipTask;
+    use bevy::prelude::{Entity, Update, With};
+    use common::components::{ConstructionSite, Ship};
+    use common::constants::BevyResult;
+    use common::events::task_events::TaskStartedEvent;
+    use common::game_data::{ConstructableModuleId, REFINED_METALS_PRODUCTION_MODULE_ID};
+    use common::session_data::ShipConfigurationManifest;
+    use common::session_data::ship_configs::MOCK_CONSTRUCTION_SHIP_CONFIG_ID;
+    use common::types::local_hex_position::LocalHexPosition;
+    use common::types::ship_tasks::Construct;
+    use hexx::Hex;
+    use persistence::data::ShipBehaviorSaveData;
+    use test_utils::test_app::TestApp;
+    use universe_builder::sector_builder::SectorBuilder;
+    use universe_builder::ship_builder::ShipBuilder;
+    use universe_builder::station_builder::StationBuilder;
+
+    #[test]
+    fn starting_task_should_add_construction_power_to_site() -> BevyResult {
+        let mut station_builder = StationBuilder::default();
+        station_builder
+            .add(LocalHexPosition::default(), "SomeStation")
+            .with_construction_site(
+                vec![ConstructableModuleId::ProductionModule(
+                    REFINED_METALS_PRODUCTION_MODULE_ID,
+                )],
+                0.0,
+            );
+
+        let mut ship_builder = ShipBuilder::default();
+        ship_builder.add(
+            MOCK_CONSTRUCTION_SHIP_CONFIG_ID,
+            LocalHexPosition::default(),
+            0.0,
+            "Construction Ship",
+            ShipBehaviorSaveData::HoldPosition,
+        );
+
+        let mut sector_builder = SectorBuilder::default();
+        sector_builder.add(Hex::default());
+
+        let mut app = TestApp::default()
+            .with_sectors(sector_builder)
+            .with_stations(station_builder)
+            .with_ships(ship_builder)
+            .build();
+
+        app.add_event::<TaskStartedEvent<Construct>>();
+        app.add_systems(Update, Construct::task_started_event_listener);
+        app.finish();
+
+        let construction_site = app
+            .world_mut()
+            .query_filtered::<Entity, With<ConstructionSite>>()
+            .single(app.world())?;
+
+        let ship = app
+            .world_mut()
+            .query_filtered::<Entity, With<Ship>>()
+            .single(app.world())?;
+
+        app.world_mut()
+            .commands()
+            .get_entity(ship)?
+            .insert(ShipTask::new(Construct {
+                target: construction_site.into(),
+            }));
+
+        app.world_mut()
+            .send_event(TaskStartedEvent::<Construct>::new(ship.into()));
+
+        app.update();
+
+        let construction_site = app
+            .world_mut()
+            .query::<&ConstructionSite>()
+            .single(app.world())?;
+        let (registered_ship, build_power) =
+            construction_site.construction_ships.iter().next().unwrap();
+        let expected_build_power = app
+            .world()
+            .resource::<ShipConfigurationManifest>()
+            .get_by_id(&MOCK_CONSTRUCTION_SHIP_CONFIG_ID)
+            .unwrap()
+            .computed_stats
+            .build_power
+            .unwrap();
+
+        assert_eq!(Entity::from(registered_ship), ship);
+        assert_eq!(expected_build_power, *build_power);
+
+        Ok(())
+    }
+}

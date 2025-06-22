@@ -9,7 +9,7 @@ use hexx::Hex;
 use serde::{Deserialize, Serialize};
 
 /// Represents a persist-able global position through the hex coordinates of the sector and a local position with it.
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Clone, Default, Debug, PartialEq)]
 pub struct LocalHexPosition {
     /// The [Hex] representing the sector of this position.
     pub sector: Hex,

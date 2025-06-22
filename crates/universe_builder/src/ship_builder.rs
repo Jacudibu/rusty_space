@@ -1,9 +1,12 @@
 use bevy::prelude::{Deref, DerefMut};
+use bevy::reflect::erased_serde::__private::serde::{Deserialize, Serialize};
+use common::game_data::ItemId;
 use common::session_data::ShipConfigId;
 use common::types::local_hex_position::LocalHexPosition;
 use common::types::persistent_entity_id::PersistentShipId;
 use persistence::data::{
-    InventorySaveData, SaveDataCollection, ShipBehaviorSaveData, ShipSaveData,
+    AutoMineStateSaveData, InventorySaveData, SaveDataCollection, ShipBehaviorSaveData,
+    ShipSaveData,
 };
 
 #[derive(Deref, DerefMut, Default)]
@@ -17,13 +20,13 @@ impl ShipBuilder {
         config_id: ShipConfigId,
         position: LocalHexPosition,
         rotation: f32,
-        name: String,
+        name: impl Into<String>,
         behavior: ShipBehaviorSaveData,
     ) -> &mut ShipSaveData {
         self.push(ShipSaveData {
             id: PersistentShipId::next(),
             config_id,
-            name,
+            name: name.into(),
             position,
             rotation_degrees: rotation,
             behavior,

@@ -6,7 +6,7 @@ use std::collections::HashMap;
 
 /// Marker component for ConstructionSites.
 /// These are always directly owned by a station, but have their own inventory and buy orders.
-/// Build Sites disappear once everything has been built.
+/// Build Sites despawn once everything has been built.
 #[derive(Component)]
 pub struct ConstructionSite {
     /// The PersistentEntityId of this ConstructionSite.

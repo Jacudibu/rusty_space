@@ -28,7 +28,7 @@ impl StationBuilder {
     pub fn add(
         &mut self,
         position: LocalHexPosition,
-        name: String,
+        name: impl Into<String>,
     ) -> &mut IndividualStationBuilder {
         self.data
             .push(IndividualStationBuilder::new(position, name));
@@ -43,12 +43,12 @@ impl StationBuilder {
 }
 
 impl IndividualStationBuilder {
-    pub fn new(position: LocalHexPosition, name: String) -> Self {
+    pub fn new(position: LocalHexPosition, name: impl Into<String>) -> Self {
         Self {
             data: StationSaveData {
                 id: PersistentStationId::next(),
                 position,
-                name,
+                name: name.into(),
                 buy_orders: None,
                 sell_orders: None,
                 production_modules: None,
@@ -151,7 +151,6 @@ impl IndividualStationBuilder {
         queue: Vec<ConstructableModuleId>,
         current_progress: f32,
     ) -> &mut Self {
-        return self;
         // TODO: Buy orders are currently not persisted properly
         self.construction_site = Some(ConstructionSiteSaveData {
             queue,

@@ -32,6 +32,8 @@ flowchart BT
     main --> camera
 ```
 
+There is also `test_utils` which uses `universe_builder` to help build a `TestApp` which may be used by any crates' test dependencies.
+
 `main` mostly contains stuff that's still WIP and has not reached a size to warrant a separate crate yet. GUI for example is a big, unfinished, work in progress nightmare right now. :)
 Ideally, one day it will just construct the bevy App through plugins.
 

@@ -248,6 +248,7 @@ pub fn convert_behavior_save_data_to_builder_data(value: ShipBehaviorSaveData) -
             harvested_gas,
             state: convert_auto_mine_state(state),
         },
+        ShipBehaviorSaveData::HoldPosition => BehaviorBuilder::HoldPosition,
     }
 }
 
