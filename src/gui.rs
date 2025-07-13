@@ -2,13 +2,17 @@ use bevy::app::App;
 use bevy::ecs::query::QueryData;
 use bevy::platform::collections::{HashMap, HashSet};
 use bevy::prelude::{
-    AppExtStates, AssetServer, Commands, Entity, EventReader, EventWriter, IntoScheduleConfigs,
-    Name, NextState, Plugin, PreUpdate, Query, Res, ResMut, Resource, Startup, State, With,
-    on_event,
+    AppExtStates, AssetServer, Camera, Camera2d, Commands, Entity, EventReader, EventWriter,
+    IntoScheduleConfigs, Name, NextState, OnAdd, Plugin, PreUpdate, Query, Res, ResMut, Resource,
+    Startup, State, Trigger, With, on_event,
 };
+use bevy::render::view::RenderLayers;
 use bevy_egui::egui::load::SizedTexture;
 use bevy_egui::egui::{Align2, Shadow, Ui};
-use bevy_egui::{EguiContextPass, EguiContexts, EguiStartupSet, egui};
+use bevy_egui::{
+    EguiContexts, EguiGlobalSettings, EguiPrimaryContextPass, EguiStartupSet, PrimaryEguiContext,
+    egui,
+};
 use common::components::interaction_queue::InteractionQueue;
 use common::components::production_facility::ProductionFacility;
 use common::components::ship_velocity::ShipVelocity;
@@ -47,13 +51,18 @@ impl Plugin for GUIPlugin {
             })
             .add_systems(
                 Startup,
-                initialize
-                    .after(EguiStartupSet::InitContexts)
-                    .after(crate::initialize_data),
+                (
+                    spawn_egui_camera,
+                    initialize
+                        .after(EguiStartupSet::InitContexts)
+                        .after(crate::initialize_data),
+                )
+                    .chain(),
             )
             .add_systems(PreUpdate, detect_mouse_cursor_over_ui)
+            // .add_observer(configure_egui)
             .add_systems(
-                EguiContextPass,
+                EguiPrimaryContextPass,
                 (
                     draw_sector_info,
                     list_selection_icons_and_counts,
@@ -162,15 +171,30 @@ impl UiIcons {
 
 const ICON_SIZE: [f32; 2] = [16.0, 16.0];
 
-pub fn initialize(
-    mut commands: Commands,
+fn spawn_egui_camera(mut commands: Commands, mut egui_global_settings: ResMut<EguiGlobalSettings>) {
+    egui_global_settings.auto_create_primary_context = false;
+
+    commands.spawn((
+        PrimaryEguiContext,
+        Camera2d,
+        // Setting RenderLayers to none makes sure we won't render anything apart from the UI.
+        RenderLayers::none(),
+        Camera {
+            order: 999,
+            ..Default::default()
+        },
+    ));
+}
+
+fn initialize(
     mut contexts: EguiContexts,
+    mut commands: Commands,
     sprites: Res<SpriteHandles>,
     asset_server: Res<AssetServer>,
     asteroid_manifest: Res<AsteroidManifest>,
-) {
+) -> BevyResult {
     contexts
-        .ctx_mut()
+        .ctx_mut()?
         .style_mut(|style| style.visuals.window_shadow = Shadow::NONE);
 
     let awaiting_signal = asset_server.load("sprites/task_icons/awaiting_signal.png");
@@ -208,11 +232,12 @@ pub fn initialize(
     };
 
     commands.insert_resource(icons);
+    Ok(())
 }
 
-pub fn draw_sector_info(mut context: EguiContexts, mouse_cursor: Res<MouseCursor>) {
+pub fn draw_sector_info(mut context: EguiContexts, mouse_cursor: Res<MouseCursor>) -> BevyResult {
     let Some(sector_pos) = &mouse_cursor.sector_space else {
-        return;
+        return Ok(());
     };
 
     egui::Window::new("Sector Info")
@@ -220,7 +245,7 @@ pub fn draw_sector_info(mut context: EguiContexts, mouse_cursor: Res<MouseCursor
         .title_bar(false)
         .collapsible(false)
         .resizable(false)
-        .show(context.ctx_mut(), |ui| {
+        .show(context.ctx_mut()?, |ui| {
             ui.set_width(120.0);
             ui.vertical_centered(|ui| {
                 ui.label(format!(
@@ -234,6 +259,8 @@ pub fn draw_sector_info(mut context: EguiContexts, mouse_cursor: Res<MouseCursor
                 ))
             });
         });
+
+    Ok(())
 }
 
 #[derive(Resource)]
@@ -262,14 +289,14 @@ pub fn list_selection_icons_and_counts(
     selected: Query<&SelectableEntity, With<EntityIsSelected>>,
     asteroid_manifest: Res<AsteroidManifest>,
     gui_data: Res<GuiDataCache>,
-) {
+) -> BevyResult {
     let counts = selected.iter().fold(
         SelectableCount::new(&asteroid_manifest, &gui_data),
         |acc, x| acc.add(x),
     );
 
     if counts.total() == 0 {
-        return;
+        return Ok(());
     }
 
     egui::Window::new("Selection Icons and Counts")
@@ -277,7 +304,7 @@ pub fn list_selection_icons_and_counts(
         .title_bar(false)
         .collapsible(false)
         .resizable(false)
-        .show(context.ctx_mut(), |ui| {
+        .show(context.ctx_mut()?, |ui| {
             ui.horizontal(|ui| {
                 if counts.stations > 0 {
                     ui.image(images.station);
@@ -313,6 +340,8 @@ pub fn list_selection_icons_and_counts(
                 }
             });
         });
+
+    Ok(())
 }
 
 #[derive(QueryData)]
@@ -368,7 +397,7 @@ fn list_selection_details(
             .title_bar(false)
             .collapsible(false)
             .resizable(false)
-            .show(context.ctx_mut(), |ui| {
+            .show(context.ctx_mut()?, |ui| {
                 let item = selected.single().unwrap();
                 draw_summary_row(&images, ui, &item);
 
@@ -615,7 +644,7 @@ fn list_selection_details(
         .collapsible(false)
         .resizable(false)
         .vscroll(true)
-        .show(context.ctx_mut(), |ui| {
+        .show(context.ctx_mut()?, |ui| {
             for item in selected.iter() {
                 draw_summary_row(&images, ui, &item);
             }
@@ -816,12 +845,14 @@ pub fn detect_mouse_cursor_over_ui(
     mut egui: EguiContexts,
     current_mouse_state: Res<State<MouseCursorOverUiState>>,
     mut next_state: ResMut<NextState<MouseCursorOverUiState>>,
-) {
-    if egui.ctx_mut().is_pointer_over_area() {
+) -> BevyResult {
+    if egui.ctx_mut()?.is_pointer_over_area() {
         if current_mouse_state.get() != &MouseCursorOverUiState::OverUI {
             next_state.set(MouseCursorOverUiState::OverUI);
         }
     } else if current_mouse_state.get() != &MouseCursorOverUiState::NotOverUI {
         next_state.set(MouseCursorOverUiState::NotOverUI);
     }
+
+    Ok(())
 }

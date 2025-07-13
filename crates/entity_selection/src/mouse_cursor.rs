@@ -1,9 +1,13 @@
-use bevy::prelude::{Camera, GlobalTransform, Query, Res, ResMut, Resource, Vec2, Window};
+use bevy::prelude::{
+    Camera, GlobalTransform, Query, Res, ResMut, Resource, Single, Vec2, Window, With,
+};
+use camera::MainCamera;
 use common::constants::BevyResult;
 use common::types::entity_id_map::SectorIdMap;
 use common::types::map_layout::MapLayout;
 use common::types::sector_position::SectorPosition;
 use hexx::Hex;
+use std::ops::Deref;
 
 /// The Current position of the mouse, in various formats.
 #[derive(Resource, Default)]
@@ -30,14 +34,14 @@ pub struct MouseSectorPosition {
 
 /// Updates the [MouseCursor] Resource with new Values for this frame.
 pub(crate) fn update_mouse_cursor_position(
-    windows: Query<&Window>,
-    camera: Query<(&Camera, &GlobalTransform)>,
+    window: Single<&Window>,
+    camera: Single<(&Camera, &GlobalTransform), With<MainCamera>>,
     map: Res<MapLayout>,
     sectors: Res<SectorIdMap>,
     mut cursor: ResMut<MouseCursor>,
 ) -> BevyResult {
-    if let Some(position) = windows.single()?.cursor_position() {
-        let (camera, transform) = camera.single()?;
+    if let Some(position) = window.cursor_position() {
+        let (camera, transform) = camera.deref();
         let world_pos = camera.viewport_to_world_2d(transform, position);
 
         cursor.screen_space = Some(position);

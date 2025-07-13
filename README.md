@@ -12,8 +12,8 @@ flowchart BT
     camera --> common
     persistence --> common
     pathfinding --> common
-    entity_selection --> common
 
+    entity_selection --> camera
     entity_spawners --> persistence
     ship_user_controller --> entity_selection
 
@@ -23,13 +23,11 @@ flowchart BT
     simulation --> entity_spawners
 
 
-    main --> entity_selection
     main --> universe_builder
     main --> universe_loader
     main --> simulation
     main --> ship_ai
     main --> ship_user_controller
-    main --> camera
 ```
 
 There is also `test_utils` which uses `universe_builder` to help build a `TestApp` which may be used by any crates' test dependencies.

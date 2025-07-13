@@ -4,7 +4,7 @@ use bevy::prelude::{
     State, StateSet,
 };
 use bevy::prelude::{SubStates, in_state};
-use bevy_egui::EguiContextPass;
+use bevy_egui::EguiPrimaryContextPass;
 use common::states::ApplicationState;
 use common::types::entity_id_map::{
     AsteroidIdMap, CelestialIdMap, ConstructionSiteIdMap, GateIdMap, SectorIdMap, ShipIdMap,
@@ -61,7 +61,7 @@ impl Plugin for UniverseLoadingPlugin {
         );
 
         app.add_systems(
-            EguiContextPass,
+            EguiPrimaryContextPass,
             loading_gui::display_loading_information.run_if(
                 in_state(LoadingState::Sectors).or(in_state(LoadingState::Gates)
                     .or(in_state(LoadingState::Stations).or(in_state(LoadingState::Ships)))),

@@ -2,6 +2,7 @@ use crate::{LoadingCounts, LoadingState};
 use bevy::prelude::{Res, State};
 use bevy_egui::egui::Align2;
 use bevy_egui::{EguiContexts, egui};
+use common::constants::BevyResult;
 use persistence::data::{
     GatePairSaveData, SaveDataCollection, SectorSaveData, ShipSaveData, StationSaveData,
 };
@@ -15,7 +16,7 @@ pub(crate) fn display_loading_information(
     gates: Res<SaveDataCollection<GatePairSaveData>>,
     stations: Res<SaveDataCollection<StationSaveData>>,
     ships: Res<SaveDataCollection<ShipSaveData>>,
-) {
+) -> BevyResult {
     let text = match state.get() {
         LoadingState::Initialize => "Initializing".to_string(),
         LoadingState::Sectors => get_text("Sectors", sectors.data.len(), counts.sector_count),
@@ -30,9 +31,11 @@ pub(crate) fn display_loading_information(
         .title_bar(false)
         .collapsible(false)
         .resizable(false)
-        .show(context.ctx_mut(), |ui| {
+        .show(context.ctx_mut()?, |ui| {
             ui.label(text);
         });
+
+    Ok(())
 }
 
 fn get_text(what: &str, remaining: usize, total: usize) -> String {

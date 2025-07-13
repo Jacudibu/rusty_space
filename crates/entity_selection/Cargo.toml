@@ -9,3 +9,4 @@ hexx = { workspace = true }
 
 # internal dependencies
 common = { workspace = true }
+camera = { workspace = true }

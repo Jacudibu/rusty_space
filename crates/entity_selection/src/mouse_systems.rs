@@ -6,12 +6,14 @@ use bevy::input::ButtonState;
 use bevy::input::mouse::MouseButtonInput;
 use bevy::prelude::{
     Camera, Commands, Entity, EventReader, GlobalTransform, InheritedVisibility, MouseButton,
-    Query, Real, Res, ResMut, State, Time, Vec2, With, Without,
+    Query, Real, Res, ResMut, Single, State, Time, Vec2, With, Without,
 };
+use camera::MainCamera;
 use common::components::{RADIUS_CURSOR, SelectableEntity};
 use common::constants::BevyResult;
 use common::geometry;
 use common::states::MouseCursorOverUiState;
+use std::ops::Deref;
 
 #[allow(clippy::too_many_arguments)]
 pub(crate) fn process_mouse_clicks(
@@ -27,7 +29,7 @@ pub(crate) fn process_mouse_clicks(
         &SelectableEntity,
         &InheritedVisibility,
     )>,
-    camera: Query<(&Camera, &GlobalTransform)>,
+    camera: Single<(&Camera, &GlobalTransform), With<MainCamera>>,
     selected_entities: Query<Entity, With<EntityIsSelected>>,
     mouse_cursor_over_ui_state: Res<State<MouseCursorOverUiState>>,
 ) -> BevyResult {
@@ -102,10 +104,10 @@ fn process_double_click(
         &SelectableEntity,
         &InheritedVisibility,
     )>,
-    camera: &Query<(&Camera, &GlobalTransform)>,
+    camera: &Single<(&Camera, &GlobalTransform), With<MainCamera>>,
     entity_selectable: &SelectableEntity,
 ) -> BevyResult {
-    let (camera, camera_transform) = camera.single()?;
+    let (camera, camera_transform) = camera.deref();
     let rect = camera.logical_viewport_rect().unwrap();
     let offset = Vec2::new(
         camera_transform.translation().x - rect.max.x * 0.5,

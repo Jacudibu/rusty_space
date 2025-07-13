@@ -1,7 +1,5 @@
 use crate::TaskKindExt;
-use crate::task_lifecycle_traits::{
-    TaskTraitFunctionalityNotImplementedError, TaskTraitKind, task_cancellation_in_queue,
-};
+use crate::task_lifecycle_traits::{TaskTraitFunctionalityNotImplementedError, TaskTraitKind};
 use crate::utility::ship_task::ShipTask;
 use bevy::ecs::system::{StaticSystemParam, SystemParam};
 use bevy::prelude::{BevyError, Commands, Event, EventReader, Query, info, warn};
@@ -11,10 +9,7 @@ use common::events::task_events::{
     AllTaskAbortedEventWriters, AllTaskCancelledEventWriters, TaskCanceledWhileActiveEvent,
 };
 use common::types::entity_wrappers::ShipEntity;
-use common::types::ship_tasks::{
-    DockAtEntity, ExchangeWares, HarvestGas, MineAsteroid, MoveToEntity, MoveToPosition,
-    MoveToSector, RequestAccess, ShipTaskData, Undock, UseGate,
-};
+use common::types::ship_tasks::ShipTaskData;
 
 /// Send this event in order to request a ship to stop doing whatever it is doing right now, and also clear its entire task queue.
 /// Tasks which are aborted are also getting cancelled, so there's no reason to implement cancellation logic within the abortion handler.

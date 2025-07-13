@@ -1,12 +1,9 @@
 use bevy::prelude::{Deref, DerefMut};
-use bevy::reflect::erased_serde::__private::serde::{Deserialize, Serialize};
-use common::game_data::ItemId;
 use common::session_data::ShipConfigId;
 use common::types::local_hex_position::LocalHexPosition;
 use common::types::persistent_entity_id::PersistentShipId;
 use persistence::data::{
-    AutoMineStateSaveData, InventorySaveData, SaveDataCollection, ShipBehaviorSaveData,
-    ShipSaveData,
+    InventorySaveData, SaveDataCollection, ShipBehaviorSaveData, ShipSaveData,
 };
 
 #[derive(Deref, DerefMut, Default)]

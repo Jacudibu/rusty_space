@@ -17,7 +17,7 @@ pub fn create_test_data() -> SaveDataCollection<StationSaveData> {
     result
         .add(
             LocalHexPosition::from_polar(BOTTOM_LEFT, PolarCoordinates::new(200.0, 220.0)),
-            "Forge".into(),
+            "Forge",
         )
         .with_production(
             5,
@@ -37,7 +37,7 @@ pub fn create_test_data() -> SaveDataCollection<StationSaveData> {
     result
         .add(
             LocalHexPosition::from_polar(CENTER, PolarCoordinates::new(200.0, 90.0)),
-            "Crystal Processor".into(),
+            "Crystal Processor",
         )
         .with_production(1, SILICA_PRODUCTION_MODULE_ID, SILICA_RECIPE_ID)
         .with_buys(vec![CRYSTAL_ORE_ITEM_ID])
@@ -52,7 +52,7 @@ pub fn create_test_data() -> SaveDataCollection<StationSaveData> {
     result
         .add(
             LocalHexPosition::from_polar(CENTER, PolarCoordinates::new(200.0, 300.0)),
-            "Wafer Fab".into(),
+            "Wafer Fab",
         )
         .with_production(3, WAFERS_PRODUCTION_MODULE_ID, WAFERS_RECIPE_ID)
         .with_buys(vec![SILICA_ITEM_ID, HYDROGEN_ITEM_ID])
@@ -68,7 +68,7 @@ pub fn create_test_data() -> SaveDataCollection<StationSaveData> {
         );
 
     result
-        .add(LocalHexPosition::new(CENTER, Vec2::ZERO), "Shipyard".into())
+        .add(LocalHexPosition::new(CENTER, Vec2::ZERO), "Shipyard")
         .with_shipyard(2, MOCK_SHIPYARD_MODULE_ID)
         .with_buys(vec![REFINED_METALS_ITEM_ID, WAFER_ITEM_ID]);
 

@@ -1,4 +1,4 @@
-use bevy::prelude::{BevyError, EventWriter};
+use bevy::prelude::EventWriter;
 use common::events::task_events::TaskCompletedEvent;
 use common::types::entity_wrappers::ShipEntity;
 use common::types::ship_tasks::ShipTaskData;

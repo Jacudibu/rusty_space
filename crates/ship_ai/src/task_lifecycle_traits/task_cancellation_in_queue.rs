@@ -7,11 +7,7 @@ use common::components::task_queue::TaskQueue;
 use common::constants::BevyResult;
 use common::events::task_events::{AllTaskCancelledEventWriters, TaskCanceledWhileInQueueEvent};
 use common::types::entity_wrappers::ShipEntity;
-use common::types::ship_tasks::{
-    AwaitingSignal, Construct, DockAtEntity, ExchangeWares, HarvestGas, MineAsteroid, MoveToEntity,
-    MoveToPosition, MoveToSector, RequestAccess, ShipTaskData, Undock, UseGate,
-};
-use std::fmt::{Debug, Display};
+use common::types::ship_tasks::ShipTaskData;
 
 /// Send this event in order to request removing tasks from a task queue.
 #[derive(Event)]

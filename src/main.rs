@@ -31,9 +31,7 @@ fn main() {
     GameData::initialize_mock_data(app.world_mut());
 
     app.add_plugins((
-        bevy_egui::EguiPlugin {
-            enable_multipass_for_primary_context: true,
-        },
+        bevy_egui::EguiPlugin::default(),
         camera::CameraPlugin,
         construction_site_placement::ConstructionSitePlacementPlugin,
         common::CommonPlugin,

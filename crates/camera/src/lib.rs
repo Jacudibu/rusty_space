@@ -10,7 +10,7 @@ mod zooming;
 
 pub use camera_settings::CameraSettings;
 
-use crate::main_camera::MainCamera;
+pub use crate::main_camera::MainCamera;
 use common::states::{ApplicationState, MouseCursorOverUiState};
 
 /// Inserts the main camera and offers ways to control it.
