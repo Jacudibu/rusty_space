@@ -1,5 +1,5 @@
 use crate::components::celestials::Celestial;
-use crate::components::{Asteroid, ConstructionSite, Gate, Sector, Ship, Station};
+use crate::components::{Asteroid, ConstructionSite, Faction, Gate, Player, Sector, Ship, Station};
 use crate::types::entity_wrappers::typed_entity_wrapper::TypedEntityWrapper;
 
 mod asteroid_with_lifetime;
@@ -14,6 +14,8 @@ pub type CelestialEntity = TypedEntityWrapper<Celestial>;
 pub type ShipEntity = TypedEntityWrapper<Ship>;
 pub type StationEntity = TypedEntityWrapper<Station>;
 pub type ConstructionSiteEntity = TypedEntityWrapper<ConstructionSite>;
+pub type FactionEntity = TypedEntityWrapper<Faction>;
+pub type PlayerEntity = TypedEntityWrapper<Player>;
 pub type AsteroidEntity = TypedEntityWrapper<Asteroid>;
 
 pub use asteroid_with_lifetime::AsteroidEntityWithTimestamp;

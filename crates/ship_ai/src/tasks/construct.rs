@@ -186,6 +186,7 @@ mod test {
     use common::session_data::ShipConfigurationManifest;
     use common::session_data::ship_configs::MOCK_CONSTRUCTION_SHIP_CONFIG_ID;
     use common::types::local_hex_position::LocalHexPosition;
+    use common::types::persistent_entity_id::PersistentFactionId;
     use common::types::ship_tasks::Construct;
     use hexx::Hex;
     use persistence::data::ShipBehaviorSaveData;
@@ -198,7 +199,11 @@ mod test {
     fn starting_task_should_add_construction_power_to_site() -> BevyResult {
         let mut station_builder = StationBuilder::default();
         station_builder
-            .add(LocalHexPosition::default(), "SomeStation")
+            .add(
+                LocalHexPosition::default(),
+                "SomeStation",
+                PersistentFactionId::next(),
+            )
             .with_construction_site(
                 vec![ConstructableModuleId::ProductionModule(
                     REFINED_METALS_PRODUCTION_MODULE_ID,
@@ -213,6 +218,7 @@ mod test {
             0.0,
             "Construction Ship",
             ShipBehaviorSaveData::HoldPosition,
+            PersistentFactionId::next(),
         );
 
         let mut sector_builder = SectorBuilder::default();

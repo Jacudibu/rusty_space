@@ -1,6 +1,4 @@
-use bevy::prelude::{
-    Camera, GlobalTransform, Query, Res, ResMut, Resource, Single, Vec2, Window, With,
-};
+use bevy::prelude::{Camera, GlobalTransform, Res, ResMut, Resource, Single, Vec2, Window, With};
 use camera::MainCamera;
 use common::constants::BevyResult;
 use common::types::entity_id_map::SectorIdMap;

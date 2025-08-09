@@ -1,7 +1,7 @@
 use bevy::prelude::{Deref, DerefMut};
 use common::session_data::ShipConfigId;
 use common::types::local_hex_position::LocalHexPosition;
-use common::types::persistent_entity_id::PersistentShipId;
+use common::types::persistent_entity_id::{PersistentFactionId, PersistentShipId};
 use persistence::data::{
     InventorySaveData, SaveDataCollection, ShipBehaviorSaveData, ShipSaveData,
 };
@@ -19,9 +19,11 @@ impl ShipBuilder {
         rotation: f32,
         name: impl Into<String>,
         behavior: ShipBehaviorSaveData,
+        owner: PersistentFactionId,
     ) -> &mut ShipSaveData {
         self.push(ShipSaveData {
             id: PersistentShipId::next(),
+            owner,
             config_id,
             name: name.into(),
             position,

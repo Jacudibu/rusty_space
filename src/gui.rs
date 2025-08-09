@@ -3,8 +3,8 @@ use bevy::ecs::query::QueryData;
 use bevy::platform::collections::{HashMap, HashSet};
 use bevy::prelude::{
     AppExtStates, AssetServer, Camera, Camera2d, Commands, Entity, EventReader, EventWriter,
-    IntoScheduleConfigs, Name, NextState, OnAdd, Plugin, PreUpdate, Query, Res, ResMut, Resource,
-    Startup, State, Trigger, With, on_event,
+    IntoScheduleConfigs, Name, NextState, Plugin, PreUpdate, Query, Res, ResMut, Resource, Startup,
+    State, With, on_event,
 };
 use bevy::render::view::RenderLayers;
 use bevy_egui::egui::load::SizedTexture;

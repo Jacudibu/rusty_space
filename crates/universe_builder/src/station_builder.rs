@@ -4,7 +4,7 @@ use common::game_data::{
     ConstructableModuleId, ItemId, ProductionModuleId, RecipeId, ShipyardModuleId,
 };
 use common::types::local_hex_position::LocalHexPosition;
-use common::types::persistent_entity_id::PersistentStationId;
+use common::types::persistent_entity_id::{PersistentFactionId, PersistentStationId};
 use common::types::price_range::PriceRange;
 use common::types::price_setting::PriceSetting;
 use persistence::data::{
@@ -29,9 +29,10 @@ impl StationBuilder {
         &mut self,
         position: LocalHexPosition,
         name: impl Into<String>,
+        owner: PersistentFactionId,
     ) -> &mut IndividualStationBuilder {
         self.data
-            .push(IndividualStationBuilder::new(position, name));
+            .push(IndividualStationBuilder::new(position, name, owner));
         self.data.last_mut().unwrap()
     }
 
@@ -43,10 +44,15 @@ impl StationBuilder {
 }
 
 impl IndividualStationBuilder {
-    pub fn new(position: LocalHexPosition, name: impl Into<String>) -> Self {
+    pub fn new(
+        position: LocalHexPosition,
+        name: impl Into<String>,
+        owner: PersistentFactionId,
+    ) -> Self {
         Self {
             data: StationSaveData {
                 id: PersistentStationId::next(),
+                owner,
                 position,
                 name: name.into(),
                 buy_orders: None,

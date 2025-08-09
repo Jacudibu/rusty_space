@@ -1,5 +1,5 @@
 use crate::components::celestials::Celestial;
-use crate::components::{Asteroid, ConstructionSite, Gate, Ship, Station};
+use crate::components::{Asteroid, ConstructionSite, Faction, Gate, Player, Ship, Station};
 use bevy::prelude::Component;
 use hexx::Hex;
 use serde::{Deserialize, Serialize};
@@ -15,12 +15,14 @@ use std::sync::atomic::{AtomicU32, Ordering};
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 pub enum PersistentEntityId {
     Asteroid(PersistentAsteroidId),
-    Gate(PersistentGateId),
     Celestial(PersistentCelestialId),
+    ConstructionSite(PersistentConstructionSiteId),
+    Gate(PersistentGateId),
+    Player(PersistentPlayerId),
+    Faction(PersistentFactionId),
+    Sector(Hex),
     Ship(PersistentShipId),
     Station(PersistentStationId),
-    ConstructionSite(PersistentConstructionSiteId),
-    Sector(Hex),
 }
 
 #[derive(Serialize, Deserialize)]
@@ -87,6 +89,16 @@ impl_typed_persistent_entity_id!(Station, NEXT_STATION_ID);
 pub type PersistentConstructionSiteId = TypedPersistentEntityId<ConstructionSite>;
 impl_traits!(PersistentConstructionSiteId, ConstructionSite);
 impl_typed_persistent_entity_id!(ConstructionSite, NEXT_CONSTRUCTION_SITE_ID);
+
+/// A [PersistentEntityId] for [Player]s.
+pub type PersistentPlayerId = TypedPersistentEntityId<Player>;
+impl_traits!(PersistentPlayerId, Player);
+impl_typed_persistent_entity_id!(Player, NEXT_PLAYER_ID);
+
+/// A [PersistentEntityId] for [Faction]s.
+pub type PersistentFactionId = TypedPersistentEntityId<Faction>;
+impl_traits!(PersistentFactionId, Faction);
+impl_typed_persistent_entity_id!(Faction, NEXT_FACTION_ID);
 
 impl_traits!(Hex, Sector);
 

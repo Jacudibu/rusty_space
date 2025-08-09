@@ -7,8 +7,8 @@ use common::simulation_time::SimulationTimestamp;
 use common::types::celestial_mass::CelestialMass;
 use common::types::local_hex_position::LocalHexPosition;
 use common::types::persistent_entity_id::{
-    PersistentAsteroidId, PersistentCelestialId, PersistentEntityId, PersistentGateId,
-    PersistentShipId, PersistentStationId,
+    PersistentAsteroidId, PersistentCelestialId, PersistentEntityId, PersistentFactionId,
+    PersistentGateId, PersistentShipId, PersistentStationId,
 };
 use common::types::price_setting::PriceSetting;
 use hexx::Hex;
@@ -127,6 +127,7 @@ pub struct SectorSaveData {
 pub struct ShipSaveData {
     pub id: PersistentShipId,
     pub config_id: ShipConfigId,
+    pub owner: PersistentFactionId,
     pub name: String,
     pub position: LocalHexPosition,
     pub forward_velocity: f32,
@@ -212,6 +213,7 @@ pub struct ConstructionSiteSaveData {
 pub struct StationSaveData {
     pub id: PersistentStationId,
     pub name: String,
+    pub owner: PersistentFactionId,
     pub position: LocalHexPosition,
     pub inventory: InventorySaveData,
     pub production_modules: Option<ProductionSaveData>,

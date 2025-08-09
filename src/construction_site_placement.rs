@@ -12,7 +12,8 @@ use bevy::prelude::{
 use bevy::sprite::Sprite;
 use common::components::celestials::{Celestial, Planet, Star};
 use common::components::{
-    BuyOrderData, BuyOrders, ConstantOrbit, Gate, Sector, SectorWithCelestials, Station,
+    BuyOrderData, BuyOrders, ConstantOrbit, Gate, LocalPlayerFaction, Sector, SectorWithCelestials,
+    Station,
 };
 use common::game_data::{
     Constructable, ConstructableModuleId, ItemId, ItemManifest, ProductionModuleManifest,
@@ -259,6 +260,7 @@ fn spawn_construction_site_on_mouse_click(
     shipyard_module_manifest: Res<ShipyardModuleManifest>,
     item_manifest: Res<ItemManifest>,
     recipe_manifest: Res<RecipeManifest>,
+    local_player_faction: Res<LocalPlayerFaction>,
     mouse: Res<ButtonInput<MouseButton>>,
     preview_target: Res<PreviewTargetPosition>,
 ) {
@@ -327,7 +329,12 @@ fn spawn_construction_site_on_mouse_click(
     };
 
     let construction_spawn_data = ConstructionSiteSpawnData::new(planned_modules, buy_orders);
-    let station_data = StationSpawnData::new("Fancy Station", construction_spawn_data, *sector_pos);
+    let station_data = StationSpawnData::new(
+        "Fancy Station",
+        local_player_faction.faction_id,
+        construction_spawn_data,
+        *sector_pos,
+    );
 
     spawn_station(
         &mut commands,

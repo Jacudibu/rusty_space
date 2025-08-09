@@ -7,14 +7,14 @@ use crate::production::update_orders::update_orders;
 use common::components::production_facility::ProductionFacility;
 use common::components::ship_velocity::ShipVelocity;
 use common::components::shipyard::Shipyard;
-use common::components::{BuyOrders, InSector, Inventory, Sector, SellOrders};
+use common::components::{BuyOrders, InSector, Inventory, Owner, Sector, SellOrders};
 use common::events::inventory_update_for_production_event::InventoryUpdateForProductionEvent;
 use common::game_data::{ItemManifest, ProductionModuleId, RecipeManifest, ShipyardModuleId};
 use common::session_data::ShipConfigurationManifest;
 use common::simulation_time::{CurrentSimulationTimestamp, SimulationTime};
 use common::types::behavior_builder::BehaviorBuilder;
 use common::types::entity_id_map::ShipIdMap;
-use common::types::persistent_entity_id::PersistentShipId;
+use common::types::persistent_entity_id::{PersistentFactionId, PersistentShipId};
 use entity_spawners::spawn_ship::spawn_ship;
 
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
@@ -36,6 +36,7 @@ pub fn check_if_production_is_finished_and_start_new_one(
             Option<&mut SellOrders>,
             &Transform,
             &InSector,
+            &Owner,
         ),
         Or<(With<ProductionFacility>, With<Shipyard>)>,
     >,
@@ -57,6 +58,7 @@ pub fn check_if_production_is_finished_and_start_new_one(
             sell_orders,
             transform,
             in_sector,
+            owner,
         )) = producer_query.get_mut(next.entity)
         else {
             error!(
@@ -85,6 +87,7 @@ pub fn check_if_production_is_finished_and_start_new_one(
                 transform,
                 in_sector,
                 &module_id,
+                owner.faction_id,
             ),
         }
 
@@ -105,6 +108,7 @@ fn process_finished_ship_production(
     transform: &Transform,
     in_sector: &InSector,
     module_id: &ShipyardModuleId,
+    owner: PersistentFactionId,
 ) {
     let Some(mut shipyard) = shipyard else {
         error!(
@@ -143,6 +147,7 @@ fn process_finished_ship_production(
         BehaviorBuilder::AutoTrade,
         ship_id_map,
         ship_configuration,
+        owner,
     );
 }
 

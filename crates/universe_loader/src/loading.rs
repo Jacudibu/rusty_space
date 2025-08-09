@@ -8,7 +8,7 @@ use common::components::production_facility::{
 };
 use common::components::ship_velocity::ShipVelocity;
 use common::components::shipyard::{OngoingShipConstructionOrder, Shipyard, ShipyardModule};
-use common::components::{BuyOrders, Sector, SectorWithCelestials};
+use common::components::{BuyOrders, Faction, Sector, SectorWithCelestials};
 use common::game_data::{
     AsteroidManifest, ItemManifest, ProductionModuleId, RecipeManifest, ShipyardModuleId,
 };
@@ -16,8 +16,8 @@ use common::session_data::ShipConfigurationManifest;
 use common::types::auto_mine_state::AutoMineState;
 use common::types::behavior_builder::BehaviorBuilder;
 use common::types::entity_id_map::{
-    AsteroidIdMap, CelestialIdMap, ConstructionSiteIdMap, GateIdMap, SectorIdMap, ShipIdMap,
-    StationIdMap,
+    AsteroidIdMap, CelestialIdMap, ConstructionSiteIdMap, FactionIdMap, GateIdMap, SectorIdMap,
+    ShipIdMap, StationIdMap,
 };
 use common::types::map_layout::MapLayout;
 use common::types::sector_position::SectorPosition;
@@ -155,6 +155,7 @@ pub(crate) fn spawn_all_stations(
     let next = StationSpawnData {
         id: next.id,
         name: next.name.clone(),
+        owner: next.owner,
         sector_position: SectorPosition {
             sector: *sector_entity,
             local_position: next.position.local_position,
@@ -189,6 +190,9 @@ pub(crate) struct SpawnAllShipsArgs<'w, 's> {
     ship_configurations: Res<'w, ShipConfigurationManifest>,
 
     ship_id_map: ResMut<'w, ShipIdMap>,
+
+    factions: Query<'w, 's, &'static Faction>,
+    faction_id_map: Res<'w, FactionIdMap>,
 }
 
 pub(crate) fn spawn_all_ships(
@@ -229,6 +233,7 @@ pub(crate) fn spawn_all_ships(
             convert_behavior_save_data_to_builder_data(next.behavior),
             &mut args.ship_id_map,
             args.ship_configurations.get_by_id(&next.config_id).unwrap(),
+            next.owner,
         );
     }
 }

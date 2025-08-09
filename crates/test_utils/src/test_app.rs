@@ -6,6 +6,7 @@ use bevy::state::app::StatesPlugin;
 use common::game_data::GameData;
 use common::session_data::SessionData;
 use common::states::ApplicationState;
+use common::types::entity_id_map::{FactionIdMap, PlayerIdMap};
 use common::types::map_layout::MapLayout;
 use common::types::precomputed_orbit_directions::PrecomputedOrbitDirections;
 use common::types::sprite_handles::SpriteHandles;
@@ -72,6 +73,9 @@ impl TestApp {
 
         GameData::initialize_mock_data(self.app.world_mut());
         SessionData::initialize_mock_data(self.app.world_mut());
+
+        self.app.insert_resource(FactionIdMap::default());
+        self.app.insert_resource(PlayerIdMap::default());
 
         self.app.insert_resource(self.sectors.build());
         self.app.insert_resource(self.gate_pairs.build());

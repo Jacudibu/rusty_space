@@ -1,9 +1,9 @@
 use bevy::math::Vec2;
-use bevy::prelude::{Commands, Name, Query, Rot2, Sprite};
+use bevy::prelude::{Bundle, Commands, Name, Query, Rot2, Sprite, Transform};
 use common::components::ship_velocity::ShipVelocity;
 use common::components::task_queue::TaskQueue;
 use common::components::{
-    AsteroidMiner, Engine, GasHarvester, Inventory, Sector, SelectableEntity, Ship,
+    AsteroidMiner, Engine, GasHarvester, Inventory, Owner, Sector, SelectableEntity, Ship,
 };
 use common::constants;
 use common::session_data::ShipConfiguration;
@@ -12,7 +12,25 @@ use common::simulation_transform::SimulationTransform;
 use common::types::behavior_builder::BehaviorBuilder;
 use common::types::entity_id_map::ShipIdMap;
 use common::types::entity_wrappers::{SectorEntity, ShipEntity};
-use common::types::persistent_entity_id::PersistentShipId;
+use common::types::persistent_entity_id::{PersistentFactionId, PersistentShipId};
+
+/// Bundles up all components which are strictly required for spawning a ship.
+/// Due to the nature of bundles, this does not include optional components such as [GasHarvester].
+#[derive(Bundle)]
+struct ShipSpawnDataBundle {
+    name: Name,
+    owner: Owner,
+    ship: Ship,
+    engine: Engine,
+    inventory: Inventory,
+    selectable_entity: SelectableEntity,
+    task_queue: TaskQueue,
+    velocity: ShipVelocity,
+    sprite: Sprite,
+    transform: Transform,
+    simulation_transform: SimulationTransform,
+    simulation_scale: SimulationScale,
+}
 
 pub fn spawn_ship(
     commands: &mut Commands,
@@ -26,25 +44,28 @@ pub fn spawn_ship(
     behavior: BehaviorBuilder,
     ship_id_map: &mut ShipIdMap,
     ship_configuration: &ShipConfiguration,
+    faction: PersistentFactionId,
 ) {
     let mut sector_data = sector_query.get_mut(sector.into()).unwrap();
-
     let simulation_transform =
         SimulationTransform::new(sector_data.world_pos + position, Rot2::radians(rotation));
 
-    let mut entity_commands = commands.spawn((
-        Name::new(name),
-        Ship::new(id, ship_configuration.id),
-        SelectableEntity::Ship(ship_configuration.id),
-        Engine::from(&ship_configuration.computed_stats.engine),
+    let mut entity_commands = commands.spawn(ShipSpawnDataBundle {
+        name: Name::new(name),
+        ship: Ship::new(id, ship_configuration.id),
+        engine: Engine::from(&ship_configuration.computed_stats.engine),
+        task_queue: TaskQueue::default(),
+        inventory: Inventory::new(ship_configuration.computed_stats.inventory_size),
+        selectable_entity: SelectableEntity::Ship(ship_configuration.id),
         velocity,
-        Inventory::new(ship_configuration.computed_stats.inventory_size),
-        TaskQueue::default(),
-        Sprite::from_image(ship_configuration.sprite.clone()),
-        simulation_transform.as_bevy_transform(constants::z_layers::SHIP),
+        transform: simulation_transform.as_bevy_transform(constants::z_layers::SHIP),
         simulation_transform,
-        SimulationScale::default(),
-    ));
+        simulation_scale: SimulationScale::default(),
+        sprite: Sprite::from_image(ship_configuration.sprite.clone()),
+        owner: Owner {
+            faction_id: faction,
+        },
+    });
 
     if let Some(asteroid_mining_amount) = ship_configuration.computed_stats.asteroid_mining_amount {
         entity_commands.insert(AsteroidMiner {

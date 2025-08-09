@@ -1,11 +1,11 @@
 use bevy::math::Vec2;
-use bevy::prelude::{Commands, Name, Query, Sprite, Transform, default};
+use bevy::prelude::{Commands, Name, Query, Sprite, Transform};
 use bevy::sprite::Anchor;
 use common::components::production_facility::ProductionFacility;
 use common::components::shipyard::Shipyard;
 use common::components::{
     BuyOrders, ConstantOrbit, ConstructionSite, ConstructionSiteStatus, DockingBay, Inventory,
-    Sector, SectorWithCelestials, SelectableEntity, SellOrders, Station,
+    Owner, Sector, SectorWithCelestials, SelectableEntity, SellOrders, Station,
 };
 use common::constants;
 use common::game_data::{ConstructableModuleId, ItemId, ItemManifest, RecipeManifest};
@@ -14,7 +14,9 @@ use common::simulation_transform::SimulationTransform;
 use common::types::celestial_mass::CelestialMass;
 use common::types::entity_id_map::{ConstructionSiteIdMap, StationIdMap};
 use common::types::entity_wrappers::{ConstructionSiteEntity, StationEntity};
-use common::types::persistent_entity_id::{PersistentConstructionSiteId, PersistentStationId};
+use common::types::persistent_entity_id::{
+    PersistentConstructionSiteId, PersistentFactionId, PersistentStationId,
+};
 use common::types::polar_coordinates::PolarCoordinates;
 use common::types::sector_position::SectorPosition;
 use common::types::sprite_handles::SpriteHandles;
@@ -39,18 +41,22 @@ pub struct StationSpawnData {
     pub production: Option<ProductionFacility>,
     /// The shipyard component for this station.
     pub shipyard: Option<Shipyard>,
+    /// The owner of the entity.
+    pub owner: PersistentFactionId,
 }
 
 impl StationSpawnData {
     /// Creates a new instance of [StationSpawnData] with defaults for all values which should only be set when loading save games.
     pub fn new(
         name: impl Into<String>,
+        owner: PersistentFactionId,
         construction_site: ConstructionSiteSpawnData,
         sector_position: SectorPosition,
     ) -> Self {
         Self {
             id: PersistentStationId::next(),
             name: name.into(),
+            owner,
             sector_position,
             construction_site: construction_site.into(),
             buys: Default::default(),
@@ -106,6 +112,8 @@ impl ConstructionSiteSpawnData {
     }
 }
 
+// TODO: Unit spawning should happen through events, piping all that data through is annoying...
+
 /// Creates a new Station Entity with all the required bells and whistles attached.
 /// Unless we are loading a save file, new stations should always spawn with a construction site and no modules built or.
 #[allow(clippy::too_many_arguments)] // It's hopeless... :')
@@ -143,10 +151,7 @@ pub fn spawn_station(
     let icon_entity = commands
         .spawn((
             Name::new(format!("{} (Icon)", data.name)),
-            Sprite {
-                image: icon_sprite,
-                ..default()
-            },
+            Sprite::from_image(icon_sprite),
             Transform::from_translation(Vec3::new(0.0, 0.0, 0.1)),
         ))
         .id();
@@ -163,6 +168,9 @@ pub fn spawn_station(
                 constants::SIMULTANEOUS_STATION_INTERACTIONS,
             ),
             SimulationScale::default(),
+            Owner {
+                faction_id: data.owner,
+            },
         ))
         .id();
 

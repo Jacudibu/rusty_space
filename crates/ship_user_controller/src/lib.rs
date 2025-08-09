@@ -70,8 +70,11 @@ mod tests {
     fn build_test_app() -> App {
         let mut app = App::new();
         app.add_plugins(ShipControllerPlugin);
+        app.add_event::<InsertTaskIntoQueueCommand<MoveToPosition>>();
         app.insert_resource(ButtonInput::<MouseButton>::default());
+        app.insert_resource(ButtonInput::<KeyCode>::default());
         app.insert_resource(MouseCursor::default());
+        app.insert_resource(MapLayout::default());
         app
     }
 

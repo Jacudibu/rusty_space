@@ -6,13 +6,14 @@ use common::session_data::ship_configs::{
     MOCK_TRANSPORT_SHIP_CONFIG_ID,
 };
 use common::types::local_hex_position::LocalHexPosition;
+use common::types::persistent_entity_id::PersistentFactionId;
 use hexx::Vec2;
 use persistence::data::{
     AutoMineStateSaveData, SaveDataCollection, ShipBehaviorSaveData, ShipSaveData,
 };
 use universe_builder::ship_builder::ShipBuilder;
 
-pub fn create_test_data() -> SaveDataCollection<ShipSaveData> {
+pub fn create_test_data(player_faction: PersistentFactionId) -> SaveDataCollection<ShipSaveData> {
     let mut builder = ShipBuilder::default();
 
     let rotation_factor = (std::f32::consts::PI * 2.0) / constants::TRADE_SHIP_COUNT as f32;
@@ -23,6 +24,7 @@ pub fn create_test_data() -> SaveDataCollection<ShipSaveData> {
             rotation_factor * (i as f32),
             format!("Trade Ship {i}"),
             ShipBehaviorSaveData::AutoTrade,
+            player_faction,
         );
     }
 
@@ -37,6 +39,7 @@ pub fn create_test_data() -> SaveDataCollection<ShipSaveData> {
                 mined_ore: IRON_ORE_ITEM_ID,
                 state: AutoMineStateSaveData::Mining,
             },
+            player_faction,
         );
         builder.add(
             MOCK_MINING_SHIP_CONFIG_ID,
@@ -47,6 +50,7 @@ pub fn create_test_data() -> SaveDataCollection<ShipSaveData> {
                 mined_ore: CRYSTAL_ORE_ITEM_ID,
                 state: AutoMineStateSaveData::Mining,
             },
+            player_faction,
         );
     }
 
@@ -61,6 +65,7 @@ pub fn create_test_data() -> SaveDataCollection<ShipSaveData> {
                 harvested_gas: HYDROGEN_ITEM_ID,
                 state: AutoMineStateSaveData::Mining,
             },
+            player_faction,
         );
     }
 
@@ -72,6 +77,7 @@ pub fn create_test_data() -> SaveDataCollection<ShipSaveData> {
             rotation_factor * (i as f32),
             format!("Construction Ship {i}"),
             ShipBehaviorSaveData::AutoConstruct,
+            player_faction,
         );
     }
 

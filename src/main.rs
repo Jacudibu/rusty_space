@@ -45,6 +45,7 @@ fn main() {
         simulation::plugin::SimulationPlugin,
         test_universe::TestUniverseDataPlugin,
         universe_loader::UniverseLoadingPlugin,
+        entity_spawners::plugin,
     ))
     .add_systems(Startup, initialize_data);
 

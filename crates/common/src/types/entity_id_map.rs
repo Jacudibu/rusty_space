@@ -1,10 +1,11 @@
 use crate::types::entity_wrappers::{
-    AsteroidEntity, CelestialEntity, ConstructionSiteEntity, GateEntity, SectorEntity, ShipEntity,
-    StationEntity, TypedEntity,
+    AsteroidEntity, CelestialEntity, ConstructionSiteEntity, FactionEntity, GateEntity,
+    PlayerEntity, SectorEntity, ShipEntity, StationEntity, TypedEntity,
 };
 use crate::types::persistent_entity_id::{
     PersistentAsteroidId, PersistentCelestialId, PersistentConstructionSiteId, PersistentEntityId,
-    PersistentGateId, PersistentShipId, PersistentStationId,
+    PersistentFactionId, PersistentGateId, PersistentPlayerId, PersistentShipId,
+    PersistentStationId,
 };
 use bevy::ecs::system::SystemParam;
 use bevy::platform::collections::HashMap;
@@ -71,6 +72,12 @@ pub type StationIdMap = EntityIdMap<PersistentStationId, StationEntity>;
 
 /// Maps [PersistentConstructionSiteId]s with the [ConstructionSiteEntity]s they are representing.
 pub type ConstructionSiteIdMap = EntityIdMap<PersistentConstructionSiteId, ConstructionSiteEntity>;
+
+/// Maps [PersistentFactionId]s with the [FactionEntity]s they are representing.
+pub type FactionIdMap = EntityIdMap<PersistentFactionId, FactionEntity>;
+
+/// Maps [PersistentPlayerId]s with the [PlayerEntity]s they are representing.
+pub type PlayerIdMap = EntityIdMap<PersistentPlayerId, PlayerEntity>;
 
 /// A simple Bidirectional Map.
 ///

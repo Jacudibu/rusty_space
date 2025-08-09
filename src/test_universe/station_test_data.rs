@@ -1,5 +1,6 @@
 use crate::test_universe::coordinates::{BOTTOM_LEFT, CENTER};
 use bevy::prelude::Vec2;
+use common::components::Faction;
 use common::game_data::{
     CRYSTAL_ORE_ITEM_ID, ConstructableModuleId, HYDROGEN_ITEM_ID, IRON_ORE_ITEM_ID,
     MOCK_SHIPYARD_MODULE_ID, REFINED_METALS_ITEM_ID, REFINED_METALS_PRODUCTION_MODULE_ID,
@@ -7,17 +8,21 @@ use common::game_data::{
     WAFER_ITEM_ID, WAFERS_PRODUCTION_MODULE_ID, WAFERS_RECIPE_ID,
 };
 use common::types::local_hex_position::LocalHexPosition;
+use common::types::persistent_entity_id::TypedPersistentEntityId;
 use common::types::polar_coordinates::PolarCoordinates;
 use persistence::data::{SaveDataCollection, StationSaveData};
 use universe_builder::station_builder::StationBuilder;
 
-pub fn create_test_data() -> SaveDataCollection<StationSaveData> {
+pub fn create_test_data(
+    player_faction: TypedPersistentEntityId<Faction>,
+) -> SaveDataCollection<StationSaveData> {
     let mut result = StationBuilder::default();
 
     result
         .add(
             LocalHexPosition::from_polar(BOTTOM_LEFT, PolarCoordinates::new(200.0, 220.0)),
             "Forge",
+            player_faction,
         )
         .with_production(
             5,
@@ -38,6 +43,7 @@ pub fn create_test_data() -> SaveDataCollection<StationSaveData> {
         .add(
             LocalHexPosition::from_polar(CENTER, PolarCoordinates::new(200.0, 90.0)),
             "Crystal Processor",
+            player_faction,
         )
         .with_production(1, SILICA_PRODUCTION_MODULE_ID, SILICA_RECIPE_ID)
         .with_buys(vec![CRYSTAL_ORE_ITEM_ID])
@@ -53,6 +59,7 @@ pub fn create_test_data() -> SaveDataCollection<StationSaveData> {
         .add(
             LocalHexPosition::from_polar(CENTER, PolarCoordinates::new(200.0, 300.0)),
             "Wafer Fab",
+            player_faction,
         )
         .with_production(3, WAFERS_PRODUCTION_MODULE_ID, WAFERS_RECIPE_ID)
         .with_buys(vec![SILICA_ITEM_ID, HYDROGEN_ITEM_ID])
@@ -68,7 +75,11 @@ pub fn create_test_data() -> SaveDataCollection<StationSaveData> {
         );
 
     result
-        .add(LocalHexPosition::new(CENTER, Vec2::ZERO), "Shipyard")
+        .add(
+            LocalHexPosition::new(CENTER, Vec2::ZERO),
+            "Shipyard",
+            player_faction,
+        )
         .with_shipyard(2, MOCK_SHIPYARD_MODULE_ID)
         .with_buys(vec![REFINED_METALS_ITEM_ID, WAFER_ITEM_ID]);
 

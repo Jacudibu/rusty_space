@@ -10,6 +10,7 @@ mod gate_connection;
 pub mod interaction_queue;
 mod inventory;
 mod is_docked;
+mod owner;
 pub mod production_facility;
 mod sector;
 mod selectable_entity;
@@ -25,6 +26,6 @@ mod trade;
 
 pub use {
     asteroid::*, constant_orbit::*, construction_site::*, docking_bay::*, engine::Engine, gate::*,
-    gate_connection::*, inventory::Inventory, is_docked::*, sector::*, selectable_entity::*,
-    ship::*, ship_subcomponents::*, station::*, trade::*,
+    gate_connection::*, inventory::Inventory, is_docked::*, owner::*, sector::*,
+    selectable_entity::*, ship::*, ship_subcomponents::*, station::*, trade::*,
 };
