@@ -29,7 +29,7 @@ Reward: Depending on the built station, the sector will have different buffs. Mi
 
 # Claiming Sectors should not be free.
 I like the idea that laying claims to a sector comes with a reoccurring cost, as that keeps the economy busy.
-Optionally paying more for a greater reward is a very juicy idea as well.
+Optionally paying more for a greater reward is a very juicy idea as well. Could also somewhat exponentially increase the cost based on the size of the stations owned in that system to give people yet another reason to expand.
 
 ## Potential Rewards
 - Other factions cannot claim a sector while it is already claimed. It must first be forced into a neutral state.
