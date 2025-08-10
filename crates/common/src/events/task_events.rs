@@ -100,7 +100,6 @@ pub enum TaskInsertionMode {
 }
 
 /// Creates TaskEventWriters and methods for them.
-///
 macro_rules! impl_task_events {
     ($(($variant:ident, $snake_case_variant:ident)),*) => {
         /// A [SystemParam] collection of all [TaskStartedEvent] EventWriters.

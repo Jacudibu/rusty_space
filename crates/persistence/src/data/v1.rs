@@ -121,6 +121,7 @@ pub struct SectorFeatureSaveData {
 pub struct SectorSaveData {
     pub coordinate: Hex,
     pub features: SectorFeatureSaveData,
+    pub owner: Option<PersistentFactionId>, // TODO: Ideally that should be persisted implicitly given ownership circumstances later on
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]

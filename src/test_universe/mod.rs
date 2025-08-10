@@ -26,6 +26,7 @@ pub fn load_test_universe(world: &mut World) {
     let player_faction = spawn_test_player_faction(world);
 
     world.insert_resource(sector_test_data::create_test_data(
+        player_faction,
         world
             .get_resource::<AsteroidManifest>()
             .expect("Manifests should be parsed before TestUniversePlugin is added!"),

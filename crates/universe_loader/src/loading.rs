@@ -66,6 +66,7 @@ pub(crate) fn spawn_all_sectors(
         &mut args.asteroid_id_map,
         &mut args.planet_id_map,
         &args.asteroid_manifest,
+        next.owner,
     );
     args.sector_id_map.insert(coordinate, entity);
 }

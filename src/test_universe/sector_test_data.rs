@@ -6,6 +6,7 @@ use common::game_data::{
 };
 use common::types::celestial_mass::{CelestialMass, SolarMass};
 use common::types::map_layout::MapLayout;
+use common::types::persistent_entity_id::PersistentFactionId;
 use common::types::polar_coordinates::PolarCoordinates;
 use common::types::universe_seed::UniverseSeed;
 use persistence::data::{CelestialKindSaveData, SaveDataCollection, SectorSaveData};
@@ -15,11 +16,12 @@ use universe_builder::sector_builder::{SectorAsteroidBuilder, SectorBuilder};
 const UNIVERSE_SEED: UniverseSeed = UniverseSeed::from_seed(42);
 
 pub fn create_test_data(
+    player_faction: PersistentFactionId,
     asteroid_manifest: &AsteroidManifest,
 ) -> SaveDataCollection<SectorSaveData> {
     let map_layout = MapLayout::default();
     let mut sectors = SectorBuilder::default();
-    sectors.add(coordinates::CENTER);
+    sectors.add(coordinates::CENTER).with_owner(player_faction);
 
     sectors
         .add(coordinates::RIGHT)
@@ -87,6 +89,8 @@ pub fn create_test_data(
                     CRYSTAL_ASTEROID_ID,
                 ),
         );
-    sectors.add(coordinates::BOTTOM_LEFT);
+    sectors
+        .add(coordinates::BOTTOM_LEFT)
+        .with_owner(player_faction);
     sectors.build()
 }

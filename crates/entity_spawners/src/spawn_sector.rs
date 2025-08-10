@@ -1,11 +1,12 @@
 use crate::spawn_asteroid::spawn_asteroid;
 use crate::spawn_celestial::spawn_celestial;
 use bevy::prelude::{Commands, Name, Vec2};
-use common::components::{Sector, SectorWithAsteroids, SectorWithCelestials};
+use common::components::{Owner, Sector, SectorWithAsteroids, SectorWithCelestials};
 use common::game_data::AsteroidManifest;
 use common::simulation_transform::SimulationTransform;
 use common::types::entity_id_map::{AsteroidIdMap, CelestialIdMap};
 use common::types::entity_wrappers::SectorEntity;
+use common::types::persistent_entity_id::PersistentFactionId;
 use common::types::sprite_handles::SpriteHandles;
 use hexx::{Hex, HexLayout};
 use persistence::data::SectorFeatureSaveData;
@@ -19,18 +20,23 @@ pub fn spawn_sector(
     asteroid_id_map: &mut AsteroidIdMap,
     celestial_id_map: &mut CelestialIdMap,
     asteroid_manifest: &AsteroidManifest,
+    owner: Option<PersistentFactionId>,
 ) -> SectorEntity {
     let position = layout.hex_to_world_pos(coordinate);
 
     let simulation_transform =
         SimulationTransform::from_translation(Vec2::new(position.x, position.y));
 
-    let entity_commands = commands.spawn((
+    let mut entity_commands = commands.spawn((
         Name::new(format!("[{},{}]", coordinate.x, coordinate.y)),
         Sector::new(coordinate, position),
         simulation_transform.as_bevy_transform(0.0),
         simulation_transform,
     ));
+
+    if let Some(owner) = owner {
+        entity_commands.insert(Owner { faction_id: owner });
+    }
 
     let sector_entity = entity_commands.id();
     let sector = SectorEntity::from(sector_entity);

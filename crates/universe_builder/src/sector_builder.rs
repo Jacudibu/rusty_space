@@ -4,8 +4,9 @@ use common::constants;
 use common::game_data::{AsteroidDataId, AsteroidManifest};
 use common::shared_logic::calculate_milliseconds_until_asteroid_leaves_hexagon;
 use common::simulation_time::SimulationTimestamp;
+use common::types::entity_id_map::FactionIdMap;
 use common::types::map_layout::MapLayout;
-use common::types::persistent_entity_id::PersistentAsteroidId;
+use common::types::persistent_entity_id::{PersistentAsteroidId, PersistentFactionId};
 use common::types::universe_seed::UniverseSeed;
 use hexx::Hex;
 use leafwing_manifest::manifest::Manifest;
@@ -36,6 +37,7 @@ impl SectorBuilder {
             data: SectorSaveData {
                 coordinate: hex,
                 features: SectorFeatureSaveData::default(),
+                owner: None,
             },
         });
         self.data.last_mut().unwrap()
@@ -58,6 +60,11 @@ impl IndividualSectorBuilder {
                 celestials: vec![builder.data],
             });
         }
+        self
+    }
+
+    pub fn with_owner(&mut self, owner: PersistentFactionId) -> &Self {
+        self.owner = Some(owner);
         self
     }
 

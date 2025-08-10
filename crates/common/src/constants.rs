@@ -4,6 +4,7 @@
 //! by the player and mods.
 
 use crate::simulation_time::Milliseconds;
+use bevy::prelude::Color;
 use std::ops::Range;
 
 /// Wrapper for [bevy::prelude::Result] to avoid confusion with rust's built-in [Result] type.
@@ -87,3 +88,5 @@ pub mod z_layers {
 }
 
 pub const ONE_SECOND_IN_MILLISECONDS: Milliseconds = 1000;
+
+pub const NEUTRAL_COLOR: Color = Color::Srgba(bevy::color::palettes::basic::SILVER);
