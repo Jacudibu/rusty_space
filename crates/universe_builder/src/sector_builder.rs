@@ -4,7 +4,6 @@ use common::constants;
 use common::game_data::{AsteroidDataId, AsteroidManifest};
 use common::shared_logic::calculate_milliseconds_until_asteroid_leaves_hexagon;
 use common::simulation_time::SimulationTimestamp;
-use common::types::entity_id_map::FactionIdMap;
 use common::types::map_layout::MapLayout;
 use common::types::persistent_entity_id::{PersistentAsteroidId, PersistentFactionId};
 use common::types::universe_seed::UniverseSeed;

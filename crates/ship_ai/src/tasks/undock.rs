@@ -10,7 +10,8 @@ use crate::tasks::dock_at_entity;
 use crate::utility::ship_task::ShipTask;
 use crate::utility::task_result::TaskResult;
 use bevy::ecs::system::{StaticSystemParam, SystemParam};
-use bevy::prelude::{BevyError, Commands, Entity, EventWriter, Query, Res, Time, Visibility};
+use bevy::math::Vec2;
+use bevy::prelude::{BevyError, Commands, Entity, EventWriter, Query, Res, Rot2, Time, Visibility};
 use common::components::ship_velocity::ShipVelocity;
 use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
@@ -22,6 +23,7 @@ use common::events::task_events::{InsertTaskIntoQueueCommand, TaskStartedEvent};
 use common::simulation_transform::{SimulationScale, SimulationTransform};
 use common::types::ship_tasks::Undock;
 use std::collections::VecDeque;
+use std::f32::consts::FRAC_PI_2;
 use std::ops::{Deref, DerefMut};
 use std::sync::{Arc, Mutex};
 
@@ -122,6 +124,11 @@ impl<'w, 's> TaskCreationEventHandler<'w, 's, Self> for Undock {
 }
 
 #[derive(SystemParam)]
+pub struct TaskStartedArgs<'w, 's> {
+    all_task_queues: Query<'w, 's, &'static TaskQueue>,
+}
+
+#[derive(SystemParam)]
 pub struct TaskStartedArgsMut<'w, 's> {
     commands: Commands<'w, 's>,
     docking_bays: Query<'w, 's, &'static mut DockingBay>,
@@ -131,28 +138,49 @@ pub struct TaskStartedArgsMut<'w, 's> {
         (
             Entity,
             &'static mut ShipTask<Undock>,
-            &'static SimulationTransform,
             &'static mut Visibility,
         ),
     >,
+    all_transforms: Query<'w, 's, &'static mut SimulationTransform>,
 }
 
 impl<'w, 's> TaskStartedEventHandler<'w, 's, Self> for Undock {
-    type Args = ();
+    type Args = TaskStartedArgs<'w, 's>;
     type ArgsMut = TaskStartedArgsMut<'w, 's>;
 
     fn on_task_started(
         event: &TaskStartedEvent<Undock>,
-        _args: &StaticSystemParam<Self::Args>,
+        args: &StaticSystemParam<Self::Args>,
         args_mut: &mut StaticSystemParam<Self::ArgsMut>,
     ) -> Result<(), BevyError> {
         let args_mut = args_mut.deref_mut();
 
-        let (entity, mut task, transform, mut visibility) =
+        let (entity, mut task, mut visibility) =
             args_mut.all_ships_with_task.get_mut(event.entity.into())?;
+        let task_queue = args.all_task_queues.get(entity)?;
+
+        let undocking_origin_pos = args_mut.all_transforms.get(task.from.into())?.translation;
+
+        let target_rotation = {
+            if let Some(target_pos) = get_target_position_for_next_task_in_queue(
+                task_queue,
+                &args_mut.all_transforms.as_readonly(),
+            ) {
+                let delta_pos = target_pos - undocking_origin_pos;
+                let rotation_in_radians = delta_pos.y.atan2(delta_pos.x);
+                Rot2::radians(rotation_in_radians - FRAC_PI_2)
+            } else {
+                let rotation_in_radians = undocking_origin_pos.y.atan2(undocking_origin_pos.x);
+                Rot2::radians(-rotation_in_radians + FRAC_PI_2)
+            }
+        };
+
+        let mut entity_transform = args_mut.all_transforms.get_mut(entity)?;
+        entity_transform.translation = undocking_origin_pos;
+        entity_transform.rotation = target_rotation;
 
         *visibility = Visibility::Inherited;
-        task.start_position = Some(transform.translation);
+        task.start_position = Some(entity_transform.translation);
         args_mut.commands.entity(entity).remove::<IsDocked>();
         args_mut
             .docking_bays
@@ -160,6 +188,65 @@ impl<'w, 's> TaskStartedEventHandler<'w, 's, Self> for Undock {
             .start_undocking(entity.into());
 
         Ok(())
+    }
+}
+
+/// Iterates through the provided [TaskQueue] in an attempt to find a target position for one of them.
+fn get_target_position_for_next_task_in_queue(
+    task_queue: &TaskQueue,
+    all_transforms: &Query<&SimulationTransform>,
+) -> Option<Vec2> {
+    for x in &task_queue.queue {
+        if let Some(target_pos) = determine_task_target_position(all_transforms, x) {
+            return Some(target_pos);
+        }
+    }
+
+    None
+}
+
+/// Determines the target position of the provided [TaskKind].
+/// # Returns
+/// - [None] if the task doesn't specify (or care) about a target position
+/// - [Some] with a [Vec3] in case the task specifies a target position
+// TODO: That should probably be an extension method implemented via traits
+fn determine_task_target_position(
+    all_transforms: &Query<&SimulationTransform>,
+    task: &TaskKind,
+) -> Option<Vec2> {
+    match task {
+        TaskKind::ExchangeWares { .. } => None,
+        TaskKind::MoveToEntity { data } => {
+            Some(all_transforms.get(data.target.into()).unwrap().translation)
+        }
+        TaskKind::MoveToPosition { data } => Some(data.global_position),
+        TaskKind::MoveToSector { .. } => None,
+        TaskKind::UseGate { data } => Some(
+            all_transforms
+                .get(data.enter_gate.into())
+                .unwrap()
+                .translation,
+        ),
+        TaskKind::MineAsteroid { data } => {
+            Some(all_transforms.get(data.target.into()).unwrap().translation)
+        }
+        TaskKind::HarvestGas { data } => {
+            Some(all_transforms.get(data.target.into()).unwrap().translation)
+        }
+        TaskKind::AwaitingSignal { .. } => None,
+        TaskKind::RequestAccess { .. } => None,
+        TaskKind::DockAtEntity { data } => {
+            Some(all_transforms.get(data.target.into()).unwrap().translation)
+        }
+        TaskKind::Undock { .. } => None,
+        TaskKind::Construct { data } => {
+            // Task target might become invalid during the frame where construction is finished
+            if let Ok(target_transform) = all_transforms.get(data.target.into()) {
+                Some(target_transform.translation)
+            } else {
+                None
+            }
+        }
     }
 }
 
