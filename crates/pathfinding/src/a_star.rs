@@ -15,6 +15,11 @@ pub fn a_star(
     to: SectorEntity,
     to_position: Option<Vec2>,
 ) -> Option<Vec<PathElement>> {
+    if (from == to) {
+        // TODO: Implement scenarios where moving through different sectors could be a shortcut
+        return Some(Vec::new());
+    }
+
     let mut open = BinaryHeap::new();
     let mut costs: HashMap<PathElement, u32> = HashMap::new();
 
@@ -474,21 +479,25 @@ mod test {
         );
     }
 
-    #[ignore = "Pathfinding where from_pos == to_pos just shouldn't happen right now"]
     #[test]
     fn find_path_to_position_in_self_but_path_through_other_sector_is_shorter() {
         let mut test_app = TestApp::default();
         test_app.sectors.add(CENTER);
-        test_app.sectors.add(RIGHT);
+        test_app.sectors.add(CENTER_LEFT_TOP);
+        test_app.sectors.add(CENTER_RIGHT_TOP);
 
         let from_pos = Vec2::X * 1000.0;
         test_app.gate_pairs.add(
             LocalHexPosition::new(CENTER, from_pos),
-            LocalHexPosition::new(RIGHT, Vec2::NEG_X),
+            LocalHexPosition::new(CENTER_LEFT_TOP, Vec2::NEG_X),
         );
         test_app.gate_pairs.add(
-            LocalHexPosition::new(RIGHT, Vec2::X),
-            LocalHexPosition::new(CENTER, -from_pos), // Cheesy shortcut!
+            LocalHexPosition::new(CENTER_LEFT_TOP, Vec2::X),
+            LocalHexPosition::new(CENTER_RIGHT_TOP, Vec2::NEG_X),
+        );
+        test_app.gate_pairs.add(
+            LocalHexPosition::new(CENTER_RIGHT_TOP, Vec2::X),
+            LocalHexPosition::new(CENTER, -from_pos),
         );
 
         let mut app = test_app.build();
@@ -501,27 +510,86 @@ mod test {
             CENTER,
             Some(-from_pos),
             |result, sector_id_map| {
-                assert_eq!(result.len(), 2);
-                assert_eq!(result[0].exit_sector, sector_id_map.id_to_entity()[&RIGHT]);
-                assert_eq!(result[1].exit_sector, sector_id_map.id_to_entity()[&CENTER]);
+                assert_eq!(result.len(), 3);
+                assert_eq!(
+                    result[0].exit_sector,
+                    sector_id_map.id_to_entity()[&CENTER_LEFT_TOP]
+                );
+                assert_eq!(
+                    result[1].exit_sector,
+                    sector_id_map.id_to_entity()[&CENTER_RIGHT_TOP]
+                );
+                assert_eq!(result[2].exit_sector, sector_id_map.id_to_entity()[&CENTER]);
             },
         );
     }
 
-    #[ignore = "Pathfinding where from_pos == to_pos just shouldn't happen right now"]
     #[test]
     fn find_path_to_position_in_self_best_route_is_to_just_ignore_gates() {
         let mut test_app = TestApp::default();
         test_app.sectors.add(CENTER);
-        test_app.sectors.add(RIGHT);
+        test_app.sectors.add(CENTER_LEFT_TOP);
+        test_app.sectors.add(CENTER_RIGHT_TOP);
 
         test_app.gate_pairs.add(
             LocalHexPosition::new(CENTER, Vec2::X * 1000.0),
-            LocalHexPosition::new(RIGHT, Vec2::NEG_X),
+            LocalHexPosition::new(CENTER_LEFT_TOP, Vec2::NEG_X),
         );
         test_app.gate_pairs.add(
-            LocalHexPosition::new(RIGHT, Vec2::X),
+            LocalHexPosition::new(CENTER_LEFT_TOP, Vec2::X),
+            LocalHexPosition::new(CENTER_RIGHT_TOP, Vec2::NEG_X * 1000.0),
+        );
+        test_app.gate_pairs.add(
+            LocalHexPosition::new(CENTER_RIGHT_TOP, Vec2::X),
             LocalHexPosition::new(CENTER, Vec2::NEG_X * 1000.0),
+        );
+
+        let mut app = test_app.build();
+        let world = app.world_mut();
+
+        test_a_star(
+            world,
+            CENTER,
+            Vec2::X,
+            CENTER,
+            Some(Vec2::NEG_X),
+            |result, _sector_id_map| {
+                // TODO: Probably should return some kinda enum for None|Local|GatePath
+                assert_eq!(result.len(), 0);
+            },
+        );
+    }
+
+    #[test]
+    fn find_local_path_in_sector_without_gates() {
+        // A gateless sector?! - actually not impossible once ships take sector ownerships and black/whitelists into account.
+        let mut test_app = TestApp::default();
+        test_app.sectors.add(CENTER);
+
+        let mut app = test_app.build();
+        let world = app.world_mut();
+
+        test_a_star(
+            world,
+            CENTER,
+            Vec2::X,
+            CENTER,
+            Some(Vec2::NEG_X),
+            |result, _sector_id_map| {
+                // TODO: Probably should return some kinda enum for None|Local|GatePath
+                assert_eq!(result.len(), 0);
+            },
+        );
+    }
+
+    #[test]
+    fn find_local_path_in_dead_end_sector() {
+        let mut test_app = TestApp::default();
+        test_app.sectors.add(CENTER);
+        test_app.sectors.add(RIGHT);
+        test_app.gate_pairs.add(
+            LocalHexPosition::new(CENTER, Vec2::ZERO),
+            LocalHexPosition::new(RIGHT, Vec2::ZERO),
         );
 
         let mut app = test_app.build();
