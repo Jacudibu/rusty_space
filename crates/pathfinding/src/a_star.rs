@@ -15,7 +15,7 @@ pub fn a_star(
     to: SectorEntity,
     to_position: Option<Vec2>,
 ) -> Option<Vec<PathElement>> {
-    if (from == to) {
+    if from == to {
         // TODO: Implement scenarios where moving through different sectors could be a shortcut
         return Some(Vec::new());
     }
