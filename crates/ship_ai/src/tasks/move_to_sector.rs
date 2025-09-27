@@ -6,15 +6,18 @@ use crate::task_lifecycle_traits::task_creation::{
 };
 use crate::task_lifecycle_traits::task_started::TaskStartedEventHandler;
 use crate::task_lifecycle_traits::task_update_runner::TaskUpdateRunner;
+use crate::task_metadata::TaskMetaData;
 use crate::utility::ship_task::ShipTask;
 use crate::utility::task_preconditions::create_preconditions_and_move_to_sector;
 use crate::utility::task_result::TaskResult;
 use bevy::ecs::system::{StaticSystemParam, SystemParam};
+use bevy::math::Vec2;
 use bevy::prelude::{BevyError, Entity, Query};
 use common::components::InSector;
 use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
 use common::events::task_events::{InsertTaskIntoQueueCommand, TaskCompletedEvent};
+use common::simulation_transform::SimulationTransform;
 use common::types::entity_wrappers::SectorEntity;
 use common::types::ship_tasks::MoveToSector;
 use std::collections::VecDeque;
@@ -131,5 +134,10 @@ impl<'w, 's> TaskCompletedEventHandler<'w, 's, Self> for MoveToSector {
 
     fn skip_completed() -> bool {
         true
+    }
+}
+impl<'w, 's> TaskMetaData<'w, 's, Self> for MoveToSector {
+    fn task_target_position(&self, _all_transforms: &Query<&SimulationTransform>) -> Option<Vec2> {
+        None
     }
 }

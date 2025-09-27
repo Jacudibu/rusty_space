@@ -6,14 +6,17 @@ use crate::task_lifecycle_traits::task_creation::{
 };
 use crate::task_lifecycle_traits::task_started::TaskStartedEventHandler;
 use crate::task_lifecycle_traits::task_update_runner::TaskUpdateRunner;
+use crate::task_metadata::TaskMetaData;
 use crate::utility::ship_task::ShipTask;
 use bevy::ecs::system::{StaticSystemParam, SystemParam};
+use bevy::math::Vec2;
 use bevy::prelude::{BevyError, Entity, Query};
 use common::components::DockingBay;
 use common::components::interaction_queue::{InteractionQueue, InteractionQueueResult};
 use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
 use common::events::task_events::{InsertTaskIntoQueueCommand, TaskCompletedEvent};
+use common::simulation_transform::SimulationTransform;
 use common::types::ship_tasks::{AwaitingSignal, RequestAccess, RequestAccessGoal};
 use std::collections::VecDeque;
 use std::ops::DerefMut;
@@ -164,5 +167,10 @@ impl<'w, 's> TaskCompletedEventHandler<'w, 's, Self> for RequestAccess {
 
     fn skip_completed() -> bool {
         true
+    }
+}
+impl<'w, 's> TaskMetaData<'w, 's, Self> for RequestAccess {
+    fn task_target_position(&self, _all_transforms: &Query<&SimulationTransform>) -> Option<Vec2> {
+        None
     }
 }

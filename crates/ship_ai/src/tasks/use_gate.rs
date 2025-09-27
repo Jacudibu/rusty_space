@@ -6,6 +6,8 @@ use crate::task_lifecycle_traits::task_creation::{
 };
 use crate::task_lifecycle_traits::task_started::TaskStartedEventHandler;
 use crate::task_lifecycle_traits::task_update_runner::TaskUpdateRunner;
+use crate::task_metadata;
+use crate::task_metadata::TaskMetaData;
 use crate::utility::ship_task::ShipTask;
 use crate::utility::task_result::TaskResult;
 use bevy::ecs::system::{StaticSystemParam, SystemParam};
@@ -240,5 +242,11 @@ impl<'w, 's> TaskCompletedEventHandler<'w, 's, Self> for UseGate {
         velocity.forward *= 0.5;
 
         Ok(())
+    }
+}
+
+impl<'w, 's> TaskMetaData<'w, 's, Self> for UseGate {
+    fn task_target_position(&self, all_transforms: &Query<&SimulationTransform>) -> Option<Vec2> {
+        task_metadata::get_entity_global_position(all_transforms, self.enter_gate.into())
     }
 }

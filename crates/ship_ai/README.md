@@ -9,3 +9,4 @@ In multiplayer sessions, behaviors are only run on the session owner's machine, 
 2. Add it to (common) `TaskKind`
 3. Fix compile errors for missing `TaskKind` matches
 4. Implement all `task_lifecycle_traits` for `NewTask`
+5. Implement `TaskMetaData` for `NewTask`

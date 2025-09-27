@@ -6,10 +6,12 @@ use crate::task_lifecycle_traits::task_creation::{
 };
 use crate::task_lifecycle_traits::task_started::TaskStartedEventHandler;
 use crate::task_lifecycle_traits::task_update_runner::TaskUpdateRunner;
+use crate::task_metadata::TaskMetaData;
 use crate::utility::ship_task::ShipTask;
 use crate::utility::task_preconditions::create_preconditions_and_dock_at_entity;
 use crate::utility::task_result::TaskResult;
 use bevy::ecs::system::{StaticSystemParam, SystemParam};
+use bevy::math::Vec2;
 use bevy::prelude::{BevyError, Entity, EventWriter, Query, Res};
 use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
@@ -20,6 +22,7 @@ use common::events::task_events::{
 };
 use common::game_data::ItemManifest;
 use common::simulation_time::{CurrentSimulationTimestamp, SimulationTime};
+use common::simulation_transform::SimulationTransform;
 use common::types::exchange_ware_data::ExchangeWareData;
 use common::types::ship_tasks::ExchangeWares;
 use common::types::trade_intent::TradeIntent;
@@ -292,5 +295,11 @@ fn update_buy_and_sell_orders_for_entity(
     }
     if let Ok(mut sell_orders) = sell_orders.get_mut(entity) {
         sell_orders.update(inventory, item_manifest);
+    }
+}
+
+impl<'w, 's> TaskMetaData<'w, 's, Self> for ExchangeWares {
+    fn task_target_position(&self, _all_transforms: &Query<&SimulationTransform>) -> Option<Vec2> {
+        None
     }
 }

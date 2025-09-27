@@ -6,11 +6,13 @@ use crate::task_lifecycle_traits::task_creation::{
 };
 use crate::task_lifecycle_traits::task_started::TaskStartedEventHandler;
 use crate::task_lifecycle_traits::task_update_runner::TaskUpdateRunner;
+use crate::task_metadata::TaskMetaData;
 use crate::tasks::move_to_entity;
 use crate::utility::ship_task::ShipTask;
 use crate::utility::task_preconditions::create_preconditions_and_move_to_sector;
 use crate::utility::task_result::TaskResult;
 use bevy::ecs::system::{StaticSystemParam, SystemParam};
+use bevy::math::Vec2;
 use bevy::prelude::{BevyError, Entity, Query, Res, Time};
 use common::components::Engine;
 use common::components::ship_velocity::ShipVelocity;
@@ -148,5 +150,11 @@ impl<'w, 's> TaskCompletedEventHandler<'w, 's, Self> for MoveToPosition {
 
     fn skip_completed() -> bool {
         true
+    }
+}
+
+impl<'w, 's> TaskMetaData<'w, 's, Self> for MoveToPosition {
+    fn task_target_position(&self, _all_transforms: &Query<&SimulationTransform>) -> Option<Vec2> {
+        Some(self.global_position)
     }
 }

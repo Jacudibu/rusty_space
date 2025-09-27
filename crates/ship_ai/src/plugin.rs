@@ -1,4 +1,3 @@
-use crate::behaviors;
 use crate::task_lifecycle_traits::task_cancellation_active::{
     TaskCancellationForActiveTaskEventHandler, TaskCancellationWhileActiveRequest,
 };
@@ -11,6 +10,7 @@ use crate::task_lifecycle_traits::task_started::TaskStartedEventHandler;
 use crate::task_lifecycle_traits::task_update_runner::TaskUpdateRunner;
 use crate::task_lifecycle_traits::{task_cancellation_active, task_cancellation_in_queue};
 use crate::utility::stop_idle_ships;
+use crate::{TaskMetaData, behaviors};
 use bevy::app::App;
 use bevy::prelude::{
     FixedPostUpdate, FixedUpdate, IntoScheduleConfigs, Plugin, PreUpdate, Update, in_state,
@@ -88,6 +88,7 @@ fn enable_cancelling_tasks_in_queue(app: &mut App) {
 fn register_task_lifecycle<Task>(app: &mut App)
 where
     Task: ShipTaskData
+        + TaskMetaData<'static, 'static, Task>
         + TaskCreationEventHandler<'static, 'static, Task>
         + TaskStartedEventHandler<'static, 'static, Task>
         + TaskCancellationForTaskInQueueEventHandler<'static, 'static, Task>

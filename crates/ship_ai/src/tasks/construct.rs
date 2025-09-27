@@ -6,9 +6,12 @@ use crate::task_lifecycle_traits::task_creation::{
 };
 use crate::task_lifecycle_traits::task_started::TaskStartedEventHandler;
 use crate::task_lifecycle_traits::task_update_runner::TaskUpdateRunner;
+use crate::task_metadata;
+use crate::task_metadata::TaskMetaData;
 use crate::utility::ship_task::ShipTask;
 use crate::utility::task_preconditions::create_preconditions_and_move_to_entity;
 use bevy::ecs::system::{StaticSystemParam, SystemParam};
+use bevy::math::Vec2;
 use bevy::prelude::{BevyError, EventWriter, Query, Res, error};
 use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
@@ -18,8 +21,9 @@ use common::events::task_events::{
     InsertTaskIntoQueueCommand, TaskCanceledWhileActiveEvent, TaskCompletedEvent, TaskStartedEvent,
 };
 use common::session_data::ShipConfigurationManifest;
+use common::simulation_transform::SimulationTransform;
 use common::types::entity_wrappers::ShipEntity;
-use common::types::ship_tasks::Construct;
+use common::types::ship_tasks::{AwaitingSignal, Construct};
 use std::collections::VecDeque;
 use std::ops::DerefMut;
 use std::sync::{Arc, Mutex};
@@ -275,5 +279,11 @@ mod test {
         assert_eq!(expected_build_power, *build_power);
 
         Ok(())
+    }
+}
+
+impl<'w, 's> TaskMetaData<'w, 's, Self> for Construct {
+    fn task_target_position(&self, all_transforms: &Query<&SimulationTransform>) -> Option<Vec2> {
+        task_metadata::get_entity_global_position(all_transforms, self.target.into())
     }
 }

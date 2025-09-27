@@ -7,7 +7,9 @@ use crate::task_lifecycle_traits::task_creation::{
 };
 use crate::task_lifecycle_traits::task_started::TaskStartedEventHandler;
 use crate::task_lifecycle_traits::task_update_runner::TaskUpdateRunner;
+use crate::task_metadata::TaskMetaData;
 use bevy::ecs::system::{StaticSystemParam, SystemParam};
+use bevy::math::Vec2;
 use bevy::prelude::{BevyError, EventReader, EventWriter, Query};
 use common::components::interaction_queue::InteractionQueue;
 use common::components::task_kind::TaskKind;
@@ -17,6 +19,7 @@ use common::events::send_signal_event::SendSignalEvent;
 use common::events::task_events::{
     InsertTaskIntoQueueCommand, TaskCanceledWhileActiveEvent, TaskCompletedEvent,
 };
+use common::simulation_transform::SimulationTransform;
 use common::types::ship_tasks::AwaitingSignal;
 use std::collections::VecDeque;
 use std::ops::DerefMut;
@@ -121,5 +124,11 @@ impl<'w, 's> TaskCompletedEventHandler<'w, 's, Self> for AwaitingSignal {
 
     fn skip_completed() -> bool {
         true
+    }
+}
+
+impl<'w, 's> TaskMetaData<'w, 's, Self> for AwaitingSignal {
+    fn task_target_position(&self, _all_transforms: &Query<&SimulationTransform>) -> Option<Vec2> {
+        None
     }
 }

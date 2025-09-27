@@ -1,3 +1,4 @@
+use crate::TaskKindExt;
 use crate::task_lifecycle_traits::task_cancellation_active::TaskCancellationForActiveTaskEventHandler;
 use crate::task_lifecycle_traits::task_cancellation_in_queue::TaskCancellationForTaskInQueueEventHandler;
 use crate::task_lifecycle_traits::task_completed::TaskCompletedEventHandler;
@@ -6,6 +7,7 @@ use crate::task_lifecycle_traits::task_creation::{
 };
 use crate::task_lifecycle_traits::task_started::TaskStartedEventHandler;
 use crate::task_lifecycle_traits::task_update_runner::TaskUpdateRunner;
+use crate::task_metadata::TaskMetaData;
 use crate::tasks::dock_at_entity;
 use crate::utility::ship_task::ShipTask;
 use crate::utility::task_result::TaskResult;
@@ -197,57 +199,12 @@ fn get_target_position_for_next_task_in_queue(
     all_transforms: &Query<&SimulationTransform>,
 ) -> Option<Vec2> {
     for x in &task_queue.queue {
-        if let Some(target_pos) = determine_task_target_position(all_transforms, x) {
+        if let Some(target_pos) = x.task_target_position(all_transforms) {
             return Some(target_pos);
         }
     }
 
     None
-}
-
-/// Determines the target position of the provided [TaskKind].
-/// # Returns
-/// - [None] if the task doesn't specify (or care) about a target position
-/// - [Some] with a [Vec3] in case the task specifies a target position
-// TODO: That should probably be an extension method implemented via traits
-fn determine_task_target_position(
-    all_transforms: &Query<&SimulationTransform>,
-    task: &TaskKind,
-) -> Option<Vec2> {
-    match task {
-        TaskKind::ExchangeWares { .. } => None,
-        TaskKind::MoveToEntity { data } => {
-            Some(all_transforms.get(data.target.into()).unwrap().translation)
-        }
-        TaskKind::MoveToPosition { data } => Some(data.global_position),
-        TaskKind::MoveToSector { .. } => None,
-        TaskKind::UseGate { data } => Some(
-            all_transforms
-                .get(data.enter_gate.into())
-                .unwrap()
-                .translation,
-        ),
-        TaskKind::MineAsteroid { data } => {
-            Some(all_transforms.get(data.target.into()).unwrap().translation)
-        }
-        TaskKind::HarvestGas { data } => {
-            Some(all_transforms.get(data.target.into()).unwrap().translation)
-        }
-        TaskKind::AwaitingSignal { .. } => None,
-        TaskKind::RequestAccess { .. } => None,
-        TaskKind::DockAtEntity { data } => {
-            Some(all_transforms.get(data.target.into()).unwrap().translation)
-        }
-        TaskKind::Undock { .. } => None,
-        TaskKind::Construct { data } => {
-            // Task target might become invalid during the frame where construction is finished
-            if let Ok(target_transform) = all_transforms.get(data.target.into()) {
-                Some(target_transform.translation)
-            } else {
-                None
-            }
-        }
-    }
 }
 
 impl<'w, 's> TaskCancellationForTaskInQueueEventHandler<'w, 's, Self> for Undock {
@@ -291,5 +248,10 @@ impl<'w, 's> TaskCompletedEventHandler<'w, 's, Self> for Undock {
         docking_bay.finish_undocking(&event.entity, &mut args_mut.send_signal_event_writer);
 
         Ok(())
+    }
+}
+impl<'w, 's> TaskMetaData<'w, 's, Self> for Undock {
+    fn task_target_position(&self, _all_transforms: &Query<&SimulationTransform>) -> Option<Vec2> {
+        None
     }
 }

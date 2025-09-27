@@ -6,10 +6,13 @@ use crate::task_lifecycle_traits::task_creation::{
 };
 use crate::task_lifecycle_traits::task_started::TaskStartedEventHandler;
 use crate::task_lifecycle_traits::task_update_runner::TaskUpdateRunner;
+use crate::task_metadata;
+use crate::task_metadata::TaskMetaData;
 use crate::tasks::move_to_entity;
 use crate::utility::ship_task::ShipTask;
 use crate::utility::task_result::TaskResult;
 use bevy::ecs::system::{StaticSystemParam, SystemParam};
+use bevy::math::Vec2;
 use bevy::prelude::{
     BevyError, Commands, Entity, EventWriter, FloatExt, Query, Res, Time, Visibility,
 };
@@ -185,5 +188,11 @@ impl<'w, 's> TaskCompletedEventHandler<'w, 's, Self> for DockAtEntity {
         entity_commands.insert(components::IsDocked::new(task.target));
 
         Ok(())
+    }
+}
+
+impl<'w, 's> TaskMetaData<'w, 's, Self> for DockAtEntity {
+    fn task_target_position(&self, all_transforms: &Query<&SimulationTransform>) -> Option<Vec2> {
+        task_metadata::get_entity_global_position(all_transforms, self.target.into())
     }
 }
