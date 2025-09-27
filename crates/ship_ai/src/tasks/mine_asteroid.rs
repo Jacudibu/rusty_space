@@ -6,9 +6,12 @@ use crate::task_lifecycle_traits::task_creation::{
 };
 use crate::task_lifecycle_traits::task_started::TaskStartedEventHandler;
 use crate::task_lifecycle_traits::task_update_runner::TaskUpdateRunner;
+use crate::task_metadata;
+use crate::task_metadata::TaskMetaData;
 use crate::utility::ship_task::ShipTask;
 use crate::utility::task_preconditions::create_preconditions_and_move_to_entity;
 use bevy::ecs::system::{StaticSystemParam, SystemParam};
+use bevy::math::Vec2;
 use bevy::prelude::{BevyError, Entity, EventWriter, Query, Res};
 use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
@@ -20,7 +23,7 @@ use common::events::task_events::{
 };
 use common::game_data::ItemManifest;
 use common::simulation_time::{CurrentSimulationTimestamp, Milliseconds, SimulationTime};
-use common::simulation_transform::SimulationScale;
+use common::simulation_transform::{SimulationScale, SimulationTransform};
 use common::types::entity_wrappers::AsteroidEntity;
 use common::types::ship_tasks::MineAsteroid;
 use std::collections::VecDeque;
@@ -254,5 +257,10 @@ impl<'w, 's> TaskCompletedEventHandler<'w, 's, Self> for MineAsteroid {
 
     fn skip_completed() -> bool {
         true
+    }
+}
+impl<'w, 's> TaskMetaData<'w, 's, Self> for MineAsteroid {
+    fn task_target_position(&self, all_transforms: &Query<&SimulationTransform>) -> Option<Vec2> {
+        task_metadata::get_entity_global_position(all_transforms, self.target.into())
     }
 }
