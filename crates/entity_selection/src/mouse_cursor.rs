@@ -1,6 +1,7 @@
 use bevy::prelude::{Camera, GlobalTransform, Res, ResMut, Resource, Single, Vec2, Window, With};
 use camera::MainCamera;
 use common::constants::BevyResult;
+use common::hexx_convert::{HexxConvert, HexxConvertBack};
 use common::types::entity_id_map::SectorIdMap;
 use common::types::map_layout::MapLayout;
 use common::types::sector_position::SectorPosition;
@@ -65,9 +66,9 @@ fn calculate_sector_pos(
     map: &MapLayout,
     sectors: &SectorIdMap,
 ) -> Option<MouseSectorPosition> {
-    let sector_hex = map.hex_layout.world_pos_to_hex(world_pos);
+    let sector_hex = map.hex_layout.world_pos_to_hex(world_pos.convert());
     let sector = sectors.get_entity(&sector_hex)?;
-    let sector_center_pos = map.hex_layout.hex_to_world_pos(sector_hex);
+    let sector_center_pos = map.hex_layout.hex_to_world_pos(sector_hex).convert();
 
     MouseSectorPosition {
         sector_position: SectorPosition {

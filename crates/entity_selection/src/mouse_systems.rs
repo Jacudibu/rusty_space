@@ -5,7 +5,7 @@ use crate::mouse_interaction::{LastMouseInteraction, MouseInteraction};
 use bevy::input::ButtonState;
 use bevy::input::mouse::MouseButtonInput;
 use bevy::prelude::{
-    Camera, Commands, Entity, EventReader, GlobalTransform, InheritedVisibility, MouseButton,
+    Camera, Commands, Entity, GlobalTransform, InheritedVisibility, MessageReader, MouseButton,
     Query, Real, Res, ResMut, Single, State, Time, Vec2, With, Without,
 };
 use camera::MainCamera;
@@ -22,7 +22,7 @@ pub(crate) fn process_mouse_clicks(
     mouse_cursor: Res<MouseCursor>,
     existing_mouse_interaction: Option<Res<MouseInteraction>>,
     last_mouse_interaction: Option<Res<LastMouseInteraction>>,
-    mut mouse_button_events: EventReader<MouseButtonInput>,
+    mut mouse_button_messages: MessageReader<MouseButtonInput>,
     selectables: Query<(
         Entity,
         &GlobalTransform,
@@ -33,7 +33,7 @@ pub(crate) fn process_mouse_clicks(
     selected_entities: Query<Entity, With<EntityIsSelected>>,
     mouse_cursor_over_ui_state: Res<State<MouseCursorOverUiState>>,
 ) -> BevyResult {
-    for event in mouse_button_events.read() {
+    for event in mouse_button_messages.read() {
         if event.button != MouseButton::Left {
             continue;
         }

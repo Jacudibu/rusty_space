@@ -2,13 +2,13 @@ use crate::TaskKindExt;
 use crate::tasks::apply_next_task;
 use bevy::ecs::system::{StaticSystemParam, SystemParam};
 use bevy::log::warn;
-use bevy::prelude::{BevyError, Commands, Entity, EventReader, Query, Transform};
+use bevy::prelude::{BevyError, Commands, Entity, MessageReader, Query, Transform};
 use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
 use common::components::{InSector, IsDocked, Sector};
 use common::constants::BevyResult;
 use common::events::task_events::{
-    AllTaskStartedEventWriters, InsertTaskIntoQueueCommand, TaskInsertionMode,
+    AllTaskStartedMessageWriters, InsertTaskIntoQueueCommand, TaskInsertionMode,
 };
 use common::simulation_transform::SimulationTransform;
 use common::types::ship_tasks::ShipTaskData;
@@ -33,14 +33,14 @@ pub(crate) trait TaskCreationEventHandler<'w, 's, TaskData: ShipTaskData> {
 
     /// Listens to [InsertTaskIntoQueueCommand]<TaskData> Events and runs [Self::create_tasks_for_command] for each.
     /// Usually you don't need to reimplement this.
-    fn task_creation_event_listener(
-        mut events: EventReader<InsertTaskIntoQueueCommand<TaskData>>,
+    fn task_creation_message_listener(
+        mut events: MessageReader<InsertTaskIntoQueueCommand<TaskData>>,
         general_pathfinding_args: GeneralPathfindingArgs,
         args: StaticSystemParam<Self::Args>,
         mut args_mut: StaticSystemParam<Self::ArgsMut>,
         mut all_task_queues: Query<&mut TaskQueue>,
         mut commands: Commands,
-        mut all_task_started_event_writers: AllTaskStartedEventWriters,
+        mut all_task_started_event_writers: AllTaskStartedMessageWriters,
     ) -> BevyResult
     where
         TaskData: ShipTaskData
@@ -110,7 +110,7 @@ fn apply_tasks(
     task_insertion_mode: TaskInsertionMode,
     entity: Entity,
     queue: &mut TaskQueue,
-    all_task_started_event_writers: &mut AllTaskStartedEventWriters,
+    all_task_started_event_writers: &mut AllTaskStartedMessageWriters,
     mut commands: Commands,
 ) {
     match task_insertion_mode {

@@ -1,6 +1,6 @@
 use crate::utility::task_filters::ShipIsIdleFilter;
 use crate::utility::trade_plan::TradePlan;
-use bevy::prelude::{Entity, EventWriter, Mut, Query, Res, Vec2};
+use bevy::prelude::{Entity, MessageWriter, Mut, Query, Res, Vec2};
 use common::components::ship_behavior::ShipBehavior;
 use common::components::{BuyOrders, InSector, Inventory, Sector, SectorWithAsteroids};
 use common::events::task_events::{InsertTaskIntoQueueCommand, TaskInsertionMode};
@@ -23,9 +23,9 @@ pub fn handle_idle_ships(
     all_sectors: Query<&Sector>,
     all_transforms: Query<&SimulationTransform>,
     item_manifest: Res<ItemManifest>,
-    mut mine_asteroid_event_writer: EventWriter<InsertTaskIntoQueueCommand<MineAsteroid>>,
-    mut exchange_wares_event_writer: EventWriter<InsertTaskIntoQueueCommand<ExchangeWares>>,
-    mut move_to_sector_event_writer: EventWriter<InsertTaskIntoQueueCommand<MoveToSector>>,
+    mut mine_asteroid_event_writer: MessageWriter<InsertTaskIntoQueueCommand<MineAsteroid>>,
+    mut exchange_wares_event_writer: MessageWriter<InsertTaskIntoQueueCommand<ExchangeWares>>,
+    mut move_to_sector_event_writer: MessageWriter<InsertTaskIntoQueueCommand<MoveToSector>>,
 ) {
     let now = simulation_time.now();
 
@@ -120,7 +120,7 @@ pub fn handle_idle_ships(
 /// Ok if new tasks where created, Err otherwise.
 pub fn try_sell_everything_in_inventory(
     buy_orders: &Query<(Entity, &mut BuyOrders, &InSector)>,
-    exchange_wares_event_writer: &mut EventWriter<InsertTaskIntoQueueCommand<ExchangeWares>>,
+    exchange_wares_event_writer: &mut MessageWriter<InsertTaskIntoQueueCommand<ExchangeWares>>,
     ship_entity: Entity,
     in_sector: &InSector,
     ship_inventory: &Mut<Inventory>,

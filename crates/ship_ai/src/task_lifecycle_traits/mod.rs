@@ -1,4 +1,4 @@
-use bevy::prelude::EventWriter;
+use bevy::prelude::MessageWriter;
 use common::events::task_events::TaskCompletedEvent;
 use common::types::entity_wrappers::ShipEntity;
 use common::types::ship_tasks::ShipTaskData;
@@ -44,8 +44,8 @@ enum TaskTraitKind {
 
 /// Unwraps the provided event arc and writes them all at once into the respective [TaskCompletedEvent] event writer.
 /// The main idea is that task runners can use par_iter_mut and then just pass any potential event completions in here.
-pub fn send_completion_events<T: ShipTaskData>(
-    mut event_writer: EventWriter<TaskCompletedEvent<T>>,
+pub fn send_completion_messages<T: ShipTaskData>(
+    mut event_writer: MessageWriter<TaskCompletedEvent<T>>,
     task_completions: Arc<Mutex<Vec<TaskCompletedEvent<T>>>>,
 ) {
     match Arc::try_unwrap(task_completions) {

@@ -2,11 +2,11 @@ use crate::production::production_kind::ProductionKind;
 use crate::production::production_started_event::ProductionStartedEvent;
 use crate::production::update_orders::update_orders;
 use bevy::log::error;
-use bevy::prelude::{EventReader, EventWriter, Or, Query, Res, With};
+use bevy::prelude::{MessageReader, MessageWriter, Or, Query, Res, With};
 use common::components::production_facility::{ProductionFacility, RunningProductionQueueElement};
 use common::components::shipyard::{OngoingShipConstructionOrder, Shipyard};
 use common::components::{BuyOrders, Inventory, SellOrders};
-use common::events::inventory_update_for_production_event::InventoryUpdateForProductionEvent;
+use common::events::InventoryUpdateForProductionMessage;
 use common::game_data::{ItemManifest, RecipeElement, RecipeManifest, ShipyardModuleId};
 use common::session_data::{ShipConfigId, ShipConfigurationManifest};
 use common::simulation_time::SimulationTime;
@@ -16,8 +16,8 @@ pub fn handle_inventory_updates(
     simulation_time: Res<SimulationTime>,
     recipes: Res<RecipeManifest>,
     ship_configs: Res<ShipConfigurationManifest>,
-    mut event_reader: EventReader<InventoryUpdateForProductionEvent>,
-    mut production_start_event_writer: EventWriter<ProductionStartedEvent>,
+    mut event_reader: MessageReader<InventoryUpdateForProductionMessage>,
+    mut production_start_event_writer: MessageWriter<ProductionStartedEvent>,
     mut query: Query<
         (
             Option<&mut ProductionFacility>,

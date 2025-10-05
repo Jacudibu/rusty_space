@@ -1,5 +1,5 @@
 use crate::utility::task_filters::ShipIsIdleFilter;
-use bevy::prelude::{Entity, EventWriter, Query, Res};
+use bevy::prelude::{Entity, MessageWriter, Query, Res};
 use common::components::ship_behavior::ShipBehavior;
 use common::components::{InSector, Sector};
 use common::constants;
@@ -18,7 +18,7 @@ pub fn handle_idle_ships(
         ShipIsIdleFilter,
     >,
     all_sectors: Query<&Sector>,
-    mut event_writer: EventWriter<InsertTaskIntoQueueCommand<Construct>>,
+    mut event_writer: MessageWriter<InsertTaskIntoQueueCommand<Construct>>,
 ) {
     let now = simulation_time.now();
 

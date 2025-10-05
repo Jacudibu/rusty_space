@@ -1,16 +1,16 @@
 use crate::TaskCancellationWhileActiveRequest;
 use crate::task_lifecycle_traits::{TaskTraitFunctionalityNotImplementedError, TaskTraitKind};
 use bevy::ecs::system::{StaticSystemParam, SystemParam};
-use bevy::prelude::{BevyError, Event, EventReader, EventWriter, Query};
+use bevy::prelude::{BevyError, Message, MessageReader, MessageWriter, Query};
 use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
 use common::constants::BevyResult;
-use common::events::task_events::{AllTaskCancelledEventWriters, TaskCanceledWhileInQueueEvent};
+use common::events::task_events::{AllTaskCancelledMessageWriters, TaskCanceledWhileInQueueEvent};
 use common::types::entity_wrappers::ShipEntity;
 use common::types::ship_tasks::ShipTaskData;
 
 /// Send this event in order to request removing tasks from a task queue.
-#[derive(Event)]
+#[derive(Message)]
 pub struct TaskCancellationWhileInQueueRequest {
     /// The affected entity.
     pub entity: ShipEntity,
@@ -49,7 +49,7 @@ pub(crate) trait TaskCancellationForTaskInQueueEventHandler<'w, 's, TaskData: Sh
     /// Listens to [TaskCancellationWhileInQueueEvent]s and runs [Self::on_task_cancellation_while_in_queue] for each.
     /// Usually you don't need to reimplement this.
     fn cancellation_while_in_queue_event_listener(
-        mut events: EventReader<TaskCanceledWhileInQueueEvent<TaskData>>,
+        mut events: MessageReader<TaskCanceledWhileInQueueEvent<TaskData>>,
         args: StaticSystemParam<Self::Args>,
         mut args_mut: StaticSystemParam<Self::ArgsMut>,
     ) -> BevyResult {
@@ -62,10 +62,10 @@ pub(crate) trait TaskCancellationForTaskInQueueEventHandler<'w, 's, TaskData: Sh
 }
 
 pub(crate) fn handle_task_cancellation_while_in_queue_requests(
-    mut events: EventReader<TaskCancellationWhileInQueueRequest>,
+    mut events: MessageReader<TaskCancellationWhileInQueueRequest>,
     mut all_task_queues: Query<&mut TaskQueue>,
-    mut event_writers: AllTaskCancelledEventWriters,
-    mut task_abortion_request_writer: EventWriter<TaskCancellationWhileActiveRequest>,
+    mut event_writers: AllTaskCancelledMessageWriters,
+    mut task_abortion_request_writer: MessageWriter<TaskCancellationWhileActiveRequest>,
 ) -> BevyResult {
     for event in events.read() {
         let mut queue = all_task_queues.get_mut(event.entity.into())?;

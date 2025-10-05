@@ -3,6 +3,7 @@ use crate::spawn_celestial::spawn_celestial;
 use bevy::prelude::{Commands, Name, Vec2};
 use common::components::{Owner, Sector, SectorWithAsteroids, SectorWithCelestials};
 use common::game_data::AsteroidManifest;
+use common::hexx_convert::HexxConvert;
 use common::simulation_transform::SimulationTransform;
 use common::types::entity_id_map::{AsteroidIdMap, CelestialIdMap};
 use common::types::entity_wrappers::SectorEntity;
@@ -22,7 +23,7 @@ pub fn spawn_sector(
     asteroid_manifest: &AsteroidManifest,
     owner: Option<PersistentFactionId>,
 ) -> SectorEntity {
-    let position = layout.hex_to_world_pos(coordinate);
+    let position = layout.hex_to_world_pos(coordinate).convert();
 
     let simulation_transform =
         SimulationTransform::from_translation(Vec2::new(position.x, position.y));

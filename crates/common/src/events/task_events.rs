@@ -6,7 +6,7 @@ use crate::types::ship_tasks::{
     MoveToPosition, MoveToSector, RequestAccess, ShipTaskData, Undock, UseGate,
 };
 use bevy::ecs::system::SystemParam;
-use bevy::prelude::{Entity, Event, EventWriter};
+use bevy::prelude::{Entity, Message, MessageWriter};
 use std::marker::PhantomData;
 
 pub mod event_kind {
@@ -31,7 +31,7 @@ pub type TaskCanceledWhileInQueueEvent<T> = TaskEventWithData<T, event_kind::Can
 
 /// Generic base class for all task-related events which don't require to contain a copy of the task data.
 /// Use [TaskStartedEvent], [TaskCompletedEvent] for better readability.
-#[derive(Event, Copy, Clone)]
+#[derive(Message, Copy, Clone)]
 pub struct TaskEvent<Task: ShipTaskData, Kind> {
     /// The type of [ShipTask].
     task_data: PhantomData<Task>,
@@ -53,7 +53,7 @@ impl<Task: ShipTaskData, Kind> TaskEvent<Task, Kind> {
 
 /// Generic base class for all task-related events which require task data.
 /// Use [TaskCanceledWhileActiveEvent] and [TaskCanceledWhileInQueueEvent] for better readability.
-#[derive(Event, Copy, Clone)]
+#[derive(Message, Copy, Clone)]
 pub struct TaskEventWithData<TaskData: ShipTaskData, Kind> {
     /// See [event_kind] for the various kinds of TaskEvents we got.
     kind: PhantomData<Kind>,
@@ -77,7 +77,7 @@ impl<TaskData: ShipTaskData, Kind> TaskEventWithData<TaskData, Kind> {
 /// Adding the target task is enough!
 ///
 /// e.g. adding [ExchangeWares] automatically populates the task queue with tasks to move and dock at the target.
-#[derive(Event)]
+#[derive(Message)]
 pub struct InsertTaskIntoQueueCommand<Task: ShipTaskData> {
     /// The entity which should receive the task
     pub entity: Entity,
@@ -99,18 +99,18 @@ pub enum TaskInsertionMode {
     // Replace,
 }
 
-/// Creates TaskEventWriters and methods for them.
+/// Creates TaskMessageWriters and methods for them.
 macro_rules! impl_task_events {
     ($(($variant:ident, $snake_case_variant:ident)),*) => {
-        /// A [SystemParam] collection of all [TaskStartedEvent] EventWriters.
+        /// A [SystemParam] collection of all [TaskStartedEvent] MessageWriters.
         /// Right now this needs to be passed into all behaviors to initiate new tasks.
         #[derive(SystemParam)]
-        pub struct AllTaskStartedEventWriters<'w> {
-            $(pub $snake_case_variant: EventWriter<'w, TaskStartedEvent<$variant>>),*
+        pub struct AllTaskStartedMessageWriters<'w> {
+            $(pub $snake_case_variant: MessageWriter<'w, TaskStartedEvent<$variant>>),*
         }
 
-        impl<'w> AllTaskStartedEventWriters<'w> {
-            /// Writes a [TaskStartedEvent] into the respective [EventWriter].
+        impl<'w> AllTaskStartedMessageWriters<'w> {
+            /// Writes a [TaskStartedEvent] into the respective [MessageWriter].
             pub fn write_event(&mut self, entity: ShipEntity, task: &TaskKind) {
                 match task {
                     $(TaskKind::$variant { .. } => {
@@ -120,15 +120,15 @@ macro_rules! impl_task_events {
             }
         }
 
-        /// A [SystemParam] collection of all [TaskCanceledWhileInQueueEvent] EventWriters.
+        /// A [SystemParam] collection of all [TaskCanceledWhileInQueueEvent] MessageWriters.
         /// These are called after a task was removed from the task queue.
         #[derive(SystemParam)]
-        pub struct AllTaskCancelledEventWriters<'w> {
-            $(pub $snake_case_variant: EventWriter<'w, TaskCanceledWhileInQueueEvent<$variant>>),*
+        pub struct AllTaskCancelledMessageWriters<'w> {
+            $(pub $snake_case_variant: MessageWriter<'w, TaskCanceledWhileInQueueEvent<$variant>>),*
         }
 
-        impl<'w> AllTaskCancelledEventWriters<'w> {
-            /// Writes a [TaskCanceledWhileInQueueEvent] into the respective [EventWriter].
+        impl<'w> AllTaskCancelledMessageWriters<'w> {
+            /// Writes a [TaskCanceledWhileInQueueEvent] into the respective [MessageWriter].
             pub fn write_event(&mut self, entity: ShipEntity, task: TaskKind) {
                 match task {
                     $(TaskKind::$variant { data } => {
@@ -138,15 +138,15 @@ macro_rules! impl_task_events {
             }
         }
 
-        /// A [SystemParam] collection of all [TaskCanceledWhileActiveEvent] EventWriters.
+        /// A [SystemParam] collection of all [TaskCanceledWhileActiveEvent] MessageWriters.
         /// These are called after a task was removed from the task queue.
         #[derive(SystemParam)]
-        pub struct AllTaskAbortedEventWriters<'w> {
-            $(pub $snake_case_variant: EventWriter<'w, TaskCanceledWhileActiveEvent<$variant>>),*
+        pub struct AllTaskAbortedMessageWriters<'w> {
+            $(pub $snake_case_variant: MessageWriter<'w, TaskCanceledWhileActiveEvent<$variant>>),*
         }
 
-        impl<'w> AllTaskAbortedEventWriters<'w> {
-            /// Writes a [TaskCanceledWhileInQueueEvent] into the respective [EventWriter].
+        impl<'w> AllTaskAbortedMessageWriters<'w> {
+            /// Writes a [TaskCanceledWhileInQueueEvent] into the respective [MessageWriter].
             pub fn write_event(&mut self, entity: ShipEntity, task: TaskKind) {
                 match task {
                     $(TaskKind::$variant { data } => {

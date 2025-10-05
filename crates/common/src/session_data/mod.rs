@@ -25,6 +25,6 @@ impl SessionData<'_> {
 pub struct SessionDataPlugin;
 impl Plugin for SessionDataPlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<ShipConfigurationAddedEvent>();
+        app.add_message::<ShipConfigurationAddedEvent>();
     }
 }

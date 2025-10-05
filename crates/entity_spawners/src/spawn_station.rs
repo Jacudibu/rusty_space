@@ -1,5 +1,5 @@
 use bevy::math::Vec2;
-use bevy::prelude::{Commands, Name, Query, Sprite, Transform};
+use bevy::prelude::{Commands, Name, Query, Sprite, Transform, Vec3};
 use bevy::sprite::Anchor;
 use common::components::production_facility::ProductionFacility;
 use common::components::shipyard::Shipyard;
@@ -20,7 +20,6 @@ use common::types::persistent_entity_id::{
 use common::types::polar_coordinates::PolarCoordinates;
 use common::types::sector_position::SectorPosition;
 use common::types::sprite_handles::SpriteHandles;
-use hexx::Vec3;
 use std::ops::Not;
 
 /// Spawn Data for new Stations.
@@ -354,9 +353,9 @@ fn spawn_construction_site(
             SimulationScale::default(),
             Sprite {
                 image: sprites.construction_site.clone(),
-                anchor: Anchor::Custom(Vec2::splat(-0.7)),
                 ..Default::default()
             },
+            Anchor(Vec2::splat(-0.7)),
             Inventory::new(u32::MAX),
             data.buys,
             // TODO: We don't really want to "dock" at construction sites, so this is not truly necessary

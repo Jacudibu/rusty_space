@@ -1,9 +1,9 @@
 use crate::production::production_kind::ProductionKind;
 use crate::production::state::{GlobalProductionState, SingleProductionState};
-use bevy::prelude::{Entity, Event, EventReader, ResMut};
+use bevy::prelude::{Entity, Message, MessageReader, ResMut};
 use common::simulation_time::SimulationTimestamp;
 
-#[derive(Event)]
+#[derive(Message)]
 pub struct ProductionStartedEvent {
     pub entity: Entity,
     pub kind: ProductionKind,
@@ -22,7 +22,7 @@ impl ProductionStartedEvent {
 
 pub fn on_production_started(
     mut global_production_state: ResMut<GlobalProductionState>,
-    mut productions: EventReader<ProductionStartedEvent>,
+    mut productions: MessageReader<ProductionStartedEvent>,
 ) {
     for event in productions.read() {
         global_production_state.insert(SingleProductionState::from(event))

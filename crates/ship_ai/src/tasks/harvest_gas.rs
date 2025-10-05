@@ -13,7 +13,7 @@ use crate::utility::ship_task::ShipTask;
 use crate::utility::task_preconditions::create_preconditions_and_move_to_entity;
 use bevy::ecs::system::{StaticSystemParam, SystemParam};
 use bevy::math::Vec2;
-use bevy::prelude::{BevyError, Entity, EventWriter, Query, Res};
+use bevy::prelude::{BevyError, Entity, MessageWriter, Query, Res};
 use common::components::interaction_queue::InteractionQueue;
 use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
@@ -199,7 +199,7 @@ impl<'w, 's> TaskCancellationForTaskInQueueEventHandler<'w, 's, Self> for Harves
 #[derive(SystemParam)]
 pub struct TaskCancellationWhileActiveArgsMut<'w, 's> {
     interaction_queues: Query<'w, 's, &'static mut InteractionQueue>,
-    signal_writer: EventWriter<'w, SendSignalEvent>,
+    signal_writer: MessageWriter<'w, SendSignalEvent>,
 }
 
 impl<'w, 's> TaskCancellationForActiveTaskEventHandler<'w, 's, Self> for HarvestGas {
@@ -229,7 +229,7 @@ impl<'w, 's> TaskCancellationForActiveTaskEventHandler<'w, 's, Self> for Harvest
 pub struct TaskCompletedArgsMut<'w, 's> {
     all_ships_with_task: Query<'w, 's, &'static ShipTask<HarvestGas>>,
     interaction_queues: Query<'w, 's, &'static mut InteractionQueue>,
-    signal_writer: EventWriter<'w, SendSignalEvent>,
+    signal_writer: MessageWriter<'w, SendSignalEvent>,
 }
 
 impl<'w, 's> TaskCompletedEventHandler<'w, 's, Self> for HarvestGas {

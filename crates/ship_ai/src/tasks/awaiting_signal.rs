@@ -1,4 +1,4 @@
-use crate::task_lifecycle_traits::send_completion_events;
+use crate::task_lifecycle_traits::send_completion_messages;
 use crate::task_lifecycle_traits::task_cancellation_active::TaskCancellationForActiveTaskEventHandler;
 use crate::task_lifecycle_traits::task_cancellation_in_queue::TaskCancellationForTaskInQueueEventHandler;
 use crate::task_lifecycle_traits::task_completed::TaskCompletedEventHandler;
@@ -10,7 +10,7 @@ use crate::task_lifecycle_traits::task_update_runner::TaskUpdateRunner;
 use crate::task_metadata::TaskMetaData;
 use bevy::ecs::system::{StaticSystemParam, SystemParam};
 use bevy::math::Vec2;
-use bevy::prelude::{BevyError, EventReader, EventWriter, Query};
+use bevy::prelude::{BevyError, MessageReader, MessageWriter, Query};
 use common::components::interaction_queue::InteractionQueue;
 use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
@@ -27,7 +27,7 @@ use std::sync::{Arc, Mutex};
 
 #[derive(SystemParam)]
 pub struct TaskUpdateRunnerArgsMut<'w, 's> {
-    signal_reader: EventReader<'w, 's, SendSignalEvent>,
+    signal_reader: MessageReader<'w, 's, SendSignalEvent>,
 }
 
 impl<'w, 's> TaskUpdateRunner<'w, 's, Self> for AwaitingSignal {
@@ -42,7 +42,7 @@ impl<'w, 's> TaskUpdateRunner<'w, 's, Self> for AwaitingSignal {
     }
 
     fn update(
-        event_writer: EventWriter<TaskCompletedEvent<Self>>,
+        event_writer: MessageWriter<TaskCompletedEvent<Self>>,
         _args: StaticSystemParam<Self::Args>,
         mut args_mut: StaticSystemParam<Self::ArgsMut>,
     ) -> BevyResult {
@@ -54,7 +54,7 @@ impl<'w, 's> TaskUpdateRunner<'w, 's, Self> for AwaitingSignal {
             .map(|event| TaskCompletedEvent::<AwaitingSignal>::new(event.entity))
             .collect();
 
-        send_completion_events(event_writer, Arc::new(Mutex::new(completions)));
+        send_completion_messages(event_writer, Arc::new(Mutex::new(completions)));
         Ok(())
     }
 }

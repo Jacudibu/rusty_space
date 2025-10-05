@@ -12,11 +12,11 @@ use crate::utility::task_preconditions::create_preconditions_and_dock_at_entity;
 use crate::utility::task_result::TaskResult;
 use bevy::ecs::system::{StaticSystemParam, SystemParam};
 use bevy::math::Vec2;
-use bevy::prelude::{BevyError, Entity, EventWriter, Query, Res};
+use bevy::prelude::{BevyError, Entity, MessageWriter, Query, Res};
 use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
 use common::components::{BuyOrders, Inventory, SellOrders, TradeOrder};
-use common::events::inventory_update_for_production_event::InventoryUpdateForProductionEvent;
+use common::events::InventoryUpdateForProductionMessage;
 use common::events::task_events::{
     InsertTaskIntoQueueCommand, TaskCanceledWhileInQueueEvent, TaskCompletedEvent, TaskStartedEvent,
 };
@@ -65,7 +65,7 @@ pub(crate) struct TaskCompletedArgs<'w> {
 pub(crate) struct TaskCompletedArgsMut<'w, 's> {
     all_ships_with_task: Query<'w, 's, &'static mut ShipTask<ExchangeWares>>,
     all_storages: Query<'w, 's, &'static mut Inventory>,
-    inventory_update_event_writer: EventWriter<'w, InventoryUpdateForProductionEvent>,
+    inventory_update_event_writer: MessageWriter<'w, InventoryUpdateForProductionMessage>,
 }
 
 impl<'w, 's> TaskCompletedEventHandler<'w, 's, Self> for ExchangeWares {
@@ -95,10 +95,12 @@ impl<'w, 's> TaskCompletedEventHandler<'w, 's, Self> for ExchangeWares {
         }
         args_mut
             .inventory_update_event_writer
-            .write(InventoryUpdateForProductionEvent::new(event.entity.into()));
+            .write(InventoryUpdateForProductionMessage::new(
+                event.entity.into(),
+            ));
         args_mut
             .inventory_update_event_writer
-            .write(InventoryUpdateForProductionEvent::new(task.target.into()));
+            .write(InventoryUpdateForProductionMessage::new(task.target.into()));
 
         Ok(())
     }

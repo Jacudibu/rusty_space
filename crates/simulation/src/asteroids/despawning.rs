@@ -1,6 +1,6 @@
 use crate::asteroids::fading::FadingAsteroidsOut;
 use crate::asteroids::respawning;
-use bevy::prelude::{EventReader, Query, Res, ResMut, Vec2};
+use bevy::prelude::{MessageReader, Query, Res, ResMut, Vec2};
 use common::components::constant_velocity::ConstantVelocity;
 use common::components::{Asteroid, InSector, RespawningAsteroidData, Sector, SectorWithAsteroids};
 use common::events::asteroid_was_fully_mined_event::AsteroidWasFullyMinedEvent;
@@ -10,7 +10,7 @@ use common::types::entity_wrappers::AsteroidEntityWithTimestamp;
 use common::types::map_layout::MapLayout;
 
 pub fn on_asteroid_was_fully_mined(
-    mut events: EventReader<AsteroidWasFullyMinedEvent>,
+    mut events: MessageReader<AsteroidWasFullyMinedEvent>,
     mut fading_asteroids: ResMut<FadingAsteroidsOut>,
     asteroids: Query<(
         &InSector,

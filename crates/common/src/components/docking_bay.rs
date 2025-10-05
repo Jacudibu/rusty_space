@@ -1,7 +1,7 @@
 use crate::components::interaction_queue::InteractionQueueResult;
 use crate::events::send_signal_event::SendSignalEvent;
 use crate::types::entity_wrappers::ShipEntity;
-use bevy::prelude::{Component, EventWriter};
+use bevy::prelude::{Component, MessageWriter};
 use std::collections::{HashSet, VecDeque};
 
 /// An entity with a [DockingBay] allows ships to dock at it.
@@ -83,7 +83,7 @@ impl DockingBay {
     pub fn finish_docking(
         &mut self,
         ship: ShipEntity,
-        event_writer: &mut EventWriter<SendSignalEvent>,
+        event_writer: &mut MessageWriter<SendSignalEvent>,
     ) {
         self.inbound_or_outbound_ships.remove(&ship);
         self.docked.insert(ship);
@@ -99,13 +99,13 @@ impl DockingBay {
     pub fn finish_undocking(
         &mut self,
         ship: &ShipEntity,
-        event_writer: &mut EventWriter<SendSignalEvent>,
+        event_writer: &mut MessageWriter<SendSignalEvent>,
     ) {
         self.inbound_or_outbound_ships.remove(ship);
         self.notify_next_ship_in_queue(event_writer);
     }
 
-    fn notify_next_ship_in_queue(&mut self, event_writer: &mut EventWriter<SendSignalEvent>) {
+    fn notify_next_ship_in_queue(&mut self, event_writer: &mut MessageWriter<SendSignalEvent>) {
         if self.can_support_more_inbound_or_outbound_ships() {
             if let Some(next) = self.undock_queue.pop_front() {
                 self.inbound_or_outbound_ships.insert(next);

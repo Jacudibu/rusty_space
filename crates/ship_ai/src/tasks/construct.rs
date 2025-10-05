@@ -12,7 +12,7 @@ use crate::utility::ship_task::ShipTask;
 use crate::utility::task_preconditions::create_preconditions_and_move_to_entity;
 use bevy::ecs::system::{StaticSystemParam, SystemParam};
 use bevy::math::Vec2;
-use bevy::prelude::{BevyError, EventWriter, Query, Res, error};
+use bevy::prelude::{BevyError, MessageWriter, Query, Res, error};
 use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
 use common::components::{ConstructionSite, Ship};
@@ -23,7 +23,7 @@ use common::events::task_events::{
 use common::session_data::ShipConfigurationManifest;
 use common::simulation_transform::SimulationTransform;
 use common::types::entity_wrappers::ShipEntity;
-use common::types::ship_tasks::{AwaitingSignal, Construct};
+use common::types::ship_tasks::Construct;
 use std::collections::VecDeque;
 use std::ops::DerefMut;
 use std::sync::{Arc, Mutex};
@@ -55,7 +55,7 @@ impl<'w, 's> TaskUpdateRunner<'w, 's, Self> for Construct {
     }
 
     fn update(
-        _event_writer: EventWriter<TaskCompletedEvent<Self>>,
+        _event_writer: MessageWriter<TaskCompletedEvent<Self>>,
         _args: StaticSystemParam<Self::Args>,
         _args_mut: StaticSystemParam<Self::ArgsMut>,
     ) -> BevyResult {
@@ -234,7 +234,7 @@ mod test {
             .with_ships(ship_builder)
             .build();
 
-        app.add_event::<TaskStartedEvent<Construct>>();
+        app.add_message::<TaskStartedEvent<Construct>>();
         app.add_systems(Update, Construct::task_started_event_listener);
         app.finish();
 

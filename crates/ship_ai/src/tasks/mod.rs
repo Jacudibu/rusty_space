@@ -1,5 +1,5 @@
 use bevy::ecs::system::EntityCommands;
-use bevy::prelude::{Entity, EventWriter, Query};
+use bevy::prelude::{Entity, MessageWriter, Query};
 
 mod awaiting_signal;
 mod construct;
@@ -19,7 +19,7 @@ use common::components::interaction_queue::InteractionQueue;
 use common::components::task_queue::TaskQueue;
 use common::constants::BevyResult;
 use common::events::send_signal_event::SendSignalEvent;
-use common::events::task_events::AllTaskStartedEventWriters;
+use common::events::task_events::AllTaskStartedMessageWriters;
 use common::types::entity_wrappers::ShipEntity;
 
 /// Applies the next task in the queue to be the new active task, or sets it to None if the queue is empty.
@@ -27,7 +27,7 @@ pub fn apply_next_task(
     task_queue: &mut TaskQueue,
     entity: ShipEntity,
     entity_commands: &mut EntityCommands,
-    task_started_event_writers: &mut AllTaskStartedEventWriters,
+    task_started_event_writers: &mut AllTaskStartedMessageWriters,
 ) {
     task_queue.active_task = task_queue.queue.pop_front();
     let Some(next_task) = &task_queue.active_task else {
@@ -43,7 +43,7 @@ pub fn apply_next_task(
 pub fn finish_interaction(
     queue_entity: Entity,
     interaction_queues: &mut Query<&mut InteractionQueue>,
-    signal_writer: &mut EventWriter<SendSignalEvent>,
+    signal_writer: &mut MessageWriter<SendSignalEvent>,
 ) -> BevyResult {
     let mut queue_entity = interaction_queues.get_mut(queue_entity)?;
     queue_entity.finish_interaction(signal_writer);
@@ -58,7 +58,7 @@ mod test {
     use bevy::prelude::{BevyError, Commands, Entity, Query};
     use common::components::task_kind::TaskKind;
     use common::components::task_queue::TaskQueue;
-    use common::events::task_events::AllTaskStartedEventWriters;
+    use common::events::task_events::AllTaskStartedMessageWriters;
     use common::types::entity_wrappers::TypedEntity;
     use common::types::ship_tasks::{MoveToEntity, Undock};
     use std::collections::VecDeque;
@@ -75,19 +75,21 @@ mod test {
 
         app.update();
 
-        app.world_mut().run_system_once(
-            move |mut all_task_started_event_writers: AllTaskStartedEventWriters,
-                  mut commands: Commands,
-                  mut task_queue: Query<&mut TaskQueue>| {
-                let mut task_queue = task_queue.single_mut().unwrap();
-                apply_next_task(
-                    &mut task_queue,
-                    entity.into(),
-                    &mut commands.entity(entity),
-                    &mut all_task_started_event_writers,
-                )
-            },
-        )?;
+        app.world_mut()
+            .run_system_once(
+                move |mut all_task_started_event_writers: AllTaskStartedMessageWriters,
+                      mut commands: Commands,
+                      mut task_queue: Query<&mut TaskQueue>| {
+                    let mut task_queue = task_queue.single_mut().unwrap();
+                    apply_next_task(
+                        &mut task_queue,
+                        entity.into(),
+                        &mut commands.entity(entity),
+                        &mut all_task_started_event_writers,
+                    )
+                },
+            )
+            .unwrap();
 
         let result = app
             .world_mut()
@@ -107,7 +109,7 @@ mod test {
             active_task: Some(TaskKind::Undock {
                 data: Undock {
                     start_position: None,
-                    from: TypedEntity::Station(Entity::from_raw(1).into()),
+                    from: TypedEntity::Station(test_utils::mock_entity_id(1)),
                 },
             }),
         })?;
@@ -123,7 +125,7 @@ mod test {
                 TaskKind::Undock {
                     data: Undock {
                         start_position: None,
-                        from: TypedEntity::Station(Entity::from_raw(1).into()),
+                        from: TypedEntity::Station(test_utils::mock_entity_id(1)),
                     },
                 },
                 TaskKind::MoveToEntity {

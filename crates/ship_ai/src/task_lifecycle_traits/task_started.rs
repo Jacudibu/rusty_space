@@ -1,6 +1,6 @@
 use crate::task_lifecycle_traits::{TaskTraitFunctionalityNotImplementedError, TaskTraitKind};
 use bevy::ecs::system::{StaticSystemParam, SystemParam};
-use bevy::prelude::{BevyError, EventReader};
+use bevy::prelude::{BevyError, MessageReader};
 use common::constants::BevyResult;
 use common::events::task_events::TaskStartedEvent;
 use common::types::ship_tasks::ShipTaskData;
@@ -35,7 +35,7 @@ pub(crate) trait TaskStartedEventHandler<'w, 's, Task: ShipTaskData> {
     /// Listens to [TaskStartedEvent]s and runs [Self::on_task_started] for each.
     /// Usually you don't need to reimplement this.
     fn task_started_event_listener(
-        mut events: EventReader<TaskStartedEvent<Task>>,
+        mut events: MessageReader<TaskStartedEvent<Task>>,
         args: StaticSystemParam<Self::Args>,
         mut args_mut: StaticSystemParam<Self::ArgsMut>,
     ) -> BevyResult {

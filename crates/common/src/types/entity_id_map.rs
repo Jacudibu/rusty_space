@@ -162,6 +162,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::constants::BevyResult;
     use bevy::prelude::Entity;
 
     #[test]
@@ -169,8 +170,8 @@ mod tests {
         let id1 = PersistentGateId::next();
         let id2 = PersistentGateId::next();
 
-        let entity1 = GateEntity::from(Entity::from_raw(1));
-        let entity2 = GateEntity::from(Entity::from_raw(2));
+        let entity1 = GateEntity::from(Entity::from_raw_u32(1).unwrap());
+        let entity2 = GateEntity::from(Entity::from_raw_u32(2).unwrap());
 
         let mut map = GateIdMap::new();
         map.insert(id1, entity1);
@@ -188,8 +189,8 @@ mod tests {
         let id1 = PersistentGateId::next();
         let id2 = PersistentGateId::next();
 
-        let entity1 = GateEntity::from(Entity::from_raw(1));
-        let entity2 = GateEntity::from(Entity::from_raw(2));
+        let entity1 = GateEntity::from(Entity::from_raw_u32(1).unwrap());
+        let entity2 = GateEntity::from(Entity::from_raw_u32(2).unwrap());
 
         let mut map = GateIdMap::new();
         map.insert(id1, entity1);

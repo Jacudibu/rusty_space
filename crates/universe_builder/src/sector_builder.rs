@@ -2,6 +2,7 @@ use crate::celestial_builder::SectorCelestialBuilder;
 use bevy::prelude::{Circle, Deref, DerefMut, ShapeSample, Vec2};
 use common::constants;
 use common::game_data::{AsteroidDataId, AsteroidManifest};
+use common::hexx_convert::HexxConvert;
 use common::shared_logic::calculate_milliseconds_until_asteroid_leaves_hexagon;
 use common::simulation_time::SimulationTimestamp;
 use common::types::map_layout::MapLayout;
@@ -14,7 +15,7 @@ use persistence::data::{
     SectorFeatureSaveData, SectorSaveData,
 };
 use rand::Rng;
-use rand::distributions::Distribution;
+use rand::prelude::Distribution;
 
 #[derive(Deref, DerefMut, Default)]
 pub struct SectorBuilder {
@@ -103,7 +104,7 @@ impl SectorAsteroidBuilder {
         let position_rng = universe_seed.for_sector(sector_hex, "positions");
         let mut inner_rng = universe_seed.for_sector(sector_hex, "everything_else");
 
-        let sector_pos = map_layout.hex_layout.hex_to_world_pos(sector_hex);
+        let sector_pos = map_layout.hex_layout.hex_to_world_pos(sector_hex).convert();
 
         let manifest = asteroid_manifest.get(asteroid_data_id).unwrap();
         if !self.asteroid_materials.contains(&manifest.material) {
@@ -119,8 +120,10 @@ impl SectorAsteroidBuilder {
                 .take(amount)
                 .map(|local_position| {
                     let velocity = Vec2::new(
-                        velocity.x * inner_rng.gen_range(constants::ASTEROID_VELOCITY_RANDOM_RANGE),
-                        velocity.y * inner_rng.gen_range(constants::ASTEROID_VELOCITY_RANDOM_RANGE),
+                        velocity.x
+                            * inner_rng.random_range(constants::ASTEROID_VELOCITY_RANDOM_RANGE),
+                        velocity.y
+                            * inner_rng.random_range(constants::ASTEROID_VELOCITY_RANDOM_RANGE),
                     );
 
                     let despawn_after = calculate_milliseconds_until_asteroid_leaves_hexagon(
@@ -129,8 +132,9 @@ impl SectorAsteroidBuilder {
                         velocity,
                     );
 
-                    let rotation = inner_rng.gen_range(constants::ASTEROID_ROTATION_RANDOM_RANGE);
-                    let ore = inner_rng.gen_range(constants::ASTEROID_ORE_RANGE);
+                    let rotation =
+                        inner_rng.random_range(constants::ASTEROID_ROTATION_RANDOM_RANGE);
+                    let ore = inner_rng.random_range(constants::ASTEROID_ORE_RANGE);
                     AsteroidSaveData {
                         id: PersistentAsteroidId::next(),
                         manifest_id: asteroid_data_id,

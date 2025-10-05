@@ -3,10 +3,10 @@ use crate::tasks::apply_next_task;
 use crate::utility::ship_task::ShipTask;
 use bevy::ecs::system::{StaticSystemParam, SystemParam};
 use bevy::log::error;
-use bevy::prelude::{BevyError, Commands, EventReader, Query, With};
+use bevy::prelude::{BevyError, Commands, MessageReader, Query, With};
 use common::components::task_queue::TaskQueue;
 use common::constants::BevyResult;
-use common::events::task_events::{AllTaskStartedEventWriters, TaskCompletedEvent};
+use common::events::task_events::{AllTaskStartedMessageWriters, TaskCompletedEvent};
 use common::types::ship_tasks::ShipTaskData;
 
 /// This trait needs to be implemented for all tasks.
@@ -40,7 +40,7 @@ pub(crate) trait TaskCompletedEventHandler<'w, 's, Task: ShipTaskData> {
     ///
     /// Usually you don't need to reimplement this.
     fn task_completed_event_listener(
-        mut events: EventReader<TaskCompletedEvent<Task>>,
+        mut events: MessageReader<TaskCompletedEvent<Task>>,
         args: StaticSystemParam<Self::Args>,
         mut args_mut: StaticSystemParam<Self::ArgsMut>,
     ) -> BevyResult {
@@ -57,9 +57,9 @@ pub(crate) trait TaskCompletedEventHandler<'w, 's, Task: ShipTaskData> {
     /// Usually you don't need to reimplement this.
     fn remove_completed_task_and_start_next_one(
         mut commands: Commands,
-        mut event_reader: EventReader<TaskCompletedEvent<Task>>,
+        mut event_reader: MessageReader<TaskCompletedEvent<Task>>,
         mut all_ships_with_task: Query<&mut TaskQueue, With<ShipTask<Task>>>,
-        mut task_started_event_writers: AllTaskStartedEventWriters,
+        mut task_started_event_writers: AllTaskStartedMessageWriters,
     ) {
         for event in event_reader.read() {
             if let Ok(mut queue) = all_ships_with_task.get_mut(event.entity.into()) {

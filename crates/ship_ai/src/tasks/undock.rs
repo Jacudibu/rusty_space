@@ -13,7 +13,9 @@ use crate::utility::ship_task::ShipTask;
 use crate::utility::task_result::TaskResult;
 use bevy::ecs::system::{StaticSystemParam, SystemParam};
 use bevy::math::Vec2;
-use bevy::prelude::{BevyError, Commands, Entity, EventWriter, Query, Res, Rot2, Time, Visibility};
+use bevy::prelude::{
+    BevyError, Commands, Entity, MessageWriter, Query, Res, Rot2, Time, Visibility,
+};
 use common::components::ship_velocity::ShipVelocity;
 use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
@@ -227,7 +229,7 @@ pub struct TaskRunnerArgs<'w, 's> {
 }
 #[derive(SystemParam)]
 pub struct TaskRunnerArgsMut<'w, 's> {
-    send_signal_event_writer: EventWriter<'w, SendSignalEvent>,
+    send_signal_event_writer: MessageWriter<'w, SendSignalEvent>,
     docking_bays: Query<'w, 's, &'static mut DockingBay>,
 }
 

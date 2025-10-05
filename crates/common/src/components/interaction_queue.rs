@@ -1,6 +1,6 @@
 use crate::events::send_signal_event::SendSignalEvent;
 use crate::types::entity_wrappers::ShipEntity;
-use bevy::prelude::{Component, EventWriter};
+use bevy::prelude::{Component, MessageWriter};
 use std::collections::VecDeque;
 
 /// An entity with an [InteractionQueue] only allow a set amount of other entities to interact with it at once.
@@ -53,7 +53,7 @@ impl InteractionQueue {
     /// Notifies the next waiting entity within the queue, if there are any.
     ///
     /// Needs to be called whenever something stops interacting with the respective object!
-    pub fn finish_interaction(&mut self, event_writer: &mut EventWriter<SendSignalEvent>) {
+    pub fn finish_interaction(&mut self, event_writer: &mut MessageWriter<SendSignalEvent>) {
         self.currently_interacting -= 1;
         if self.currently_interacting <= self.maximum_simultaneous_interactions {
             if let Some(next) = self.waiting_queue.pop_front() {
@@ -83,7 +83,7 @@ mod test {
     // TODO: That's a duplicate from test_utils due to circular dependency shenanigans.
     //       Might need to move structs with logic somewhere else or move the logic elsewhere
     fn mock_entity_id<T: Component>(id: u32) -> TypedEntityWrapper<T> {
-        Entity::from_raw(id).into()
+        Entity::from_raw_u32(id).unwrap().into()
     }
 
     #[test]

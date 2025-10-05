@@ -3,9 +3,9 @@ use crate::main_camera::MainCamera;
 use crate::panning::SmoothPanning;
 use bevy::input::ButtonInput;
 use bevy::input::mouse::MouseWheel;
-use bevy::math::{Vec3, VectorSpace};
+use bevy::math::VectorSpace;
 use bevy::prelude::{
-    Camera, Component, EventReader, GlobalTransform, KeyCode, Projection, Query, Real, Res, Time,
+    Camera, Component, GlobalTransform, KeyCode, MessageReader, Projection, Query, Real, Res, Time,
     Transform, Vec2, Window, With,
 };
 use common::constants::BevyResult;
@@ -47,7 +47,7 @@ pub fn zoom_camera_with_buttons(
 
 pub fn zoom_camera_with_scroll_wheel(
     settings: Res<CameraSettings>,
-    mut scroll_event: EventReader<MouseWheel>,
+    mut scroll_event: MessageReader<MouseWheel>,
     mut query: Query<&mut SmoothZooming, With<MainCamera>>,
 ) {
     for event in scroll_event.read() {
@@ -113,7 +113,7 @@ pub fn animate_smooth_camera_zoom(
         smooth_zoom.target
     };
 
-    if (pan_to_mouse) {
+    if pan_to_mouse {
         let ratio = projection.scale / old_scale;
         let cam_xy = camera_global_transform.translation().truncate();
         let delta = (1.0 - ratio) * (cursor_world_pos_before - cam_xy);

@@ -9,6 +9,7 @@ pub mod constants;
 pub mod events;
 pub mod game_data;
 pub mod geometry;
+pub mod hexx_convert;
 pub mod interpolation;
 pub mod session_data;
 pub mod shared_logic;

@@ -1,17 +1,17 @@
 use bevy::app::App;
+use bevy::camera::visibility::RenderLayers;
 use bevy::ecs::query::QueryData;
 use bevy::platform::collections::{HashMap, HashSet};
 use bevy::prelude::{
-    AppExtStates, AssetServer, Camera, Camera2d, Commands, Entity, EventReader, EventWriter,
-    IntoScheduleConfigs, Name, NextState, Plugin, PreUpdate, Query, Res, ResMut, Resource, Startup,
-    State, With, on_event,
+    AppExtStates, AssetId, AssetServer, Camera, Camera2d, Commands, Entity, Image,
+    IntoScheduleConfigs, MessageReader, MessageWriter, Name, NextState, Plugin, PreUpdate, Query,
+    Res, ResMut, Resource, Startup, State, With, on_message,
 };
-use bevy::render::view::RenderLayers;
 use bevy_egui::egui::load::SizedTexture;
 use bevy_egui::egui::{Align2, Shadow, Ui};
 use bevy_egui::{
-    EguiContexts, EguiGlobalSettings, EguiPrimaryContextPass, EguiStartupSet, PrimaryEguiContext,
-    egui,
+    EguiContexts, EguiGlobalSettings, EguiPrimaryContextPass, EguiStartupSet, EguiTextureHandle,
+    PrimaryEguiContext, egui,
 };
 use common::components::interaction_queue::InteractionQueue;
 use common::components::production_facility::ProductionFacility;
@@ -67,7 +67,7 @@ impl Plugin for GUIPlugin {
                     draw_sector_info,
                     list_selection_icons_and_counts,
                     list_selection_details,
-                    on_ship_configuration_added.run_if(on_event::<ShipConfigurationAddedEvent>),
+                    on_ship_configuration_added.run_if(on_message::<ShipConfigurationAddedEvent>),
                 ),
             );
     }
@@ -197,30 +197,34 @@ fn initialize(
         .ctx_mut()?
         .style_mut(|style| style.visuals.window_shadow = Shadow::NONE);
 
-    let awaiting_signal = asset_server.load("sprites/task_icons/awaiting_signal.png");
-    let idle = asset_server.load("sprites/task_icons/idle.png");
-    let move_to = asset_server.load("sprites/task_icons/move_to.png");
-    let dock_at = asset_server.load("sprites/task_icons/move_to.png"); // TODO
-    let undock = asset_server.load("sprites/task_icons/move_to.png"); // TODO
-    let buy = asset_server.load("sprites/task_icons/buy.png");
-    let sell = asset_server.load("sprites/task_icons/sell.png");
-    let construct = asset_server.load("sprites/construction_site.png");
+    let awaiting_signal = EguiTextureHandle::Weak(
+        asset_server
+            .load("sprites/task_icons/awaiting_signal.png")
+            .id(),
+    );
+    let idle = EguiTextureHandle::Weak(
+        asset_server
+            .load("spritesEguiTextureHandle::Weak(/task_icons/idle.png")
+            .id(),
+    );
+    let move_to = EguiTextureHandle::Weak(asset_server.load("sprites/task_icons/move_to.png").id());
+    let dock_at = EguiTextureHandle::Weak(asset_server.load("sprites/task_icons/move_to.png").id()); // TODO
+    let undock = EguiTextureHandle::Weak(asset_server.load("sprites/task_icons/move_to.png").id()); // TODO
+    let buy = EguiTextureHandle::Weak(asset_server.load("sprites/task_icons/buy.png").id());
+    let sell = EguiTextureHandle::Weak(asset_server.load("sprites/task_icons/sell.png").id());
+    let construct =
+        EguiTextureHandle::Weak(asset_server.load("sprites/construction_site.png").id());
 
     let icons = UiIcons {
         asteroids: asteroid_manifest
             .iter()
-            .map(|(id, data)| {
-                (
-                    *id,
-                    SizedTexture::new(contexts.add_image(data.sprite.clone()), ICON_SIZE),
-                )
-            })
+            .map(|(id, data)| (*id, create_icon(&mut contexts, data.sprite.id())))
             .collect(),
         ships: HashMap::default(),
-        gate: SizedTexture::new(contexts.add_image(sprites.gate.clone()), ICON_SIZE),
-        planet: SizedTexture::new(contexts.add_image(sprites.planet.clone()), ICON_SIZE),
-        star: SizedTexture::new(contexts.add_image(sprites.star.clone()), ICON_SIZE),
-        station: SizedTexture::new(contexts.add_image(sprites.station.clone()), ICON_SIZE),
+        gate: create_icon(&mut contexts, sprites.gate.id()),
+        planet: create_icon(&mut contexts, sprites.planet.id()),
+        star: create_icon(&mut contexts, sprites.star.id()),
+        station: create_icon(&mut contexts, sprites.station.id()),
         awaiting_signal: SizedTexture::new(contexts.add_image(awaiting_signal), ICON_SIZE),
         idle: SizedTexture::new(contexts.add_image(idle), ICON_SIZE),
         move_to: SizedTexture::new(contexts.add_image(move_to), ICON_SIZE),
@@ -233,6 +237,13 @@ fn initialize(
 
     commands.insert_resource(icons);
     Ok(())
+}
+
+fn create_icon(contexts: &mut EguiContexts, asset: AssetId<Image>) -> SizedTexture {
+    SizedTexture::new(
+        contexts.add_image(EguiTextureHandle::Weak(asset)),
+        ICON_SIZE,
+    )
 }
 
 pub fn draw_sector_info(mut context: EguiContexts, mouse_cursor: Res<MouseCursor>) -> BevyResult {
@@ -269,7 +280,7 @@ pub struct GuiDataCache {
 }
 
 pub fn on_ship_configuration_added(
-    mut events: EventReader<ShipConfigurationAddedEvent>,
+    mut events: MessageReader<ShipConfigurationAddedEvent>,
     ship_configs: Res<ShipConfigurationManifest>,
     mut context: EguiContexts,
     mut images: ResMut<UiIcons>,
@@ -278,7 +289,7 @@ pub fn on_ship_configuration_added(
     for event in events.read() {
         gui_data.ships_configs.insert(event.id);
         let data = ship_configs.get_by_id(&event.id).unwrap();
-        let image = SizedTexture::new(context.add_image(data.sprite.clone()), ICON_SIZE);
+        let image = create_icon(&mut context, data.sprite.id());
         images.ships.insert(event.id, image);
     }
 }
@@ -378,8 +389,8 @@ fn list_selection_details(
     sell_orders: Query<&SellOrders>,
     construction_sites: Query<&ConstructionSite>,
     names: Query<&Name>,
-    mut task_abortion_request_writer: EventWriter<TaskCancellationWhileActiveRequest>,
-    mut task_cancellation_request_writer: EventWriter<TaskCancellationWhileInQueueRequest>,
+    mut task_abortion_request_writer: MessageWriter<TaskCancellationWhileActiveRequest>,
+    mut task_cancellation_request_writer: MessageWriter<TaskCancellationWhileInQueueRequest>,
 ) -> BevyResult {
     let counts = selected.iter().fold(
         SelectableCount::new(&game_data.asteroids, &gui_data),
@@ -666,8 +677,8 @@ fn print_task_list_element(
     task: &TaskKind,
     entity: Entity,
     task_list_element_kind: TaskListElementKind,
-    abortion_request_writer: &mut EventWriter<TaskCancellationWhileActiveRequest>,
-    cancellation_request_writer: &mut EventWriter<TaskCancellationWhileInQueueRequest>,
+    abortion_request_writer: &mut MessageWriter<TaskCancellationWhileActiveRequest>,
+    cancellation_request_writer: &mut MessageWriter<TaskCancellationWhileInQueueRequest>,
 ) {
     ui.horizontal(|ui| {
         ui.image(images.get_task_icon(task));

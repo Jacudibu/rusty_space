@@ -1,4 +1,5 @@
 use crate::test_universe::coordinates::CENTER;
+use bevy::prelude::Vec2;
 use common::constants;
 use common::game_data::{CRYSTAL_ORE_ITEM_ID, HYDROGEN_ITEM_ID, IRON_ORE_ITEM_ID};
 use common::session_data::ship_configs::{
@@ -7,7 +8,6 @@ use common::session_data::ship_configs::{
 };
 use common::types::local_hex_position::LocalHexPosition;
 use common::types::persistent_entity_id::PersistentFactionId;
-use hexx::Vec2;
 use persistence::data::{
     AutoMineStateSaveData, SaveDataCollection, ShipBehaviorSaveData, ShipSaveData,
 };

@@ -12,7 +12,7 @@ use crate::utility::ship_task::ShipTask;
 use crate::utility::task_preconditions::create_preconditions_and_move_to_entity;
 use bevy::ecs::system::{StaticSystemParam, SystemParam};
 use bevy::math::Vec2;
-use bevy::prelude::{BevyError, Entity, EventWriter, Query, Res};
+use bevy::prelude::{BevyError, Entity, MessageWriter, Query, Res};
 use common::components::task_kind::TaskKind;
 use common::components::task_queue::TaskQueue;
 use common::components::{Asteroid, AsteroidMiner, Inventory};
@@ -92,7 +92,7 @@ pub struct TaskUpdateRunnerArgsMut<'w, 's> {
         ),
     >,
     all_asteroids: Query<'w, 's, (&'static mut Asteroid, &'static mut SimulationScale)>,
-    asteroid_was_fully_mined_event: EventWriter<'w, AsteroidWasFullyMinedEvent>,
+    asteroid_was_fully_mined_event: MessageWriter<'w, AsteroidWasFullyMinedEvent>,
 }
 
 impl<'w, 's> TaskUpdateRunner<'w, 's, Self> for MineAsteroid {

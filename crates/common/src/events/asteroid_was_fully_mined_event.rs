@@ -1,8 +1,8 @@
 use crate::simulation_time::SimulationTimestamp;
 use crate::types::entity_wrappers::AsteroidEntity;
-use bevy::prelude::Event;
+use bevy::prelude::Message;
 
-#[derive(Event)]
+#[derive(Message)]
 pub struct AsteroidWasFullyMinedEvent {
     pub asteroid: AsteroidEntity,
     pub despawn_timer: SimulationTimestamp,

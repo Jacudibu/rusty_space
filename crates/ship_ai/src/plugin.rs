@@ -14,7 +14,7 @@ use crate::{TaskMetaData, behaviors};
 use bevy::app::App;
 use bevy::prelude::{
     FixedPostUpdate, FixedUpdate, IntoScheduleConfigs, Plugin, PreUpdate, Update, in_state,
-    on_event,
+    on_message,
 };
 use common::events::send_signal_event::SendSignalEvent;
 use common::events::task_events::{
@@ -29,7 +29,7 @@ use common::types::ship_tasks::*;
 pub struct ShipAiPlugin;
 impl Plugin for ShipAiPlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<SendSignalEvent>();
+        app.add_message::<SendSignalEvent>();
 
         register_all_ship_task_lifecycles(app);
 
@@ -72,7 +72,7 @@ fn enable_cancelling_active_tasks(app: &mut App) {
         task_cancellation_active::handle_task_cancellation_while_active_requests,
     );
 
-    app.add_event::<TaskCancellationWhileActiveRequest>();
+    app.add_message::<TaskCancellationWhileActiveRequest>();
 }
 
 fn enable_cancelling_tasks_in_queue(app: &mut App) {
@@ -82,7 +82,7 @@ fn enable_cancelling_tasks_in_queue(app: &mut App) {
             .before(task_cancellation_active::handle_task_cancellation_while_active_requests),
     );
 
-    app.add_event::<TaskCancellationWhileInQueueRequest>();
+    app.add_message::<TaskCancellationWhileInQueueRequest>();
 }
 
 fn register_task_lifecycle<Task>(app: &mut App)
@@ -96,17 +96,17 @@ where
         + TaskCancellationForActiveTaskEventHandler<'static, 'static, Task>
         + TaskCompletedEventHandler<'static, 'static, Task>,
 {
-    app.add_event::<InsertTaskIntoQueueCommand<Task>>();
-    app.add_event::<TaskCanceledWhileInQueueEvent<Task>>();
-    app.add_event::<TaskStartedEvent<Task>>();
-    app.add_event::<TaskCanceledWhileActiveEvent<Task>>();
-    app.add_event::<TaskCompletedEvent<Task>>();
+    app.add_message::<InsertTaskIntoQueueCommand<Task>>();
+    app.add_message::<TaskCanceledWhileInQueueEvent<Task>>();
+    app.add_message::<TaskStartedEvent<Task>>();
+    app.add_message::<TaskCanceledWhileActiveEvent<Task>>();
+    app.add_message::<TaskCompletedEvent<Task>>();
 
     if !Task::skip_cancelled_in_queue() {
         app.add_systems(
             PreUpdate,
             Task::cancellation_while_in_queue_event_listener
-                .run_if(on_event::<TaskCanceledWhileInQueueEvent<Task>>),
+                .run_if(on_message::<TaskCanceledWhileInQueueEvent<Task>>),
         );
     }
 
@@ -114,11 +114,11 @@ where
         app.add_systems(
             PreUpdate,
             Task::cancellation_while_active_event_listener
-                .run_if(on_event::<TaskCanceledWhileActiveEvent<Task>>),
+                .run_if(on_message::<TaskCanceledWhileActiveEvent<Task>>),
         );
     }
 
-    app.add_systems(Update, Task::task_creation_event_listener);
+    app.add_systems(Update, Task::task_creation_message_listener);
 
     // TODO: There must be *some* cleaner way to do this?
     if Task::skip_completed() {
@@ -127,7 +127,7 @@ where
             (
                 Task::update,
                 Task::remove_completed_task_and_start_next_one
-                    .run_if(on_event::<TaskCompletedEvent<Task>>),
+                    .run_if(on_message::<TaskCompletedEvent<Task>>),
             )
                 .chain()
                 .run_if(in_state(SimulationState::Running)),
@@ -142,7 +142,7 @@ where
                     Task::remove_completed_task_and_start_next_one,
                 )
                     .chain()
-                    .run_if(on_event::<TaskCompletedEvent<Task>>),
+                    .run_if(on_message::<TaskCompletedEvent<Task>>),
             )
                 .chain()
                 .run_if(in_state(SimulationState::Running)),

@@ -1,5 +1,5 @@
 use bevy::log::error;
-use bevy::prelude::{Commands, EventWriter, Mut, Or, Query, Res, ResMut, Transform, With};
+use bevy::prelude::{Commands, MessageWriter, Mut, Or, Query, Res, ResMut, Transform, With};
 
 use crate::production::production_kind::ProductionKind;
 use crate::production::state::{GlobalProductionState, SingleProductionState};
@@ -8,7 +8,7 @@ use common::components::production_facility::ProductionFacility;
 use common::components::ship_velocity::ShipVelocity;
 use common::components::shipyard::Shipyard;
 use common::components::{BuyOrders, InSector, Inventory, Owner, Sector, SellOrders};
-use common::events::inventory_update_for_production_event::InventoryUpdateForProductionEvent;
+use common::events::InventoryUpdateForProductionMessage;
 use common::game_data::{ItemManifest, ProductionModuleId, RecipeManifest, ShipyardModuleId};
 use common::session_data::ShipConfigurationManifest;
 use common::simulation_time::{CurrentSimulationTimestamp, SimulationTime};
@@ -26,7 +26,7 @@ pub fn check_if_production_is_finished_and_start_new_one(
     mut global_production_state: ResMut<GlobalProductionState>,
     recipes: Res<RecipeManifest>,
     ship_configs: Res<ShipConfigurationManifest>,
-    mut inventory_update_writer: EventWriter<InventoryUpdateForProductionEvent>,
+    mut inventory_update_writer: MessageWriter<InventoryUpdateForProductionMessage>,
     mut producer_query: Query<
         (
             Option<&mut ProductionFacility>,
@@ -91,7 +91,7 @@ pub fn check_if_production_is_finished_and_start_new_one(
             ),
         }
 
-        inventory_update_writer.write(InventoryUpdateForProductionEvent::new(next.entity));
+        inventory_update_writer.write(InventoryUpdateForProductionMessage::new(next.entity));
         update_orders(&inventory, buy_orders, sell_orders, &item_manifest);
     }
 }

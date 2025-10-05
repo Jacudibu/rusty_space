@@ -14,7 +14,9 @@ use crate::session_data::{ShipConfigId, ShipConfiguration, ShipConfigurationVers
 use bevy::asset::Asset;
 use bevy::ecs::system::SystemState;
 use bevy::platform::collections::HashMap;
-use bevy::prelude::{Assets, Event, EventWriter, Image, Res, ResMut, Resource, TypePath, World};
+use bevy::prelude::{
+    Assets, Image, Message, MessageWriter, Res, ResMut, Resource, TypePath, World,
+};
 use leafwing_manifest::identifier::Id;
 use leafwing_manifest::manifest::{Manifest, ManifestFormat};
 use serde::Deserialize;
@@ -24,7 +26,7 @@ pub struct ShipConfigurationManifest {
     items: HashMap<Id<ShipConfigurationVersions>, ShipConfigurationVersions>,
 }
 
-#[derive(Event)]
+#[derive(Message)]
 pub struct ShipConfigurationAddedEvent {
     pub id: ShipConfigId,
 }
@@ -47,7 +49,7 @@ impl ShipConfigurationManifest {
         &mut self,
         name: &str,
         initial_configuration: ShipConfiguration,
-        mut added_events: EventWriter<ShipConfigurationAddedEvent>,
+        mut added_events: MessageWriter<ShipConfigurationAddedEvent>,
     ) {
         let id = VersionedId::from_name(name).id;
         self.items
@@ -162,7 +164,7 @@ impl Manifest for ShipConfigurationManifest {
             result.items.insert(id, configs);
         }
 
-        world.send_event_batch(events);
+        world.write_message_batch(events);
         Ok(result)
     }
 

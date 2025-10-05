@@ -1,6 +1,6 @@
 use bevy::platform::collections::HashSet;
 use bevy::prelude::{
-    App, Commands, Entity, Event, EventReader, EventWriter, FixedUpdate, IntoScheduleConfigs,
+    App, Commands, Entity, FixedUpdate, IntoScheduleConfigs, Message, MessageReader, MessageWriter,
     Plugin, Query, Res, Time, error, in_state,
 };
 use common::components::production_facility::{ProductionFacility, ProductionModule};
@@ -22,7 +22,7 @@ pub struct ConstructionSiteUpdaterPlugin;
 
 impl Plugin for ConstructionSiteUpdaterPlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<ConstructionFinishedEvent>();
+        app.add_message::<ConstructionFinishedEvent>();
         app.add_systems(
             FixedUpdate,
             (construction_site_updater, construction_site_finisher)
@@ -32,7 +32,7 @@ impl Plugin for ConstructionSiteUpdaterPlugin {
     }
 }
 
-#[derive(Event)]
+#[derive(Message)]
 pub struct ConstructionFinishedEvent {
     pub entity: ConstructionSiteEntity,
 }
@@ -48,7 +48,7 @@ fn construction_site_updater(
     production_modules: Res<ProductionModuleManifest>,
     shipyard_modules: Res<ShipyardModuleManifest>,
     item_manifest: Res<ItemManifest>,
-    mut event_writer: EventWriter<ConstructionFinishedEvent>,
+    mut event_writer: MessageWriter<ConstructionFinishedEvent>,
 ) {
     let delta = time.delta_secs();
 
@@ -132,14 +132,14 @@ fn construction_site_updater(
 
 fn construction_site_finisher(
     mut commands: Commands,
-    mut events: EventReader<ConstructionFinishedEvent>,
+    mut events: MessageReader<ConstructionFinishedEvent>,
     mut all_construction_sites: Query<(&mut ConstructionSite, &InSector)>,
     mut all_stations: Query<(
         &mut Station,
         Option<&mut ProductionFacility>,
         Option<&mut Shipyard>,
     )>,
-    mut task_finished_event_writer: EventWriter<TaskCompletedEvent<Construct>>,
+    mut task_finished_event_writer: MessageWriter<TaskCompletedEvent<Construct>>,
     mut all_sectors: Query<&mut Sector>,
 ) {
     for event in events.read() {

@@ -1,7 +1,7 @@
 use bevy::app::{App, Plugin, Update};
 use bevy::prelude::{
-    AppExtStates, Commands, Condition, IntoScheduleConfigs, NextState, Res, ResMut, Resource,
-    State, StateSet,
+    AppExtStates, Commands, IntoScheduleConfigs, NextState, Res, ResMut, Resource, State, StateSet,
+    SystemCondition,
 };
 use bevy::prelude::{SubStates, in_state};
 use bevy_egui::EguiPrimaryContextPass;

@@ -11,13 +11,13 @@ impl Plugin for SimulationTimePlugin {
         app.add_systems(
             FixedFirst,
             update
-                .after(bevy::time::TimeSystem)
+                .after(bevy::time::TimeSystems)
                 .run_if(in_state(SimulationState::Running)),
         );
     }
 }
 
-/// Should always run **after** [bevy::time::TimeSystem]
+/// Should always run **after** [bevy::time::TimeSystems]
 fn update(mut simulation_time: ResMut<SimulationTime>, bevy_time: Res<Time<Fixed>>) {
     simulation_time.advance(bevy_time.delta());
 }

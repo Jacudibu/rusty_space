@@ -14,7 +14,7 @@ use crate::utility::task_result::TaskResult;
 use bevy::ecs::system::{StaticSystemParam, SystemParam};
 use bevy::math::Vec2;
 use bevy::prelude::{
-    BevyError, Commands, Entity, EventWriter, FloatExt, Query, Res, Time, Visibility,
+    BevyError, Commands, Entity, FloatExt, MessageWriter, Query, Res, Time, Visibility,
 };
 use common::components;
 use common::components::ship_velocity::ShipVelocity;
@@ -163,7 +163,7 @@ impl<'w, 's> TaskUpdateRunner<'w, 's, Self> for DockAtEntity {
 pub struct TaskCompletedArgsMut<'w, 's> {
     commands: Commands<'w, 's>,
     all_ships_with_task: Query<'w, 's, (&'static mut Visibility, &'static ShipTask<DockAtEntity>)>,
-    send_signal_event_writer: EventWriter<'w, SendSignalEvent>,
+    send_signal_event_writer: MessageWriter<'w, SendSignalEvent>,
     docking_bays: Query<'w, 's, &'static mut DockingBay>,
 }
 

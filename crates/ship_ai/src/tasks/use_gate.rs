@@ -156,7 +156,7 @@ impl<'w, 's> TaskCreationEventHandler<'w, 's, Self> for UseGate {
     type ArgsMut = ();
 
     fn create_tasks_for_command(
-        event: &InsertTaskIntoQueueCommand<UseGate>,
+        message: &InsertTaskIntoQueueCommand<UseGate>,
         task_queue: &TaskQueue,
         general_pathfinding_args: &GeneralPathfindingArgs,
         args: &StaticSystemParam<Self::Args>,

@@ -1,8 +1,11 @@
 use bevy::app::App;
 use bevy::input::ButtonInput;
-use bevy::prelude::{Entity, EventWriter, KeyCode, MouseButton, Plugin, Query, Res, Update, With};
+use bevy::prelude::{
+    Entity, KeyCode, MessageWriter, MouseButton, Plugin, Query, Res, Update, With,
+};
 use common::components::task_queue::TaskQueue;
 use common::events::task_events::{InsertTaskIntoQueueCommand, TaskInsertionMode};
+use common::hexx_convert::HexxConvert;
 use common::types::map_layout::MapLayout;
 use common::types::ship_tasks::MoveToPosition;
 use entity_selection::components::EntityIsSelected;
@@ -23,7 +26,7 @@ pub(crate) fn send_move_command(
     keyboard_input: Res<ButtonInput<KeyCode>>,
     selected_ships: Query<Entity, (With<EntityIsSelected>, With<TaskQueue>)>,
     mouse_cursor: Res<MouseCursor>,
-    mut event_writer: EventWriter<InsertTaskIntoQueueCommand<MoveToPosition>>,
+    mut event_writer: MessageWriter<InsertTaskIntoQueueCommand<MoveToPosition>>,
     map_layout: Res<MapLayout>,
 ) {
     if !mouse_input.just_released(MouseButton::Right) {
@@ -35,7 +38,10 @@ pub(crate) fn send_move_command(
     };
 
     let global_position = position.sector_position.local_position
-        + map_layout.hex_layout.hex_to_world_pos(position.coordinates);
+        + map_layout
+            .hex_layout
+            .hex_to_world_pos(position.coordinates)
+            .convert();
 
     event_writer.write_batch(
         selected_ships
@@ -70,7 +76,7 @@ mod tests {
     fn build_test_app() -> App {
         let mut app = App::new();
         app.add_plugins(ShipControllerPlugin);
-        app.add_event::<InsertTaskIntoQueueCommand<MoveToPosition>>();
+        app.add_message::<InsertTaskIntoQueueCommand<MoveToPosition>>();
         app.insert_resource(ButtonInput::<MouseButton>::default());
         app.insert_resource(ButtonInput::<KeyCode>::default());
         app.insert_resource(MouseCursor::default());
@@ -89,7 +95,7 @@ mod tests {
 
         let sector_position = SectorPosition {
             local_position: Vec2::new(50.0, 50.0),
-            sector: SectorEntity::from(Entity::from_raw(42)),
+            sector: SectorEntity::from(Entity::from_raw_u32(42).unwrap()),
         };
 
         app.world_mut().resource_mut::<MouseCursor>().sector_space = Some(MouseSectorPosition {

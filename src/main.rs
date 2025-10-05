@@ -9,7 +9,6 @@ use common::types::sprite_handles::SpriteHandles;
 use common::{constants, session_data};
 
 mod construction_site_placement;
-mod diagnostics;
 mod gizmos;
 mod gui;
 mod test_universe;
@@ -35,7 +34,7 @@ fn main() {
         camera::CameraPlugin,
         construction_site_placement::ConstructionSitePlacementPlugin,
         common::CommonPlugin,
-        diagnostics::DiagnosticsPlugin,
+        // diagnostics::DiagnosticsPlugin,
         entity_selection::plugin::EntitySelectionPlugin,
         gizmos::GizmoPlugin,
         gui::GUIPlugin,

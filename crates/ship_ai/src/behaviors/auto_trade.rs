@@ -1,4 +1,4 @@
-use bevy::prelude::{Entity, EventWriter, Query, Res};
+use bevy::prelude::{Entity, MessageWriter, Query, Res};
 
 use crate::utility::task_filters::ShipIsIdleFilter;
 use crate::utility::trade_plan::TradePlan;
@@ -20,7 +20,7 @@ pub fn handle_idle_ships(
     sell_orders: Query<(Entity, &SellOrders, &InSector)>,
     inventories: Query<&Inventory>,
     item_manifest: Res<ItemManifest>,
-    mut event_writer: EventWriter<InsertTaskIntoQueueCommand<ExchangeWares>>,
+    mut event_writer: MessageWriter<InsertTaskIntoQueueCommand<ExchangeWares>>,
 ) {
     let now = simulation_time.now();
 

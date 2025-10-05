@@ -41,7 +41,7 @@ pub fn surrounding_sector_search<'a, TSearchQueryData, TSearchFunction>(
 ) -> Vec<SearchResult>
 where
     TSearchQueryData: QueryData + ReadOnlyQueryData,
-    TSearchFunction: Fn(TSearchQueryData::Item<'a>) -> bool,
+    TSearchFunction: Fn(TSearchQueryData::Item<'a, '_>) -> bool,
 {
     let mut visited = HashSet::<&SectorEntity, FixedHasher>::default();
     let mut next = vec![&from];

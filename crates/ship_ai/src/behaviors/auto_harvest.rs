@@ -1,6 +1,6 @@
 use crate::behaviors::auto_mine;
 use crate::utility::task_filters::ShipIsIdleFilter;
-use bevy::prelude::{Entity, EventWriter, Query, Res};
+use bevy::prelude::{Entity, MessageWriter, Query, Res};
 use common::components::celestials::GasGiant;
 use common::components::ship_behavior::ShipBehavior;
 use common::components::{BuyOrders, InSector, Inventory, Sector, SectorWithCelestials};
@@ -24,9 +24,9 @@ pub fn handle_idle_ships(
     all_gas_giants: Query<&GasGiant>,
     all_transforms: Query<&SimulationTransform>,
     item_manifest: Res<ItemManifest>,
-    mut harvest_gas_event_writer: EventWriter<InsertTaskIntoQueueCommand<HarvestGas>>,
-    mut exchange_wares_event_writer: EventWriter<InsertTaskIntoQueueCommand<ExchangeWares>>,
-    mut move_to_sector_event_writer: EventWriter<InsertTaskIntoQueueCommand<MoveToSector>>,
+    mut harvest_gas_event_writer: MessageWriter<InsertTaskIntoQueueCommand<HarvestGas>>,
+    mut exchange_wares_event_writer: MessageWriter<InsertTaskIntoQueueCommand<ExchangeWares>>,
+    mut move_to_sector_event_writer: MessageWriter<InsertTaskIntoQueueCommand<MoveToSector>>,
 ) {
     let now = simulation_time.now();
     ships
